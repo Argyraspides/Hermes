@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://wiw6ad4l1cmh"]
+
+[ext_resource type="Script" path="res://Common/Communications/Protocols/MAVLink/mav_link_reassembler.gd" id="1_x6dd8"]
+
+[node name="MavLinkReassembler" type="Node"]
+script = ExtResource("1_x6dd8")

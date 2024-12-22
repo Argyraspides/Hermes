@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://c15n55adelvs8"]
+
+[ext_resource type="Script" path="res://Common/Communications/Protocols/MAVLink/mav_link_deserializer.gd" id="1_303cp"]
+
+[node name="MavLinkDeserializer" type="Node"]
+script = ExtResource("1_303cp")

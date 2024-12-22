@@ -1,3 +1,6 @@
 # Godot 4+ specific ignores
 .godot/
 /android/
+
+# MAVLink Auto-generated definitions
+Common/Communications/Protocols/MAVLink/MAVLinkDefinitionGeneration/MAVLinkDefinitions
