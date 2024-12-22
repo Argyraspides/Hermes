@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://ceqy77rm2hbn0"]
+
+[ext_resource type="Script" path="res://State/CapabilityStateConverters/MAVLinkStateConverter/mav_link_state_converter.gd" id="1_emdg6"]
+
+[node name="MavLinkStateConverter" type="Node"]
+script = ExtResource("1_emdg6")

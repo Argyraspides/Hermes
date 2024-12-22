@@ -1,14 +1,27 @@
-[gd_scene load_steps=3 format=3 uid="uid://b24rs8scv1bxk"]
+[gd_scene load_steps=6 format=3 uid="uid://b24rs8scv1bxk"]
 
 [ext_resource type="PackedScene" uid="uid://ylbgeadyowj0" path="res://Common/Communications/WorldListener/WorldListener.tscn" id="2_262q3"]
 [ext_resource type="PackedScene" uid="uid://6qthltc6tojt" path="res://Common/Communications/ExternalLaunchers/ExternalLauncher.tscn" id="2_mkn87"]
+[ext_resource type="PackedScene" uid="uid://df0oxldlo5yjw" path="res://Common/Communications/MessageBroker/MessageBroker.tscn" id="3_wjq1r"]
+[ext_resource type="PackedScene" uid="uid://ceqy77rm2hbn0" path="res://State/CapabilityStateConverters/MAVLinkStateConverter/MAVLinkStateConverter.tscn" id="3_y4lx2"]
+[ext_resource type="PackedScene" uid="uid://d10fn5335ditp" path="res://Common/Communications/Protocols/MAVLink/MAVLinkDeserializer.tscn" id="4_5hduf"]
 
 [node name="Hermes" type="Node2D"]
 
 [node name="Communication" type="Node" parent="."]
 
-[node name="ExternalLauncher" parent="Communication" instance=ExtResource("2_mkn87")]
-
 [node name="WorldListener" parent="Communication" instance=ExtResource("2_262q3")]
 
+[node name="ExternalLauncher" parent="Communication" instance=ExtResource("2_mkn87")]
+
+[node name="MessageBroker" parent="Communication" instance=ExtResource("3_wjq1r")]
+
+[node name="MAVLink" type="Node" parent="Communication"]
+
+[node name="MavLinkStateConverter" parent="Communication/MAVLink" instance=ExtResource("3_y4lx2")]
+
+[node name="MavLinkDeserializer" parent="Communication/MAVLink" instance=ExtResource("4_5hduf")]
+
+[connection signal="websocket_packet_received" from="Communication/WorldListener" to="Communication/MAVLink/MavLinkDeserializer" method="_on_world_listener_websocket_packet_received"]
 [connection signal="tree_exiting" from="Communication/ExternalLauncher" to="Communication/ExternalLauncher" method="_on_tree_exiting"]
+[connection signal="mavlink_json_message_received" from="Communication/MAVLink/MavLinkDeserializer" to="Communication/MessageBroker" method="_on_mav_link_deserializer_mavlink_json_message_received"]

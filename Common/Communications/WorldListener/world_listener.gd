@@ -4,7 +4,7 @@ extends Node
 var udpServer	: 	UDPServer = UDPServer.new()
 var udpThread	: 	Thread
 var udpPeers	: 	Array[PacketPeerUDP]
-var port		: 	int = 14550
+var udpPort		: 	int = 14550
 
 signal udp_packet_received(udpPacket: PackedByteArray)
 
@@ -13,7 +13,7 @@ var websocketClient		: 	WebSocketPeer = WebSocketPeer.new()
 var websocketConnected	: 	bool = false
 var websocketThread		: 	Thread
 
-signal websocket_packet_received(websocketPacket: String)
+signal websocket_packet_received(websocketPacket: PackedByteArray)
 
 
 func _ready() -> void:
@@ -25,7 +25,7 @@ func _ready() -> void:
 
 func process_udp_packets() -> void:
 	
-	udpServer.listen(port)
+	udpServer.listen(udpPort)
 	
 	while(true):
 		udpServer.poll() 
@@ -41,7 +41,8 @@ func process_udp_packets() -> void:
 
 		for i in range(0, udpPeers.size()):
 			var packet: PackedByteArray = udpPeers[i].get_packet()
-			call_deferred_thread_group("emit_signal", "udp_packet_received", packet)
+			if packet.is_empty(): continue
+			call_thread_safe("emit_signal", "udp_packet_received", packet)
 
 func process_websocket_packets() -> void:
 	
@@ -62,8 +63,9 @@ func process_websocket_packets() -> void:
 					
 				while websocketClient.get_available_packet_count():
 					var packet: PackedByteArray = websocketClient.get_packet()
-					var text: 	String 			= packet.get_string_from_utf8()
-					var json: 	Variant 		= JSON.parse_string(text)
+					if packet.is_empty(): continue
+					call_thread_safe("emit_signal", "websocket_packet_received", packet)
+
 					
 			WebSocketPeer.STATE_CLOSING:
 				# Keep polling to achieve proper close
