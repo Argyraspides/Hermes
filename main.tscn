@@ -1,21 +1,14 @@
-[gd_scene load_steps=4 format=3 uid="uid://b24rs8scv1bxk"]
+[gd_scene load_steps=3 format=3 uid="uid://b24rs8scv1bxk"]
 
-[ext_resource type="PackedScene" uid="uid://wiw6ad4l1cmh" path="res://Common/Communications/Protocols/MAVLink/MAVLinkReassembler.tscn" id="1_fnhcf"]
-[ext_resource type="PackedScene" uid="uid://c15n55adelvs8" path="res://Common/Communications/Protocols/MAVLink/MAVLinkDeserializer.tscn" id="2_4pi41"]
 [ext_resource type="PackedScene" uid="uid://ylbgeadyowj0" path="res://Common/Communications/WorldListener/WorldListener.tscn" id="2_262q3"]
+[ext_resource type="PackedScene" uid="uid://6qthltc6tojt" path="res://Common/Communications/ExternalLaunchers/ExternalLauncher.tscn" id="2_mkn87"]
 
 [node name="Hermes" type="Node2D"]
 
 [node name="Communication" type="Node" parent="."]
 
-[node name="MAVLink" type="Node" parent="Communication"]
-
-[node name="MavLinkReassembler" parent="Communication/MAVLink" instance=ExtResource("1_fnhcf")]
-
-[node name="MavLinkDeserializer" parent="Communication/MAVLink" instance=ExtResource("2_4pi41")]
+[node name="ExternalLauncher" parent="Communication" instance=ExtResource("2_mkn87")]
 
 [node name="WorldListener" parent="Communication" instance=ExtResource("2_262q3")]
 
-[connection signal="message_reassembled" from="Communication/MAVLink/MavLinkReassembler" to="Communication/MAVLink/MavLinkDeserializer" method="_on_mav_link_reassembler_message_reassembled"]
-[connection signal="udp_packet_received" from="Communication/WorldListener" to="Communication/MAVLink/MavLinkReassembler" method="_on_world_listener_udp_packet_received"]
-[connection signal="udp_packet_received" from="Communication/WorldListener" to="Communication/MAVLink/MavLinkDeserializer" method="_on_world_listener_udp_packet_received"]
+[connection signal="tree_exiting" from="Communication/ExternalLauncher" to="Communication/ExternalLauncher" method="_on_tree_exiting"]

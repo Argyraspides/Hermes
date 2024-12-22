@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://6qthltc6tojt"]
+
+[ext_resource type="Script" path="res://Common/Communications/ExternalLaunchers/external_launcher.gd" id="1_uwyiv"]
+
+[node name="ExternalLauncher" type="Node"]
+script = ExtResource("1_uwyiv")
