@@ -1,12 +1,12 @@
 [gd_scene load_steps=8 format=3 uid="uid://bucrqt5wwg5gn"]
 
-[ext_resource type="Script" path="res://addons/map_tile_provider/examples/mosaic.gd" id="1_0k40s"]
-[ext_resource type="Script" path="res://addons/map_tile_provider/examples/SubViewportContainer.gd" id="1_6m2wn"]
-[ext_resource type="Script" path="res://addons/map_tile_provider/examples/Latitude.gd" id="2_6uw1f"]
-[ext_resource type="Script" path="res://addons/map_tile_provider/examples/Longitude.gd" id="3_8p4cb"]
-[ext_resource type="Script" path="res://addons/map_tile_provider/examples/map.gd" id="3_ftfcy"]
-[ext_resource type="Script" path="res://addons/map_tile_provider/map_tile_loader.gd" id="3_k18hd"]
-[ext_resource type="Script" path="res://addons/map_tile_provider/examples/Zoom.gd" id="4_vy78h"]
+[ext_resource type="Script" path="res://Common/Map2D/addons/map_tile_provider/examples/mosaic.gd" id="1_0k40s"]
+[ext_resource type="Script" path="res://Common/Map2D/addons/map_tile_provider/examples/SubViewportContainer.gd" id="1_6m2wn"]
+[ext_resource type="Script" path="res://Common/Map2D/addons/map_tile_provider/examples/Latitude.gd" id="2_6uw1f"]
+[ext_resource type="Script" path="res://Common/Map2D/addons/map_tile_provider/examples/Longitude.gd" id="3_8p4cb"]
+[ext_resource type="Script" path="res://Common/Map2D/addons/map_tile_provider/examples/map.gd" id="3_ftfcy"]
+[ext_resource type="Script" path="res://Common/Map2D/addons/map_tile_provider/map_tile_loader.gd" id="3_k18hd"]
+[ext_resource type="Script" path="res://Common/Map2D/addons/map_tile_provider/examples/Zoom.gd" id="4_vy78h"]
 
 [node name="mosaic" type="Control"]
 layout_mode = 3
