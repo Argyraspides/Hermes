@@ -1,10 +1,9 @@
 extends Node2D
 
-@onready var m_vehicleIcon: Sprite2D = $VehicleIcon
-var m_vehicleIconSet: bool = false
+@onready var 	m_vehicleIcon		:	Sprite2D = $VehicleIcon
+var 			m_vehicleIconSet	:	bool = false
 
-# Ew ... I don't like this verbosity ...  disgusting
-@onready var m_coreState	:  CoreState = CoreState.new()
+@onready var 	m_coreState			:  	CoreState = CoreState.new()
 
 func _process(delta: float) -> void:
 	set_sprite()
