@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://csw4tsvk6ftkn"]
+
+[ext_resource type="Script" path="res://Vehicle/MultiVehicleManager/multi_vehicle_manager.gd" id="1_jvykg"]
+
+[node name="MultiVehicleManager" type="Node"]
+script = ExtResource("1_jvykg")

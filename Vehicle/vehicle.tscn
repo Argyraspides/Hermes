@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3 uid="uid://ugw3wwqdfki3"]
+
+[ext_resource type="Script" path="res://Vehicle/vehicle.gd" id="1_4ye1a"]
+[ext_resource type="Script" path="res://Vehicle/sprite_2d.gd" id="2_4awlh"]
+
+[node name="Vehicle" type="Node2D"]
+script = ExtResource("1_4ye1a")
+
+[node name="VehicleIcon" type="Sprite2D" parent="."]
+script = ExtResource("2_4awlh")

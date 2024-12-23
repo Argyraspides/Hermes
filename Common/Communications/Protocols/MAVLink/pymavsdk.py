@@ -23,7 +23,9 @@ class MAVLinkListener:
         field_names = msg.get_fieldnames()
         message_dict = {
             "type": msg.get_type(),
-            "msgid": msg.get_msgId(),  # Add message ID
+            "msgid": msg.get_msgId(),
+            "sysid": msg.get_srcSystem(),
+            "compid": msg.get_srcComponent(),
             "timestamp": datetime.now().isoformat(),
         }
         for field in field_names:
