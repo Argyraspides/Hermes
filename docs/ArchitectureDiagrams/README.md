@@ -3,17 +3,32 @@
 ## Message Packet Pipeline
 Below is a diagram detailing how Hermes will abstract away communication protocols, such that Hermes itself is protocol agnostic
 
-![MsgPacketPipelineDiagram](https://github.com/user-attachments/assets/2e48c58b-d451-44e1-88a1-460f95cf15a1)
+![MsgPacketPipelineDiagram](https://github.com/user-attachments/assets/1316d253-d53c-4a0c-bbf0-5adc09d5df89)
+
 
 Data comes in from the outside world. A world listener module will pick up the data. For now, UDP, TCP, and Serial modules will be supported. Each of these modules will listen in for their respective packet type. E.g., the UDP module plugin for the world listener will listen in on UDP packets coming in.
 
-These packets, now represented in a proper data structure within the program, will be forwarded to a data protocol reckoner, which will determine exactly what kind of protocol it is. Once determined, the packets will be forwarded to a module which will deserialize the packets and form a data structure for the specific data type. For example, the output of the "MAVLink" deserializer might be some sort of MAVLink struct containing all the fields of a typical MAVLink message.
+These packets, now represented in a proper raw-byte data structure within the program, will be forwarded to its respective deserializer, which will deserialize the packets and form a data structure for the specific data type. For example, the output of the "MAVLink" deserializer is currently a sort of MAVLink data object containing all the fields of a typical MAVLink message as a JSON.
 
-These will then be handed off to a message broker which will signal that a message of a particular protocol has been received. This will essentially be a pub-sub pattern, where any module in the program can subscribe to, say, "MAVLink message received" events. They will also be forwarded to a state converter, where the message of the specific protocol type will be converted to a generic state. 
+These deserialized messages will then be forwarded to a state converter for the respective protocol. The job of these state converters is to convert protocol-specific states into a generic, in-game vehicle state. At this point, Hermes becomes completely protocol agnostic. 
 
-All vehicles will have some sort of capability state (see the other diagram below for info on this), mission state, or a "core" state. The mission state will indicate any status of a current mission a vehicle may be executing, and core state will have basic physical properties such as the vehicle's position in space, velocity, acceleration, etc.
+All vehicles will have some sort of capability state (see the other diagram below for info on this), mission state, or a "core" state. The mission state will indicate any status of a current mission a vehicle may be executing, and core state will have basic physical and identifier properties such as the vehicle's position in space, velocity, acceleration, unique vehicle ID, vehicle type, etc.
 
-Once these states are generated, they will be passed to the actual vehicle to update its state. Following proper separation of concerns, the UI can simply bind to the vehicle's state for updates of its own.
+Once these states are generated, they will be passed to a message broker where any component may subscribe to in order to obtain vehicle states. For now, the only listening module is the MultiVehicleManager, whose sole purpose is to manage the lifecycle of any vehicles by adding them to the map scene tree, removing them from the map scene tree, and updating their state. 
+
+Hermes UI will allow commanding the vehicles. Each vehicle can be controlled by invoking one or more of its capabilities. Abstracting away protocols again, the specific protocol type will be automatically determined and handed off to a specific commander module, which will then serialize the message and send it to the vehicle. 
+
+Strengths:
+- Abstract away all protocol types
+- Incredibly simple and linear flow, hence easy to follow and reason about events (great for debuggability)
+- Incredibly modular and flexible to changes
+- Very loose coupling. Much of the communication within Godot will happen via signalling
+- Data flow for receiving information is one way, as is communication to the UxVs. No propogation in the opposite direction means that vehicle state is a true depiction of reality with zero chances of 
+
+Weaknesses:
+- Lot of developer "overhead" to get protcol abstraction up and running, as entire state converters need to be created
+- Any firmware differences such as between PX4 and Ardupilot are not accounted for. For now this is mitigated by using MAVSDK for the MAVLink implementation. Firmware plugin system may need to be created similar to what QGroundControl has in the future
+- 
 
 ## Vehicle Class Architecture
 Below is a diagram detailing how Hermes will represent a vehicle 
