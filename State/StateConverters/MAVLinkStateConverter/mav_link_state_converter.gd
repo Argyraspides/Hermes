@@ -47,23 +47,24 @@ func convert_mavlink_json_to_core_state(mavlinkJsonMessage: Variant) -> CoreStat
 	
 	match msgid:
 		0:
-			var vehicleType: String = mavlinkJsonMessage["type"]
+			var vehicleType: int = mavlinkJsonMessage["type"]
 			
 			match vehicleType:
-				"MAV_TYPE_QUADROTOR":
+				2:
 					coreState.m_vehicleType = VehicleTypes.VehicleType.GENERIC_QUADCOPTER
 			
 		33:
-			coreState.m_earthPosition.x = mavlinkJsonMessage["lat"]
-			coreState.m_earthPosition.y = mavlinkJsonMessage["lon"]
-			coreState.m_earthPosition.z = mavlinkJsonMessage["alt"]
+			coreState.m_earthPosition.x = mavlinkJsonMessage["lat"] / 1e7
+			coreState.m_earthPosition.y = mavlinkJsonMessage["lon"] / 1e7
+			coreState.m_earthPosition.z = mavlinkJsonMessage["alt"] / 1e2
 			
 			# Convert from MAVLink cm/s to m/s
-			coreState.m_groundVel.x		= mavlinkJsonMessage["vx"] / 100.0
-			coreState.m_groundVel.y		= mavlinkJsonMessage["vy"] / 100.0
-			coreState.m_groundVel.z		= mavlinkJsonMessage["vz"] / 100.0
+			coreState.m_groundVel.x		= mavlinkJsonMessage["vx"] / 1e2
+			coreState.m_groundVel.y		= mavlinkJsonMessage["vy"] / 1e2
+			coreState.m_groundVel.z		= mavlinkJsonMessage["vz"] / 1e2
 			
-			coreState.m_earthHeading	= mavlinkJsonMessage["hdg"]
+			# Convert from MAVLink centidegrees to degrees
+			coreState.m_earthHeading	= mavlinkJsonMessage["hdg"] / 1e2
 
 	return coreState
 	

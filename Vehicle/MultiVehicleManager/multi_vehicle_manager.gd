@@ -15,17 +15,22 @@ func _process(delta: float) -> void:
 
 
 func _on_message_broker_vehicle_core_state_received(coreState: CoreState) -> void:
-	pass # Replace with function body.
+	add_vehicle(coreState)
+	update_vehicle_core_state(coreState)
 
 
-func add_vehicle(vehicleId: int, initState: CoreState) -> void:
+func add_vehicle(initState: CoreState) -> void:
 	
-	if m_vehicles.has(vehicleId):
-		push_warning("Vehicle with ID %s already exists" % vehicleId)
+	if m_vehicles.has(initState.m_vehicleId):
+		return
+	var vehicle: Node2D = m_vehicleScene.instantiate()
+	m_vehicles[initState.m_vehicleId] = vehicle
+	add_child(vehicle)
 	
 		
-func update_vehicle_core_state(vehicleId: int, coreState: CoreState) -> void:
-	var vehicle: PackedScene = m_vehicles.get(vehicleId)
+func update_vehicle_core_state(coreState: CoreState) -> void:
+	var vehicle: Node2D = m_vehicles.get(coreState.m_vehicleId)
 	
 	# Vehicle scene -> m_coreState (type CoreState) -> copy_known_fields()
 	vehicle.m_coreState.copy_known_fields(coreState)
+	

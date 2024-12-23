@@ -5,6 +5,7 @@ var udpServer	: 	UDPServer = UDPServer.new()
 var udpThread	: 	Thread
 var udpPeers	: 	Array[PacketPeerUDP]
 var udpPort		: 	int = 14550
+var udpPollDelay:	int = 500
 
 signal udp_packet_received(udpPacket: PackedByteArray)
 
@@ -12,7 +13,7 @@ signal udp_packet_received(udpPacket: PackedByteArray)
 var websocketClient		: 	WebSocketPeer = WebSocketPeer.new()
 var websocketConnected	: 	bool = false
 var websocketThread		: 	Thread
-
+var websocketPollDelay	:	int = 500
 signal websocket_packet_received(websocketPacket: PackedByteArray)
 
 
@@ -43,6 +44,8 @@ func process_udp_packets() -> void:
 			var packet: PackedByteArray = udpPeers[i].get_packet()
 			if packet.is_empty(): continue
 			call_thread_safe("emit_signal", "udp_packet_received", packet)
+			
+		OS.delay_msec(udpPollDelay)
 
 func process_websocket_packets() -> void:
 	
@@ -58,14 +61,12 @@ func process_websocket_packets() -> void:
 		match state:
 			WebSocketPeer.STATE_OPEN:
 				if !websocketConnected:
-					print("Connected to server!")
 					websocketConnected = true
 					
 				while websocketClient.get_available_packet_count():
 					var packet: PackedByteArray = websocketClient.get_packet()
 					if packet.is_empty(): continue
 					call_thread_safe("emit_signal", "websocket_packet_received", packet)
-
 					
 			WebSocketPeer.STATE_CLOSING:
 				# Keep polling to achieve proper close
@@ -78,3 +79,5 @@ func process_websocket_packets() -> void:
 				websocketConnected = false
 				# Attempt to reconnect
 				websocketClient.connect_to_url("ws://localhost:8765")
+	OS.delay_msec(websocketPollDelay)
+	

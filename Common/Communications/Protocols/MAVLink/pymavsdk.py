@@ -36,14 +36,12 @@ class MAVLinkListener:
                 message_dict[field] = value
         return message_dict
 
-    async def listen(self, websocket, message_types=None):
+    async def listen(self, websocket):
         """
         Listen for MAVLink messages and send them over WebSocket
 
         Args:
             websocket: WebSocket connection object
-            message_types (list, optional): List of specific message types to listen for.
-                If None, listen for all messages.
         """
         while True:
             msg = self.connection.recv_match(blocking=True)
@@ -51,14 +49,9 @@ class MAVLinkListener:
             if msg is None:
                 continue
 
-            if msg.get_type() == "BAD_DATA":
-                continue
-
-            if message_types and msg.get_type() not in message_types:
-                continue
-
             message_dict = self.message_to_dict(msg)
             json_message = json.dumps(message_dict)
+            print(json_message)
 
             try:
                 await websocket.send(json_message)
@@ -75,13 +68,12 @@ class MAVLinkListener:
 async def websocket_server(websocket, path):
     """Handle incoming WebSocket connections"""
     connection_string = 'udpin:localhost:14550'  # Modify as needed
-    message_types = ['ATTITUDE', 'GLOBAL_POSITION_INT']
 
     listener = MAVLinkListener(connection_string)
     logging.info(f"New WebSocket connection established. Listening for MAVLink messages on {connection_string}")
 
     try:
-        await listener.listen(websocket, message_types)
+        await listener.listen(websocket)
     except Exception as e:
         logging.error(f"Error in WebSocket server: {e}")
 

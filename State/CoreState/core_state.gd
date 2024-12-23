@@ -21,33 +21,33 @@ var m_vehicleId		: int 		= INF
 
 
 ## X = LAT, degrees
-## Y = LONG, degrees
-## Z = ALT (from Mean Sea Level), millimeters 
+## Y = LON, degrees
+## Z = ALT, meters (MSL) 
 var m_earthPosition	: Vector3 	= Vector3.INF
 
 ## Clockwise from north, degrees
 var m_earthHeading	: float		= INF
 
 ## Represents distance away relative to home position on Earth's surface
-## X = LAT dist, degrees
-## Y = LONG dist, degrees
-## Z = ALT dist (from home position), millimeters
+## X = LAT 	dist, degrees
+## Y = LON  dist, degrees
+## Z = ALT 	dist, meters
 var m_localPosition	: Vector3 	= Vector3.INF
 
 ## X = ROLL
 ## Y = PITCH
 ## Z = YAW
-## Where: -pi < (X,Y,Z) < pi -> rad
+## Where: -180 < (X,Y,Z) < 180 -> degrees
 var m_attitude		: Vector3 	= Vector3.INF
 
-## X = LAT, +ve NORTH, m/s
-## Y = LON, +ve EAST,  m/s
-## Z = ALT, +ve DOWN,  m/s
+## X = LAT, +ve NORTH,  m/s
+## Y = LON, +ve EAST ,  m/s
+## Z = ALT, +ve DOWN ,  m/s
 var m_groundVel		: Vector3 	= Vector3.INF
 
-## X = LAT, +ve NORTH
-## Y = LON, +ve EAST
-## Z = ALT, +ve DOWN
+## X = LAT, +ve NORTH, m/s^2
+## Y = LON, +ve EAST , m/s^2
+## Z = ALT, +ve DOWN , m/s^2
 var m_groundAcc		: Vector3 	= Vector3.INF
 
 func copy_known_fields(fromState: CoreState) -> void:
