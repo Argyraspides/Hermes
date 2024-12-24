@@ -10,8 +10,21 @@ enum Format {
 	 WEBP,
  }
 
+# The bounds specify longitude of the tile (x) (from the top right corner?),
+# latitude of the tile (y), and then the width and height
+# of the map tile of unit longitude (w) and latitude (h)
 @export var bounds: Rect2
+
+# The coords specify the specific tile coordinate in 2D space (x, y) at a specific zoom level (z)
+# When obtaining an API response from a map provider, the entire world map is split up into a grid
+# of tiles. Each zoom level splits the Earth up further into more tiles, increasing by 4 everytime.
+# At a zoom level of 1, the Earth is represented as a 2x2 grid of tiles (4 total). At a zoom level 2,
+# this goes up to a 4x4 grid of tiles (16 total), then 8x8 (64 total) and so on.
+# See: https://learn.microsoft.com/en-us/azure/azure-maps/zoom-levels-and-tile-grid?tabs=csharp
+# And/or: https://www.microimages.com/documentation/TechGuides/78BingStructure.pdf
 @export var coords: Vector3i
+
+# The raw image data of the tile
 @export var image: PackedByteArray
 @export var format: Format
 @export var path: String

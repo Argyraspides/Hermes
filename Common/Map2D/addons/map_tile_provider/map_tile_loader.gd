@@ -1,3 +1,48 @@
+## A node that handles loading map tiles from various online map providers (Bing, Mapbox, MapQuest)
+## and manages caching of downloaded tiles.
+##
+## This class provides functionality to:
+## - Load map tiles asynchronously from online map providers
+## - Convert GPS coordinates to tile coordinates
+## 		- See: https://learn.microsoft.com/en-us/azure/azure-maps/zoom-levels-and-tile-grid?tabs=csharp
+## - Cache downloaded tiles locally
+## - Queue and manage concurrent tile download requests
+## - Validate tile image formats
+##
+## @tutorial:
+##     Basic usage:
+##     ```
+##     var loader 					= MapTileLoader.new()
+##     loader.tile_provider 		= MapTileLoader.Provider.MAPBOX
+##     loader.cache_tiles 			= true
+##     loader.concurrent_requests 	= 4
+##     
+##     # Load a tile by GPS coordinates
+##     loader.load_tile(latitude, longitude, zoom_level)
+##     
+##     # Or load by tile indices
+##     loader.load_tile_by_indices(x, y, zoom)
+##     ```
+##
+## @properties:
+## - custom_fields: 		Dictionary of provider-specific settings
+## - user_agent: 			HTTP user agent string for requests
+## - allow_network: 		Whether to allow network requests
+## - cache_tiles: 			Whether to cache downloaded tiles locally
+## - tile_provider: 		The map provider to use (BING, MAPBOX, MAPQUEST)
+## - concurrent_requests: 	Maximum number of simultaneous HTTP requests
+##
+## @signals:
+## - tile_loaded(status, tile: MapTile): Emitted when a tile is loaded
+##     status: Error code (OK if successful)
+##     tile: The loaded MapTile resource (null if failed)
+##
+## @method inflight: 			Returns the number of currently processing requests
+## @method available: 			Returns the number of available request slots
+## @method gps_to_tile: 		Converts GPS coordinates to tile coordinates
+## @method generate_tile_set: 	Generates a rectangular set of tiles covering a GPS region
+## @method get_tile_bounds: 	Gets the GPS bounds of a specific tile
+##
 @tool
 class_name MapTileLoader
 extends Node
@@ -13,22 +58,22 @@ enum Provider {
 }
 
 
-static var MAGIC := [
-	PackedByteArray([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00]),
-	PackedByteArray([0xff, 0xd8, 0xff, 0x00]),
+static var MAGIC : Array[PackedByteArray] = [
+	PackedByteArray([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00]), # PNG signature
+	PackedByteArray([0xff, 0xd8, 0xff, 0x00]), # JPEG signature
 ]
 
-static var FORMATS := [
+static var FORMATS : Array[MapTile.Format] = [
 	 MapTile.Format.PNG,
 	 MapTile.Format.JPG,
 ]
 
 
-@export var custom_fields := {}
-@export var user_agent := "Mozilla/5.0 Gecko/20100101 Firefox/118.0"
-@export var allow_network := true
-@export var cache_tiles := false
-@export var tile_provider: Provider:
+@export var custom_fields 	:= {}
+@export var user_agent 		:= "Mozilla/5.0 Gecko/20100101 Firefox/118.0"
+@export var allow_network 	:= true
+@export var cache_tiles 	:= true
+@export var tile_provider	: Provider:
 	set(type):
 		var new_provider: MapProvider
 		match type:

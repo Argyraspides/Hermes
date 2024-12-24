@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://r6tyu2c8c26s"]
+[gd_scene load_steps=9 format=3 uid="uid://r6tyu2c8c26s"]
 
 [ext_resource type="PackedScene" uid="uid://ylbgeadyowj0" path="res://Common/Communications/WorldListener/WorldListener.tscn" id="2_262q3"]
 [ext_resource type="PackedScene" uid="uid://6qthltc6tojt" path="res://Common/Communications/ExternalLaunchers/ExternalLauncher.tscn" id="2_mkn87"]
@@ -7,8 +7,17 @@
 [ext_resource type="PackedScene" uid="uid://d10fn5335ditp" path="res://Common/Communications/Protocols/MAVLink/MAVLinkDeserializer.tscn" id="4_5hduf"]
 [ext_resource type="PackedScene" uid="uid://csw4tsvk6ftkn" path="res://Vehicle/MultiVehicleManager/MultiVehicleManager.tscn" id="6_vsves"]
 [ext_resource type="PackedScene" uid="uid://ugw3wwqdfki3" path="res://Vehicle/vehicle.tscn" id="7_bffcb"]
+[ext_resource type="PackedScene" uid="uid://bm3uq3dr1c5ty" path="res://Common/Map2D/addons/map_tile_provider/examples/single.tscn" id="8_r6q2c"]
 
-[node name="Hermes" type="Node2D"]
+[node name="Hermes" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
 
 [node name="Communication" type="Node" parent="."]
 
@@ -30,6 +39,9 @@
 
 [node name="MultiVehicleManager" parent="Map/Management" instance=ExtResource("6_vsves")]
 m_vehicleScene = ExtResource("7_bffcb")
+
+[node name="main" parent="." instance=ExtResource("8_r6q2c")]
+layout_mode = 1
 
 [connection signal="websocket_packet_received" from="Communication/WorldListener" to="Communication/MAVLink/MavLinkDeserializer" method="_on_world_listener_websocket_packet_received"]
 [connection signal="tree_exiting" from="Communication/ExternalLauncher" to="Communication/ExternalLauncher" method="_on_tree_exiting"]

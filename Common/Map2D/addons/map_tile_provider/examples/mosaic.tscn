@@ -65,7 +65,6 @@ script = ExtResource("3_ftfcy")
 
 [node name="MapTileLoader" type="Node" parent="VBoxContainer/SubViewportContainer/SubViewport/Map"]
 script = ExtResource("3_k18hd")
-cache_tiles = true
 concurrent_requests = 4
 
 [node name="Zoom1" type="Node2D" parent="VBoxContainer/SubViewportContainer/SubViewport/Map"]
