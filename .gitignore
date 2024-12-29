@@ -4,3 +4,6 @@
 
 # MAVLink Auto-generated definitions
 Common/Communications/Protocols/MAVLink/MAVLinkDefinitionGeneration/MAVLinkDefinitions
+
+# VSCode folder
+.vscode/

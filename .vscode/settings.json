@@ -1,3 +1,4 @@
 {
-    "ros.distro": "humble"
+    "ros.distro": "humble",
+    "godotTools.editorPath.godot4": "/home/gaugamela/Applications/Godot/Godot_v4.3-stable_mono_linux.x86_64"
 }
