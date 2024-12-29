@@ -2,13 +2,21 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using static MapUtils;
 
 public partial class BingMapProvider : MapProvider
 {
 
-	int nextServerInstance = 0;
+	public int nextServerInstance = 0;
 
 	string queryStrTemplate = "https://ecn.t{server}.tiles.virtualearth.net/tiles/{mapType}{quadKey}.{mapTypeImageFormat}?g={apiVersion}&mkt={lang}";
+
+
+	public BingMapProvider() : base()
+	{
+		mapType = MapUtils.MapType.SATELLITE;
+		mapImageType = MapUtils.MapImageType.JPG;
+	}
 
 	// Constructs a query string for obtaining a map tile from Bing's map provider API.
 	// Takes in a dictionary which should contain mappings from the name of the 
@@ -20,28 +28,46 @@ public partial class BingMapProvider : MapProvider
 	// "mapTypeImageFormat"		(image file type, JPG for satellite & hybrid views, PNG for street)
 	// "apiVersion"				(API version number)
 	// "lang"					(language, e.g., "en" for English)
-    public override string ConstructQueryString(Dictionary<string, string> dict)
-    {
+	public override string ConstructQueryString(Dictionary<string, string> dict)
+	{
 
 		StringBuilder finalQueryString = new StringBuilder(queryStrTemplate);
 		finalQueryString.Replace("{server}", NextServerNumber().ToString());
 
-		foreach(KeyValuePair<string, string> apiParamPair in dict)
+		foreach (KeyValuePair<string, string> apiParamPair in dict)
 		{
 			string replacementStr = "{" + apiParamPair.Key + "}";
 			finalQueryString.Replace(replacementStr, apiParamPair.Value);
 		}
 
 		return finalQueryString.ToString();
-    }
+	}
+
+	public Dictionary<string, string> ConstructQueryParams(string quadkey)
+	{
+		Dictionary<string, string> apiQueryParams = new Dictionary<string, string>();
+
+		if(mapType == MapType.SATELLITE) 	apiQueryParams.Add("mapType", "a");
+		if(mapType == MapType.STREET) 		apiQueryParams.Add("mapType", "r");
+		if(mapType == MapType.HYBRID) 		apiQueryParams.Add("mapType", "h");
+
+		apiQueryParams.Add("quadKey", quadkey);
+		apiQueryParams.Add("mapTypeImageFormat", "JPG");
+		apiQueryParams.Add("apiVersion", "563");
+		apiQueryParams.Add("lang", "en");
+		return apiQueryParams;
+	}
 
 
-	// Overridden from MapProvider
-    public override Error FetchRawMapTileData(string queryString)
-    {
-        bool requestersAvailable = availableRequesters.TryDequeue(out HttpRequest httpRequester);
+	// Overridden from MapProvider. Queues up an HTTP request
+	// to fetch a map tile (256x256 raw byte array). 
+	// If eventually successful, the RawMapTileDataReceivedEventHandler(byte[] rawMapTileData)
+	// signal in MapProvider will be called
+	public override Error FetchRawMapTileData(string queryString)
+	{
+		bool requestersAvailable = availableRequesters.TryDequeue(out HttpRequest httpRequester);
 		Error error;
-		if(requestersAvailable)
+		if (requestersAvailable)
 		{
 			error = httpRequester.Request(queryString);
 		}
@@ -51,7 +77,7 @@ public partial class BingMapProvider : MapProvider
 		}
 
 		return error;
-    }
+	}
 
 	// Overridden from MapProvider. This is called automatically by any one HttpRequest object
 	// upon an HTTP request response 
@@ -66,5 +92,25 @@ public partial class BingMapProvider : MapProvider
 		nextServerInstance = (++nextServerInstance) % MAX_CONCURRENT_HTTP_REQUESTS;
 		return next;
 	}
+
+
+	// Requests a map tile from the Bing API. If successful, the
+	// RawMapTileDataReceivedEventHandler(byte[] rawMapTileData) signal from the 
+	// MapProvider base class will be invoked where the raw image data can be "picked up"
+	public override Error RequestMapTile(float latitude, float longitude, int zoom)
+	{
+
+		int latTileCoo = MapUtils.LatitudeToTileCoordinateMercator(latitude, zoom);
+		int lonTileCoo = MapUtils.LongitudeToTileCoordinateMercator(longitude, zoom);
+
+		string quadkey = MapUtils.TileCoordinatesToQuadkey(lonTileCoo, latTileCoo, zoom);
+		Dictionary<string, string> queryParamDict = ConstructQueryParams(quadkey);
+		string queryString = ConstructQueryString(queryParamDict);
+
+		Error error = FetchRawMapTileData(queryString);
+		
+		return error;
+	}
+
 
 }

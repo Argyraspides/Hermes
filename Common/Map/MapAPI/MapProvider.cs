@@ -9,12 +9,37 @@ public partial class MapProvider : Node
 {
 	protected const int MAX_CONCURRENT_HTTP_REQUESTS = 4;
 
-	enum MapType
+
+
+	public MapProvider()
 	{
-		SATELLITE,
-		STREET,
-		HYBRID
+		httpRequesters = new HttpRequest[MAX_CONCURRENT_HTTP_REQUESTS];
+		availableRequesters = new ConcurrentQueue<HttpRequest>();
+		receivedMapDataSignalQueue = new ConcurrentQueue<Action>();
+
+		// We assign each HttpRequester objects "RequestCompleted" event a lambda function that will queue up a signal call
+		// that signals an HTTP request has been completed. Signals by default are not thread safe and its possible
+		// signals may be lost if they are called at the same time.
+		for (int i = 0; i < MAX_CONCURRENT_HTTP_REQUESTS; i++)
+		{
+			HttpRequest requester = new HttpRequest();
+			httpRequesters[i] = requester;
+
+			requester.RequestCompleted += (long result, long responseCode, string[] headers, byte[] body) =>
+			{
+				receivedMapDataSignalQueue.Enqueue(() => onHttpRequestCompleted(result, responseCode, headers, body));
+				availableRequesters.Enqueue(requester);
+			};
+
+			AddChild(requester);
+			availableRequesters.Enqueue(requester);
+		}
 	}
+
+	public MapUtils.MapType mapType;
+
+	public MapUtils.MapImageType mapImageType;
+
 
 	public HttpRequest[] httpRequesters;
 
@@ -68,35 +93,15 @@ public partial class MapProvider : Node
 		}
 	}
 
+	public virtual Error RequestMapTile(float latitude, float longitude, int zoom)
+	{
+		return Error.Ok;
+	}
+
+
 	public override void _Process(double delta)
 	{
 		processMapDataSignalQueue();
-	}
-
-	public override void _Ready()
-	{
-
-		httpRequesters = new HttpRequest[MAX_CONCURRENT_HTTP_REQUESTS];
-		availableRequesters = new ConcurrentQueue<HttpRequest>();
-		receivedMapDataSignalQueue = new ConcurrentQueue<Action>();
-
-		// We assign each HttpRequester objects "RequestCompleted" event a lambda function that will queue up a signal call
-		// that signals an HTTP request has been completed. Signals by default are not thread safe and its possible
-		// signals may be lost if they are called at the same time.
-		for (int i = 0; i < MAX_CONCURRENT_HTTP_REQUESTS; i++)
-		{
-			HttpRequest requester = new HttpRequest();
-			httpRequesters[i] = requester;
-
-			requester.RequestCompleted += (long result, long responseCode, string[] headers, byte[] body) =>
-			{
-				receivedMapDataSignalQueue.Enqueue(() => onHttpRequestCompleted(result, responseCode, headers, body));
-				availableRequesters.Enqueue(requester);
-			};
-
-			AddChild(requester);
-			availableRequesters.Enqueue(requester);
-		}
 	}
 
 }
