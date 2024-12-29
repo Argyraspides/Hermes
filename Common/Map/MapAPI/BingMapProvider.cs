@@ -6,6 +6,8 @@ using System.Text;
 public partial class BingMapProvider : MapProvider
 {
 
+	int nextServerInstance = 0;
+
 	string queryStrTemplate = "https://ecn.t{server}.tiles.virtualearth.net/tiles/{mapType}{quadKey}.{mapTypeImageFormat}?g={apiVersion}&mkt={lang}";
 
 	// Constructs a query string for obtaining a map tile from Bing's map provider API.
@@ -13,7 +15,6 @@ public partial class BingMapProvider : MapProvider
 	// parameter name (string) to the value of the parameter (string)
 	// Dictionary keys must include:
 	//
-	// "server" 				(server instance to query, between 0-3)
 	// "mapType" 				("a" for satellite, "r" for street view, "h" for hybrid)
 	// "quadKey" 				(quadrant key value)
 	// "mapTypeImageFormat"		(image file type, JPG for satellite & hybrid views, PNG for street)
@@ -23,6 +24,7 @@ public partial class BingMapProvider : MapProvider
     {
 
 		StringBuilder finalQueryString = new StringBuilder(queryStrTemplate);
+		finalQueryString.Replace("{server}", NextServerNumber().ToString());
 
 		foreach(KeyValuePair<string, string> apiParamPair in dict)
 		{
@@ -32,5 +34,37 @@ public partial class BingMapProvider : MapProvider
 
 		return finalQueryString.ToString();
     }
+
+
+	// Overridden from MapProvider
+    public override Error FetchRawMapTileData(string queryString)
+    {
+        bool requestersAvailable = availableRequesters.TryDequeue(out HttpRequest httpRequester);
+		Error error;
+		if(requestersAvailable)
+		{
+			error = httpRequester.Request(queryString);
+		}
+		else
+		{
+			error = Error.Busy;
+		}
+
+		return error;
+    }
+
+	// Overridden from MapProvider. This is called automatically by any one HttpRequest object
+	// upon an HTTP request response 
+	public override void onHttpRequestCompleted(long result, long responseCode, string[] headers, byte[] body)
+	{
+		EmitSignal("RawMapTileDataReceived", body);
+	}
+
+	public override int NextServerNumber()
+	{
+		int next = nextServerInstance;
+		nextServerInstance = (++nextServerInstance) % MAX_CONCURRENT_HTTP_REQUESTS;
+		return next;
+	}
 
 }
