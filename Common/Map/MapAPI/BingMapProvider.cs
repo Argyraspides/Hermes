@@ -15,7 +15,7 @@ public partial class BingMapProvider : MapProvider
 	public BingMapProvider() : base()
 	{
 		mapType = MapUtils.MapType.SATELLITE;
-		mapImageType = MapUtils.MapImageType.JPG;
+		mapImageType = MapUtils.MapImageType.JPEG;
 	}
 
 	// Constructs a query string for obtaining a map tile from Bing's map provider API.

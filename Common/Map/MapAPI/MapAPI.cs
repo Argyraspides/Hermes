@@ -23,7 +23,7 @@ using static MapUtils;
 
 	// Request a map tile. Once a map tile has been successfully fetched, your handler
 	// function will automatically be called
-	mapApi.RequestMapTile(-36.85, 174.76, 5);
+	mapApi.RequestMapTile(-36.85f, 174.76f, 5);
 
 
 */ 
@@ -42,19 +42,25 @@ public partial class MapAPI : Node
 		mapProvider = new BingMapProvider();
 		AddChild(mapProvider, true);
 		mapProvider.RawMapTileDataReceived += onRawMapTileDataReceived;
+
+		mapProvider.RequestMapTile(-36.85f, 174.76f, 5);
+
 	}
 
 	// This function is invoked by a MapProvider's "RawMapTileDataReceivedEventHandler" signal
 	// when we get an HTTP response from calling an API to retrieve map tile data.
 	public void onRawMapTileDataReceived(byte[] rawMapData)
 	{
+
+		MapUtils.MapImageType imageType = MapUtils.GetImageFormat(rawMapData);
+		
 		Image image = new Image();
-		image.LoadJpgFromBuffer(rawMapData);
+		if(imageType == MapUtils.MapImageType.JPEG) image.LoadJpgFromBuffer(rawMapData);
+		if(imageType == MapUtils.MapImageType.PNG) image.LoadPngFromBuffer(rawMapData);
+		if(imageType == MapUtils.MapImageType.BMP) image.LoadBmpFromBuffer(rawMapData);
+
 		ImageTexture texture = new ImageTexture();
 		texture.SetImage(image);
-
-		Sprite2D sprite = new Sprite2D();
-		sprite.Texture = texture;
 
 		EmitSignal("MapTileReceived", texture);
 	}

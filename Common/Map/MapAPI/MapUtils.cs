@@ -18,9 +18,12 @@ public static class MapUtils
 
 	public enum MapImageType
 	{
+		BMP,
+		JPEG,
+		GIF,
+		TIFF,
 		PNG,
-		JPG,
-		BMP
+		UNKNOWN
 	}
 
 	// Converts line of latitude (degrees) to a latitude tile coordinate (y axis) on the Mercator projection,
@@ -66,7 +69,7 @@ public static class MapUtils
 		StringBuilder quadkey = new StringBuilder();
 
 		int i = zoom;
-		while(i > 0)
+		while (i > 0)
 		{
 			i--;
 			int digit = 0x00;
@@ -78,6 +81,48 @@ public static class MapUtils
 		}
 
 		return quadkey.ToString();
+	}
+
+	public static MapImageType GetImageFormat(byte[] imageData)
+	{
+		// Check if we have enough bytes to check the header
+		if (imageData == null || imageData.Length < 4)
+		{
+			return MapImageType.UNKNOWN;
+		}
+
+		// JPEG starts with FF D8 FF
+		if (imageData[0] == 0xFF && imageData[1] == 0xD8 && imageData[2] == 0xFF)
+		{
+			return MapImageType.JPEG;
+		}
+
+		// PNG starts with 89 50 4E 47 0D 0A 1A 0A
+		if (imageData[0] == 0x89 && imageData[1] == 0x50 && imageData[2] == 0x4E && imageData[3] == 0x47)
+		{
+			return MapImageType.PNG;
+		}
+
+		// GIF starts with GIF87a or GIF89a
+		if (imageData[0] == 0x47 && imageData[1] == 0x49 && imageData[2] == 0x46 && imageData[3] == 0x38)
+		{
+			return MapImageType.GIF;
+		}
+
+		// BMP starts with BM
+		if (imageData[0] == 0x42 && imageData[1] == 0x4D)
+		{
+			return MapImageType.BMP;
+		}
+
+		// TIFF starts with II (little endian) or MM (big endian)
+		if ((imageData[0] == 0x49 && imageData[1] == 0x49) ||
+			(imageData[0] == 0x4D && imageData[1] == 0x4D))
+		{
+			return MapImageType.TIFF;
+		}
+
+		return MapImageType.UNKNOWN;
 	}
 
 
