@@ -43,8 +43,6 @@ public partial class MapAPI : Node
 		AddChild(mapProvider, true);
 		mapProvider.RawMapTileDataReceived += onRawMapTileDataReceived;
 
-		mapProvider.RequestMapTile(-36.85f, 174.76f, 5);
-
 	}
 
 	// This function is invoked by a MapProvider's "RawMapTileDataReceivedEventHandler" signal

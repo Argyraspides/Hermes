@@ -16,6 +16,7 @@ public partial class MapProvider : Node
 		httpRequesters = new HttpRequest[MAX_CONCURRENT_HTTP_REQUESTS];
 		availableRequesters = new ConcurrentQueue<HttpRequest>();
 		receivedMapDataSignalQueue = new ConcurrentQueue<Action>();
+		pendingRequests = new ConcurrentQueue<Action>();
 
 		// We assign each HttpRequester objects "RequestCompleted" event a lambda function that will queue up a signal call
 		// that signals an HTTP request has been completed. Signals by default are not thread safe and its possible
