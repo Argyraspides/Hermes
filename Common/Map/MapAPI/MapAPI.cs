@@ -4,6 +4,29 @@ using System.Collections.Generic;
 using System.Text;
 using static MapUtils;
 
+/** 
+
+	An in-program API to use the map providers. 
+	Example usage (C#):
+
+	
+	MapAPI mapApi = new MapAPI();
+
+	// Connect the mapApi's signal that a map tile has been received to your own custom handler function.
+	// The handler function must have an argument of "Texture2D" which will be the actual map tile image 
+	// you get
+	mapApi.MapTileReceived += myMapTileReceivedHandlerFunction
+
+	// You should attach the MapAPI to a node in your scene tree. There is no constructor,
+	// and setup relies on the MapAPI's _Ready() function
+	AddChild(mapApi);
+
+	// Request a map tile. Once a map tile has been successfully fetched, your handler
+	// function will automatically be called
+	mapApi.RequestMapTile(-36.85, 174.76, 5);
+
+
+*/ 
 public partial class MapAPI : Node
 {
 
@@ -33,7 +56,6 @@ public partial class MapAPI : Node
 		Sprite2D sprite = new Sprite2D();
 		sprite.Texture = texture;
 
-		AddChild(sprite);
 		EmitSignal("MapTileReceived", texture);
 	}
 

@@ -50,6 +50,10 @@ public partial class MapProvider : Node
 	// A queue of available HttpRequest objects
 	public ConcurrentQueue<HttpRequest> availableRequesters;
 
+
+	// A queue of pending requests for map tiles
+	public ConcurrentQueue<Action> pendingRequests;
+
 	// This signal is called when FetchRawMapTileData is successful and provides
 	// the raw byte array for the map tile image data
 	[Signal]
@@ -83,25 +87,23 @@ public partial class MapProvider : Node
 		return 0;
 	}
 
-	// Invokes all onHttpRequestCompleted functions that were queued up when an HTTP
-	// request was successful
-	public void processMapDataSignalQueue()
+	public void processConcurrentQueue(ConcurrentQueue<Action> queue)
 	{
-		while (receivedMapDataSignalQueue.TryDequeue(out Action action))
+		while (queue.TryDequeue(out Action action))
 		{
 			action.Invoke();
 		}
 	}
 
-	public virtual Error RequestMapTile(float latitude, float longitude, int zoom)
+	public virtual void RequestMapTile(float latitude, float longitude, int zoom)
 	{
-		return Error.Ok;
 	}
 
 
 	public override void _Process(double delta)
 	{
-		processMapDataSignalQueue();
+		processConcurrentQueue(receivedMapDataSignalQueue);
+		processConcurrentQueue(pendingRequests);
 	}
 
 }

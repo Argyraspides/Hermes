@@ -2,6 +2,10 @@ using Godot;
 using System;
 using System.Text;
 
+
+// This class just holds a bunch of static functions and definitions for anything map related.
+// E.g., converting latitude/longitude to tile coordinates, specifying map types, constructing quadrant keys,
+// image manipulation of certain map tile projections such that they can be fitted again to a 3D sphere, etc.
 public static class MapUtils
 {
 
@@ -45,7 +49,7 @@ public static class MapUtils
 		return (int)Math.Floor((longitude + 180.0) / 360.0 * (1 << zoom));
 	}
 
-	// Converts tile coordinates for a line of latitude (y) and line of longitude (x)
+	// Converts *TILE* coordinates (x,y) for a line of latitude (y) and line of longitude (x)
 	// at a particular zoom level to a quadkey. 
 	//
 	// To understand quadkeys, see: https://www.microimages.com/documentation/TechGuides/78BingStructure.pdf 

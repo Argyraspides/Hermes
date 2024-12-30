@@ -69,6 +69,7 @@ public partial class BingMapProvider : MapProvider
 		Error error;
 		if (requestersAvailable)
 		{
+			// If the request finishes, onHttpRequestCompleted() gets called
 			error = httpRequester.Request(queryString);
 		}
 		else
@@ -97,19 +98,25 @@ public partial class BingMapProvider : MapProvider
 	// Requests a map tile from the Bing API. If successful, the
 	// RawMapTileDataReceivedEventHandler(byte[] rawMapTileData) signal from the 
 	// MapProvider base class will be invoked where the raw image data can be "picked up"
-	public override Error RequestMapTile(float latitude, float longitude, int zoom)
+	public override void RequestMapTile(float latitude, float longitude, int zoom)
 	{
 
-		int latTileCoo = MapUtils.LatitudeToTileCoordinateMercator(latitude, zoom);
-		int lonTileCoo = MapUtils.LongitudeToTileCoordinateMercator(longitude, zoom);
+		int latTileCoords = MapUtils.LatitudeToTileCoordinateMercator(latitude, zoom);
+		int lonTileCoords = MapUtils.LongitudeToTileCoordinateMercator(longitude, zoom);
 
-		string quadkey = MapUtils.TileCoordinatesToQuadkey(lonTileCoo, latTileCoo, zoom);
+		string quadkey = MapUtils.TileCoordinatesToQuadkey(lonTileCoords, latTileCoords, zoom);
 		Dictionary<string, string> queryParamDict = ConstructQueryParams(quadkey);
 		string queryString = ConstructQueryString(queryParamDict);
 
 		Error error = FetchRawMapTileData(queryString);
+
+		// Queue up to try one more time later
+		// TODO: Have a clean way to adjust the number of retries
+		if(error != Error.Ok)
+		{
+			pendingRequests.Enqueue(() => FetchRawMapTileData(queryString));
+		}
 		
-		return error;
 	}
 
 
