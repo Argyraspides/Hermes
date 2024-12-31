@@ -1,6 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://ylbgeadyowj0"]
-
-[ext_resource type="Script" path="res://Common/Communications/WorldListener/world_listener.gd" id="1_bomxx"]
-
-[node name="WorldListener" type="Node"]
-script = ExtResource("1_bomxx")

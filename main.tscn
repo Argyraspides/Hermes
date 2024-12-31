@@ -1,7 +1,7 @@
 [gd_scene load_steps=9 format=3 uid="uid://r6tyu2c8c26s"]
 
-[ext_resource type="PackedScene" uid="uid://ylbgeadyowj0" path="res://Common/Communications/WorldListener/WorldListener.tscn" id="2_262q3"]
 [ext_resource type="PackedScene" uid="uid://6qthltc6tojt" path="res://Common/Communications/ExternalLaunchers/ExternalLauncher.tscn" id="2_mkn87"]
+[ext_resource type="Script" path="res://Common/Communications/WorldListener/WorldListener.cs" id="2_p3qh8"]
 [ext_resource type="PackedScene" uid="uid://df0oxldlo5yjw" path="res://Common/Communications/MessageBroker/MessageBroker.tscn" id="3_wjq1r"]
 [ext_resource type="PackedScene" uid="uid://ceqy77rm2hbn0" path="res://State/StateConverters/MAVLinkStateConverter/MAVLinkStateConverter.tscn" id="3_y4lx2"]
 [ext_resource type="PackedScene" uid="uid://d10fn5335ditp" path="res://Common/Communications/Protocols/MAVLink/MAVLinkDeserializer.tscn" id="4_5hduf"]
@@ -21,9 +21,8 @@ size_flags_vertical = 4
 
 [node name="Communication" type="Node" parent="."]
 
-[node name="WorldListener" parent="Communication" instance=ExtResource("2_262q3")]
-
 [node name="ExternalLauncher" parent="Communication" instance=ExtResource("2_mkn87")]
+script = null
 
 [node name="MessageBroker" parent="Communication" instance=ExtResource("3_wjq1r")]
 
@@ -32,6 +31,9 @@ size_flags_vertical = 4
 [node name="MavLinkStateConverter" parent="Communication/MAVLink" instance=ExtResource("3_y4lx2")]
 
 [node name="MavLinkDeserializer" parent="Communication/MAVLink" instance=ExtResource("4_5hduf")]
+
+[node name="WorldListener" type="Node" parent="Communication"]
+script = ExtResource("2_p3qh8")
 
 [node name="Map" type="Node2D" parent="."]
 
@@ -43,7 +45,6 @@ m_vehicleScene = ExtResource("7_bffcb")
 [node name="MapProvider" type="Node" parent="Map/Management"]
 script = ExtResource("8_5354d")
 
-[connection signal="websocket_packet_received" from="Communication/WorldListener" to="Communication/MAVLink/MavLinkDeserializer" method="_on_world_listener_websocket_packet_received"]
 [connection signal="tree_exiting" from="Communication/ExternalLauncher" to="Communication/ExternalLauncher" method="_on_tree_exiting"]
 [connection signal="vehicle_core_state_received" from="Communication/MessageBroker" to="Map/Management/MultiVehicleManager" method="_on_message_broker_vehicle_core_state_received"]
 [connection signal="vehicle_core_state_received" from="Communication/MAVLink/MavLinkStateConverter" to="Communication/MessageBroker" method="_on_mav_link_state_converter_vehicle_core_state_received"]
