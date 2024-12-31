@@ -21,6 +21,19 @@
 using Godot;
 using System.Text;
 using System.Text.Json;
+
+// The job of the MAVLinkDeserializer is to take in any raw data in the form of a
+// UDP packet, TCP packet, WebSocket packet, etc., and convert it into an in-program
+// representation of a MAVLink message. Since C# and GDScript both support JSON serializing/deserializing,
+// the MAVLinkDeserializer currently deserializes incoming MAVLink messages into JSON. 
+// The MAVLinkDeserializer should also be able to tell whether or not a packet is a MAVLink packet in the first place,
+// although this isn't implemented at the moment.
+//
+// At the moment, what actually happens is that a script called "pymavsdk.py" listens to incoming
+// UDP packets containing MAVLink messages and then converts them into a raw JSON string before
+// sending them out over a WebSocket. For now, then, MAVLinkDeserializer simply takes this raw JSON
+// string and converts it to a JsonElement (wrapped in a "JsonWrapper" wrapper class) and emits
+// a signal that a MAVLink Json message has been received.
 public partial class MAVLinkDeserializer : Node
 {
 
