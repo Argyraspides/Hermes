@@ -26,7 +26,10 @@ using System.Net;
 using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Text;
+
+
 // The WorldListener does nothing but listen to any data from the outside world
 // such as UDP packets, TCP packets, WebSocket packets, etc., and emits signals
 // that other components can listen to if they are interested in any such packets.
@@ -45,10 +48,10 @@ using System.Text;
 public partial class WorldListener : Node
 {
 
+	//	>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> UDP <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 	//	  .--.      .-'.      .--.      .--.      .--.      .--.      .`-.      .--.
 	//	:::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\
 	//	'      `--'      `.-'      `--'      `--'      `--'      `-.'      `--'      `
-	//	>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> UDP <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 	// Maps UDP Port #'s to UdpClient
 	private ConcurrentDictionary<UdpClient, IPEndPoint> udpClients;
@@ -99,18 +102,14 @@ public partial class WorldListener : Node
 		EmitSignal("UdpPacketReceived", udpPacket);
 	}
 
-
-
-
-
-
-
-
-
 	//	  .--.      .-'.      .--.      .--.      .--.      .--.      .`-.      .--.
 	//	:::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\
 	//	'      `--'      `.-'      `--'      `--'      `--'      `-.'      `--'      `
-	//	>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> WEBSOCKET <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+	//	<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< UDP >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+	//	>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> WEBSOCKET <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+	//	  .--.      .-'.      .--.      .--.      .--.      .--.      .`-.      .--.
+	//	:::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\
+	//	'      `--'      `.-'      `--'      `--'      `--'      `-.'      `--'      `
 	private ConcurrentDictionary<ClientWebSocket, Uri> websocketClients;
 	private CancellationTokenSource websocketCancelTokenSrc;
 	private ConcurrentQueue<Action> websocketPacketReceivedSignalQueue;
@@ -131,21 +130,59 @@ public partial class WorldListener : Node
 		var client = new ClientWebSocket();
 		try
 		{
-			await client.ConnectAsync(
-				new Uri(KnownWorlds.DEFAULT_WEBSOCKET_URL),
-				websocketCancelTokenSrc.Token
-			);
-			websocketClients.TryAdd(client, new Uri(KnownWorlds.DEFAULT_WEBSOCKET_URL));
+			await AttemptConnectDefaultWebSocketWithRetries(client);
 		}
 		catch (Exception ex)
 		{
-			GD.PrintErr($"HERMES: Failed to connect to WebSocket: {ex.Message}");
+			GD.PrintErr($"HERMES: Failed to connect to WebSocket after all retries: {ex.Message}");
 			client.Dispose();
+			return;
 		}
 
 		websocketThread = new Thread(ListenToWebSockets);
 		websocketThread.Start();
+	}
 
+	private async Task AttemptConnectDefaultWebSocketWithRetries(ClientWebSocket client)
+	{
+		int maxRetries = 3;
+		int currentRetry = 0;
+		int baseDelay = 1000; // Start with 1 second delay
+
+		while (currentRetry < maxRetries)
+		{
+			try
+			{
+				await AttemptConnectDefaultWebSocket(client);
+				// If we get here, connection was successful
+				GD.Print($"HERMES: Successfully connected to WebSocket on attempt {currentRetry + 1}");
+				return;
+			}
+			catch (Exception ex)
+			{
+				currentRetry++;
+				if (currentRetry >= maxRetries)
+				{
+					throw; // Re-throw the last exception if we've exhausted all retries
+				}
+
+				// Calculate delay with exponential backoff: 1s, 2s, 4s
+				int delayMs = baseDelay * (int)Math.Pow(2, currentRetry - 1);
+				GD.PrintErr($"HERMES: Failed to connect to WebSocket (attempt {currentRetry}/{maxRetries}): {ex.Message}");
+				GD.PrintErr($"HERMES: Retrying in {delayMs / 1000} seconds...");
+
+				await Task.Delay(delayMs);
+			}
+		}
+	}
+
+	private async Task AttemptConnectDefaultWebSocket(ClientWebSocket client)
+	{
+		await client.ConnectAsync(
+			new Uri(KnownWorlds.DEFAULT_WEBSOCKET_URL),
+			websocketCancelTokenSrc.Token
+		);
+		websocketClients.TryAdd(client, new Uri(KnownWorlds.DEFAULT_WEBSOCKET_URL));
 	}
 
 	private void ReceivedWebSocketPacket(byte[] websocketPacket)
@@ -212,17 +249,15 @@ public partial class WorldListener : Node
 	}
 
 
-	private void processConcurrentQueue(ConcurrentQueue<Action> concurrentQueue)
-	{
-		if (concurrentQueue.IsEmpty) return;
-		while (concurrentQueue.TryDequeue(out Action action))
-		{
-			action?.Invoke();
-		}
-	}
 
-
-	// >>>>>>>>>>>>>>>>>>>>>>>>> GODOT >>>>>>>>>>>>>>>>>>>>>>>>> //
+	//	  .--.      .-'.      .--.      .--.      .--.      .--.      .`-.      .--.
+	//	:::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\
+	//	'      `--'      `.-'      `--'      `--'      `--'      `-.'      `--'      `
+	//	<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< WEBSOCKET >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+	//	>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> GODOT <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+	//	  .--.      .-'.      .--.      .--.      .--.      .--.      .`-.      .--.
+	//	:::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\
+	//	'      `--'      `.-'      `--'      `--'      `--'      `-.'      `--'      `
 
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
@@ -249,4 +284,20 @@ public partial class WorldListener : Node
 		foreach (KeyValuePair<ClientWebSocket, Uri> kvp in websocketClients) kvp.Key.Dispose();
 		foreach (KeyValuePair<UdpClient, IPEndPoint> kvp in udpClients) kvp.Key.Dispose();
 	}
+
+	private void processConcurrentQueue(ConcurrentQueue<Action> concurrentQueue)
+	{
+		if (concurrentQueue.IsEmpty) return;
+		while (concurrentQueue.TryDequeue(out Action action))
+		{
+			action?.Invoke();
+		}
+	}
+
+
+	//	  .--.      .-'.      .--.      .--.      .--.      .--.      .`-.      .--.
+	//	:::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\
+	//	'      `--'      `.-'      `--'      `--'      `--'      `-.'      `--'      `
+	//	<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< GODOT >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
 }
