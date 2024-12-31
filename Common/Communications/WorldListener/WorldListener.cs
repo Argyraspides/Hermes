@@ -145,7 +145,6 @@ public partial class WorldListener : Node
 
 	private void ReceivedWebSocketPacket(byte[] websocketPacket)
 	{
-		GD.Print("ReceivedWebSocketPacket");
 		EmitSignal("WebSocketPacketReceived", websocketPacket);
 	}
 

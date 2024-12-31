@@ -1,13 +1,7 @@
-[gd_scene load_steps=9 format=3 uid="uid://r6tyu2c8c26s"]
+[gd_scene load_steps=3 format=3 uid="uid://r6tyu2c8c26s"]
 
-[ext_resource type="PackedScene" uid="uid://6qthltc6tojt" path="res://Common/Communications/ExternalLaunchers/ExternalLauncher.tscn" id="2_mkn87"]
 [ext_resource type="Script" path="res://Common/Communications/WorldListener/WorldListener.cs" id="2_p3qh8"]
-[ext_resource type="PackedScene" uid="uid://df0oxldlo5yjw" path="res://Common/Communications/MessageBroker/MessageBroker.tscn" id="3_wjq1r"]
-[ext_resource type="PackedScene" uid="uid://ceqy77rm2hbn0" path="res://State/StateConverters/MAVLinkStateConverter/MAVLinkStateConverter.tscn" id="3_y4lx2"]
-[ext_resource type="PackedScene" uid="uid://d10fn5335ditp" path="res://Common/Communications/Protocols/MAVLink/MAVLinkDeserializer.tscn" id="4_5hduf"]
-[ext_resource type="PackedScene" uid="uid://csw4tsvk6ftkn" path="res://Vehicle/MultiVehicleManager/MultiVehicleManager.tscn" id="6_vsves"]
-[ext_resource type="PackedScene" uid="uid://ugw3wwqdfki3" path="res://Vehicle/vehicle.tscn" id="7_bffcb"]
-[ext_resource type="Script" path="res://Common/Map/MapAPI/MapAPI.cs" id="8_5354d"]
+[ext_resource type="Script" path="res://Common/Communications/Protocols/MAVLink/MAVLinkDeserializer.cs" id="2_pojmh"]
 
 [node name="Hermes" type="Control"]
 layout_mode = 3
@@ -21,31 +15,12 @@ size_flags_vertical = 4
 
 [node name="Communication" type="Node" parent="."]
 
-[node name="ExternalLauncher" parent="Communication" instance=ExtResource("2_mkn87")]
-script = null
-
-[node name="MessageBroker" parent="Communication" instance=ExtResource("3_wjq1r")]
-
-[node name="MAVLink" type="Node" parent="Communication"]
-
-[node name="MavLinkStateConverter" parent="Communication/MAVLink" instance=ExtResource("3_y4lx2")]
-
-[node name="MavLinkDeserializer" parent="Communication/MAVLink" instance=ExtResource("4_5hduf")]
-
 [node name="WorldListener" type="Node" parent="Communication"]
 script = ExtResource("2_p3qh8")
 
-[node name="Map" type="Node2D" parent="."]
+[node name="MAVLink" type="Node" parent="Communication"]
 
-[node name="Management" type="Node" parent="Map"]
+[node name="MAVLinkStateConverter" type="Node" parent="Communication/MAVLink"]
 
-[node name="MultiVehicleManager" parent="Map/Management" instance=ExtResource("6_vsves")]
-m_vehicleScene = ExtResource("7_bffcb")
-
-[node name="MapProvider" type="Node" parent="Map/Management"]
-script = ExtResource("8_5354d")
-
-[connection signal="tree_exiting" from="Communication/ExternalLauncher" to="Communication/ExternalLauncher" method="_on_tree_exiting"]
-[connection signal="vehicle_core_state_received" from="Communication/MessageBroker" to="Map/Management/MultiVehicleManager" method="_on_message_broker_vehicle_core_state_received"]
-[connection signal="vehicle_core_state_received" from="Communication/MAVLink/MavLinkStateConverter" to="Communication/MessageBroker" method="_on_mav_link_state_converter_vehicle_core_state_received"]
-[connection signal="mavlink_json_message_received" from="Communication/MAVLink/MavLinkDeserializer" to="Communication/MAVLink/MavLinkStateConverter" method="_on_mav_link_deserializer_mavlink_json_message_received"]
+[node name="MAVLinkDeserializer" type="Node" parent="Communication/MAVLink"]
+script = ExtResource("2_pojmh")
