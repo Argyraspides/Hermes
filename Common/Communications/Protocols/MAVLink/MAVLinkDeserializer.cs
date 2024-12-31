@@ -81,9 +81,7 @@ public partial class MAVLinkDeserializer : Node
 
 	public override void _Ready()
 	{
-		// TODO: Getting the WorldListener node this way is fragile and breaks the moment
-		// we want to restructure the scene tree. Find a robust way to do it instead!
-		var worldListenerNode = GetNode<WorldListener>("../../WorldListener");
+		var worldListenerNode = WorldListener.Instance;
 		worldListenerNode.WebSocketPacketReceived += onWebSocketPacketReceived;
 	}
 

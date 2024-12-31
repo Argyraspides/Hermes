@@ -45,8 +45,15 @@ using System.Text;
 // This means you should have a node with the WorldListener.cs script attached at a higher
 // level than the ExternalLauncher.cs. Everything under Communications/ should be 
 // in the same scene tree.
+//
+// Since the WorldListener module is essentially just a network interface, it is registered as 
+// an Autoload (Singleton) in Hermes.
 public partial class WorldListener : Node
 {
+
+	// Ensure other C# scripts can access this singleton without requiring
+	// "GetNode()".
+	public static WorldListener Instance { get; private set; }
 
 	//	>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> UDP <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 	//	  .--.      .-'.      .--.      .--.      .--.      .--.      .`-.      .--.
@@ -127,15 +134,13 @@ public partial class WorldListener : Node
 		websocketPacketReceivedSignalQueue = new ConcurrentQueue<Action>();
 		websocketPollDelay = 100; // 100ms
 
-		var client = new ClientWebSocket();
 		try
 		{
-			await AttemptConnectDefaultWebSocketWithRetries(client);
+			await AttemptConnectDefaultWebSocketWithRetries();
 		}
 		catch (Exception ex)
 		{
 			GD.PrintErr($"HERMES: Failed to connect to WebSocket after all retries: {ex.Message}");
-			client.Dispose();
 			return;
 		}
 
@@ -143,19 +148,20 @@ public partial class WorldListener : Node
 		websocketThread.Start();
 	}
 
-	private async Task AttemptConnectDefaultWebSocketWithRetries(ClientWebSocket client)
+	private async Task AttemptConnectDefaultWebSocketWithRetries()
 	{
-		int maxRetries = 3;
+		int maxRetries = 4;
 		int currentRetry = 0;
-		int baseDelay = 1000; // Start with 1 second delay
+		int baseDelay = 1000; // 1000ms
 
 		while (currentRetry < maxRetries)
 		{
+			ClientWebSocket client = new ClientWebSocket();
 			try
 			{
 				await AttemptConnectDefaultWebSocket(client);
-				// If we get here, connection was successful
-				GD.Print($"HERMES: Successfully connected to WebSocket on attempt {currentRetry + 1}");
+				websocketClients.TryAdd(client, new Uri(KnownWorlds.DEFAULT_WEBSOCKET_URL));
+				GD.Print($"HERMES: Successfully connected to WebSocket on attempt {currentRetry + 1}, URL: {KnownWorlds.DEFAULT_WEBSOCKET_URL}");
 				return;
 			}
 			catch (Exception ex)
@@ -163,7 +169,7 @@ public partial class WorldListener : Node
 				currentRetry++;
 				if (currentRetry >= maxRetries)
 				{
-					throw; // Re-throw the last exception if we've exhausted all retries
+					throw;
 				}
 
 				// Calculate delay with exponential backoff: 1s, 2s, 4s
@@ -182,7 +188,6 @@ public partial class WorldListener : Node
 			new Uri(KnownWorlds.DEFAULT_WEBSOCKET_URL),
 			websocketCancelTokenSrc.Token
 		);
-		websocketClients.TryAdd(client, new Uri(KnownWorlds.DEFAULT_WEBSOCKET_URL));
 	}
 
 	private void ReceivedWebSocketPacket(byte[] websocketPacket)
@@ -264,6 +269,8 @@ public partial class WorldListener : Node
 	{
 		InitializeUdpServer();
 		InitializeWebSocketServer();
+
+		Instance = this;
 	}
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.

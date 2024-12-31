@@ -1,8 +1,6 @@
-[gd_scene load_steps=4 format=3 uid="uid://r6tyu2c8c26s"]
+[gd_scene load_steps=2 format=3 uid="uid://r6tyu2c8c26s"]
 
 [ext_resource type="Script" path="res://Common/Communications/Protocols/MAVLink/MAVLinkDeserializer.cs" id="2_pojmh"]
-[ext_resource type="Script" path="res://Common/Communications/ExternalLaunchers/ExternalLauncher.cs" id="2_pqc7c"]
-[ext_resource type="Script" path="res://Common/Communications/WorldListener/WorldListener.cs" id="2_t7fat"]
 
 [node name="Hermes" type="Control"]
 layout_mode = 3
@@ -14,17 +12,9 @@ grow_vertical = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
 
-[node name="Communication" type="Node" parent="."]
+[node name="MAVLink" type="Node" parent="."]
 
-[node name="WorldListener" type="Node" parent="Communication"]
-script = ExtResource("2_t7fat")
+[node name="MAVLinkStateConverter" type="Node" parent="MAVLink"]
 
-[node name="ExternalLauncher" type="Node" parent="Communication/WorldListener"]
-script = ExtResource("2_pqc7c")
-
-[node name="MAVLink" type="Node" parent="Communication"]
-
-[node name="MAVLinkStateConverter" type="Node" parent="Communication/MAVLink"]
-
-[node name="MAVLinkDeserializer" type="Node" parent="Communication/MAVLink"]
+[node name="MAVLinkDeserializer" type="Node" parent="MAVLink"]
 script = ExtResource("2_pojmh")
