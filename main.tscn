@@ -1,6 +1,4 @@
-[gd_scene load_steps=2 format=3 uid="uid://r6tyu2c8c26s"]
-
-[ext_resource type="Script" path="res://Common/Communications/Protocols/MAVLink/MAVLinkDeserializer.cs" id="2_pojmh"]
+[gd_scene format=3 uid="uid://r6tyu2c8c26s"]
 
 [node name="Hermes" type="Control"]
 layout_mode = 3
@@ -11,10 +9,3 @@ grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
-
-[node name="MAVLink" type="Node" parent="."]
-
-[node name="MAVLinkStateConverter" type="Node" parent="MAVLink"]
-
-[node name="MAVLinkDeserializer" type="Node" parent="MAVLink"]
-script = ExtResource("2_pojmh")

@@ -34,6 +34,10 @@ using System.Text.Json;
 // sending them out over a WebSocket. For now, then, MAVLinkDeserializer simply takes this raw JSON
 // string and converts it to a JsonElement (wrapped in a "JsonWrapper" wrapper class) and emits
 // a signal that a MAVLink Json message has been received.
+//
+// In the context of Hermes, it is important you ensure MAVLinkDeserializer is loaded *after*
+// the WorldListener, as this is where MAVLinkDeserializer gets all of its information from
+// upon entering the app
 public partial class MAVLinkDeserializer : Node
 {
 
