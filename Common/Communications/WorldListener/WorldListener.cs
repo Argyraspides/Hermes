@@ -45,7 +45,10 @@ using System.Text;
 public partial class WorldListener : Node
 {
 
-	// >>>>>>>>>>>>>>>>>>>>>>>>> UDP >>>>>>>>>>>>>>>>>>>>>>>>> //
+	//	  .--.      .-'.      .--.      .--.      .--.      .--.      .`-.      .--.
+	//	:::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\
+	//	'      `--'      `.-'      `--'      `--'      `--'      `-.'      `--'      `
+	//	>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> UDP <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 	// Maps UDP Port #'s to UdpClient
 	private ConcurrentDictionary<UdpClient, IPEndPoint> udpClients;
@@ -104,8 +107,10 @@ public partial class WorldListener : Node
 
 
 
-
-	// >>>>>>>>>>>>>>>>>>>>>>>>> WEBSOCKET >>>>>>>>>>>>>>>>>>>>>>>>> //
+	//	  .--.      .-'.      .--.      .--.      .--.      .--.      .`-.      .--.
+	//	:::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\
+	//	'      `--'      `.-'      `--'      `--'      `--'      `-.'      `--'      `
+	//	>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> WEBSOCKET <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 	private ConcurrentDictionary<ClientWebSocket, Uri> websocketClients;
 	private CancellationTokenSource websocketCancelTokenSrc;
 	private ConcurrentQueue<Action> websocketPacketReceivedSignalQueue;
@@ -209,7 +214,7 @@ public partial class WorldListener : Node
 
 	private void processConcurrentQueue(ConcurrentQueue<Action> concurrentQueue)
 	{
-		if(concurrentQueue.IsEmpty) return;
+		if (concurrentQueue.IsEmpty) return;
 		while (concurrentQueue.TryDequeue(out Action action))
 		{
 			action?.Invoke();
