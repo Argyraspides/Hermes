@@ -1,5 +1,3 @@
-using Godot;
-
 // Defines the various types of vehicles that can be represented in the system
 public enum VehicleType
 {
