@@ -41,6 +41,9 @@ using System.Text.Json;
 public partial class MAVLinkDeserializer : Node
 {
 
+	// Ensure other C# scripts can access this singleton without requiring
+	// "GetNode()".
+	public static MAVLinkDeserializer Instance { get; private set; }
 
 
 	[Signal]
@@ -87,6 +90,8 @@ public partial class MAVLinkDeserializer : Node
 	{
 		var worldListenerNode = WorldListener.Instance;
 		worldListenerNode.WebSocketPacketReceived += onWebSocketPacketReceived;
+
+		Instance = this;
 	}
 
 
