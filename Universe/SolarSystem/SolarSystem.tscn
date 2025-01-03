@@ -1,0 +1,36 @@
+[gd_scene load_steps=7 format=3 uid="uid://bnaccj7r33kqb"]
+
+[ext_resource type="Texture2D" uid="uid://dw16otbm13s3h" path="res://Universe/SolarSystem/Assets/ESO_-_Milky_Way.jpg" id="1_nxqmc"]
+[ext_resource type="Script" path="res://Universe/SolarSystem/camera_3d.gd" id="2_83u15"]
+[ext_resource type="PackedScene" uid="uid://u6dcfgabkcf3" path="res://Universe/SolarSystem/Earth/earth.tscn" id="3_bobqk"]
+
+[sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_enyp5"]
+panorama = ExtResource("1_nxqmc")
+
+[sub_resource type="Sky" id="Sky_t515d"]
+sky_material = SubResource("PanoramaSkyMaterial_enyp5")
+
+[sub_resource type="Environment" id="Environment_sabak"]
+background_mode = 2
+sky = SubResource("Sky_t515d")
+
+[node name="SolarSystem" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_sabak")
+
+[node name="Camera3D" type="Camera3D" parent="." node_paths=PackedStringArray("target_node")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 11008.3)
+far = 100000.0
+script = ExtResource("2_83u15")
+target_node = NodePath("../Earth")
+rotation_speed_divider = 50.0
+zoom_speed_divider = 76.065
+
+[node name="OmniLight3D" type="OmniLight3D" parent="Camera3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6346, 6000, 750)
+light_energy = 8.733
+omni_range = 50000.0
+omni_attenuation = 0.25
+
+[node name="Earth" parent="." instance=ExtResource("3_bobqk")]
