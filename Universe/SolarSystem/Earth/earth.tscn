@@ -1,16 +1,11 @@
-[gd_scene load_steps=4 format=3 uid="uid://u6dcfgabkcf3"]
+[gd_scene load_steps=3 format=3 uid="uid://u6dcfgabkcf3"]
 
 [ext_resource type="Script" path="res://Universe/SolarSystem/Earth/Earth.cs" id="1_tenyr"]
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1flkf"]
-
-[sub_resource type="SphereMesh" id="SphereMesh_4yphe"]
-material = SubResource("StandardMaterial3D_1flkf")
-radius = 6378.14
-height = 12713.5
+[ext_resource type="Script" path="res://Common/Meshes/WGS84EllipsoidMesh.cs" id="2_mnkq5"]
 
 [node name="Earth" type="StaticBody3D"]
 script = ExtResource("1_tenyr")
 
-[node name="EarthMesh" type="MeshInstance3D" parent="."]
-mesh = SubResource("SphereMesh_4yphe")
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+script = ExtResource("2_mnkq5")
+showWireframe = true

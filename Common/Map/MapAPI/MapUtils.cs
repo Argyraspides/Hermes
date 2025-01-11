@@ -102,6 +102,34 @@ public static class MapUtils
 		return quadkey.ToString();
 	}
 
+	// Given a map tile's location and zoom level, gives back the 
+	// degrees of latitude that this map tile covers. Assumes the Web Mercator projection
+	public static float TileToLatRange(float lat, float lon, int zoom)
+	{
+		// At zoom level z, each tile covers 360°/2^z degrees longitude
+		float tileSizeInDegrees = 360.0f / (float)Math.Pow(2, zoom);
+
+		// For latitude, we need to account for the Mercator projection's distortion
+		// Convert lat to radians for the mercator calculation
+		float latRad = lat * (float)Math.PI / 180.0f;
+
+		// Calculate the latitude range using the inverse Mercator formula
+		float latDelta = tileSizeInDegrees * (float)Math.Cos(latRad);
+
+		return latDelta;
+	}
+
+	// Given a map tile's location and zoom level, gives back the 
+	// degrees of longitude that this map tile covers. Assumes the Web Mercator projection
+	public static float TileToLonRange(float lat, float lon, int zoom)
+	{
+		// Longitude is simpler since it's not affected by the Mercator projection's distortion
+		// At zoom level z, each tile covers 360°/2^z degrees longitude
+		float tileSizeInDegrees = 360.0f / (float)Math.Pow(2, zoom);
+
+		return tileSizeInDegrees;
+	}
+
 	public static MapImageType GetImageFormat(byte[] imageData)
 	{
 		// Check if we have enough bytes to check the header
