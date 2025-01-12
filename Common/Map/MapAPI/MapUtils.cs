@@ -20,6 +20,7 @@
 
 using System;
 using System.Text;
+using Godot;
 
 
 // This class just holds a bunch of static functions and definitions for anything map related.
@@ -172,5 +173,33 @@ public static class MapUtils
 		return MapImageType.UNKNOWN;
 	}
 
+	// Converts latitude and longitude from radians to the Earth-Centered, Earth-Fixed (ECEF) 
+	// coordinate system, which is a Cartesian system centered at the Earth's center of mass
+	// Returns value as kilometers. Takes the Earth as a WGS84 ellipsoid
+	public static Vector3 LatLonToCartesian(float lat, float lon)
+    {
+        // Calculate the radius of the parallel (distance from the Earth's axis of rotation)
+        // at the given latitude. This accounts for the Earth's ellipsoidal shape.
+        double N = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM / Math.Sqrt(1.0 - (SolarSystemConstants.EARTH_ECCENTRICITY_SQUARED * 
+                                              Math.Pow(Math.Sin(lat), 2)));
+
+        // X coordinate: distance from the Earth's axis (prime meridian)
+        double x = N * Math.Cos(lat) * Math.Cos(lon);
+        
+        // Y coordinate: distance from the Earth's axis (90 degrees east)
+        double y = N * Math.Cos(lat) * Math.Sin(lon);
+        
+        // Z coordinate: distance from the equatorial plane
+        // Note: We multiply by (1-e²) to account for the polar flattening
+        double z = N * (1.0 - SolarSystemConstants.EARTH_ECCENTRICITY_SQUARED) * Math.Sin(lat);
+
+        // Convert to Godot's coordinate system
+        // Godot's default: Y is up, X is right, Z is forward
+        return new Vector3(
+            (float)(x / SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM),  // Normalize by dividing by semi-major axis
+            (float)(z / SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM),  // Y is up in Godot
+            (float)(y / SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM)   // Swap Y and Z for Godot's coordinate system
+        );
+    }
 
 }

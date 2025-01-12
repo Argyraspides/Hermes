@@ -26,20 +26,14 @@ public partial class Earth : StaticBody3D
     [Export]
     private bool showWireframe = false;
     private bool previousWireframeState = false;
-    public override void _Ready()
-    {
-        UpdateWireframeState();
-        GenerateEarthMesh();
-    }
 
+    private TerrainQuadTree terrainQuadTree;
 
-    public override void _Process(double delta)
-    {
-        if (showWireframe != previousWireframeState)
-        {
-            UpdateWireframeState();
-        }
-    }
+    // TODO: remove later
+    private string testTilePath = "res://Universe/SolarSystem/Assets/r0123.png";
+
+    private Texture2D texture2D;
+
 
     private void UpdateWireframeState()
     {
@@ -50,11 +44,14 @@ public partial class Earth : StaticBody3D
         previousWireframeState = showWireframe;
     }
 
-    private void GenerateEarthMesh(int segmentCount = 18)
+
+    // Generates a bunch of TerrainChunks that will create a WGS84 ellipsoid
+    // and adds them to the scene tree.
+    private void GenerateEarthMesh(int segmentCount = 32)
     {
         // We divide the sphere into equal-sized segments
-        float latitudeRange = Mathf.Pi / segmentCount;        // 180° / segmentCount
-        float longitudeRange = 2.0f * Mathf.Pi / segmentCount;   // 360° / segmentCount
+        float latitudeRange = Mathf.Pi / segmentCount;              // 180° / segmentCount
+        float longitudeRange = 2.0f * Mathf.Pi / segmentCount;      // 360° / segmentCount
 
         // Create segments for each latitude band, starting from south pole to north pole
         for (int lat = 0; lat < segmentCount; lat++)
@@ -82,10 +79,39 @@ public partial class Earth : StaticBody3D
                 var meshInstance = new MeshInstance3D();
                 meshInstance.Mesh = meshSegment;
 
-                meshInstance.Name = $"EllipsoidSegment_Lat{lat}_Lon{lon}";
+                TerrainChunk terrainChunk = new TerrainChunk(
+                    centerLat,
+                    centerLon,
+                    latitudeRange,
+                    longitudeRange,
+                    meshInstance,
+                    texture2D       // TODO: change later. TerrainChunk should automatically load itself based on 
+                                    // its latitude and longitude
+                );
 
-                AddChild(meshInstance);
+                terrainChunk.Name = $"TerrainChunk_EllipsoidSegment_Lat{lat}_Lon{lon}";
+
+                AddChild(terrainChunk);
             }
+        }
+    }
+
+
+
+    public override void _Ready()
+    {
+
+        texture2D = GD.Load<Texture2D>(testTilePath);
+
+        UpdateWireframeState();
+        GenerateEarthMesh();
+    }
+
+    public override void _Process(double delta)
+    {
+        if (showWireframe != previousWireframeState)
+        {
+            UpdateWireframeState();
         }
     }
 
