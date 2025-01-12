@@ -105,16 +105,17 @@ public partial class PlanetOrbitalCamera : Camera3D
 
     private void HandleCameraZooming(InputEvent @event)
     {
-        if(cameraRadialDistance <= minCameraRadialDistance) return;
         if (@event is InputEventMouseButton mouseButtonEvent)
         {
             if (mouseButtonEvent.ButtonIndex == MouseButton.WheelUp)
             {
+                if(cameraRadialDistance <= minCameraRadialDistance) return;
                 cameraRadialDistance -= cameraZoomIncrement;
                 ZoomCamera(cameraRadialDistance);
             }
             else if (mouseButtonEvent.ButtonIndex == MouseButton.WheelDown)
             {
+                if(cameraRadialDistance >= maxCameraRadialDistance) return;
                 cameraRadialDistance += cameraZoomIncrement;
                 ZoomCamera(cameraRadialDistance);
             }

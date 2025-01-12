@@ -1,11 +1,7 @@
-[gd_scene load_steps=3 format=3 uid="uid://u6dcfgabkcf3"]
+[gd_scene load_steps=2 format=3 uid="uid://u6dcfgabkcf3"]
 
 [ext_resource type="Script" path="res://Universe/SolarSystem/Earth/Earth.cs" id="1_tenyr"]
-[ext_resource type="Script" path="res://Common/Meshes/WGS84EllipsoidMesh.cs" id="2_mnkq5"]
 
 [node name="Earth" type="StaticBody3D"]
 script = ExtResource("1_tenyr")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-script = ExtResource("2_mnkq5")
 showWireframe = true
