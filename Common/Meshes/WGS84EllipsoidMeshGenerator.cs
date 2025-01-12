@@ -84,8 +84,8 @@ public static class WGS84EllipsoidMeshGenerator
 				uvs.Add(new Vector2(u, v));
 			}
 
-			// Define the two triangles that make up the quad
-			// Triangle 1: bottom-left -> bottom-right -> top-right
+			// Define the triangle that make up the segment
+			// bottom-left -> bottom-right -> top (north pole point)
 			indices.Add(0);
 			indices.Add(1);
 			indices.Add(2);
@@ -127,8 +127,8 @@ public static class WGS84EllipsoidMeshGenerator
 				uvs.Add(new Vector2(u, v));
 			}
 
-			// Define the two triangles that make up the quad
-			// Triangle 1: bottom-left -> bottom-right -> top-right
+			// Define the triangle that make up the segment
+			// bottom point (south pole) -> top right -> top-left
 			indices.Add(0);
 			indices.Add(1);
 			indices.Add(2);
