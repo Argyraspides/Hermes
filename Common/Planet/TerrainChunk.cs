@@ -29,6 +29,7 @@ public partial class TerrainChunk : Node
 		float lon,
 		float latRange,
 		float lonRange,
+		int zoomLevel,
 		MeshInstance3D meshInstance3D = null,
 		Texture2D texture2D = null)
 	{
@@ -36,24 +37,34 @@ public partial class TerrainChunk : Node
 		m_longitude = lon;
 		m_latitudeRange = latRange;
 		m_longitudeRange = lonRange;
+		m_zoomLevel = zoomLevel;
 		m_meshInstance3D = meshInstance3D;
 		m_texture2D = texture2D;
 
 
 		if(m_texture2D != null)
 		{
-			StandardMaterial3D material3D = new StandardMaterial3D();
-			material3D.AlbedoTexture = m_texture2D;
-			m_meshInstance3D.MaterialOverride = material3D;
-			AddChild(meshInstance3D);
+
+			m_shaderMaterial = new ShaderMaterial();
+			m_shader = ResourceLoader.Load<Shader>("res://Common/Shaders/WebMercatorToWGS84Shader.gdshader");
+
+			m_shaderMaterial.Shader = m_shader;
+
+			m_shaderMaterial.SetShaderParameter("mapTile", m_texture2D);
+			m_shaderMaterial.SetShaderParameter("zoomLevel", m_zoomLevel);
+
+			m_meshInstance3D.MaterialOverride = m_shaderMaterial;
+
+			AddChild(m_meshInstance3D);
 		}
+
 
 	}
 
-	// Represents the latitude location of this terrain chunk.
-	// Latitude is located at the center of the chunk's shape
-	// which is determined by its mesh
-	public float Latitude => m_latitude;
+    // Represents the latitude location of this terrain chunk.
+    // Latitude is located at the center of the chunk's shape
+    // which is determined by its mesh
+    public float Latitude => m_latitude;
 
 	// Represents the latitude range of this terrain chunk.
 	// I.e., how  many degrees of latitude that the chunk covers
@@ -70,6 +81,11 @@ public partial class TerrainChunk : Node
 	// in total
 	public float LongitudeRange => m_longitudeRange;
 
+	// Represents the zoom level of the terrain chunk. To learn
+	// more about what zoom level actually means, see:
+	// https://www.microimages.com/documentation/TechGuides/78BingStructure.pdf
+	public int ZoomLevel => m_zoomLevel;
+
 
 	// The mesh that will define the geometry of the chunk.
 	// In general, if the mesh includes the poles of the planet,
@@ -80,6 +96,7 @@ public partial class TerrainChunk : Node
 	// This shader is used for map reprojection.
 	// E.g., warping a Web-Mercator projection map tile
 	// such that it can be fit to an ellipsoid
+	public Shader Shader => m_shader;
 	public ShaderMaterial ShaderMaterial => m_shaderMaterial;
 
 
@@ -96,9 +113,11 @@ public partial class TerrainChunk : Node
 	private float m_latitudeRange;
 	private float m_longitude;
 	private float m_longitudeRange;
+	private int m_zoomLevel;
 
 	private MeshInstance3D m_meshInstance3D;
 	private Texture2D m_texture2D;
+	private Shader m_shader;
 	private ShaderMaterial m_shaderMaterial;
 
 }

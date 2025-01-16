@@ -52,6 +52,7 @@ public partial class Earth : StaticBody3D
         // We divide the sphere into equal-sized segments
         float latitudeRange = Mathf.Pi / segmentCount;              // 180° / segmentCount
         float longitudeRange = 2.0f * Mathf.Pi / segmentCount;      // 360° / segmentCount
+        int zoomLevel = (int) Math.Floor(Math.Log2(segmentCount));
 
         // Create segments for each latitude band, starting from south pole to north pole
         for (int lat = 0; lat < segmentCount; lat++)
@@ -84,6 +85,7 @@ public partial class Earth : StaticBody3D
                     centerLon,
                     latitudeRange,
                     longitudeRange,
+                    zoomLevel,
                     meshInstance,
                     texture2D       // TODO: change later. TerrainChunk should automatically load itself based on 
                                     // its latitude and longitude
