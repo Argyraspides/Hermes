@@ -46,6 +46,9 @@ public static class WGS84EllipsoidMeshGenerator
 	//
 	// Returns:
 	//   An ArrayMesh containing either a quadrilateral (for non-pole segments) or a triangle (for pole segments)
+	//
+	//
+	// TODO: This is implemented horribly in terms of repetition. Fix it up later.
 	public static ArrayMesh CreateEllipsoidMeshSegment(float lat, float lon, float latRange, float lonRange)
 	{
 		var surfaceArray = new Godot.Collections.Array();
@@ -54,6 +57,9 @@ public static class WGS84EllipsoidMeshGenerator
 		var vertices = new List<Vector3>();
 		var normals = new List<Vector3>();
 		var uvs = new List<Vector2>();
+		// UV2's will contain information about latitude/longitude location of each vertex
+		// in the ellipsoid mesh
+		var uv2s = new List<Vector2>();
 		var indices = new List<int>();
 
 		// Equation for a point on an ellipsoid on a 3D Cartesian grid:
@@ -72,22 +78,22 @@ public static class WGS84EllipsoidMeshGenerator
 		{
 			// Get bottom left, bottom right, and top (north pole point) -- CCW winding order
 			float[] x = {
-			SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * Mathf.Cos(lat - halfLatRange) * Mathf.Cos(lon - halfLonRange),
-			SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * Mathf.Cos(lat - halfLatRange) * Mathf.Cos(lon + halfLonRange),
-			0
-		};
+				SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * Mathf.Cos(lat - halfLatRange) * Mathf.Cos(lon - halfLonRange),
+				SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * Mathf.Cos(lat - halfLatRange) * Mathf.Cos(lon + halfLonRange),
+				0
+			};
 
 			float[] y = {
-			SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM * Mathf.Sin(lat - halfLatRange),
-			SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM * Mathf.Sin(lat - halfLatRange),
-			SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM
-		};
+				SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM * Mathf.Sin(lat - halfLatRange),
+				SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM * Mathf.Sin(lat - halfLatRange),
+				SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM
+			};
 
 			float[] z = {
-			SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * Mathf.Cos(lat - halfLatRange) * Mathf.Sin(lon - halfLonRange),
-			SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * Mathf.Cos(lat - halfLatRange) * Mathf.Sin(lon + halfLonRange),
-			0
-		};
+				SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * Mathf.Cos(lat - halfLatRange) * Mathf.Sin(lon - halfLonRange),
+				SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * Mathf.Cos(lat - halfLatRange) * Mathf.Sin(lon + halfLonRange),
+				0
+			};
 
 			// Add vertices in CCW order
 			for (int i = 0; i < 3; i++)
@@ -99,9 +105,35 @@ public static class WGS84EllipsoidMeshGenerator
 
 				// Add UV coordinates (mapping longitude/latitude to U/V coordinates)
 				// This maps the quad to a rectangular section of the texture
-				float u = (i == 0 || i == 1) ? 1.0f : 0.0f;  // Right side vs left side
+				float u = (i == 0 || i == 1) ? 1.0f : 0.0f;  // Left side vs right side
 				float v = (i == 2) ? 1.0f : 0.0f;            // Top vs bottom
 				uvs.Add(new Vector2(u, v));
+
+				// To the UV2 we will add additional data about this vertices' latitude and longitude position
+				// as these are constant to each vertex and will save computational time when doing map tile reprojection
+				// (e.g., from Web Mercator to a WGS84 ellipsoid).
+				float u2 = 0.0f;
+				float v2 = 0.0f;
+
+				if (i == 0) // Bottom left of triangle
+				{
+					u2 = lon - halfLonRange;
+					v2 = lat - halfLatRange;
+				}
+				else if (i == 1) // Bottom right of triangle
+				{
+					u2 = lon + halfLonRange;
+					v2 = lat - halfLatRange;
+				}
+				else if (i == 2) // Tip of the triangle (north pole)
+				{
+					// North pole
+					u2 = float.NaN;
+					v2 = lat + halfLatRange;
+				}
+
+				uv2s.Add(new Vector2(u2, v2));
+
 			}
 
 			// Define the triangle that make up the segment
@@ -145,6 +177,34 @@ public static class WGS84EllipsoidMeshGenerator
 				float u = (i == 1 || i == 2) ? 1.0f : 0.0f;  // Right side vs left side
 				float v = (i == 0) ? 1.0f : 0.0f;            // Top vs bottom
 				uvs.Add(new Vector2(u, v));
+
+				// To the UV2 we will add additional data about this vertices' latitude and longitude position
+				// as these are constant to each vertex and will save computational time when doing map tile reprojection
+				// (e.g., from Web Mercator to a WGS84 ellipsoid).
+				float u2 = 0.0f;
+				float v2 = 0.0f;
+
+
+				if (i == 0) // Top of the triangle (south pole)
+				{
+					u2 = float.NaN;
+					v2 = lat - halfLatRange;
+				}
+				else if (i == 1) // Top right of the triangle
+				{
+					u2 = lon - halfLonRange;
+					v2 = lat + halfLatRange;
+				}
+				else if (i == 2) // Top left of the triangle
+				{
+					// North pole
+					u2 = lon + halfLonRange;
+					v2 = lat + halfLatRange;
+				}
+
+				uv2s.Add(new Vector2(u2, v2));
+
+
 			}
 
 			// Define the triangle that make up the segment
@@ -191,6 +251,37 @@ public static class WGS84EllipsoidMeshGenerator
 				float u = (i == 1 || i == 2) ? 1.0f : 0.0f;  // Right side vs left side
 				float v = (i >= 2) ? 1.0f : 0.0f;            // Top vs bottom
 				uvs.Add(new Vector2(u, v));
+
+				// To the UV2 we will add additional data about this vertices' latitude and longitude position
+				// as these are constant to each vertex and will save computational time when doing map tile reprojection
+				// (e.g., from Web Mercator to a WGS84 ellipsoid).
+				float u2 = 0.0f;
+				float v2 = 0.0f;
+
+
+				if (i == 0)         // Bottom left
+				{
+					u2 = lon - halfLatRange;
+					v2 = lat - halfLatRange;
+				}
+				else if (i == 1)    // Bottom right
+				{
+					u2 = lon + halfLonRange;
+					v2 = lat - halfLatRange;
+				}
+				else if (i == 2)    // Top right
+				{
+					u2 = lon + halfLonRange;
+					v2 = lat + halfLatRange;
+				}
+				else if (i == 3)    // Top left
+				{
+					u2 = lon - halfLonRange;
+					v2 = lat + halfLatRange;
+				}
+
+				uv2s.Add(new Vector2(u2, v2));
+
 			}
 
 			// Define the two triangles that make up the quad
@@ -208,6 +299,7 @@ public static class WGS84EllipsoidMeshGenerator
 		surfaceArray[(int)Mesh.ArrayType.Vertex] = vertices.ToArray();
 		surfaceArray[(int)Mesh.ArrayType.Normal] = normals.ToArray();
 		surfaceArray[(int)Mesh.ArrayType.TexUV] = uvs.ToArray();
+		surfaceArray[(int)Mesh.ArrayType.TexUV2] = uv2s.ToArray();
 		surfaceArray[(int)Mesh.ArrayType.Index] = indices.ToArray();
 
 		var arrayMesh = new ArrayMesh();

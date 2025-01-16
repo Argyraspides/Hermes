@@ -77,6 +77,12 @@ public partial class TerrainChunk : Node
 	public MeshInstance3D MeshInstance => m_meshInstance3D;
 
 
+	// This shader is used for map reprojection.
+	// E.g., warping a Web-Mercator projection map tile
+	// such that it can be fit to an ellipsoid
+	public ShaderMaterial ShaderMaterial => m_shaderMaterial;
+
+
 	// A TerrainChunk is inherently a quadtree, so these hold the four children if
 	// they exist
 	// 0 = Top left
@@ -92,7 +98,7 @@ public partial class TerrainChunk : Node
 	private float m_longitudeRange;
 
 	private MeshInstance3D m_meshInstance3D;
-
 	private Texture2D m_texture2D;
+	private ShaderMaterial m_shaderMaterial;
 
 }

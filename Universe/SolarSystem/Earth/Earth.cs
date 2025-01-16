@@ -44,9 +44,9 @@ public partial class Earth : StaticBody3D
         previousWireframeState = showWireframe;
     }
 
-
     // Generates a bunch of TerrainChunks that will create a WGS84 ellipsoid
-    // and adds them to the scene tree.
+    // and adds them to the scene tree. By default, the tiles applied to the Earth
+    // are at zoom level 5 (2^5 tiles each side)
     private void GenerateEarthMesh(int segmentCount = 32)
     {
         // We divide the sphere into equal-sized segments
@@ -89,7 +89,7 @@ public partial class Earth : StaticBody3D
                                     // its latitude and longitude
                 );
 
-                terrainChunk.Name = $"TerrainChunk_EllipsoidSegment_Lat{lat}_Lon{lon}";
+                terrainChunk.Name = $"TerrainChunk_EllipsoidSegment_SegCount_{segmentCount}_Lat{lat}_Lon{lon}";
 
                 AddChild(terrainChunk);
             }
