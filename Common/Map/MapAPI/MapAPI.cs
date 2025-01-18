@@ -58,7 +58,6 @@ public partial class MapAPI : Node
 		mapProvider = new BingMapProvider();
 		AddChild(mapProvider, true);
 		mapProvider.RawMapTileDataReceived += onRawMapTileDataReceived;
-
 	}
 
 	// This function is invoked by a MapProvider's "RawMapTileDataReceivedEventHandler" signal

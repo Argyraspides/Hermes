@@ -29,10 +29,9 @@ public partial class Earth : StaticBody3D
 
     private TerrainQuadTree terrainQuadTree;
 
-    // TODO: remove later
-    private string testTilePath = "res://Universe/SolarSystem/Assets/r0123.png";
-
     private Texture2D texture2D;
+    // TODO: for testing. Remove later
+    private string testTilePath = "res://Universe/SolarSystem/Assets/a03333_r.jpeg";
 
 
     private void UpdateWireframeState()
@@ -47,29 +46,33 @@ public partial class Earth : StaticBody3D
     // Generates a bunch of TerrainChunks that will create a WGS84 ellipsoid
     // and adds them to the scene tree. By default, the tiles applied to the Earth
     // are at zoom level 5 (2^5 tiles each side)
-    private void GenerateEarthMesh(int segmentCount = 32)
+    private void GenerateEarthMesh(int zoomLevel = 5)
     {
-        // We divide the sphere into equal-sized segments
-        float latitudeRange = Mathf.Pi / segmentCount;              // 180° / segmentCount
-        float longitudeRange = 2.0f * Mathf.Pi / segmentCount;      // 360° / segmentCount
-        int zoomLevel = (int) Math.Floor(Math.Log2(segmentCount));
+
+        // There should be double the amount of longitude segments as the longitude range 
+        // is double that of the latitude range (-90° to +90° for lat, -180° to +180° for lon).
+        int latSegmentCount = (1 << zoomLevel);
+        int lonSegmentCount = (1 << zoomLevel) * 2;
+        
+        float latitudeRange = Mathf.Pi / latSegmentCount;
+        float longitudeRange = (2.0f * Mathf.Pi) / lonSegmentCount;
 
         // Create segments for each latitude band, starting from south pole to north pole
-        for (int lat = 0; lat < segmentCount; lat++)
+        for (int lat = 0; lat < latSegmentCount; lat++)
         {
             // Calculate the center latitude for this band
             // Start at -90° (South pole) and work up to +90° (North pole)
             float centerLat = (-Mathf.Pi / 2.0f) + (lat * latitudeRange) + (0.5f * latitudeRange);
 
             // Create segments around this latitude band
-            for (int lon = 0; lon < segmentCount; lon++)
-            {
+            for (int lon = 0; lon < lonSegmentCount; lon++)
+            {   
                 // Calculate the center longitude for this segment
                 // Start at -180° and work around to +180°
                 float centerLon = -Mathf.Pi + (lon * longitudeRange) + (0.5f * longitudeRange);
 
                 // Create the mesh segment
-                var meshSegment = WGS84EllipsoidMeshGenerator.CreateEllipsoidMeshSegment(
+                ArrayMesh meshSegment = WGS84EllipsoidMeshGenerator.CreateEllipsoidMeshSegment(
                     centerLat,
                     centerLon,
                     latitudeRange,
@@ -77,7 +80,7 @@ public partial class Earth : StaticBody3D
                 );
 
                 // Create a MeshInstance3D to display the mesh
-                var meshInstance = new MeshInstance3D();
+                MeshInstance3D meshInstance = new MeshInstance3D();
                 meshInstance.Mesh = meshSegment;
 
                 TerrainChunk terrainChunk = new TerrainChunk(
@@ -87,11 +90,11 @@ public partial class Earth : StaticBody3D
                     longitudeRange,
                     zoomLevel,
                     meshInstance,
-                    texture2D       // TODO: change later. TerrainChunk should automatically load itself based on 
-                                    // its latitude and longitude
+                    texture2D       // TODO: remove later. TerrainChunk will automatically fetch the tile corresponding to it
+                    
                 );
 
-                terrainChunk.Name = $"TerrainChunk_EllipsoidSegment_SegCount_{segmentCount}_Lat{lat}_Lon{lon}";
+                terrainChunk.Name = $"TerrainChunk_WGS84EllipsoidSegment_SegCount_({latSegmentCount},{lonSegmentCount})_Lat{lat}_Lon{lon}";
 
                 AddChild(terrainChunk);
             }
@@ -102,9 +105,7 @@ public partial class Earth : StaticBody3D
 
     public override void _Ready()
     {
-
         texture2D = GD.Load<Texture2D>(testTilePath);
-
         UpdateWireframeState();
         GenerateEarthMesh();
     }

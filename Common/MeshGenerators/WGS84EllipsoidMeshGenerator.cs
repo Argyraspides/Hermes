@@ -26,29 +26,30 @@ public static class WGS84EllipsoidMeshGenerator
 {
 	private const int LATITUDE_SEGMENTS = 32;
 	private const int LONGITUDE_SEGMENTS = 32;
-
-	// Returns a MeshInstance3D quadrilateral or triangular segment that corresponds to a particular latitude and longitude 
-	// (center of the segment) and a latitude and longitude range that the mesh should cover.
-	// The returned MeshInstance3D is curved and represents the surface of a WGS84 ellipsoid. Units are in
-	// kilometers.
-	//
-	// For most latitude/longitude combinations, this function returns a quadrilateral mesh made of two triangles.
-	// However, when the segment includes either the north pole (90°) or south pole (-90°), it returns a single
-	// triangle instead. This special handling for poles prevents overlapping geometry when multiple segments
-	// are combined to create a complete ellipsoid mesh, since all points at a pole share the same location
-	// regardless of longitude.
-	//
-	// Parameters:
-	//   lat: The center latitude of the segment in radians
-	//   lon: The center longitude of the segment in radians
-	//   latRange: The latitude range (height) the segment should cover in radians
-	//   lonRange: The longitude range (width) the segment should cover in radians
-	//
-	// Returns:
-	//   An ArrayMesh containing either a quadrilateral (for non-pole segments) or a triangle (for pole segments)
-	//
-	//
-	// TODO: This is implemented horribly in terms of repetition. Fix it up later.
+	/**
+		Returns a MeshInstance3D quadrilateral or triangular segment that corresponds to a particular latitude and longitude 
+		(center of the segment) and a latitude and longitude range that the mesh should cover.
+		The returned MeshInstance3D is curved and represents the surface of a WGS84 ellipsoid. Units are in
+		kilometers.
+	
+		For most latitude/longitude combinations, this function returns a quadrilateral mesh made of two triangles.
+		However, when the segment includes either the north pole (90°) or south pole (-90°), it returns a single
+		triangle instead. This special handling for poles prevents overlapping geometry when multiple segments
+		are combined to create a complete ellipsoid mesh, since all points at a pole share the same location
+		regardless of longitude.
+	
+		Parameters:
+		lat: The center latitude of the segment in radians
+		lon: The center longitude of the segment in radians
+		latRange: The latitude range (height) the segment should cover in radians
+		lonRange: The longitude range (width) the segment should cover in radians
+	
+		Returns:
+		An ArrayMesh containing either a quadrilateral (for non-pole segments) or a triangle (for pole segments)
+	
+	
+		TODO: This is implemented horribly in terms of repetition. Fix it up later.
+	*/
 	public static ArrayMesh CreateEllipsoidMeshSegment(float lat, float lon, float latRange, float lonRange)
 	{
 		var surfaceArray = new Godot.Collections.Array();
@@ -106,7 +107,7 @@ public static class WGS84EllipsoidMeshGenerator
 				// Add UV coordinates (mapping longitude/latitude to U/V coordinates)
 				// This maps the quad to a rectangular section of the texture
 				float u = (i == 0 || i == 1) ? 1.0f : 0.0f;  // Left side vs right side
-				float v = (i == 2) ? 1.0f : 0.0f;            // Top vs bottom
+				float v = (i == 2) ? 1.0f : 0.0f;  // Top vs bottom
 				uvs.Add(new Vector2(u, v));
 
 				// To the UV2 we will add additional data about this vertices' latitude and longitude position
@@ -128,7 +129,7 @@ public static class WGS84EllipsoidMeshGenerator
 				else if (i == 2) // Tip of the triangle (north pole)
 				{
 					// North pole
-					u2 = float.NaN;
+					u2 = lon;
 					v2 = lat + halfLatRange;
 				}
 
@@ -187,7 +188,7 @@ public static class WGS84EllipsoidMeshGenerator
 
 				if (i == 0) // Top of the triangle (south pole)
 				{
-					u2 = float.NaN;
+					u2 = lon;
 					v2 = lat - halfLatRange;
 				}
 				else if (i == 1) // Top right of the triangle

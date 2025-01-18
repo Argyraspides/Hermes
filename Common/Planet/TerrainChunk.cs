@@ -25,13 +25,15 @@ public partial class TerrainChunk : Node
 {
 
 	public TerrainChunk(
-		float lat,
-		float lon,
-		float latRange,
-		float lonRange,
-		int zoomLevel,
+		float lat 			= 0.0f,
+		float lon 			= 0.0f,
+		float latRange 		= 0.0f,
+		float lonRange 		= 0.0f,
+		int zoomLevel 		= 0,
+
 		MeshInstance3D meshInstance3D = null,
-		Texture2D texture2D = null)
+		Texture2D texture2D = null
+	)
 	{
 		m_latitude = lat;
 		m_longitude = lon;
@@ -39,32 +41,26 @@ public partial class TerrainChunk : Node
 		m_longitudeRange = lonRange;
 		m_zoomLevel = zoomLevel;
 		m_meshInstance3D = meshInstance3D;
-		m_texture2D = texture2D;
+		if(m_meshInstance3D != null) AddChild(m_meshInstance3D);
 
-
-		if(m_texture2D != null)
+		if (texture2D != null)
 		{
 
 			m_shaderMaterial = new ShaderMaterial();
-			m_shader = ResourceLoader.Load<Shader>("res://Common/Shaders/WebMercatorToWGS84Shader.gdshader");
-
-			m_shaderMaterial.Shader = m_shader;
-
-			m_shaderMaterial.SetShaderParameter("mapTile", m_texture2D);
+			m_shaderMaterial.Shader = ResourceLoader.Load<Shader>("res://Common/Shaders/WebMercatorToWGS84Shader.gdshader");
+			m_shaderMaterial.SetShaderParameter("mapTile", texture2D);
 			m_shaderMaterial.SetShaderParameter("zoomLevel", m_zoomLevel);
 
 			m_meshInstance3D.MaterialOverride = m_shaderMaterial;
 
-			AddChild(m_meshInstance3D);
 		}
-
 
 	}
 
-    // Represents the latitude location of this terrain chunk.
-    // Latitude is located at the center of the chunk's shape
-    // which is determined by its mesh
-    public float Latitude => m_latitude;
+	// Represents the latitude location of this terrain chunk.
+	// Latitude is located at the center of the chunk's shape
+	// which is determined by its mesh
+	public float Latitude => m_latitude;
 
 	// Represents the latitude range of this terrain chunk.
 	// I.e., how  many degrees of latitude that the chunk covers
@@ -96,7 +92,7 @@ public partial class TerrainChunk : Node
 	// This shader is used for map reprojection.
 	// E.g., warping a Web-Mercator projection map tile
 	// such that it can be fit to an ellipsoid
-	public Shader Shader => m_shader;
+	// public Shader Shader => m_shader;
 	public ShaderMaterial ShaderMaterial => m_shaderMaterial;
 
 
@@ -116,8 +112,31 @@ public partial class TerrainChunk : Node
 	private int m_zoomLevel;
 
 	private MeshInstance3D m_meshInstance3D;
-	private Texture2D m_texture2D;
-	private Shader m_shader;
+
 	private ShaderMaterial m_shaderMaterial;
+
+	private MapAPI m_mapApi;
+
+	public void MapTileReceivedHandler(Texture2D texture2D)
+	{
+		m_shaderMaterial = new ShaderMaterial();
+		m_shaderMaterial.Shader = ResourceLoader.Load<Shader>("res://Common/Shaders/WebMercatorToWGS84Shader.gdshader");
+		m_shaderMaterial.SetShaderParameter("mapTile", texture2D);
+		m_shaderMaterial.SetShaderParameter("zoomLevel", m_zoomLevel);
+
+		m_meshInstance3D.MaterialOverride = m_shaderMaterial;
+	}
+
+    public override void _Ready()
+    {
+        // m_mapApi = new MapAPI();
+		// AddChild(m_mapApi);
+
+		// m_mapApi.MapTileReceived += MapTileReceivedHandler;
+
+		// float latDeg = (float)(m_latitude * (180.0 / Math.PI));
+		// float lonDeg = (float)(m_longitude * (180.0 / Math.PI));
+		// m_mapApi.RequestMapTile(latDeg, lonDeg, m_zoomLevel);
+    }
 
 }
