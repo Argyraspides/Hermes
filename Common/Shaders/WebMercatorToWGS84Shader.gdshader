@@ -17,83 +17,75 @@
 
 */
 
-/**
+/* 
+ * Web Mercator Map Tile Projection Shader
+ * 
+ * This shader projects a 256x256 Web-Mercator map tile onto a WGS84 ellipsoid mesh.
+ * Each mesh vertex's latitude/longitude (in radians) is stored in the UV2 array.
+ * The shader determines which pixel of the map tile corresponds to this lat/lon
+ * and applies it to the mesh material.
+ */
 
-This shader takes in a Web-Mercator map tile of 256x256 pixels at a particular zoom level
-and then warps it such that it is accurately projected onto a WGS84 ellipsoid mesh. Each mesh's
-vertices has its latitude/longitude stored in the UV2 array. We find out which pixel of the map
-tile corresponds to this lat/lon and then apply it to the mesh material. Latitude and longitude
-values in the UV2 array are in radians
-
-*/
-
-// TODO: Parametrize tile width and height -- do not assume 256x256
 shader_type spatial;
 
-uniform sampler2D mapTile;
-uniform int zoomLevel;
+// Constants
+const float PI = 3.14159265359;
+const float HALF_PI = 1.57079632679;
+const int TILE_SIZE = 256;
 
-varying vec2 vertexLatLon;
+// Uniforms
+uniform sampler2D map_tile;
+uniform int zoom_level;
 
+// Varying
+varying vec2 vertex_lat_lon;
 
-// Converts a line of latitude to a pixel coordinate on this specific map tile
-// Formula reference: 
-// https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#2._Convert_the_coordinate_to_the_Web_Mercator_projection_(https://epsg.io/3857)
-float latToPixel(float lat)
-{
-	float y_epsg3857 = log(tan( (PI / 4.0) + lat * 0.5 ));
-
-	float y = 0.5 - y_epsg3857 / (2.0 * PI);
-
-	float n = pow(2.0, float(zoomLevel));
-	float y_tile = n * y;
-	float frac_tile = y_tile - floor(y_tile);
-	
-	float y_pixel = frac_tile * 256.0;
-	return y_pixel;
+// Converts latitude to pixel coordinate on the specific map tile
+// Reference: https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Web_Mercator
+float lat_to_pixel(float lat) {
+    float y_mercator = log(tan(HALF_PI + lat * 0.5));
+    float y = 0.5 - y_mercator / (2.0 * PI);
+    
+    float n = pow(2.0, float(zoom_level));
+    float y_tile = n * y;
+    float frac_tile = y_tile - floor(y_tile);
+    
+    return frac_tile * float(TILE_SIZE);
 }
 
-// Converts a line of longitude to a pixel coordinate on this specific map tile
-// Formula reference: 
-// https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#2._Convert_the_coordinate_to_the_Web_Mercator_projection_(https://epsg.io/3857)
-float lonToPixel(float lon)
-{
-	float lonDeg = lon * (180.0 / PI);
-	float x_epsg3857 = lonDeg;
-	float x = 0.5 + x_epsg3857 / 360.0;
-
-	float n = pow(2.0, float(zoomLevel));
-
-	float x_tile = n * x;
-	float frac_tile = x_tile - floor(x_tile);
-	
-	float x_pixel = frac_tile * 256.0;
-	return x_pixel;
+// Converts longitude to pixel coordinate on the specific map tile
+// Reference: https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Web_Mercator
+float lon_to_pixel(float lon) {
+    float lon_deg = lon * (180.0 / PI);
+    float x_mercator = lon_deg;
+    float x = 0.5 + x_mercator / 360.0;
+    
+    float n = pow(2.0, float(zoom_level));
+    float x_tile = n * x;
+    float frac_tile = x_tile - floor(x_tile);
+    
+    return frac_tile * float(TILE_SIZE);
 }
 
 void vertex() {
-    // Pass through the lat/lon coordinates
-    vertexLatLon = UV2;
+    vertex_lat_lon = UV2;
 }
 
 void fragment() {
-
-	// Latitude and longitude on our actual mesh
-    float lat = vertexLatLon.y;
-    float lon = vertexLatLon.x;
-
-	// Pixel coordinate on the map tile corresponding to the latitude
-	// and longitude
-    float py = latToPixel(lat);
-    float px = lonToPixel(lon);
-
-    // Convert pixel coordinates to UV coordinates (0 to 1 range)
-    vec2 uv = vec2(px / 256.0, py / 256.0);
-	uv = clamp(uv, 0.0, 1.0);
-
-    // Sample the map tile at the calculated UV position
-    vec4 color = texture(mapTile, uv);
-
+    // Extract latitude and longitude from mesh coordinates
+    float lat = vertex_lat_lon.y;
+    float lon = vertex_lat_lon.x;
+    
+    // Calculate pixel coordinates on the map tile
+    float px = lon_to_pixel(lon);
+    float py = lat_to_pixel(lat);
+    
+    // Convert to UV coordinates (0 to 1 range)
+    vec2 uv = vec2(px, py) / float(TILE_SIZE);
+    uv = clamp(uv, 0.0, 1.0);
+    
+    // Sample and apply the map tile texture
+    vec4 color = texture(map_tile, uv);
     ALBEDO = color.rgb;
     ALPHA = color.a;
 }

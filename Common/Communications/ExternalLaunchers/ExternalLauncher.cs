@@ -37,22 +37,22 @@ public partial class ExternalLauncher : Node
 	//	:::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\
 	//	'      `--'      `.-'      `--'      `--'      `--'      `-.'      `--'      `
 
-	private const string pythonMAVLinkListenerLocalScriptPath = "res://Common/Communications/Protocols/MAVLink/pymavsdk.py";
-	private string pythonMAVLinkListenerAbsoluteScriptPath;
+	private const string m_PYTHON_MAVLINK_LISTENER_LOCAL_SCRIPT_PATH = "res://Common/Communications/Protocols/MAVLink/pymavsdk.py";
+	private string m_pythonMAVLinkListenerAbsoluteScriptPath;
 
 	// TODO: This may cause issues. Some systems use "python" while others use "python3"
-	private string pythonCommand = "python3";
+	private string m_pythonCommand = "python3";
 
-	private Thread pythonMAVLinkListenerThread;
-	private Process pythonMAVLinkListenerProcess;
-	private bool isPythonMAVLinkListenerProcessRunning = false;
+	private Thread m_pythonMAVLinkListenerThread;
+	private Process m_pythonMAVLinkListenerProcess;
+	private bool m_isPythonMAVLinkListenerProcessRunning = false;
 
 
 	private void InitializePythonMAVLinkListener()
 	{
-		pythonMAVLinkListenerAbsoluteScriptPath = ProjectSettings.GlobalizePath(pythonMAVLinkListenerLocalScriptPath);
-		pythonMAVLinkListenerThread = new Thread(RunPythonMavlinkListenerScript);
-		pythonMAVLinkListenerThread.Start();
+		m_pythonMAVLinkListenerAbsoluteScriptPath = ProjectSettings.GlobalizePath(m_PYTHON_MAVLINK_LISTENER_LOCAL_SCRIPT_PATH);
+		m_pythonMAVLinkListenerThread = new Thread(RunPythonMavlinkListenerScript);
+		m_pythonMAVLinkListenerThread.Start();
 	}
 
 	private void RunPythonMavlinkListenerScript()
@@ -61,22 +61,22 @@ public partial class ExternalLauncher : Node
 		{
 			ProcessStartInfo startInfo = new ProcessStartInfo
 			{
-				FileName = pythonCommand,
-				Arguments = pythonMAVLinkListenerAbsoluteScriptPath,
+				FileName = m_pythonCommand,
+				Arguments = m_pythonMAVLinkListenerAbsoluteScriptPath,
 				UseShellExecute = false,
 				RedirectStandardOutput = true,
 				RedirectStandardError = true,
 				CreateNoWindow = true
 			};
 
-			pythonMAVLinkListenerProcess = new Process
+			m_pythonMAVLinkListenerProcess = new Process
 			{
 				StartInfo = startInfo,
 				EnableRaisingEvents = true
 			};
 
 			// Setup event handlers for output and error streams
-			pythonMAVLinkListenerProcess.OutputDataReceived += (sender, e) =>
+			m_pythonMAVLinkListenerProcess.OutputDataReceived += (sender, e) =>
 			{
 				if (e.Data != null)
 				{
@@ -84,7 +84,7 @@ public partial class ExternalLauncher : Node
 				}
 			};
 
-			pythonMAVLinkListenerProcess.ErrorDataReceived += (sender, e) =>
+			m_pythonMAVLinkListenerProcess.ErrorDataReceived += (sender, e) =>
 			{
 				if (e.Data != null)
 				{
@@ -92,34 +92,34 @@ public partial class ExternalLauncher : Node
 				}
 			};
 
-			pythonMAVLinkListenerProcess.Start();
-			isPythonMAVLinkListenerProcessRunning = true;
+			m_pythonMAVLinkListenerProcess.Start();
+			m_isPythonMAVLinkListenerProcessRunning = true;
 
 			// Begin asynchronous read operations
-			pythonMAVLinkListenerProcess.BeginOutputReadLine();
-			pythonMAVLinkListenerProcess.BeginErrorReadLine();
+			m_pythonMAVLinkListenerProcess.BeginOutputReadLine();
+			m_pythonMAVLinkListenerProcess.BeginErrorReadLine();
 
 			// Wait for the process to exit
-			pythonMAVLinkListenerProcess.WaitForExit();
-			isPythonMAVLinkListenerProcessRunning = false;
+			m_pythonMAVLinkListenerProcess.WaitForExit();
+			m_isPythonMAVLinkListenerProcessRunning = false;
 		}
 		catch (Exception e)
 		{
 			GD.PrintErr($"Error running Python script: {e.Message}");
-			isPythonMAVLinkListenerProcessRunning = false;
+			m_isPythonMAVLinkListenerProcessRunning = false;
 		}
 	}
 
 	private void KillPythonMavlinkListenerScript()
 	{
-		if (pythonMAVLinkListenerProcess != null && !pythonMAVLinkListenerProcess.HasExited)
+		if (m_pythonMAVLinkListenerProcess != null && !m_pythonMAVLinkListenerProcess.HasExited)
 		{
 			try
 			{
-				pythonMAVLinkListenerProcess.Kill(true); 		// true for entire process tree
-				pythonMAVLinkListenerProcess.WaitForExit(1000); 
-				pythonMAVLinkListenerProcess.Dispose();
-				isPythonMAVLinkListenerProcessRunning = false;
+				m_pythonMAVLinkListenerProcess.Kill(true); 		// true for entire process tree
+				m_pythonMAVLinkListenerProcess.WaitForExit(1000); 
+				m_pythonMAVLinkListenerProcess.Dispose();
+				m_isPythonMAVLinkListenerProcessRunning = false;
 			}
 			catch (Exception e)
 			{
@@ -127,11 +127,11 @@ public partial class ExternalLauncher : Node
 			}
 		}
 
-		if (pythonMAVLinkListenerThread != null && pythonMAVLinkListenerThread.IsAlive)
+		if (m_pythonMAVLinkListenerThread != null && m_pythonMAVLinkListenerThread.IsAlive)
 		{
 			try
 			{
-				pythonMAVLinkListenerThread.Join(1000);
+				m_pythonMAVLinkListenerThread.Join(1000);
 			}
 			catch (Exception e)
 			{
@@ -153,7 +153,8 @@ public partial class ExternalLauncher : Node
 	// TODO: There are some cleanup functions in here which handle various scenarios
 	// when Hermes quits (either an engine crash, normal close, node removal from scene, etc).
 	// and kills any invoked Python scripts. For some reason this doesn't work when running
-	// in debug mode and killing the process through VSCode. Not sure why. 
+	// in debug mode and killing the process through VSCode (you have to close the game normally with the 
+	// 'x' button otherwise the invoked Python scripts will continue running). Not sure why. 
 	
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()

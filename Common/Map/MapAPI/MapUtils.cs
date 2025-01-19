@@ -46,32 +46,6 @@ public static class MapUtils
 		UNKNOWN
 	}
 
-	// // Converts line of latitude (degrees) to a latitude tile coordinate (y axis) on the Mercator projection,
-	// // using a quadtree to represent the map (each successive zoom level doubles the tiles on the X and Y axis)
-	// // To understand map tiling, see: https://www.microimages.com/documentation/TechGuides/78BingStructure.pdf 
-	// //
-	// // Formula from:
-	// // https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#2._Convert_the_coordinate_to_the_Web_Mercator_projection_(https://epsg.io/3857)
-	// public static int LatitudeToTileCoordinateMercator(double latitude, int zoom)
-	// {
-	// 	latitude = Math.Clamp(latitude, -85.05112878, 85.05112878);
-	// 	double latRad = latitude * (Math.PI / 180.0);
-	// 	return (int)Math.Floor(
-	// 		(1.0 - Math.Log(Math.Tan(latRad) + 1.0 / Math.Cos(latRad)) / Math.PI) / 2.0 * (1 << zoom)
-	// 	);
-	// }
-
-	// // Converts line of longitude (degrees) to a longitude tile coordinate (y axis) on the Mercator projection,
-	// // using a quadtree to represent the map (each successive zoom level doubles the tiles on the X and Y axis)
-	// // To understand map tiling, see: https://www.microimages.com/documentation/TechGuides/78BingStructure.pdf 
-	// //
-	// // Formula from:
-	// // https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#2._Convert_the_coordinate_to_the_Web_Mercator_projection_(https://epsg.io/3857)
-	// public static int LongitudeToTileCoordinateMercator(double longitude, int zoom)
-	// {
-	// 	return (int)Math.Floor((longitude + 180.0) / 360.0 * (1 << zoom));
-	// }
-
 	// Converts line of latitude (degrees) to a latitude tile coordinate (y axis) on the Mercator projection,
 	// using a quadtree to represent the map (each successive zoom level doubles the tiles on the X and Y axis)
 	// To understand map tiling, see: https://www.microimages.com/documentation/TechGuides/78BingStructure.pdf 

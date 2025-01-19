@@ -64,10 +64,11 @@ namespace GodotEarth
 
 ### Braces and Indentation
 - Always use braces, even for single-line blocks
-- Opening brace on the same line
+- Opening brace on the next line
 - 4 spaces for indentation (no tabs)
 ```csharp
-if (condition) {
+if (condition) 
+{
     DoSomething();
 }
 ```
@@ -99,9 +100,11 @@ public float Altitude { get; private set; }
 - Use full properties when logic is required:
 ```csharp
 private float m_altitude;
-public float Altitude {
+public float Altitude 
+{
     get => m_altitude;
-    set {
+    set 
+    {
         m_altitude = Mathf.Clamp(value, MIN_ALTITUDE, MAX_ALTITUDE);
         OnAltitudeChanged();
     }
@@ -153,7 +156,8 @@ public TerrainMesh GenerateTerrain(float latitude, float longitude)
 - Create custom exceptions for domain-specific errors
 - Always include meaningful error messages
 ```csharp
-public class TerrainGenerationException : Exception {
+public class TerrainGenerationException : Exception 
+{
     public TerrainGenerationException(string message) : base(message) { }
 }
 ```
@@ -162,8 +166,10 @@ public class TerrainGenerationException : Exception {
 - Use guard clauses at the start of methods
 - Prefer throwing ArgumentException for invalid parameters
 ```csharp
-public void SetZoomLevel(float level) {
-    if (level < MIN_ZOOM_LEVEL || level > MAX_ZOOM_LEVEL) {
+public void SetZoomLevel(float level) 
+{
+    if (level < MIN_ZOOM_LEVEL || level > MAX_ZOOM_LEVEL) 
+    {
         throw new ArgumentException($"Zoom level must be between {MIN_ZOOM_LEVEL} and {MAX_ZOOM_LEVEL}");
     }
     m_zoomLevel = level;
@@ -181,7 +187,8 @@ public Node3D TerrainRoot { get; set; }
 
 private Camera3D m_camera;
 
-public override void _Ready() {
+public override void _Ready() 
+{
     m_camera = GetNode<Camera3D>("Camera");
 }
 ```
@@ -203,7 +210,8 @@ public event Action<Vector2> TerrainLoaded;
 - Use _PhysicsProcess for physics-dependent updates
 - Keep process functions lightweight
 ```csharp
-public override void _Process(double delta) {
+public override void _Process(double delta) 
+{
     UpdateCameraPosition(delta);
 }
 ```
