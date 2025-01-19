@@ -35,31 +35,40 @@ uniform int zoomLevel;
 
 varying vec2 vertexLatLon;
 
-int latToPixel(float lat)
+
+// Converts a line of latitude to a pixel coordinate on this specific map tile
+// Formula reference: 
+// https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#2._Convert_the_coordinate_to_the_Web_Mercator_projection_(https://epsg.io/3857)
+float latToPixel(float lat)
 {
-	int tilesPerSide = (1 << zoomLevel);
+	float y_epsg3857 = log(tan( (PI / 4.0) + lat * 0.5 ));
 
-	float tileColumn = float(tilesPerSide) * (1.0 - (log(tan(lat) + (1.0/cos(lat))) / PI)) / 2.0;
-	float yPixel = tileColumn * 256.0;
+	float y = 0.5 - y_epsg3857 / (2.0 * PI);
 
-	// Find which pixel 'y' is on our actual map tile. Map tiles are 256x256
-	int py = int(yPixel) % 256;
-	return py;
+	float n = pow(2.0, float(zoomLevel));
+	float y_tile = n * y;
+	float frac_tile = y_tile - floor(y_tile);
+	
+	float y_pixel = frac_tile * 256.0;
+	return y_pixel;
 }
 
-int lonToPixel(float lon)
+// Converts a line of longitude to a pixel coordinate on this specific map tile
+// Formula reference: 
+// https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#2._Convert_the_coordinate_to_the_Web_Mercator_projection_(https://epsg.io/3857)
+float lonToPixel(float lon)
 {
-	int tilesPerSide = (1 << zoomLevel);
-
 	float lonDeg = lon * (180.0 / PI);
-	float tileRow = float(tilesPerSide) * ((lonDeg + 180.0) / 360.0);
-	float xPixel = tileRow * 256.0;
+	float x_epsg3857 = lonDeg;
+	float x = 0.5 + x_epsg3857 / 360.0;
 
-	// Find which pixel 'x' is on our actual map tile's local coordinate system.
-	// Map tiles are 256x256
-	int px = int(xPixel) % 256;
+	float n = pow(2.0, float(zoomLevel));
 
-	return px;
+	float x_tile = n * x;
+	float frac_tile = x_tile - floor(x_tile);
+	
+	float x_pixel = frac_tile * 256.0;
+	return x_pixel;
 }
 
 void vertex() {
@@ -75,15 +84,15 @@ void fragment() {
 
 	// Pixel coordinate on the map tile corresponding to the latitude
 	// and longitude
-    int py = latToPixel(lat);
-    int px = lonToPixel(lon);
+    float py = latToPixel(lat);
+    float px = lonToPixel(lon);
 
     // Convert pixel coordinates to UV coordinates (0 to 1 range)
-    vec2 uv = vec2(float(px) / 256.0, float(py) / 256.0);
+    vec2 uv = vec2(px / 256.0, py / 256.0);
+	uv = clamp(uv, 0.0, 1.0);
 
     // Sample the map tile at the calculated UV position
     vec4 color = texture(mapTile, uv);
-	// ALBEDO = vec3(vertexLatLon.x, vertexLatLon.x, 0.0);
 
     ALBEDO = color.rgb;
     ALPHA = color.a;

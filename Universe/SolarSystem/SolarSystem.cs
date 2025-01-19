@@ -30,7 +30,7 @@ public partial class SolarSystem : Node3D
 	public override void _Ready()
 	{
 		earth = GetNode<StaticBody3D>("Earth");
-		camera3D = GetNode<Camera3D>("Camera3D");
+		camera3D = GetNode<Camera3D>("EarthOrbitalCamera");
 
 	}
 

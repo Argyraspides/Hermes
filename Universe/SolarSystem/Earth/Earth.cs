@@ -20,6 +20,8 @@
 
 using Godot;
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 public partial class Earth : StaticBody3D
 {
@@ -46,62 +48,50 @@ public partial class Earth : StaticBody3D
     // Generates a bunch of TerrainChunks that will create a WGS84 ellipsoid
     // and adds them to the scene tree. By default, the tiles applied to the Earth
     // are at zoom level 5 (2^5 tiles each side)
-    private void GenerateEarthMesh(int zoomLevel = 5)
+    private void GenerateEarthMesh(int zoomLevel = 4)
     {
+        // # of tiles in Y direction is 2^zoomLevel
+        int tileCountY = 1 << zoomLevel;
+        // # of tiles in X direction is 2^(zoomLevel+1)
+        int tileCountX = tileCountY * 2;
 
-        // There should be double the amount of longitude segments as the longitude range 
-        // is double that of the latitude range (-90° to +90° for lat, -180° to +180° for lon).
-        int latSegmentCount = (1 << zoomLevel);
-        int lonSegmentCount = (1 << zoomLevel) * 2;
-        
-        float latitudeRange = Mathf.Pi / latSegmentCount;
-        float longitudeRange = (2.0f * Mathf.Pi) / lonSegmentCount;
-
-        // Create segments for each latitude band, starting from south pole to north pole
-        for (int lat = 0; lat < latSegmentCount; lat++)
+        for (int ty = 0; ty < tileCountY / 2; ty++)
         {
-            // Calculate the center latitude for this band
-            // Start at -90° (South pole) and work up to +90° (North pole)
-            float centerLat = (-Mathf.Pi / 2.0f) + (lat * latitudeRange) + (0.5f * latitudeRange);
+            for (int tx = 0; tx < tileCountX / 2; tx++)
+            {
+                // Get bounding lat/lon from WebMercator tile coordinates
+                (double latMinDeg, double latMaxDeg, double lonMinDeg, double lonMaxDeg)
+                    = MapUtils.GetTileLatLonBounds(tx, ty, zoomLevel);
 
-            // Create segments around this latitude band
-            for (int lon = 0; lon < lonSegmentCount; lon++)
-            {   
-                // Calculate the center longitude for this segment
-                // Start at -180° and work around to +180°
-                float centerLon = -Mathf.Pi + (lon * longitudeRange) + (0.5f * longitudeRange);
+                float latMin = Mathf.DegToRad((float)latMinDeg);
+                float latMax = Mathf.DegToRad((float)latMaxDeg);
+                float lonMin = Mathf.DegToRad((float)lonMinDeg);
+                float lonMax = Mathf.DegToRad((float)lonMaxDeg);
 
-                // Create the mesh segment
+                float centerLat = 0.5f * (latMin + latMax);
+                float centerLon = 0.5f * (lonMin + lonMax);
+                float latRange = latMax - latMin;
+                float lonRange = lonMax - lonMin;
+
                 ArrayMesh meshSegment = WGS84EllipsoidMeshGenerator.CreateEllipsoidMeshSegment(
-                    centerLat,
-                    centerLon,
-                    latitudeRange,
-                    longitudeRange
+                    centerLat, centerLon, latRange, lonRange
                 );
 
-                // Create a MeshInstance3D to display the mesh
-                MeshInstance3D meshInstance = new MeshInstance3D();
-                meshInstance.Mesh = meshSegment;
+                var meshInstance = new MeshInstance3D { Mesh = meshSegment };
 
                 TerrainChunk terrainChunk = new TerrainChunk(
-                    centerLat,
-                    centerLon,
-                    latitudeRange,
-                    longitudeRange,
+                    centerLat, centerLon,
+                    latRange, lonRange,
                     zoomLevel,
                     meshInstance,
-                    texture2D       // TODO: remove later. TerrainChunk will automatically fetch the tile corresponding to it
-                    
+                    null
                 );
-
-                terrainChunk.Name = $"TerrainChunk_WGS84EllipsoidSegment_SegCount_({latSegmentCount},{lonSegmentCount})_Lat{lat}_Lon{lon}";
-
+                terrainChunk.Name = $"TerrainChunk_z{zoomLevel}_x{tx}_y{ty}";
                 AddChild(terrainChunk);
             }
         }
+
     }
-
-
 
     public override void _Ready()
     {
