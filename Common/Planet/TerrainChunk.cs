@@ -125,6 +125,10 @@ public partial class TerrainChunk : Node
 		m_shaderMaterial.Shader = ResourceLoader.Load<Shader>("res://Common/Shaders/WebMercatorToWGS84Shader.gdshader");
 		m_shaderMaterial.SetShaderParameter("mapTile", texture2D);
 		m_shaderMaterial.SetShaderParameter("zoomLevel", m_zoomLevel);
+
+		// TODO: This is not really a good fix. This is to fix the issue where the Earth looks inverted along the east-west
+		// line (i.e., all countries look mirrored, so as an example the west coast of Africa actually appears where the east
+		// side should be).
 		m_meshInstance3D.Scale = new Vector3(-1, 1, 1);
 
 		m_meshInstance3D.MaterialOverride = m_shaderMaterial;
