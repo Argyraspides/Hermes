@@ -22,6 +22,7 @@ using Godot;
 using System;
 using System.Collections.Generic;
 
+// TODO: Add documentation on what this is
 public static class WGS84EllipsoidMeshGenerator
 {
 	private const int LATITUDE_SEGMENTS = 32;
@@ -50,7 +51,9 @@ public static class WGS84EllipsoidMeshGenerator
 	  Returns:
 		An ArrayMesh containing either a quadrilateral (for non‐pole segments) or a 
 		triangle (for pole segments).
-*/
+	*/
+	// TODO: This function is very very long (not necessarily a bad thing). Can definitely be cleaned up other
+	// wise if not in terms of length. 
 	public static ArrayMesh CreateEllipsoidMeshSegment(float lat, float lon, float latRange, float lonRange)
 	{
 		var surfaceArray = new Godot.Collections.Array();

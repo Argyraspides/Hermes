@@ -21,6 +21,7 @@
 using Godot;
 using System;
 
+// TODO: Add documentation on what this is
 public partial class TerrainChunk : Node
 {
 
@@ -142,7 +143,7 @@ public partial class TerrainChunk : Node
 		AddChild(m_mapApi);
 
 		m_mapApi.MapTileReceived += MapTileReceivedHandler;
-		
+
 		float latDeg = (float)(m_latitude * (180.0 / Math.PI));
 		float lonDeg = (float)(m_longitude * (180.0 / Math.PI));
 		

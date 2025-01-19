@@ -23,6 +23,7 @@ using System.Collections.Generic;
 using System.Text;
 using static MapUtils;
 
+// TODO: Add documentation on what this is
 public partial class BingMapProvider : MapProvider
 {
 
