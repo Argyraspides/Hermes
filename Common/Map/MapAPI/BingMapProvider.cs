@@ -72,6 +72,7 @@ public partial class BingMapProvider : MapProvider
 
 		apiQueryParams.Add("quadKey", quadkey);
 		apiQueryParams.Add("mapTypeImageFormat", "JPG");
+		// TODO: Do not hardcode the API version. Find a way to parametrize this
 		apiQueryParams.Add("apiVersion", "563");
 		apiQueryParams.Add("lang", "en");
 		return apiQueryParams;

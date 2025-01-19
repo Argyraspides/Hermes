@@ -43,6 +43,11 @@ using Godot;
 
 
 */ 
+// TODO: Each map API instance should run on its own thread. This is so that each terrain chunk, or any
+// object that wishes to use the map api, can have its own instance and not have to worry about being blocked
+// by other pending map api requests. This means you MAY have to change the way MapAPI and MapProvider work as 
+// currently they both inherit from Node, and anything inheriting from Node is meant to be a part of the main 
+// game thread. You could also just spawn a thread with its own process or something, idk. Think about it later
 public partial class MapAPI : Node
 {
 
@@ -55,6 +60,7 @@ public partial class MapAPI : Node
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
+		// TODO: Bing by default is okay, but this should be configurable somehow
 		mapProvider = new BingMapProvider();
 		AddChild(mapProvider, true);
 		mapProvider.RawMapTileDataReceived += onRawMapTileDataReceived;

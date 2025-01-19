@@ -47,6 +47,7 @@ public partial class TerrainChunk : Node
 		{
 
 			m_shaderMaterial = new ShaderMaterial();
+			// TODO: Parametrize the shader resource and make it configurable
 			m_shaderMaterial.Shader = ResourceLoader.Load<Shader>("res://Common/Shaders/WebMercatorToWGS84Shader.gdshader");
 			m_shaderMaterial.SetShaderParameter("mapTile", texture2D);
 			m_shaderMaterial.SetShaderParameter("zoomLevel", m_zoomLevel);
@@ -96,6 +97,7 @@ public partial class TerrainChunk : Node
 	public ShaderMaterial ShaderMaterial => m_shaderMaterial;
 
 
+	// TODO: This may not be a really good way to do LoD. Think about it later.
 	// A TerrainChunk is inherently a quadtree, so these hold the four children if
 	// they exist
 	// 0 = Top left
@@ -140,7 +142,7 @@ public partial class TerrainChunk : Node
 		AddChild(m_mapApi);
 
 		m_mapApi.MapTileReceived += MapTileReceivedHandler;
-
+		
 		float latDeg = (float)(m_latitude * (180.0 / Math.PI));
 		float lonDeg = (float)(m_longitude * (180.0 / Math.PI));
 		
