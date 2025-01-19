@@ -17,9 +17,9 @@
 
 */
 
-/* 
+/*
  * Web Mercator Map Tile Projection Shader
- * 
+ *
  * This shader projects a 256x256 Web-Mercator map tile onto a WGS84 ellipsoid mesh.
  * Each mesh vertex's latitude/longitude (in radians) is stored in the UV2 array.
  * The shader determines which pixel of the map tile corresponds to this lat/lon
@@ -29,8 +29,8 @@
 shader_type spatial;
 
 // Constants
-const float PI = 3.14159265359;
 const float HALF_PI = 1.57079632679;
+// TODO: Do not assume a 256x256 tile size.
 const int TILE_SIZE = 256;
 
 // Uniforms
@@ -45,11 +45,11 @@ varying vec2 vertex_lat_lon;
 float lat_to_pixel(float lat) {
     float y_mercator = log(tan(HALF_PI + lat * 0.5));
     float y = 0.5 - y_mercator / (2.0 * PI);
-    
+
     float n = pow(2.0, float(zoom_level));
     float y_tile = n * y;
     float frac_tile = y_tile - floor(y_tile);
-    
+
     return frac_tile * float(TILE_SIZE);
 }
 
@@ -59,11 +59,11 @@ float lon_to_pixel(float lon) {
     float lon_deg = lon * (180.0 / PI);
     float x_mercator = lon_deg;
     float x = 0.5 + x_mercator / 360.0;
-    
+
     float n = pow(2.0, float(zoom_level));
     float x_tile = n * x;
     float frac_tile = x_tile - floor(x_tile);
-    
+
     return frac_tile * float(TILE_SIZE);
 }
 
@@ -75,15 +75,15 @@ void fragment() {
     // Extract latitude and longitude from mesh coordinates
     float lat = vertex_lat_lon.y;
     float lon = vertex_lat_lon.x;
-    
+
     // Calculate pixel coordinates on the map tile
     float px = lon_to_pixel(lon);
     float py = lat_to_pixel(lat);
-    
+
     // Convert to UV coordinates (0 to 1 range)
     vec2 uv = vec2(px, py) / float(TILE_SIZE);
     uv = clamp(uv, 0.0, 1.0);
-    
+
     // Sample and apply the map tile texture
     vec4 color = texture(map_tile, uv);
     ALBEDO = color.rgb;
