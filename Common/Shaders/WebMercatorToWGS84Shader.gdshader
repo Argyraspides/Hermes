@@ -48,7 +48,6 @@ float lat_to_pixel(float lat) {
     float y_mercator = log(tan(QUARTER_PI + lat * 0.5));
     float y = 0.5 - y_mercator / TWO_PI;
 
-    // float n = pow(2.0, float(zoom_level));
     float n = float(1 << zoom_level);
     float y_tile = n * y;
     float frac_tile = y_tile - floor(y_tile);
@@ -63,7 +62,6 @@ float lon_to_pixel(float lon) {
     float x_mercator = lon_deg;
     float x = 0.5 + x_mercator / 360.0;
 
-    // float n = pow(2.0, float(zoom_level));
     float n = float(1 << zoom_level);
     float x_tile = n * x;
     float frac_tile = x_tile - floor(x_tile);
