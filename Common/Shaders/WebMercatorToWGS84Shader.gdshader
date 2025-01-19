@@ -29,7 +29,9 @@
 shader_type spatial;
 
 // Constants
-const float HALF_PI = 1.57079632679;
+const float TWO_PI = 6.28318530718;
+const float QUARTER_PI = 0.78539816339;
+const float RAD_TO_DEG_FRAC = 57.2957795131; // Equals (180.0 / PI);
 // TODO: Do not assume a 256x256 tile size.
 const int TILE_SIZE = 256;
 
@@ -43,10 +45,11 @@ varying vec2 vertex_lat_lon;
 // Converts latitude to pixel coordinate on the specific map tile
 // Reference: https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Web_Mercator
 float lat_to_pixel(float lat) {
-    float y_mercator = log(tan(HALF_PI + lat * 0.5));
-    float y = 0.5 - y_mercator / (2.0 * PI);
+    float y_mercator = log(tan(QUARTER_PI + lat * 0.5));
+    float y = 0.5 - y_mercator / TWO_PI;
 
-    float n = pow(2.0, float(zoom_level));
+    // float n = pow(2.0, float(zoom_level));
+    float n = float(1 << zoom_level);
     float y_tile = n * y;
     float frac_tile = y_tile - floor(y_tile);
 
@@ -56,11 +59,12 @@ float lat_to_pixel(float lat) {
 // Converts longitude to pixel coordinate on the specific map tile
 // Reference: https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Web_Mercator
 float lon_to_pixel(float lon) {
-    float lon_deg = lon * (180.0 / PI);
+    float lon_deg = lon * RAD_TO_DEG_FRAC;
     float x_mercator = lon_deg;
     float x = 0.5 + x_mercator / 360.0;
 
-    float n = pow(2.0, float(zoom_level));
+    // float n = pow(2.0, float(zoom_level));
+    float n = float(1 << zoom_level);
     float x_tile = n * x;
     float frac_tile = x_tile - floor(x_tile);
 
