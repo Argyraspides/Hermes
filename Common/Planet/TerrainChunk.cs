@@ -50,8 +50,8 @@ public partial class TerrainChunk : Node
 			m_shaderMaterial = new ShaderMaterial();
 			// TODO: Parametrize the shader resource and make it configurable
 			m_shaderMaterial.Shader = ResourceLoader.Load<Shader>("res://Common/Shaders/WebMercatorToWGS84Shader.gdshader");
-			m_shaderMaterial.SetShaderParameter("mapTile", texture2D);
-			m_shaderMaterial.SetShaderParameter("zoomLevel", m_zoomLevel);
+			m_shaderMaterial.SetShaderParameter("map_tile", texture2D);
+			m_shaderMaterial.SetShaderParameter("zoom_level", m_zoomLevel);
 
 			m_meshInstance3D.MaterialOverride = m_shaderMaterial;
 
