@@ -19,6 +19,7 @@
 
 
 using Godot;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using static MapUtils;
@@ -133,11 +134,14 @@ public partial class BingMapProvider : MapProvider
     // Requests a map tile from the Bing API. If successful, the
     // RawMapTileDataReceivedEventHandler(byte[] rawMapTileData) signal from the
     // MapProvider base class will be invoked where the raw image data can be "picked up"
+    // latitude and longitude are in radians
     public override void RequestMapTile(float latitude, float longitude, int zoom)
     {
+        double latRad = latitude * MapUtils.DEGREES_TO_RADIANS;
+        double lonRad = longitude * MapUtils.DEGREES_TO_RADIANS;
 
-        int latTileCoords = MapUtils.LatitudeToTileCoordinateMercator(latitude, zoom);
-        int lonTileCoords = MapUtils.LongitudeToTileCoordinateMercator(longitude, zoom);
+        int latTileCoords = MapUtils.LatitudeToTileCoordinateMercator(latRad, zoom);
+        int lonTileCoords = MapUtils.LongitudeToTileCoordinateMercator(lonRad, zoom);
 
         string quadkey = MapUtils.TileCoordinatesToQuadkey(lonTileCoords, latTileCoords, zoom);
         Dictionary<string, string> queryParamDict = ConstructQueryParams(quadkey);

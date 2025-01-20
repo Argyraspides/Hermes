@@ -67,12 +67,12 @@ public partial class MapAPI : Node
         // TODO: Bing by default is okay, but this should be configurable somehow
         mapProvider = new BingMapProvider();
         AddChild(mapProvider, true);
-        mapProvider.RawMapTileDataReceived += onRawMapTileDataReceived;
+        mapProvider.RawMapTileDataReceived += OnRawMapTileDataReceived;
     }
 
     // This function is invoked by a MapProvider's "RawMapTileDataReceivedEventHandler" signal
     // when we get an HTTP response from calling an API to retrieve map tile data.
-    public void onRawMapTileDataReceived(byte[] rawMapData)
+    public void OnRawMapTileDataReceived(byte[] rawMapData)
     {
 
         MapUtils.MapImageType imageType = MapUtils.GetImageFormat(rawMapData);

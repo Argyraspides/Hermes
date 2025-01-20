@@ -1,16 +1,16 @@
 /*
 
-                                       
 
 
-88        88  88888888888  88888888ba   88b           d88  88888888888  ad88888ba  
-88        88  88           88      "8b  888b         d888  88          d8"     "8b 
-88        88  88           88      ,8P  88`8b       d8'88  88          Y8,         
-88aaaaaaaa88  88aaaaa      88aaaaaa8P'  88 `8b     d8' 88  88aaaaa     `Y8aaaaa,   
-88""""""""88  88"""""      88""""88'    88  `8b   d8'  88  88"""""       `"""""8b, 
-88        88  88           88    `8b    88   `8b d8'   88  88                  `8b 
-88        88  88           88     `8b   88    `888'    88  88          Y8a     a8P 
-88        88  88888888888  88      `8b  88     `8'     88  88888888888  "Y88888P"  
+
+88        88  88888888888  88888888ba   88b           d88  88888888888  ad88888ba
+88        88  88           88      "8b  888b         d888  88          d8"     "8b
+88        88  88           88      ,8P  88`8b       d8'88  88          Y8,
+88aaaaaaaa88  88aaaaa      88aaaaaa8P'  88 `8b     d8' 88  88aaaaa     `Y8aaaaa,
+88""""""""88  88"""""      88""""88'    88  `8b   d8'  88  88"""""       `"""""8b,
+88        88  88           88    `8b    88   `8b d8'   88  88                  `8b
+88        88  88           88     `8b   88    `888'    88  88          Y8a     a8P
+88        88  88888888888  88      `8b  88     `8'     88  88888888888  "Y88888P"
 
 
                             MESSENGER OF THE MACHINES
@@ -60,18 +60,14 @@ public partial class Earth : StaticBody3D
             for (int tx = 0; tx < tileCountX / 2; tx++)
             {
                 // Get bounding lat/lon from WebMercator tile coordinates
-                (double latMinDeg, double latMaxDeg, double lonMinDeg, double lonMaxDeg)
+                (double latMin, double latMax, double lonMin, double lonMax)
                     = MapUtils.GetTileLatLonBounds(tx, ty, zoomLevel);
 
-                float latMin = Mathf.DegToRad((float)latMinDeg);
-                float latMax = Mathf.DegToRad((float)latMaxDeg);
-                float lonMin = Mathf.DegToRad((float)lonMinDeg);
-                float lonMax = Mathf.DegToRad((float)lonMaxDeg);
 
-                float centerLat = 0.5f * (latMin + latMax);
-                float centerLon = 0.5f * (lonMin + lonMax);
-                float latRange = latMax - latMin;
-                float lonRange = lonMax - lonMin;
+                float centerLat = 0.5f * (float)(latMin + latMax);
+                float centerLon = 0.5f * (float)(lonMin + lonMax);
+                float latRange = (float)(latMax - latMin);
+                float lonRange = (float)(lonMax - lonMin);
 
                 ArrayMesh meshSegment = WGS84EllipsoidMeshGenerator.CreateEllipsoidMeshSegment(
                     centerLat, centerLon, latRange, lonRange

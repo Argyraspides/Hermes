@@ -25,8 +25,8 @@ using System.Collections.Generic;
 // TODO: Add documentation on what this is
 public static class WGS84EllipsoidMeshGenerator
 {
-	private const int m_LATITUDE_SEGMENTS = 32;
-	private const int m_LONGITUDE_SEGMENTS = 32;
+	private const int LATITUDE_SEGMENTS = 32;
+	private const int LONGITUDE_SEGMENTS = 32;
 	/**
 	  Returns a MeshInstance3D quadrilateral or triangular segment that corresponds
 	  to a particular latitude and longitude (center of the segment) and a latitude
@@ -301,19 +301,19 @@ public static class WGS84EllipsoidMeshGenerator
 		var indices = new List<int>();
 
 		// Generate vertices for each point on our grid
-		for (int lat = 0; lat <= m_LATITUDE_SEGMENTS; lat++)
+		for (int lat = 0; lat <= LATITUDE_SEGMENTS; lat++)
 		{
 			// Convert latitude segment to angle in radians
 			// Range from -π/2 to π/2 (South pole to North pole)
-			double phi = Math.PI * ((double)lat / m_LATITUDE_SEGMENTS - 0.5);
+			double phi = Math.PI * ((double)lat / LATITUDE_SEGMENTS - 0.5);
 			double sinPhi = Math.Sin(phi);
 			double cosPhi = Math.Cos(phi);
 
-			for (int lon = 0; lon <= m_LONGITUDE_SEGMENTS; lon++)
+			for (int lon = 0; lon <= LONGITUDE_SEGMENTS; lon++)
 			{
 				// Convert longitude segment to angle in radians
 				// Range from 0 to 2π (complete circle)
-				double lambda = 2 * Math.PI * (double)lon / m_LONGITUDE_SEGMENTS;
+				double lambda = 2 * Math.PI * (double)lon / LONGITUDE_SEGMENTS;
 				double sinLambda = Math.Sin(lambda);
 				double cosLambda = Math.Cos(lambda);
 
@@ -344,15 +344,15 @@ public static class WGS84EllipsoidMeshGenerator
 				// U ranges from 0 to 1 (longitude)
 				// V ranges from 0 to 1 (latitude)
 				uvs.Add(new Vector2(
-					(float)lon / m_LONGITUDE_SEGMENTS,
-					(float)lat / m_LATITUDE_SEGMENTS
+					(float)lon / LONGITUDE_SEGMENTS,
+					(float)lat / LATITUDE_SEGMENTS
 				));
 
 				// Generate indices for triangles
-				if (lat < m_LATITUDE_SEGMENTS && lon < m_LONGITUDE_SEGMENTS)
+				if (lat < LATITUDE_SEGMENTS && lon < LONGITUDE_SEGMENTS)
 				{
-					int current = lat * (m_LONGITUDE_SEGMENTS + 1) + lon;
-					int next = current + m_LONGITUDE_SEGMENTS + 1;
+					int current = lat * (LONGITUDE_SEGMENTS + 1) + lon;
+					int next = current + LONGITUDE_SEGMENTS + 1;
 
 					// First triangle
 					indices.Add(current);
