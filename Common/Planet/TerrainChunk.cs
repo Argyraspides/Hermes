@@ -43,9 +43,6 @@ public partial class TerrainChunk : Node
 		m_zoomLevel = zoomLevel;
 		m_meshInstance3D = meshInstance3D;
 
-        GD.Print("LONGITUDE: ", m_longitude);
-        GD.Print("LATITUDE: ", m_latitude);
-
 		if (m_meshInstance3D != null) AddChild(m_meshInstance3D);
 
 		if (texture2D != null)
