@@ -1,16 +1,16 @@
 /*
 
-                                       
 
 
-88        88  88888888888  88888888ba   88b           d88  88888888888  ad88888ba  
-88        88  88           88      "8b  888b         d888  88          d8"     "8b 
-88        88  88           88      ,8P  88`8b       d8'88  88          Y8,         
-88aaaaaaaa88  88aaaaa      88aaaaaa8P'  88 `8b     d8' 88  88aaaaa     `Y8aaaaa,   
-88""""""""88  88"""""      88""""88'    88  `8b   d8'  88  88"""""       `"""""8b, 
-88        88  88           88    `8b    88   `8b d8'   88  88                  `8b 
-88        88  88           88     `8b   88    `888'    88  88          Y8a     a8P 
-88        88  88888888888  88      `8b  88     `8'     88  88888888888  "Y88888P"  
+
+88        88  88888888888  88888888ba   88b           d88  88888888888  ad88888ba
+88        88  88           88      "8b  888b         d888  88          d8"     "8b
+88        88  88           88      ,8P  88`8b       d8'88  88          Y8,
+88aaaaaaaa88  88aaaaa      88aaaaaa8P'  88 `8b     d8' 88  88aaaaa     `Y8aaaaa,
+88""""""""88  88"""""      88""""88'    88  `8b   d8'  88  88"""""       `"""""8b,
+88        88  88           88    `8b    88   `8b d8'   88  88                  `8b
+88        88  88           88     `8b   88    `888'    88  88          Y8a     a8P
+88        88  88888888888  88      `8b  88     `8'     88  88888888888  "Y88888P"
 
 
                             MESSENGER OF THE MACHINES
@@ -25,21 +25,21 @@ using System.Collections.Generic;
 // TODO: Add documentation on what this is
 public static class WGS84EllipsoidMeshGenerator
 {
-	private const int LATITUDE_SEGMENTS = 32;
-	private const int LONGITUDE_SEGMENTS = 32;
+	private const int m_LATITUDE_SEGMENTS = 32;
+	private const int m_LONGITUDE_SEGMENTS = 32;
 	/**
-	  Returns a MeshInstance3D quadrilateral or triangular segment that corresponds 
-	  to a particular latitude and longitude (center of the segment) and a latitude 
+	  Returns a MeshInstance3D quadrilateral or triangular segment that corresponds
+	  to a particular latitude and longitude (center of the segment) and a latitude
 	  and longitude range that the mesh should cover.
 
-	  The returned mesh segment is curved and represents the surface of a WGS84 
+	  The returned mesh segment is curved and represents the surface of a WGS84
 	  ellipsoid. Units are in kilometers.
 
-	  For most latitude/longitude combinations, this function returns a 
-	  quadrilateral mesh made of two triangles. However, when the segment includes 
-	  either the north pole (90°) or south pole (-90°), it returns a single triangle 
-	  instead. This special handling for poles prevents overlapping geometry when 
-	  multiple segments are combined to create a complete ellipsoid mesh, since all 
+	  For most latitude/longitude combinations, this function returns a
+	  quadrilateral mesh made of two triangles. However, when the segment includes
+	  either the north pole (90°) or south pole (-90°), it returns a single triangle
+	  instead. This special handling for poles prevents overlapping geometry when
+	  multiple segments are combined to create a complete ellipsoid mesh, since all
 	  points at a pole share the same location regardless of longitude.
 
 	  Parameters:
@@ -49,11 +49,11 @@ public static class WGS84EllipsoidMeshGenerator
 		lonRange:  The total longitude range (width) the segment should cover in radians
 
 	  Returns:
-		An ArrayMesh containing either a quadrilateral (for non‐pole segments) or a 
+		An ArrayMesh containing either a quadrilateral (for non‐pole segments) or a
 		triangle (for pole segments).
 	*/
 	// TODO: This function is very very long (not necessarily a bad thing). Can definitely be cleaned up other
-	// wise if not in terms of length. 
+	// wise if not in terms of length.
 	public static ArrayMesh CreateEllipsoidMeshSegment(float lat, float lon, float latRange, float lonRange)
 	{
 		var surfaceArray = new Godot.Collections.Array();
@@ -301,19 +301,19 @@ public static class WGS84EllipsoidMeshGenerator
 		var indices = new List<int>();
 
 		// Generate vertices for each point on our grid
-		for (int lat = 0; lat <= LATITUDE_SEGMENTS; lat++)
+		for (int lat = 0; lat <= m_LATITUDE_SEGMENTS; lat++)
 		{
 			// Convert latitude segment to angle in radians
 			// Range from -π/2 to π/2 (South pole to North pole)
-			double phi = Math.PI * ((double)lat / LATITUDE_SEGMENTS - 0.5);
+			double phi = Math.PI * ((double)lat / m_LATITUDE_SEGMENTS - 0.5);
 			double sinPhi = Math.Sin(phi);
 			double cosPhi = Math.Cos(phi);
 
-			for (int lon = 0; lon <= LONGITUDE_SEGMENTS; lon++)
+			for (int lon = 0; lon <= m_LONGITUDE_SEGMENTS; lon++)
 			{
 				// Convert longitude segment to angle in radians
 				// Range from 0 to 2π (complete circle)
-				double lambda = 2 * Math.PI * (double)lon / LONGITUDE_SEGMENTS;
+				double lambda = 2 * Math.PI * (double)lon / m_LONGITUDE_SEGMENTS;
 				double sinLambda = Math.Sin(lambda);
 				double cosLambda = Math.Cos(lambda);
 
@@ -344,15 +344,15 @@ public static class WGS84EllipsoidMeshGenerator
 				// U ranges from 0 to 1 (longitude)
 				// V ranges from 0 to 1 (latitude)
 				uvs.Add(new Vector2(
-					(float)lon / LONGITUDE_SEGMENTS,
-					(float)lat / LATITUDE_SEGMENTS
+					(float)lon / m_LONGITUDE_SEGMENTS,
+					(float)lat / m_LATITUDE_SEGMENTS
 				));
 
 				// Generate indices for triangles
-				if (lat < LATITUDE_SEGMENTS && lon < LONGITUDE_SEGMENTS)
+				if (lat < m_LATITUDE_SEGMENTS && lon < m_LONGITUDE_SEGMENTS)
 				{
-					int current = lat * (LONGITUDE_SEGMENTS + 1) + lon;
-					int next = current + LONGITUDE_SEGMENTS + 1;
+					int current = lat * (m_LONGITUDE_SEGMENTS + 1) + lon;
+					int next = current + m_LONGITUDE_SEGMENTS + 1;
 
 					// First triangle
 					indices.Add(current);

@@ -12,10 +12,11 @@
 ## 1. Naming Conventions
 
 ### Variables
-- Member variables use the `m_` prefix: `private Vector3 m_position;`
+- Member variables use the `m_` prefix: `private Vector3 m_position;`, unless when part of a fully static utility class
 - Local variables use camelCase: `Vector3 currentPosition;`
 - Constants use UPPER_SNAKE_CASE: `const float MAX_ZOOM_LEVEL = 100.0f;`
 - Boolean variables should ask a question: `bool m_isVisible;`, `bool hasFinishedLoading;`
+- Long numbers should use the `_` to denote grouping for easily determining the value: `float EARTH_SEMI_MAJOR_AXIS_LEN_M = 6_378_137;`
 
 ### Functions
 - Public methods use PascalCase: `public void UpdatePosition()`
@@ -67,7 +68,7 @@ namespace GodotEarth
 - Opening brace on the next line
 - 4 spaces for indentation (no tabs)
 ```csharp
-if (condition) 
+if (condition)
 {
     DoSomething();
 }
@@ -82,6 +83,28 @@ var result = LongMethodName(
     secondParameter,
     thirdParameter
 );
+```
+
+### Long String Literals
+- When a string literal exceeds the line length limit, break it using string concatenation
+- Align subsequent lines with the first string segment
+- Prefer using the + operator for concatenation over string interpolation for constant strings
+```csharp
+// Preferred approach for template strings
+const string m_QUERY_STR_TEMPLATE =
+    "https://ecn.t{server}.tiles.virtualearth.net/tiles/"
+    + "{mapType}{quadKey}.{mapTypeImageFormat}"
+    + "?g={apiVersion}&mkt={lang}";
+
+// Alternative using verbatim strings when needed
+const string m_FILE_PATH_TEMPLATE =
+    @"C:\Program Files\MyApp\"
+    + @"Data\{0}\Config.xml";
+
+// For non-constant strings with interpolation
+string message =
+    $"User {userName} logged in at "
+    + $"{timestamp} from {ipAddress}";
 ```
 
 ### Spacing
@@ -100,10 +123,10 @@ public float Altitude { get; private set; }
 - Use full properties when logic is required:
 ```csharp
 private float m_altitude;
-public float Altitude 
+public float Altitude
 {
     get => m_altitude;
-    set 
+    set
     {
         m_altitude = Mathf.Clamp(value, MIN_ALTITUDE, MAX_ALTITUDE);
         OnAltitudeChanged();
@@ -156,7 +179,7 @@ public TerrainMesh GenerateTerrain(float latitude, float longitude)
 - Create custom exceptions for domain-specific errors
 - Always include meaningful error messages
 ```csharp
-public class TerrainGenerationException : Exception 
+public class TerrainGenerationException : Exception
 {
     public TerrainGenerationException(string message) : base(message) { }
 }
@@ -166,9 +189,9 @@ public class TerrainGenerationException : Exception
 - Use guard clauses at the start of methods
 - Prefer throwing ArgumentException for invalid parameters
 ```csharp
-public void SetZoomLevel(float level) 
+public void SetZoomLevel(float level)
 {
-    if (level < MIN_ZOOM_LEVEL || level > MAX_ZOOM_LEVEL) 
+    if (level < MIN_ZOOM_LEVEL || level > MAX_ZOOM_LEVEL)
     {
         throw new ArgumentException($"Zoom level must be between {MIN_ZOOM_LEVEL} and {MAX_ZOOM_LEVEL}");
     }
@@ -187,7 +210,7 @@ public Node3D TerrainRoot { get; set; }
 
 private Camera3D m_camera;
 
-public override void _Ready() 
+public override void _Ready()
 {
     m_camera = GetNode<Camera3D>("Camera");
 }
@@ -210,8 +233,34 @@ public event Action<Vector2> TerrainLoaded;
 - Use _PhysicsProcess for physics-dependent updates
 - Keep process functions lightweight
 ```csharp
-public override void _Process(double delta) 
+public override void _Process(double delta)
 {
     UpdateCameraPosition(delta);
 }
 ```
+
+Hermes Flair
+
+Always include the Hermes flair at the top of all C# code:
+
+```
+/*
+
+
+
+
+88        88  88888888888  88888888ba   88b           d88  88888888888  ad88888ba
+88        88  88           88      "8b  888b         d888  88          d8"     "8b
+88        88  88           88      ,8P  88`8b       d8'88  88          Y8,
+88aaaaaaaa88  88aaaaa      88aaaaaa8P'  88 `8b     d8' 88  88aaaaa     `Y8aaaaa,
+88""""""""88  88"""""      88""""88'    88  `8b   d8'  88  88"""""       `"""""8b,
+88        88  88           88    `8b    88   `8b d8'   88  88                  `8b
+88        88  88           88     `8b   88    `888'    88  88          Y8a     a8P
+88        88  88888888888  88      `8b  88     `8'     88  88888888888  "Y88888P"
+
+
+                            MESSENGER OF THE MACHINES
+
+*/
+```
+
