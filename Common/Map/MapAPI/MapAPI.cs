@@ -48,6 +48,10 @@ using Godot;
 // by other pending map api requests. This means you MAY have to change the way MapAPI and MapProvider work as 
 // currently they both inherit from Node, and anything inheriting from Node is meant to be a part of the main 
 // game thread. You could also just spawn a thread with its own process or something, idk. Think about it later
+// Whatever you do, please stick to the following principles:
+// - The main game should never be blocked in any way (no blocking waits)
+// - Everything that *can* be asynchronous *should* be asynchronous in this context (map tile fetching & processing)
+// - Robust error handling for network issues such as failed map tile requests, corrupted map data, etc
 public partial class MapAPI : Node
 {
 
