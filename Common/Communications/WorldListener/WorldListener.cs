@@ -1,16 +1,16 @@
 /*
 
-                                       
 
 
-88        88  88888888888  88888888ba   88b           d88  88888888888  ad88888ba  
-88        88  88           88      "8b  888b         d888  88          d8"     "8b 
-88        88  88           88      ,8P  88`8b       d8'88  88          Y8,         
-88aaaaaaaa88  88aaaaa      88aaaaaa8P'  88 `8b     d8' 88  88aaaaa     `Y8aaaaa,   
-88""""""""88  88"""""      88""""88'    88  `8b   d8'  88  88"""""       `"""""8b, 
-88        88  88           88    `8b    88   `8b d8'   88  88                  `8b 
-88        88  88           88     `8b   88    `888'    88  88          Y8a     a8P 
-88        88  88888888888  88      `8b  88     `8'     88  88888888888  "Y88888P"  
+
+88        88  88888888888  88888888ba   88b           d88  88888888888  ad88888ba
+88        88  88           88      "8b  888b         d888  88          d8"     "8b
+88        88  88           88      ,8P  88`8b       d8'88  88          Y8,
+88aaaaaaaa88  88aaaaa      88aaaaaa8P'  88 `8b     d8' 88  88aaaaa     `Y8aaaaa,
+88""""""""88  88"""""      88""""88'    88  `8b   d8'  88  88"""""       `"""""8b,
+88        88  88           88    `8b    88   `8b d8'   88  88                  `8b
+88        88  88           88     `8b   88    `888'    88  88          Y8a     a8P
+88        88  88888888888  88      `8b  88     `8'     88  88888888888  "Y88888P"
 
 
                             MESSENGER OF THE MACHINES
@@ -40,13 +40,13 @@ using System.Text;
 // via an external Python script with MAVSDK, and sent over a WebSocket.
 // If a successful connection is to be established, then the ExternalLauncher.cs
 // must finish executing the Python script which starts this WebSocket server
-// 
-// 
+//
+//
 // This means you should have a node with the WorldListener.cs script attached at a higher
-// level than the ExternalLauncher.cs. Everything under Communications/ should be 
+// level than the ExternalLauncher.cs. Everything under Communications/ should be
 // in the same scene tree.
 //
-// Since the WorldListener module is essentially just a network interface, it is registered as 
+// Since the WorldListener module is essentially just a network interface, it is registered as
 // an Autoload (Singleton) in Hermes.
 public partial class WorldListener : Node
 {
@@ -61,10 +61,10 @@ public partial class WorldListener : Node
 	//	'      `--'      `.-'      `--'      `--'      `--'      `-.'      `--'      `
 
 	// Maps UDP Port #'s to UdpClient
-	private ConcurrentDictionary<UdpClient, IPEndPoint> udpClients;
-	private Thread udpThread;
-	private CancellationTokenSource udpCancelTokenSrc;
-	private int udpPollDelay;
+	private ConcurrentDictionary<UdpClient, IPEndPoint> m_udpClients;
+	private Thread m_udpThread;
+	private CancellationTokenSource m_udpCancelTokenSrc;
+	private int m_udpPollDelay;
 
 	[Signal]
 	public delegate void UdpPacketReceivedEventHandler(byte[] udpPacket);
@@ -74,25 +74,25 @@ public partial class WorldListener : Node
 
 	private void InitializeUdpServer()
 	{
-		udpClients = new ConcurrentDictionary<UdpClient, IPEndPoint>();
-		udpCancelTokenSrc = new CancellationTokenSource();
+		m_udpClients = new ConcurrentDictionary<UdpClient, IPEndPoint>();
+		m_udpCancelTokenSrc = new CancellationTokenSource();
 		udpPacketReceivedSignalQueue = new ConcurrentQueue<Action>();
-		udpPollDelay = 100; // 100ms
+		m_udpPollDelay = 100; // 100ms
 
 		// // Listen in on UDP port 14550 on any address by default (standard MAVLink port)
 		// IPEndPoint defaultEndpoint = new IPEndPoint(IPAddress.Any, KnownWorlds.DEFAULT_MAVLINK_PORT);
 		// udpClients.TryAdd(new UdpClient(defaultEndpoint), defaultEndpoint);
 
-		udpThread = new Thread(ListenToUdp);
-		udpThread.Start();
+		m_udpThread = new Thread(ListenToUdp);
+		m_udpThread.Start();
 
 	}
 
 	private void ListenToUdp()
 	{
-		while (!udpCancelTokenSrc.IsCancellationRequested)
+		while (!m_udpCancelTokenSrc.IsCancellationRequested)
 		{
-			foreach (KeyValuePair<UdpClient, IPEndPoint> kvp in udpClients)
+			foreach (KeyValuePair<UdpClient, IPEndPoint> kvp in m_udpClients)
 			{
 				UdpClient udpClient = kvp.Key;
 				IPEndPoint ipEndPoint = kvp.Value;
@@ -100,7 +100,7 @@ public partial class WorldListener : Node
 				if (rawUdpData.IsEmpty()) continue;
 				udpPacketReceivedSignalQueue.Enqueue(() => ReceivedUdpPacket(rawUdpData));
 			}
-			Thread.Sleep(udpPollDelay);
+			Thread.Sleep(m_udpPollDelay);
 		}
 	}
 
@@ -117,22 +117,22 @@ public partial class WorldListener : Node
 	//	  .--.      .-'.      .--.      .--.      .--.      .--.      .`-.      .--.
 	//	:::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\
 	//	'      `--'      `.-'      `--'      `--'      `--'      `-.'      `--'      `
-	private ConcurrentDictionary<ClientWebSocket, Uri> websocketClients;
-	private CancellationTokenSource websocketCancelTokenSrc;
-	private ConcurrentQueue<Action> websocketPacketReceivedSignalQueue;
+	private ConcurrentDictionary<ClientWebSocket, Uri> m_websocketClients;
+	private CancellationTokenSource m_websocketCancelTokenSrc;
+	private ConcurrentQueue<Action> m_websocketPacketReceivedSignalQueue;
 
-	private Thread websocketThread;
-	private int websocketPollDelay;
+	private Thread m_websocketThread;
+	private int m_websocketPollDelay;
 
 	[Signal]
 	public delegate void WebSocketPacketReceivedEventHandler(byte[] websocketPacket);
 
 	private async void InitializeWebSocketServer()
 	{
-		websocketClients = new ConcurrentDictionary<ClientWebSocket, Uri>();
-		websocketCancelTokenSrc = new CancellationTokenSource();
-		websocketPacketReceivedSignalQueue = new ConcurrentQueue<Action>();
-		websocketPollDelay = 100; // 100ms
+		m_websocketClients = new ConcurrentDictionary<ClientWebSocket, Uri>();
+		m_websocketCancelTokenSrc = new CancellationTokenSource();
+		m_websocketPacketReceivedSignalQueue = new ConcurrentQueue<Action>();
+		m_websocketPollDelay = 100; // 100ms
 
 		try
 		{
@@ -144,8 +144,8 @@ public partial class WorldListener : Node
 			return;
 		}
 
-		websocketThread = new Thread(ListenToWebSockets);
-		websocketThread.Start();
+		m_websocketThread = new Thread(ListenToWebSockets);
+		m_websocketThread.Start();
 	}
 
 	private async Task AttemptConnectDefaultWebSocketWithRetries()
@@ -160,7 +160,7 @@ public partial class WorldListener : Node
 			try
 			{
 				await AttemptConnectDefaultWebSocket(client);
-				websocketClients.TryAdd(client, new Uri(KnownWorlds.DEFAULT_WEBSOCKET_URL));
+				m_websocketClients.TryAdd(client, new Uri(KnownWorlds.DEFAULT_WEBSOCKET_URL));
 				GD.Print($"HERMES: Successfully connected to WebSocket on attempt {currentRetry + 1}, URL: {KnownWorlds.DEFAULT_WEBSOCKET_URL}");
 				return;
 			}
@@ -186,7 +186,7 @@ public partial class WorldListener : Node
 	{
 		await client.ConnectAsync(
 			new Uri(KnownWorlds.DEFAULT_WEBSOCKET_URL),
-			websocketCancelTokenSrc.Token
+			m_websocketCancelTokenSrc.Token
 		);
 	}
 
@@ -198,9 +198,9 @@ public partial class WorldListener : Node
 	private async void ListenToWebSockets()
 	{
 
-		while (!websocketCancelTokenSrc.IsCancellationRequested)
+		while (!m_websocketCancelTokenSrc.IsCancellationRequested)
 		{
-			foreach (KeyValuePair<ClientWebSocket, Uri> clientPair in websocketClients)
+			foreach (KeyValuePair<ClientWebSocket, Uri> clientPair in m_websocketClients)
 			{
 				ClientWebSocket client = clientPair.Key;
 
@@ -224,7 +224,7 @@ public partial class WorldListener : Node
 							byte[] packet = new byte[result.Count];
 							Array.Copy(buffer, packet, result.Count);
 
-							websocketPacketReceivedSignalQueue.Enqueue(() => { ReceivedWebSocketPacket(packet); });
+							m_websocketPacketReceivedSignalQueue.Enqueue(() => { ReceivedWebSocketPacket(packet); });
 						}
 					}
 					if (client.State == WebSocketState.CloseSent)
@@ -241,7 +241,7 @@ public partial class WorldListener : Node
 				catch (WebSocketException ex)
 				{
 					GD.PrintErr($"WebSocket error: {ex.Message}");
-					websocketClients.TryRemove(clientPair);
+					m_websocketClients.TryRemove(clientPair);
 				}
 				catch (Exception ex)
 				{
@@ -249,7 +249,7 @@ public partial class WorldListener : Node
 				}
 			}
 
-			Thread.Sleep(websocketPollDelay);
+			Thread.Sleep(m_websocketPollDelay);
 		}
 	}
 
@@ -276,23 +276,23 @@ public partial class WorldListener : Node
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
 	public override void _Process(double delta)
 	{
-		processConcurrentQueue(udpPacketReceivedSignalQueue);
-		processConcurrentQueue(websocketPacketReceivedSignalQueue);
+		ProcessConcurrentQueue(udpPacketReceivedSignalQueue);
+		ProcessConcurrentQueue(m_websocketPacketReceivedSignalQueue);
 	}
 
 	public override void _ExitTree()
 	{
-		udpCancelTokenSrc.Cancel();
-		websocketCancelTokenSrc.Cancel();
+		m_udpCancelTokenSrc.Cancel();
+		m_websocketCancelTokenSrc.Cancel();
 
-		udpThread.Join();
-		websocketThread.Join();
+		m_udpThread.Join();
+		m_websocketThread.Join();
 
-		foreach (KeyValuePair<ClientWebSocket, Uri> kvp in websocketClients) kvp.Key.Dispose();
-		foreach (KeyValuePair<UdpClient, IPEndPoint> kvp in udpClients) kvp.Key.Dispose();
+		foreach (KeyValuePair<ClientWebSocket, Uri> kvp in m_websocketClients) kvp.Key.Dispose();
+		foreach (KeyValuePair<UdpClient, IPEndPoint> kvp in m_udpClients) kvp.Key.Dispose();
 	}
 
-	private void processConcurrentQueue(ConcurrentQueue<Action> concurrentQueue)
+	private void ProcessConcurrentQueue(ConcurrentQueue<Action> concurrentQueue)
 	{
 		if (concurrentQueue.IsEmpty) return;
 		while (concurrentQueue.TryDequeue(out Action action))

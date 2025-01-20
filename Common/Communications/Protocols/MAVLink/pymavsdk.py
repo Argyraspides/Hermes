@@ -57,7 +57,7 @@ connectedClients: ConnectedClients = set()
 
 
 # MAVLink Listener uses MAVSDK to listen in on UDP ports for MAVLink messages.
-# It then sends these UDP packets to be deserialized into a JSON format, 
+# It then sends these UDP packets to be deserialized into a JSON format,
 # and then adds it to the deserializedMavlinkMessageBuffer for the WebSocket
 # server to pick up and send it over to the main Hermes application.
 class MAVLinkListener:
@@ -73,7 +73,7 @@ class MAVLinkListener:
             except Exception as e:
                 print(f"Failed to connect to {url}: {e}")
 
-    
+
     def mavlinkMessageToDictionary(self, msg: Any) -> Dict[str, Any]:
 
         messageDictionary: Dict[str, Any] = {
@@ -118,7 +118,7 @@ class MAVLinkListener:
 
 
 # The WebSocketServer creates a websocket server and does one thing:
-# take from the deserialized MAVLink message buffer that the MAVLinkListener 
+# take from the deserialized MAVLink message buffer that the MAVLinkListener
 # adds to and then broadcasts it to all connected clients
 class WebSocketServer:
 
