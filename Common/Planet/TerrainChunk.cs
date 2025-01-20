@@ -1,16 +1,16 @@
 /*
 
-                                       
 
 
-88        88  88888888888  88888888ba   88b           d88  88888888888  ad88888ba  
-88        88  88           88      "8b  888b         d888  88          d8"     "8b 
-88        88  88           88      ,8P  88`8b       d8'88  88          Y8,         
-88aaaaaaaa88  88aaaaa      88aaaaaa8P'  88 `8b     d8' 88  88aaaaa     `Y8aaaaa,   
-88""""""""88  88"""""      88""""88'    88  `8b   d8'  88  88"""""       `"""""8b, 
-88        88  88           88    `8b    88   `8b d8'   88  88                  `8b 
-88        88  88           88     `8b   88    `888'    88  88          Y8a     a8P 
-88        88  88888888888  88      `8b  88     `8'     88  88888888888  "Y88888P"  
+
+88        88  88888888888  88888888ba   88b           d88  88888888888  ad88888ba
+88        88  88           88      "8b  888b         d888  88          d8"     "8b
+88        88  88           88      ,8P  88`8b       d8'88  88          Y8,
+88aaaaaaaa88  88aaaaa      88aaaaaa8P'  88 `8b     d8' 88  88aaaaa     `Y8aaaaa,
+88""""""""88  88"""""      88""""88'    88  `8b   d8'  88  88"""""       `"""""8b,
+88        88  88           88    `8b    88   `8b d8'   88  88                  `8b
+88        88  88           88     `8b   88    `888'    88  88          Y8a     a8P
+88        88  88888888888  88      `8b  88     `8'     88  88888888888  "Y88888P"
 
 
                             MESSENGER OF THE MACHINES
@@ -21,7 +21,7 @@
 using Godot;
 using System;
 
-// TODO: Add documentation on what this is
+// TODO: Add documentation on what this is. Remember to mention everything is in radians
 public partial class TerrainChunk : Node
 {
 
@@ -42,6 +42,10 @@ public partial class TerrainChunk : Node
 		m_longitudeRange = lonRange;
 		m_zoomLevel = zoomLevel;
 		m_meshInstance3D = meshInstance3D;
+
+        GD.Print("LONGITUDE: ", m_longitude);
+        GD.Print("LATITUDE: ", m_latitude);
+
 		if (m_meshInstance3D != null) AddChild(m_meshInstance3D);
 
 		if (texture2D != null)
@@ -59,22 +63,22 @@ public partial class TerrainChunk : Node
 
 	}
 
-	// Represents the latitude location of this terrain chunk.
+	// Represents the latitude location of this terrain chunk in radians.
 	// Latitude is located at the center of the chunk's shape
-	// which is determined by its mesh
+	// which is determined by its mesh. Latitude is in radians.
 	public float Latitude => m_latitude;
 
-	// Represents the latitude range of this terrain chunk.
+	// Represents the latitude range of this terrain chunk in radians.
 	// I.e., how  many degrees of latitude that the chunk covers
 	// in total
 	public float LatitudeRange => m_latitudeRange;
 
-	// Represents the longitude location of this terrain chunk.
+	// Represents the longitude location of this terrain chunk in radians.
 	// Latitude is located at the center of the chunk's shape
 	// which is determined by its mesh
 	public float Longitude => m_longitude;
 
-	// Represents the longitude range of this terrain chunk.
+	// Represents the longitude range of this terrain chunk in radians.
 	// I.e., how  many degrees of longitude that the chunk covers
 	// in total
 	public float LongitudeRange => m_longitudeRange;
@@ -146,7 +150,7 @@ public partial class TerrainChunk : Node
 
 		float latDeg = (float)(m_latitude * (180.0 / Math.PI));
 		float lonDeg = (float)(m_longitude * (180.0 / Math.PI));
-		
+
 		m_mapApi.RequestMapTile(latDeg, lonDeg, m_zoomLevel);
 
 	}
