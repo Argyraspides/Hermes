@@ -1,16 +1,16 @@
 /*
 
-                                       
 
 
-88        88  88888888888  88888888ba   88b           d88  88888888888  ad88888ba  
-88        88  88           88      "8b  888b         d888  88          d8"     "8b 
-88        88  88           88      ,8P  88`8b       d8'88  88          Y8,         
-88aaaaaaaa88  88aaaaa      88aaaaaa8P'  88 `8b     d8' 88  88aaaaa     `Y8aaaaa,   
-88""""""""88  88"""""      88""""88'    88  `8b   d8'  88  88"""""       `"""""8b, 
-88        88  88           88    `8b    88   `8b d8'   88  88                  `8b 
-88        88  88           88     `8b   88    `888'    88  88          Y8a     a8P 
-88        88  88888888888  88      `8b  88     `8'     88  88888888888  "Y88888P"  
+
+88        88  88888888888  88888888ba   88b           d88  88888888888  ad88888ba
+88        88  88           88      "8b  888b         d888  88          d8"     "8b
+88        88  88           88      ,8P  88`8b       d8'88  88          Y8,
+88aaaaaaaa88  88aaaaa      88aaaaaa8P'  88 `8b     d8' 88  88aaaaa     `Y8aaaaa,
+88""""""""88  88"""""      88""""88'    88  `8b   d8'  88  88"""""       `"""""8b,
+88        88  88           88    `8b    88   `8b d8'   88  88                  `8b
+88        88  88           88     `8b   88    `888'    88  88          Y8a     a8P
+88        88  88888888888  88      `8b  88     `8'     88  88888888888  "Y88888P"
 
 
                             MESSENGER OF THE MACHINES
@@ -30,43 +30,43 @@ using System.Collections.Generic;
 // States with an NaN value are considered uninitialized
 public partial class CoreState : Node
 {
-    private Dictionary<string, object> _stateValues = new Dictionary<string, object>();
-    
+    private Dictionary<string, object> m_stateValues = new Dictionary<string, object>();
+
     // Constants for state keys to prevent typos and allow refactoring
-    public static class StateKeys
+    private static class StateKeys
     {
         // Floats
-        public const string VehicleId           = "VehicleId";
-        public const string EarthHeading        = "EarthHeading";
+        public const string VEHICLE_ID = "VEHICLE_ID";
+        public const string EARTH_HEADING = "EARTH_HEADING";
 
         // Vector3s
-        public const string EarthPosition       = "EarthPosition";
-        public const string LocalPosition       = "LocalPosition";
-        public const string Attitude            = "Attitude";
-        public const string GroundVelocity      = "GroundVelocity";
-        public const string GroundAcceleration  = "GroundAcceleration";
+        public const string EARTH_POSITION = "EARTH_POSITION";
+        public const string LOCAL_POSITION = "LOCAL_POSITION";
+        public const string ATTITUDE = "ATTITUDE";
+        public const string GROUND_VELOCITY = "GROUND_VELOCITY";
+        public const string GROUND_ACCELERATION = "GROUND_ACCELERATION";
 
         // Enums
-        public const string VehicleType         = "VehicleType";
+        public const string VEHICLE_TYPE = "VEHICLE_TYPE";
     }
 
     public CoreState()
     {
-        _stateValues[StateKeys.VehicleId]           = float.NaN;
-        _stateValues[StateKeys.EarthHeading]        = float.NaN;
+        m_stateValues[StateKeys.VEHICLE_ID] = float.NaN;
+        m_stateValues[StateKeys.EARTH_HEADING] = float.NaN;
 
-        _stateValues[StateKeys.EarthPosition]       = new Vector3(float.NaN, float.NaN, float.NaN);
-        _stateValues[StateKeys.LocalPosition]       = new Vector3(float.NaN, float.NaN, float.NaN);
-        _stateValues[StateKeys.Attitude]            = new Vector3(float.NaN, float.NaN, float.NaN);
-        _stateValues[StateKeys.GroundVelocity]      = new Vector3(float.NaN, float.NaN, float.NaN);
-        _stateValues[StateKeys.GroundAcceleration]  = new Vector3(float.NaN, float.NaN, float.NaN);
+        m_stateValues[StateKeys.EARTH_POSITION] = new Vector3(float.NaN, float.NaN, float.NaN);
+        m_stateValues[StateKeys.LOCAL_POSITION] = new Vector3(float.NaN, float.NaN, float.NaN);
+        m_stateValues[StateKeys.ATTITUDE] = new Vector3(float.NaN, float.NaN, float.NaN);
+        m_stateValues[StateKeys.GROUND_VELOCITY] = new Vector3(float.NaN, float.NaN, float.NaN);
+        m_stateValues[StateKeys.GROUND_ACCELERATION] = new Vector3(float.NaN, float.NaN, float.NaN);
 
-        _stateValues[StateKeys.VehicleType]         = VehicleType.Unknown;
+        m_stateValues[StateKeys.VEHICLE_TYPE] = VehicleType.Unknown;
     }
 
     public T GetState<T>(string key)
     {
-        if (_stateValues.TryGetValue(key, out object value))
+        if (m_stateValues.TryGetValue(key, out object value))
         {
             return (T)value;
         }
@@ -75,9 +75,9 @@ public partial class CoreState : Node
 
     public void SetState<T>(string key, T value)
     {
-        if (_stateValues.ContainsKey(key))
+        if (m_stateValues.ContainsKey(key))
         {
-            _stateValues[key] = value;
+            m_stateValues[key] = value;
         }
         else
         {
@@ -88,53 +88,53 @@ public partial class CoreState : Node
     // Convenience properties that use the dictionary internally
     public VehicleType VehicleType
     {
-        get => GetState<VehicleType>(StateKeys.VehicleType);
-        set => SetState(StateKeys.VehicleType, value);
+        get => GetState<VehicleType>(StateKeys.VEHICLE_TYPE);
+        set => SetState(StateKeys.VEHICLE_TYPE, value);
     }
 
     public float VehicleId
     {
-        get => GetState<float>(StateKeys.VehicleId);
-        set => SetState(StateKeys.VehicleId, value);
+        get => GetState<float>(StateKeys.VEHICLE_ID);
+        set => SetState(StateKeys.VEHICLE_ID, value);
     }
 
     public Vector3 EarthPosition
     {
-        get => GetState<Vector3>(StateKeys.EarthPosition);
-        set => SetState(StateKeys.EarthPosition, value);
+        get => GetState<Vector3>(StateKeys.EARTH_POSITION);
+        set => SetState(StateKeys.EARTH_POSITION, value);
     }
 
     public float EarthHeading
     {
-        get => GetState<float>(StateKeys.EarthHeading);
-        set => SetState(StateKeys.EarthHeading, value);
+        get => GetState<float>(StateKeys.EARTH_HEADING);
+        set => SetState(StateKeys.EARTH_HEADING, value);
     }
 
     public Vector3 LocalPosition
     {
-        get => GetState<Vector3>(StateKeys.LocalPosition);
-        set => SetState(StateKeys.LocalPosition, value);
+        get => GetState<Vector3>(StateKeys.LOCAL_POSITION);
+        set => SetState(StateKeys.LOCAL_POSITION, value);
     }
 
     public Vector3 Attitude
     {
-        get => GetState<Vector3>(StateKeys.Attitude);
-        set => SetState(StateKeys.Attitude, value);
+        get => GetState<Vector3>(StateKeys.ATTITUDE);
+        set => SetState(StateKeys.ATTITUDE, value);
     }
 
     public Vector3 GroundVel
     {
-        get => GetState<Vector3>(StateKeys.GroundVelocity);
-        set => SetState(StateKeys.GroundVelocity, value);
+        get => GetState<Vector3>(StateKeys.GROUND_VELOCITY);
+        set => SetState(StateKeys.GROUND_VELOCITY, value);
     }
 
     public Vector3 GroundAcc
     {
-        get => GetState<Vector3>(StateKeys.GroundAcceleration);
-        set => SetState(StateKeys.GroundAcceleration, value);
+        get => GetState<Vector3>(StateKeys.GROUND_ACCELERATION);
+        set => SetState(StateKeys.GROUND_ACCELERATION, value);
     }
 
-    
+
     // Helper method to check if a CoreState field is in its "uninitialized" state
     private bool IsUninitialized(object value)
     {
@@ -154,18 +154,18 @@ public partial class CoreState : Node
         return false;
     }
 
-    
+
     // Copies known fields from another CoreState instance
     public void CopyKnownFields(CoreState fromState)
     {
         if (fromState == null)
             return;
 
-        foreach (var kvp in fromState._stateValues)
+        foreach (var kvp in fromState.m_stateValues)
         {
             if (!IsUninitialized(kvp.Value))
             {
-                _stateValues[kvp.Key] = kvp.Value;
+                m_stateValues[kvp.Key] = kvp.Value;
             }
         }
     }
