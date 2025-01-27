@@ -32,8 +32,6 @@ public partial class Earth : StaticBody3D
     private TerrainQuadTree terrainQuadTree;
 
     private Texture2D texture2D;
-    // TODO: for testing. Remove later
-    private string testTilePath = "res://Universe/SolarSystem/Assets/a03333_r.jpeg";
 
 
     private void UpdateWireframeState()
@@ -91,7 +89,6 @@ public partial class Earth : StaticBody3D
 
     public override void _Ready()
     {
-        texture2D = GD.Load<Texture2D>(testTilePath);
         UpdateWireframeState();
         GenerateEarthMesh();
     }
