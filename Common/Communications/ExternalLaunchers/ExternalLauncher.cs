@@ -47,6 +47,45 @@ public partial class ExternalLauncher : Node
     private Process m_pythonMAVLinkListenerProcess;
     private bool m_isPythonMAVLinkListenerProcessRunning = false;
 
+    // Some systems might use "python" as the CLI argument to invoke the Python interpreter, and others
+    // may use "python3". In future, "python4" may be a thing. Here we detect how the user has
+    // configured theirs so that we can run any dependent Python scripts gracefully
+    private string DetectPythonCommand()
+    {
+        string[] pythonCommands = { "python3", "python" };
+        foreach (string cmd in pythonCommands)
+        {
+            try
+            {
+                ProcessStartInfo startInfo = new ProcessStartInfo
+                {
+                    FileName = cmd,
+                    Arguments = "--version",
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true
+                };
+
+                using (Process process = Process.Start(startInfo))
+                {
+                    process.WaitForExit();
+                    if (process.ExitCode == 0)
+                    {
+                        GD.Print($"Detected Python command: {cmd}");
+                        return cmd;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                GD.Print($"Python detection error for {cmd}: {e.Message}");
+            }
+        }
+
+        GD.PrintErr("No compatible Python interpreter found. Please install Python 3.");
+        return null;
+    }
 
     private void InitializePythonMAVLinkListener()
     {
@@ -159,6 +198,8 @@ public partial class ExternalLauncher : Node
     // Called when the node enters the scene tree for the first time.
     public override void _Ready()
     {
+        m_pythonCommand = DetectPythonCommand();
+
         InitializePythonMAVLinkListener();
 
         // _ExitTree() may not be called if the application crashes.
