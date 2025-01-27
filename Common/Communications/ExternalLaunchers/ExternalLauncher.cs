@@ -40,7 +40,6 @@ public partial class ExternalLauncher : Node
     private const string m_PYTHON_MAVLINK_LISTENER_LOCAL_SCRIPT_PATH = "res://Common/Communications/Protocols/MAVLink/pymavsdk.py";
     private string m_pythonMAVLinkListenerAbsoluteScriptPath;
 
-    // TODO: This may cause issues. Some systems use "python" while others use "python3"
     private string m_pythonCommand = "python3";
 
     private Thread m_pythonMAVLinkListenerThread;
