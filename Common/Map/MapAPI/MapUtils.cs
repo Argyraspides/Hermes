@@ -315,4 +315,32 @@ public static class MapUtils
         );
     }
 
+    // Converts a raw byte array to an image texture.
+    // Detects whether the image is a JPEG, PNG, or BMP, and returns the
+    // appropriate ImageTexture
+    public static ImageTexture ByteArrayToImageTexture(byte[] rawMapData)
+    {
+
+        MapImageType imageType = GetImageFormat(rawMapData);
+
+        Image image = new Image();
+
+        if (imageType == MapImageType.JPEG)
+        {
+            image.LoadJpgFromBuffer(rawMapData);
+        }
+        if (imageType == MapImageType.PNG)
+        {
+            image.LoadPngFromBuffer(rawMapData);
+        }
+        if (imageType == MapImageType.BMP)
+        {
+            image.LoadBmpFromBuffer(rawMapData);
+        }
+
+        ImageTexture texture = new ImageTexture();
+        texture.SetImage(image);
+        return texture;
+    }
+
 }

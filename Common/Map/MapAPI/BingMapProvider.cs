@@ -22,43 +22,72 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using static MapUtils;
 
 // TODO: Add documentation on what this is
-public partial class BingMapProvider : MapProvider
+public static class BingMapProvider
 {
 
-    const string m_QUERY_STR_TEMPLATE =
-        "https://ecn.t{server}.tiles.virtualearth.net/tiles/"
-        + "{mapType}{quadKey}.{mapTypeImageFormat}"
-        + "?g={apiVersion}&mkt={lang}";
+    /*
 
-    int m_nextServerInstance = 0;
+    The Bing maps API query URL looks like this:
 
+        "https://ecn.t{server}.tiles.virtualearth.net/tiles/{mapType}{quadKey}.{mapTypeImageFormat}?g={apiVersion}&mkt={lang}";
 
-    public BingMapProvider() : base()
+    */
+    private static readonly string[] m_QUERY_STR_PARAM_NAMES = { "server", "mapType", "quadKey", "mapTypeImageFormat", "apiVersion", "lang" };
+    private static readonly string m_QUERY_STR_TEMPLATE = string.Format(
+        "https://ecn.t{{{0}}}.tiles.virtualearth.net/tiles/{{{1}}}{{{2}}}.{{{3}}}?g={{{4}}}&mkt={{{5}}}",
+        m_QUERY_STR_PARAM_NAMES[0],
+        m_QUERY_STR_PARAM_NAMES[1],
+        m_QUERY_STR_PARAM_NAMES[2],
+        m_QUERY_STR_PARAM_NAMES[3],
+        m_QUERY_STR_PARAM_NAMES[4],
+        m_QUERY_STR_PARAM_NAMES[5]
+    );
+
+    private static int m_nextServerInstance = 0;
+
+    private const int m_MAX_SERVERS = 4;
+
+    // Field: mapType 				("a" for satellite, "r" for street view, "h" for hybrid)
+    // Field: quadKey 				(quadrant key value)
+    // Field: mapTypeImageFormat    (image file type, JPG for satellite & hybrid views, PNG for street)
+    // Field: apiVersion			(API version number)
+    // Field: lang					(language, e.g., "en" for English)
+    public struct BingMapTileParams
     {
-        m_mapType = MapUtils.MapType.SATELLITE;
-        m_mapImageType = MapUtils.MapImageType.JPEG;
-    }
+        private readonly List<KeyValuePair<string, string>> paramKeyValuePair { get; }
+        public BingMapTileParams(string quadKey, string apiVersion = "563", string lang = "en", string mapTypeImageFormat = "JPEG", string mapType = "a")
+        {
+            paramKeyValuePair = new List<KeyValuePair<string, string>> {
+                new KeyValuePair<string, string>(m_QUERY_STR_PARAM_NAMES[1], mapType),
+                new KeyValuePair<string, string>(m_QUERY_STR_PARAM_NAMES[2], quadKey),
+                new KeyValuePair<string, string>(m_QUERY_STR_PARAM_NAMES[3], mapTypeImageFormat),
+                new KeyValuePair<string, string>(m_QUERY_STR_PARAM_NAMES[4], apiVersion),
+                new KeyValuePair<string, string>(m_QUERY_STR_PARAM_NAMES[5], lang)
+            };
+        }
+        public List<KeyValuePair<string, string>> GetParams()
+        {
+            return paramKeyValuePair;
+        }
+    };
+
 
     // Constructs a query string for obtaining a map tile from Bing's map provider API.
-    // Takes in a dictionary which should contain mappings from the name of the
+    // Takes in a BingMapTileParams struct which should contain mappings from the name of the
     // parameter name (string) to the value of the parameter (string)
-    // Dictionary keys must include:
-    //
-    // "mapType" 				("a" for satellite, "r" for street view, "h" for hybrid)
-    // "quadKey" 				(quadrant key value)
-    // "mapTypeImageFormat"		(image file type, JPG for satellite & hybrid views, PNG for street)
-    // "apiVersion"				(API version number)
-    // "lang"					(language, e.g., "en" for English)
-    public override string ConstructQueryString(Dictionary<string, string> dict)
+    public static string ConstructQueryString(BingMapTileParams bingMapTileParams)
     {
 
         StringBuilder finalQueryString = new StringBuilder(m_QUERY_STR_TEMPLATE);
-        finalQueryString.Replace("{server}", NextServerNumber().ToString());
+        finalQueryString.Replace("{" + m_QUERY_STR_PARAM_NAMES[0] + "}", NextServerNumber().ToString());
 
-        foreach (KeyValuePair<string, string> apiParamPair in dict)
+        List<KeyValuePair<string, string>> paramKeyValuePair = bingMapTileParams.GetParams();
+
+        foreach (KeyValuePair<string, string> apiParamPair in paramKeyValuePair)
         {
             string replacementStr = "{" + apiParamPair.Key + "}";
             finalQueryString.Replace(replacementStr, apiParamPair.Value);
@@ -67,96 +96,11 @@ public partial class BingMapProvider : MapProvider
         return finalQueryString.ToString();
     }
 
-    public Dictionary<string, string> ConstructQueryParams(string quadkey)
-    {
-        Dictionary<string, string> apiQueryParams = new Dictionary<string, string>();
-
-        if (m_mapType == MapType.SATELLITE)
-        {
-            apiQueryParams.Add("mapType", "a");
-        }
-        else if (m_mapType == MapType.STREET)
-        {
-            apiQueryParams.Add("mapType", "r");
-        }
-        else if (m_mapType == MapType.HYBRID)
-        {
-            apiQueryParams.Add("mapType", "h");
-        }
-        // TODO: add some handling if the map type is not what we expect
-
-
-        apiQueryParams.Add("quadKey", quadkey);
-        apiQueryParams.Add("mapTypeImageFormat", "JPG");
-        // TODO: Do not hardcode the API version. Find a way to parametrize this
-        apiQueryParams.Add("apiVersion", "563");
-        apiQueryParams.Add("lang", "en");
-        return apiQueryParams;
-    }
-
-
-    // Overridden from MapProvider. Queues up an HTTP request
-    // to fetch a map tile (256x256 raw byte array).
-    // If eventually successful, the RawMapTileDataReceivedEventHandler(byte[] rawMapTileData)
-    // signal in MapProvider will be called
-    public override Error FetchRawMapTileData(string queryString)
-    {
-        bool requestersAvailable = m_availableRequesters.TryDequeue(out HttpRequest httpRequester);
-        Error error;
-        if (requestersAvailable)
-        {
-            // If the request finishes, onHttpRequestCompleted() gets called
-            error = httpRequester.Request(queryString);
-        }
-        else
-        {
-            error = Error.Busy;
-        }
-
-        return error;
-    }
-
-    // Overridden from MapProvider. This is called automatically by any one HttpRequest object
-    // upon an HTTP request response
-    public override void OnHttpRequestCompleted(long result, long responseCode, string[] headers, byte[] body)
-    {
-        EmitSignal("RawMapTileDataReceived", body);
-    }
-
-    public override int NextServerNumber()
+    public static int NextServerNumber()
     {
         int next = m_nextServerInstance;
-        m_nextServerInstance = (++m_nextServerInstance) % m_MAX_CONCURRENT_HTTP_REQUESTS;
+        m_nextServerInstance = (++m_nextServerInstance) % m_MAX_SERVERS;
         return next;
     }
-
-
-    // Requests a map tile from the Bing API. If successful, the
-    // RawMapTileDataReceivedEventHandler(byte[] rawMapTileData) signal from the
-    // MapProvider base class will be invoked where the raw image data can be "picked up"
-    // latitude and longitude are in radians
-    public override void RequestMapTile(float latitude, float longitude, int zoom)
-    {
-        double latRad = latitude * MapUtils.DEGREES_TO_RADIANS;
-        double lonRad = longitude * MapUtils.DEGREES_TO_RADIANS;
-
-        int latTileCoords = MapUtils.LatitudeToTileCoordinateMercator(latRad, zoom);
-        int lonTileCoords = MapUtils.LongitudeToTileCoordinateMercator(lonRad, zoom);
-
-        string quadkey = MapUtils.TileCoordinatesToQuadkey(lonTileCoords, latTileCoords, zoom);
-        Dictionary<string, string> queryParamDict = ConstructQueryParams(quadkey);
-        string queryString = ConstructQueryString(queryParamDict);
-
-        Error error = FetchRawMapTileData(queryString);
-
-        // Queue up to try one more time later
-        // TODO: Have a clean way to adjust the number of retries
-        if (error != Error.Ok)
-        {
-            m_pendingRequests.Enqueue(() => FetchRawMapTileData(queryString));
-        }
-
-    }
-
 
 }
