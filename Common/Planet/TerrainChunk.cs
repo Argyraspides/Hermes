@@ -38,7 +38,6 @@ public partial class TerrainChunk : Node
     private int m_zoomLevel;
     private MeshInstance3D m_meshInstance3D;
     private ShaderMaterial m_shaderMaterial;
-    private bool m_autoLoad;
 
     /// <summary>
     /// Gets or sets the latitude location of this terrain chunk in radians.
@@ -116,16 +115,6 @@ public partial class TerrainChunk : Node
     }
 
     /// <summary>
-    /// Gets or sets whether the terrain chunk should automatically load its data
-    /// when the node becomes ready in the scene tree.
-    /// </summary>
-    public bool AutoLoad
-    {
-        get => m_autoLoad;
-        set => m_autoLoad = value;
-    }
-
-    /// <summary>
     /// Initializes a new instance of the TerrainChunk class.
     /// </summary>
     /// <param name="lat">Center latitude in radians.</param>
@@ -142,8 +131,7 @@ public partial class TerrainChunk : Node
         float lonRange = 0.0f,
         int zoomLevel = 0,
         MeshInstance3D meshInstance3D = null,
-        Texture2D texture2D = null,
-        bool autoLoad = false
+        Texture2D texture2D = null
     )
     {
         m_latitude = lat;
@@ -152,25 +140,6 @@ public partial class TerrainChunk : Node
         m_longitudeRange = lonRange;
         m_zoomLevel = zoomLevel;
         m_meshInstance3D = meshInstance3D;
-        m_autoLoad = autoLoad;
-
-        if (m_meshInstance3D != null)
-        {
-            AddChild(m_meshInstance3D);
-        }
-
-        if (texture2D != null)
-        {
-            InitializeShaderMaterial(texture2D);
-        }
-    }
-
-    public override async void _Ready()
-    {
-        if (m_autoLoad)
-        {
-            Load();
-        }
     }
 
     public async void Load()
@@ -184,17 +153,6 @@ public partial class TerrainChunk : Node
         {
             GD.PrintErr($"Failed to initialize terrain: {ex}");
         }
-    }
-
-    private void InitializeShaderMaterial(Texture2D texture2D)
-    {
-        m_shaderMaterial = new ShaderMaterial
-        {
-            Shader = ResourceLoader.Load<Shader>(SHADER_PATH)
-        };
-        m_shaderMaterial.SetShaderParameter("map_tile", texture2D);
-        m_shaderMaterial.SetShaderParameter("zoom_level", m_zoomLevel);
-        m_meshInstance3D.MaterialOverride = m_shaderMaterial;
     }
 
     /// <summary>

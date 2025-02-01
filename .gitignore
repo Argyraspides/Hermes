@@ -7,3 +7,6 @@ Common/Communications/Protocols/MAVLink/MAVLinkDefinitionGeneration/MAVLinkDefin
 
 # VSCode folder
 .vscode/
+
+# Large asset folder
+Common/Planet/PlanetTiles/

@@ -20,42 +20,32 @@
 
 using Godot;
 using System;
-using System.Threading;
-using System.Threading.Tasks;
 
-public partial class Earth : StaticBody3D
+public partial class Earth : Planet
 {
-    [Export]
-    private bool showWireframe = false;
-    private bool previousWireframeState = false;
 
-    private TerrainQuadTree terrainQuadTree;
-
-    private Texture2D texture2D;
-
-
-    private void UpdateWireframeState()
+    public override void _Ready()
     {
-        RenderingServer.SetDebugGenerateWireframes(showWireframe);
-        GetViewport().SetDebugDraw(showWireframe ?
-            Viewport.DebugDrawEnum.Wireframe :
-            Viewport.DebugDrawEnum.Disabled);
-        previousWireframeState = showWireframe;
+        base._Ready();
     }
 
-    // Generates a bunch of TerrainChunks that will create a WGS84 ellipsoid
-    // and adds them to the scene tree. By default, the tiles applied to the Earth
-    // are at zoom level 5 (2^5 tiles each side)
-    private void GenerateEarthMesh(int zoomLevel = 6)
+    protected override void InitializePlanetDimensions()
+    {
+        m_semiMajorAxisKm = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
+        m_semiMinorAxisKm = SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM;
+    }
+
+    protected override void InitializePlanetSurface(int zoomLevel)
     {
 
-        TerrainQuadTree terrainQuadTree = new TerrainQuadTree();
-        terrainQuadTree.InitializeQuadTree(zoomLevel);
+        m_terrainQuadTree = new TerrainQuadTree();
+        m_terrainQuadTree.InitializeQuadTree(zoomLevel);
 
-        for (int i = 0; i < Math.Pow(4, zoomLevel - 1); i++)
+        var finalQuadTreeLevel = m_terrainQuadTree.GetLastQuadTreeLevel();
+
+        for (int i = 0; i < Math.Pow(4, zoomLevel); i++)
         {
-            TerrainQuadTree.TerrainQuadTreeNode terrainQuadTreeNode =
-                 terrainQuadTree.TerrainQuadTreeNodes[terrainQuadTree.TerrainQuadTreeNodes.Count - 1][i];
+            var terrainQuadTreeNode = finalQuadTreeLevel[i];
 
             ArrayMesh meshSegment = WGS84EllipsoidMeshGenerator.CreateEllipsoidMeshSegment(
                 terrainQuadTreeNode.Chunk.Latitude,
@@ -64,27 +54,18 @@ public partial class Earth : StaticBody3D
                 terrainQuadTreeNode.Chunk.LongitudeRange
             );
 
-            var meshInstance = new MeshInstance3D { Mesh = meshSegment };
-            terrainQuadTreeNode.Chunk.MeshInstance = meshInstance;
+            terrainQuadTreeNode.Chunk.MeshInstance = new MeshInstance3D { Mesh = meshSegment };
             terrainQuadTreeNode.Chunk.Name = $"TerrainChunk_z{zoomLevel}_tn{i}";
-            terrainQuadTreeNode.Chunk.AutoLoad = true;
-            AddChild(terrainQuadTreeNode.Chunk);
+
         }
-
     }
 
-    public override void _Ready()
+    public override void LoadPlanet()
     {
-        UpdateWireframeState();
-        GenerateEarthMesh();
-    }
-
-    public override void _Process(double delta)
-    {
-        if (showWireframe != previousWireframeState)
+        foreach (var terrainQuadTreeNode in m_terrainQuadTree.GetLastQuadTreeLevel())
         {
-            UpdateWireframeState();
+            AddChild(terrainQuadTreeNode.Chunk);
+            terrainQuadTreeNode.Chunk.Load();
         }
     }
-
 }

@@ -37,4 +37,20 @@ public static class SolarSystemConstants
 		((EARTH_SEMI_MAJOR_AXIS_LEN_KM * EARTH_SEMI_MAJOR_AXIS_LEN_KM) -
 		(EARTH_SEMI_MINOR_AXIS_LEN_KM * EARTH_SEMI_MINOR_AXIS_LEN_KM)) /
 		(EARTH_SEMI_MAJOR_AXIS_LEN_KM * EARTH_SEMI_MAJOR_AXIS_LEN_KM);
+
+
+	// Semi *major* axis length of the a "blank planet" in meters and kilometers
+	// Can be used as a default value for debugging/test purposes. This is double
+    // the size of the semi *minor* axis to make it abundantly clear that this is
+    // not a normal planet
+	public const float BLANK_PLANET_SEMI_MAJOR_AXIS_LEN_M = 5_000_000f;
+	public const float BLANK_PLANET_SEMI_MAJOR_AXIS_LEN_KM = 5_000.000f;
+
+    // Semi *MINOR* axis length of the a "blank planet" in meters and kilometers
+	// Can be used as a default value for debugging/test purposes. This is half
+    // the size of the semi *major* axis to make it abundantly clear that this is
+    // not a normal planet
+	public const float BLANK_PLANET_SEMI_MINOR_AXIS_LEN_M = 2_500_000f;
+	public const float BLANK_PLANET_SEMI_MINOR_AXIS_LEN_KM = 2_500.000f;
+
 }

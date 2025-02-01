@@ -8,7 +8,7 @@ public class TerrainQuadTree
     /// Represents a node in a terrain quadtree structure.
     /// Each node can have exactly 0 or 4 child chunks.
     /// </summary>
-    public class TerrainQuadTreeNode
+    public sealed class TerrainQuadTreeNode
     {
         // The TerrainChunk associated with this node.
         public TerrainChunk Chunk;
@@ -25,9 +25,9 @@ public class TerrainQuadTree
     }
 
     /// <summary>
-    /// Each element in this list represents a zoom level, and contains all the quadtree nodes at that level.
+    /// Each row in this list represents a zoom level, and contains all the quadtree nodes at that level.
     /// </summary>
-    public List<List<TerrainQuadTreeNode>> TerrainQuadTreeNodes;
+    private List<List<TerrainQuadTreeNode>> m_terrainQuadTreeNodes { get; set; }
 
     /// <summary>
     /// Splits the quadtree node associated with the particular latitude/longitude.
@@ -44,13 +44,21 @@ public class TerrainQuadTree
     /// <summary>
     /// Initializes a quadtree of the Earth up to a maximum zoom level using BFS.
     /// Each level of the quadtree is processed completely before moving on to the next.
+    ///
+    /// All planets are represented as a grid of tiles. Every successive zoom level, the
+    /// X and Y axes split by two, meaning each side will have twice as many tiles as before.
+    /// The tiles are indexed such that the top left is (0,0) and the bottom right is
+    /// (2^zoom - 1, 2^zoom - 1). This means that when a tile (x, y) is split, the
+    /// new coordinate of its top left tile will be (2x, 2y). Hence its top right
+    /// will be (2x + 1, 2y), bottom left (2x, 2y + 1) and bottom right (2x + 1, 2y + 1)
+    ///
     /// </summary>
     /// <param name="maxZoom">The maximum zoom level (depth) of the quadtree.</param>
     public void InitializeQuadTree(int maxZoom)
     {
 
         // Initialize the outer list.
-        TerrainQuadTreeNodes = new List<List<TerrainQuadTreeNode>>();
+        m_terrainQuadTreeNodes = new List<List<TerrainQuadTreeNode>>();
 
         TerrainQuadTreeNode rootNode = new TerrainQuadTreeNode(new TerrainChunk(
             0,
@@ -62,17 +70,22 @@ public class TerrainQuadTree
         var queue = new Queue<(TerrainQuadTreeNode, int parentRow, int parentCol)>();
         queue.Enqueue((rootNode, 0, 0));
 
-        for (int currZoomLevel = 0; currZoomLevel < maxZoom; currZoomLevel++)
+        for (int currZoomLevel = 0; currZoomLevel <= maxZoom; currZoomLevel++)
         {
             // For all nodes in the queue, generate all their child nodes
             int queueSize = (int)Math.Pow(4, currZoomLevel);
-            TerrainQuadTreeNodes.Add(new List<TerrainQuadTreeNode>());
+            m_terrainQuadTreeNodes.Add(new List<TerrainQuadTreeNode>());
 
             for (int i = 0; i < queueSize; i++)
             {
                 // Parent node
                 (TerrainQuadTreeNode node, int parentRow, int parentCol) = queue.Dequeue();
-                TerrainQuadTreeNodes[currZoomLevel].Add(node);
+                m_terrainQuadTreeNodes[currZoomLevel].Add(node);
+
+                if (currZoomLevel == maxZoom)
+                {
+                    continue;
+                }
 
                 // Generate children for this node
                 for (int c = 0; c < 4; c++ /* haha C++ in C# */)
@@ -120,5 +133,20 @@ public class TerrainQuadTree
             }
         }
     }
+
+    public List<TerrainQuadTreeNode> GetQuadTreeLevel(int zoomLevel)
+    {
+        if (zoomLevel >= m_terrainQuadTreeNodes.Count || zoomLevel < 0)
+        {
+            throw new IndexOutOfRangeException("In TerrainQuadTree: Trying to grab quadtree level that doesn't exist");
+        }
+        return m_terrainQuadTreeNodes[zoomLevel];
+    }
+
+    public List<TerrainQuadTreeNode> GetLastQuadTreeLevel()
+    {
+        return m_terrainQuadTreeNodes[m_terrainQuadTreeNodes.Count - 1];
+    }
+
 }
 
