@@ -218,31 +218,29 @@ public static class MapUtils
         return quadkey.ToString();
     }
 
-    // Given a map tile's location and zoom level, gives back the
-    // degrees of latitude that this map tile covers. Assumes the Web Mercator projection
-    // TODO: UNTESTED FUNCTION
-    public static double TileToLatRange(double lat, int zoom)
+
+    // Returns the number of radians of latitude that a tile spans at a given tile row and zoom level.
+    public static double TileToLatRange(int tileY, int zoom)
     {
-        // At zoom level z, each tile covers 360°/2^z degrees longitude
-        double tileSizeInRadians = TWO_PI / (1 << zoom);
-        // For latitude, we need to account for the Mercator projection's distortion
-        // Convert lat to radians for the mercator calculation
+        // Compute the top (northern) latitude of the tile
+        double latTop = MapTileToLatitude(tileY, zoom);
 
-        // Calculate the latitude range using the inverse Mercator formula
-        double latDelta = tileSizeInRadians * Math.Cos(lat);
+        // Compute the bottom (southern) latitude of the tile, which is just
+        // the northern part of the tile below us
+        double latBottom = MapTileToLatitude(tileY + 1, zoom);
 
-        return latDelta;
+        // The difference in latitude (in radians) is:
+        return latTop - latBottom;
+
     }
 
-    // Given a map tile's location and zoom level, gives back the
-    // degrees of longitude that this map tile covers. Assumes the Web Mercator projection
-    // TODO: UNTESTED FUNCTION
-    public static double TileToLonRange(double lat, double lon, int zoom)
+    // Returns the number of radians of longitude that a tile spans at a given zoom level.
+    public static double TileToLonRange(int zoom)
     {
-        // Longitude is simpler since it's not affected by the Mercator projection's distortion
-        // At zoom level z, each tile covers 360°/2^z degrees longitude (or 2*Pi / 2^z)
+        // The full 360° of longitude is divided evenly among 2^zoom tiles.
         return TWO_PI / (1 << zoom);
     }
+
 
     public static MapImageType GetImageFormat(byte[] imageData)
     {

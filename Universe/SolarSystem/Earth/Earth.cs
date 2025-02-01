@@ -46,43 +46,29 @@ public partial class Earth : StaticBody3D
     // Generates a bunch of TerrainChunks that will create a WGS84 ellipsoid
     // and adds them to the scene tree. By default, the tiles applied to the Earth
     // are at zoom level 5 (2^5 tiles each side)
-    private void GenerateEarthMesh(int zoomLevel = 4)
+    private void GenerateEarthMesh(int zoomLevel = 6)
     {
-        // # of tiles in Y direction is 2^zoomLevel
-        int tileCountY = 1 << zoomLevel;
-        // # of tiles in X direction is 2^(zoomLevel+1)
-        int tileCountX = tileCountY * 2;
 
-        for (int ty = 0; ty < tileCountY / 2; ty++)
+        TerrainQuadTree terrainQuadTree = new TerrainQuadTree();
+        terrainQuadTree.InitializeQuadTree(zoomLevel);
+
+        for (int i = 0; i < Math.Pow(4, zoomLevel - 1); i++)
         {
-            for (int tx = 0; tx < tileCountX / 2; tx++)
-            {
-                // Get bounding lat/lon from WebMercator tile coordinates
-                (double latMin, double latMax, double lonMin, double lonMax)
-                    = MapUtils.GetTileLatLonBounds(tx, ty, zoomLevel);
+            TerrainQuadTree.TerrainQuadTreeNode terrainQuadTreeNode =
+                 terrainQuadTree.TerrainQuadTreeNodes[terrainQuadTree.TerrainQuadTreeNodes.Count - 1][i];
 
+            ArrayMesh meshSegment = WGS84EllipsoidMeshGenerator.CreateEllipsoidMeshSegment(
+                terrainQuadTreeNode.Chunk.Latitude,
+                terrainQuadTreeNode.Chunk.Longitude,
+                terrainQuadTreeNode.Chunk.LatitudeRange,
+                terrainQuadTreeNode.Chunk.LongitudeRange
+            );
 
-                float centerLat = 0.5f * (float)(latMin + latMax);
-                float centerLon = 0.5f * (float)(lonMin + lonMax);
-                float latRange = (float)(latMax - latMin);
-                float lonRange = (float)(lonMax - lonMin);
-
-                ArrayMesh meshSegment = WGS84EllipsoidMeshGenerator.CreateEllipsoidMeshSegment(
-                    centerLat, centerLon, latRange, lonRange
-                );
-
-                var meshInstance = new MeshInstance3D { Mesh = meshSegment };
-
-                TerrainChunk terrainChunk = new TerrainChunk(
-                    centerLat, centerLon,
-                    latRange, lonRange,
-                    zoomLevel,
-                    meshInstance,
-                    null
-                );
-                terrainChunk.Name = $"TerrainChunk_z{zoomLevel}_x{tx}_y{ty}";
-                AddChild(terrainChunk);
-            }
+            var meshInstance = new MeshInstance3D { Mesh = meshSegment };
+            terrainQuadTreeNode.Chunk.MeshInstance = meshInstance;
+            terrainQuadTreeNode.Chunk.Name = $"TerrainChunk_z{zoomLevel}_tn{i}";
+            terrainQuadTreeNode.Chunk.AutoLoad = true;
+            AddChild(terrainQuadTreeNode.Chunk);
         }
 
     }

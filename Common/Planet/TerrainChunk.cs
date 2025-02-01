@@ -26,15 +26,11 @@ using Godot;
 /// Represents a single chunk of planetary terrain in a quadtree structure.
 /// Handles loading and display of map tiles from a Web Mercator projection, reprojecting them
 /// onto an ellipsoidal surface. Each chunk knows its position (lat/lon in radians) and coverage area.
-/// Supports Level of Detail (LoD) through a quadtree structure where each chunk can split
-/// into four children for higher resolution display. This is particularly important for terrain near
-/// the viewer or poles where distortion is highest.
 /// </summary>
 public partial class TerrainChunk : Node
 {
     private const string SHADER_PATH = "res://Common/Shaders/WebMercatorToWGS84Shader.gdshader";
 
-    // Member variables with m_ prefix
     private float m_latitude;
     private float m_latitudeRange;
     private float m_longitude;
@@ -42,62 +38,92 @@ public partial class TerrainChunk : Node
     private int m_zoomLevel;
     private MeshInstance3D m_meshInstance3D;
     private ShaderMaterial m_shaderMaterial;
+    private bool m_autoLoad;
 
     /// <summary>
-    /// A TerrainChunk is inherently a quadtree, so these hold the four children if they exist
-    /// 0 = Top left
-    /// 1 = Top right
-    /// 2 = Bottom left
-    /// 3 = Bottom right
-    /// </summary>
-    private TerrainChunk[] m_children = new TerrainChunk[4];
-
-    /// <summary>
-    /// Gets the latitude location of this terrain chunk in radians.
+    /// Gets or sets the latitude location of this terrain chunk in radians.
     /// Latitude is located at the center of the chunk's shape
     /// which is determined by its mesh.
     /// </summary>
-    public float Latitude => m_latitude;
+    public float Latitude
+    {
+        get => m_latitude;
+        set => m_latitude = value;
+    }
 
     /// <summary>
-    /// Gets the latitude range of this terrain chunk in radians.
+    /// Gets or sets the latitude range of this terrain chunk in radians.
     /// I.e., how many degrees of latitude that the chunk covers in total.
     /// </summary>
-    public float LatitudeRange => m_latitudeRange;
+    public float LatitudeRange
+    {
+        get => m_latitudeRange;
+        set => m_latitudeRange = value;
+    }
 
     /// <summary>
-    /// Gets the longitude location of this terrain chunk in radians.
+    /// Gets or sets the longitude location of this terrain chunk in radians.
     /// Latitude is located at the center of the chunk's shape
     /// which is determined by its mesh.
     /// </summary>
-    public float Longitude => m_longitude;
+    public float Longitude
+    {
+        get => m_longitude;
+        set => m_longitude = value;
+    }
 
     /// <summary>
-    /// Gets the longitude range of this terrain chunk in radians.
+    /// Gets or sets the longitude range of this terrain chunk in radians.
     /// I.e., how many degrees of longitude that the chunk covers in total.
     /// </summary>
-    public float LongitudeRange => m_longitudeRange;
+    public float LongitudeRange
+    {
+        get => m_longitudeRange;
+        set => m_longitudeRange = value;
+    }
 
     /// <summary>
-    /// Gets the zoom level of the terrain chunk.
+    /// Gets or sets the zoom level of the terrain chunk.
     /// See: https://www.microimages.com/documentation/TechGuides/78BingStructure.pdf
     /// for what zoom level means and how/why it works in the context of map tiles
     /// </summary>
-    public int ZoomLevel => m_zoomLevel;
+    public int ZoomLevel
+    {
+        get => m_zoomLevel;
+        set => m_zoomLevel = value;
+    }
 
     /// <summary>
-    /// Gets the mesh that will define the geometry of the chunk.
+    /// Gets or sets the mesh that will define the geometry of the chunk.
     /// In general, if the mesh includes the poles of the planet,
     /// the mesh will be triangular. Otherwise, it will be a quadrilateral.
     /// </summary>
-    public MeshInstance3D MeshInstance => m_meshInstance3D;
+    public MeshInstance3D MeshInstance
+    {
+        get => m_meshInstance3D;
+        set => m_meshInstance3D = value;
+    }
 
     /// <summary>
-    /// Gets the shader material used for map reprojection.
+    /// Gets or sets the shader material used for map reprojection.
     /// E.g., warping a Web-Mercator projection map tile
     /// such that it can be fit to an ellipsoid.
     /// </summary>
-    public ShaderMaterial ShaderMaterial => m_shaderMaterial;
+    public ShaderMaterial ShaderMaterial
+    {
+        get => m_shaderMaterial;
+        set => m_shaderMaterial = value;
+    }
+
+    /// <summary>
+    /// Gets or sets whether the terrain chunk should automatically load its data
+    /// when the node becomes ready in the scene tree.
+    /// </summary>
+    public bool AutoLoad
+    {
+        get => m_autoLoad;
+        set => m_autoLoad = value;
+    }
 
     /// <summary>
     /// Initializes a new instance of the TerrainChunk class.
@@ -116,7 +142,8 @@ public partial class TerrainChunk : Node
         float lonRange = 0.0f,
         int zoomLevel = 0,
         MeshInstance3D meshInstance3D = null,
-        Texture2D texture2D = null
+        Texture2D texture2D = null,
+        bool autoLoad = false
     )
     {
         m_latitude = lat;
@@ -125,6 +152,7 @@ public partial class TerrainChunk : Node
         m_longitudeRange = lonRange;
         m_zoomLevel = zoomLevel;
         m_meshInstance3D = meshInstance3D;
+        m_autoLoad = autoLoad;
 
         if (m_meshInstance3D != null)
         {
@@ -139,7 +167,23 @@ public partial class TerrainChunk : Node
 
     public override async void _Ready()
     {
-        await InitializeTerrainChunkAsync();
+        if (m_autoLoad)
+        {
+            Load();
+        }
+    }
+
+    public async void Load()
+    {
+        try
+        {
+            AddChild(m_meshInstance3D);
+            await InitializeTerrainChunkAsync();
+        }
+        catch (Exception ex)
+        {
+            GD.PrintErr($"Failed to initialize terrain: {ex}");
+        }
     }
 
     private void InitializeShaderMaterial(Texture2D texture2D)

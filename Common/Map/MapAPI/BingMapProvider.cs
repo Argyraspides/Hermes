@@ -19,13 +19,11 @@
 
 
 using Godot;
-using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Threading;
-using static MapUtils;
 
-// TODO: Add documentation on what this is
+// TODO: Add documentation on what this is. Also add a cache store to point to a location where cached map tiles are stored
+// to retrieve those instead
 public static class BingMapProvider
 {
 
