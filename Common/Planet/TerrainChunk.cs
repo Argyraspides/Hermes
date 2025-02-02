@@ -151,7 +151,7 @@ public partial class TerrainChunk : Node
         int zoomLevel = 0,
         MeshInstance3D meshInstance3D = null,
         MapType mapType = MapType.SATELLITE,
-        MapUtils.MapImageType mapImageType = MapUtils.MapImageType.JPEG
+        MapUtils.MapImageType mapImageType = MapUtils.MapImageType.PNG
     )
     {
         m_latitude = lat;

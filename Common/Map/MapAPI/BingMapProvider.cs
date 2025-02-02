@@ -20,115 +20,28 @@
 
 using Godot;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 
 // TODO: Add documentation on what this is. Also add a cache store to point to a location where cached map tiles are stored
 // to retrieve those instead
 public class BingMapProvider : MapProvider
 {
 
+    public BingMapProvider()
+    {
+        m_CACHED_MAP_TILE_PATH =
+                ProjectSettings.GlobalizePath("res://") + "Common/Planet/PlanetTiles/EarthTiles/Bing/";
+    }
+
     /*
 
-    The Bing maps API query URL looks like this:
+        The Bing maps API query URL looks like this:
 
         "https://ecn.t{server}.tiles.virtualearth.net/tiles/{mapType}{quadKey}.{mapTypeImageFormat}?g={apiVersion}&mkt={lang}";
 
     */
-
-    // ParamKeyValuePairs for the BingMapProvider should contain, in order:
-    // Field: mapType 				("a" for satellite, "r" for street view, "h" for hybrid)
-    // Field: quadKey 				(quadrant key value)
-    // Field: mapTypeImageFormat    (image file type, JPG for satellite & hybrid views, PNG for street)
-    // Field: apiVersion			(API version number)
-    // Field: lang					(language, e.g., "en" for English)
-    public class BingQueryParameters : QueryParameters
-    {
-        public BingQueryParameters(
-            float latitude,
-            float longitude,
-            int zoomLevel,
-            MapType mapType,
-            MapUtils.MapImageType mapImageType)
-        : base(latitude, longitude, zoomLevel, mapType, mapImageType)
-        {
-            m_CACHED_MAP_TILE_PATH_SATELLITE =
-                ProjectSettings.GlobalizePath("res://") + "Common/Planet/PlanetTiles/EarthTiles/Bing/Satellite";
-            NextServerNumber();
-        }
-
-        public override void InitializeQueryParams()
-        {
-            m_QUERY_STR_PARAM_NAMES = new List<string> { "server", "mapType", "quadKey", "mapTypeImageFormat", "apiVersion", "lang" };
-
-            m_QUERY_STR_TEMPLATE = string.Format(
-                "https://ecn.t{{{0}}}.tiles.virtualearth.net/tiles/{{{1}}}{{{2}}}.{{{3}}}?g={{{4}}}&mkt={{{5}}}",
-                m_QUERY_STR_PARAM_NAMES[0],
-                m_QUERY_STR_PARAM_NAMES[1],
-                m_QUERY_STR_PARAM_NAMES[2],
-                m_QUERY_STR_PARAM_NAMES[3],
-                m_QUERY_STR_PARAM_NAMES[4],
-                m_QUERY_STR_PARAM_NAMES[5]
-            );
-
-            int server = m_nextServerInstance;
-
-            int latTileCoo = MapUtils.LatitudeToTileCoordinateMercator(m_latitude, m_zoomlevel);
-            int lonTileCoo = MapUtils.LongitudeToTileCoordinateMercator(m_longitude, m_zoomlevel);
-
-            string quadKey = MapUtils.TileCoordinatesToQuadkey(lonTileCoo, latTileCoo, m_zoomlevel);
-
-            // TODO(Argyraspides, 02/02/2025): Do not hardcode API version
-            string apiVersion = "523";
-
-            // TODO(Argyraspides, 02/02/2025): Do not hardcode language for future language support
-            string lang = "en";
-
-
-            string mapTypeImageFormat;
-            if(m_mapImageType == MapUtils.MapImageType.JPEG)
-            {
-                mapTypeImageFormat = "JPG";
-            }
-            else if(m_mapImageType == MapUtils.MapImageType.PNG)
-            {
-                mapTypeImageFormat = "PNG";
-            }
-            else
-            {
-                // Default to JPG for lower image sizes
-                mapTypeImageFormat = "JPG";
-            }
-
-            string mapType;
-            if(m_mapType == MapType.SATELLITE)
-            {
-                mapType = "a";
-            }
-            else if(m_mapType == MapType.STREET)
-            {
-                mapType = "r";
-            }
-            else if(m_mapType == MapType.HYBRID)
-            {
-                mapType = "h";
-            }
-            else
-            {
-                mapType = "a";
-            }
-
-
-            m_paramKeyValuePair = new List<KeyValuePair<string, string>> {
-                new KeyValuePair<string, string>(m_QUERY_STR_PARAM_NAMES[0], server.ToString()),
-                new KeyValuePair<string, string>(m_QUERY_STR_PARAM_NAMES[1], mapType),
-                new KeyValuePair<string, string>(m_QUERY_STR_PARAM_NAMES[2], quadKey),
-                new KeyValuePair<string, string>(m_QUERY_STR_PARAM_NAMES[3], mapTypeImageFormat),
-                new KeyValuePair<string, string>(m_QUERY_STR_PARAM_NAMES[4], apiVersion),
-                new KeyValuePair<string, string>(m_QUERY_STR_PARAM_NAMES[5], lang)
-            };
-        }
-    };
-
 
     // Constructs a query string for obtaining a map tile from Bing's map provider API.
     // Takes in a BingMapTileParams struct which should contain mappings from the name of the
@@ -168,4 +81,163 @@ public class BingMapProvider : MapProvider
         m_queryParameters.InitializeQueryParams();
         return m_queryParameters;
     }
+
+    public async override Task<byte[]> RequestMapTileAsync(QueryParameters queryParameters)
+    {
+        // Check if the map tile already is cached
+        string cachedUrl = CheckCachedMapTile(queryParameters);
+
+        // If not, query Bing (Microsoft is the GOAT right guys?)
+        if (cachedUrl.Length == 0)
+        {
+            string url = ConstructQueryString(queryParameters);
+            byte[] data = await m_client.GetByteArrayAsync(url);
+            return data;
+        }
+
+        GD.Print("Returning cached map tile!");
+        // Else grab the cached map tile
+        using var file = Godot.FileAccess.Open(cachedUrl, Godot.FileAccess.ModeFlags.Read);
+        return file.GetBuffer((long) file.GetLength());
+    }
+
+    public override string CheckCachedMapTile(QueryParameters queryParameters)
+    {
+        var (lat, lon) = GetTileCoordinates(queryParameters);
+        var path = BuildTilePath(queryParameters, lat, lon);
+
+        return File.Exists(path) ? path : string.Empty;
+    }
+
+    private (int lat, int lon) GetTileCoordinates(QueryParameters queryParameters)
+    {
+        return (
+            MapUtils.LatitudeToTileCoordinateMercator(queryParameters.Latitude, queryParameters.ZoomLevel),
+            MapUtils.LongitudeToTileCoordinateMercator(queryParameters.Longitude, queryParameters.ZoomLevel)
+        );
+    }
+
+    // TODO(Argyraspides, 02/02/2025): Make sure to handle every single case here for
+    // map type, map image type, etc.
+    private string BuildTilePath(QueryParameters queryParameters, int lat, int lon)
+    {
+        var mapTypeFolder = queryParameters.MapType switch
+        {
+            MapType.SATELLITE => "Satellite",
+            MapType.STREET => "Street",
+            MapType.HYBRID => "Hybrid",
+            _ => throw new System.ArgumentException("Invalid map type")
+        };
+
+        var imageTypeFolder = queryParameters.MapImageType switch
+        {
+            MapUtils.MapImageType.PNG => "PNG",
+            MapUtils.MapImageType.JPEG => "JPG",
+            _ => throw new System.ArgumentException("Invalid image type")
+        };
+
+        var fileName = $"tile_{lon}_{lat}.png";
+
+        return Path.Combine(
+            m_CACHED_MAP_TILE_PATH,
+            mapTypeFolder,
+            "ZoomLevel" + queryParameters.ZoomLevel.ToString(),
+            imageTypeFolder,
+            fileName
+        );
+    }
+
+
+    // ParamKeyValuePairs for the BingMapProvider should contain, in order:
+    // Field: mapType 				("a" for satellite, "r" for street view, "h" for hybrid)
+    // Field: quadKey 				(quadrant key value)
+    // Field: mapTypeImageFormat    (image file type, JPG for satellite & hybrid views, PNG for street)
+    // Field: apiVersion			(API version number)
+    // Field: lang					(language, e.g., "en" for English)
+    public class BingQueryParameters : QueryParameters
+    {
+        public BingQueryParameters(
+            float latitude,
+            float longitude,
+            int zoomLevel,
+            MapType mapType,
+            MapUtils.MapImageType mapImageType)
+        : base(latitude, longitude, zoomLevel, mapType, mapImageType)
+        {
+        }
+
+        public override void InitializeQueryParams()
+        {
+            m_QUERY_STR_PARAM_NAMES = new List<string> { "server", "mapType", "quadKey", "mapTypeImageFormat", "apiVersion", "lang" };
+
+            m_QUERY_STR_TEMPLATE = string.Format(
+                "https://ecn.t{{{0}}}.tiles.virtualearth.net/tiles/{{{1}}}{{{2}}}.{{{3}}}?g={{{4}}}&mkt={{{5}}}",
+                m_QUERY_STR_PARAM_NAMES[0],
+                m_QUERY_STR_PARAM_NAMES[1],
+                m_QUERY_STR_PARAM_NAMES[2],
+                m_QUERY_STR_PARAM_NAMES[3],
+                m_QUERY_STR_PARAM_NAMES[4],
+                m_QUERY_STR_PARAM_NAMES[5]
+            );
+
+            int server = m_nextServerInstance;
+
+            int latTileCoo = MapUtils.LatitudeToTileCoordinateMercator(m_latitude, m_zoomlevel);
+            int lonTileCoo = MapUtils.LongitudeToTileCoordinateMercator(m_longitude, m_zoomlevel);
+
+            string quadKey = MapUtils.TileCoordinatesToQuadkey(lonTileCoo, latTileCoo, m_zoomlevel);
+
+            // TODO(Argyraspides, 02/02/2025): Do not hardcode API version
+            string apiVersion = "523";
+
+            // TODO(Argyraspides, 02/02/2025): Do not hardcode language for future language support
+            string lang = "en";
+
+
+            string mapTypeImageFormat;
+            if (m_mapImageType == MapUtils.MapImageType.JPEG)
+            {
+                mapTypeImageFormat = "JPG";
+            }
+            else if (m_mapImageType == MapUtils.MapImageType.PNG)
+            {
+                mapTypeImageFormat = "PNG";
+            }
+            else
+            {
+                // Default to JPG for lower image sizes
+                mapTypeImageFormat = "JPG";
+            }
+
+            string mapType;
+            if (m_mapType == MapType.SATELLITE)
+            {
+                mapType = "a";
+            }
+            else if (m_mapType == MapType.STREET)
+            {
+                mapType = "r";
+            }
+            else if (m_mapType == MapType.HYBRID)
+            {
+                mapType = "h";
+            }
+            else
+            {
+                mapType = "a";
+            }
+
+            m_paramKeyValuePair = new List<KeyValuePair<string, string>> {
+                new KeyValuePair<string, string>(m_QUERY_STR_PARAM_NAMES[0], server.ToString()),
+                new KeyValuePair<string, string>(m_QUERY_STR_PARAM_NAMES[1], mapType),
+                new KeyValuePair<string, string>(m_QUERY_STR_PARAM_NAMES[2], quadKey),
+                new KeyValuePair<string, string>(m_QUERY_STR_PARAM_NAMES[3], mapTypeImageFormat),
+                new KeyValuePair<string, string>(m_QUERY_STR_PARAM_NAMES[4], apiVersion),
+                new KeyValuePair<string, string>(m_QUERY_STR_PARAM_NAMES[5], lang)
+            };
+
+            NextServerNumber();
+        }
+    };
+
 }

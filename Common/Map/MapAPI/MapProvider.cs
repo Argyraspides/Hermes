@@ -19,15 +19,25 @@
 
 
 using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 // TODO: Add documentation on what this is. Also add a cache store to point to a location where cached map tiles are stored
 // to retrieve those instead
 public abstract class MapProvider
 {
 
+    public MapProvider()
+    {
+
+    }
+
     protected MapType m_mapType;
-    protected static string m_CACHED_MAP_TILE_PATH_SATELLITE;
-    protected static string m_CACHED_MAP_TILE_PATH_STREET;
+    protected static readonly HttpClient m_client = new HttpClient();
+
+
+    // Key = previously queried URL, value = cached file path to the map tile
+    protected static string m_CACHED_MAP_TILE_PATH;
     protected static List<string> m_QUERY_STR_PARAM_NAMES;
     protected static string m_QUERY_STR_TEMPLATE;
 
@@ -56,11 +66,16 @@ public abstract class MapProvider
         protected float m_longitude;
         protected int m_zoomlevel;
         protected MapType m_mapType;
-
         protected MapUtils.MapImageType m_mapImageType;
 
+        public float Latitude { get { return m_latitude; } }
+        public float Longitude { get { return m_longitude; } }
+        public int ZoomLevel { get { return m_zoomlevel; } }
+        public MapType MapType { get { return m_mapType; } }
+        public MapUtils.MapImageType MapImageType { get { return m_mapImageType; } }
+
         protected List<KeyValuePair<string, string>> m_paramKeyValuePair;
-        public virtual void InitializeQueryParams() {}
+        public virtual void InitializeQueryParams() { }
         public List<KeyValuePair<string, string>> GetParams()
         {
             return m_paramKeyValuePair;
@@ -81,11 +96,17 @@ public abstract class MapProvider
         MapUtils.MapImageType mapImageType
     );
 
+    public abstract Task<byte[]> RequestMapTileAsync(QueryParameters queryParameters);
+
+    public abstract string CheckCachedMapTile(QueryParameters queryParameters);
+
     public static int NextServerNumber()
     {
         int next = m_nextServerInstance;
         m_nextServerInstance = (++m_nextServerInstance) % m_MAX_SERVERS;
         return next;
     }
+
+
 
 }

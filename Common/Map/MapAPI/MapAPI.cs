@@ -44,7 +44,6 @@ public partial class MapAPI : Node
         MapUtils.MapImageType mapImageType
     )
     {
-
         MapProvider.QueryParameters queryParameters = m_mapProvider.ConstructQueryParameters(
             latitude,
             longitude,
@@ -52,10 +51,7 @@ public partial class MapAPI : Node
             mapType,
             mapImageType
         );
-
-        string queryString = m_mapProvider.ConstructQueryString(queryParameters);
-        byte[] tileData = await TileFetcher.FetchTileDataAsync(queryString);
-        return tileData;
+        return await m_mapProvider.RequestMapTileAsync(queryParameters);
     }
 
 
