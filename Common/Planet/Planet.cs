@@ -13,8 +13,8 @@ public abstract partial class Planet : StaticBody3D
     private bool m_previousWireframeState = false;
 
 
-    private PlanetID m_planetID;
-    private PlanetShapeType m_planetShapeType;
+    protected PlanetID m_planetID;
+    protected PlanetShapeType m_planetShapeType;
 
     /// <summary>
     /// Terrain quad tree represents the planets surface in a quadtree data structure
@@ -51,23 +51,11 @@ public abstract partial class Planet : StaticBody3D
     protected int m_defaultZoomLevel;
 
 
-    public Planet(
-        PlanetID planetID = PlanetID.UNKNOWN,
-        PlanetShapeType planetShapeType = PlanetShapeType.SPHERE,
-        int defaultZoomLevel = 6
-    )
-    {
-        m_planetID = planetID;
-        m_planetShapeType = planetShapeType;
-        m_defaultZoomLevel = defaultZoomLevel;
-    }
-
-
     // Called when the node enters the scene tree for the first time.
     public override void _Ready()
     {
         InitializePlanetDimensions();
-        InitializePlanetSurface();
+        InitializePlanetSurface(m_defaultZoomLevel);
         LoadPlanet();
     }
 
@@ -81,7 +69,7 @@ public abstract partial class Planet : StaticBody3D
 
     protected abstract void InitializePlanetDimensions();
 
-    protected abstract void InitializePlanetSurface(int zoomLevel = 6);
+    protected abstract void InitializePlanetSurface(int zoomLevel);
 
     public abstract void LoadPlanet();
 

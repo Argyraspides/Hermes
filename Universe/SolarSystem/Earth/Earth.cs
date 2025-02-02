@@ -24,8 +24,13 @@ using System;
 public partial class Earth : Planet
 {
 
+
     public override void _Ready()
     {
+        m_planetID = PlanetID.EARTH;
+        m_planetShapeType = PlanetShapeType.WGS84_ELLIPSOID;
+        m_defaultZoomLevel = 4;
+
         base._Ready();
     }
 
@@ -43,7 +48,7 @@ public partial class Earth : Planet
 
         var finalQuadTreeLevel = m_terrainQuadTree.GetLastQuadTreeLevel();
 
-        for (int i = 0; i < Math.Pow(4, zoomLevel); i++)
+        for (int i = 0; i < finalQuadTreeLevel.Count; i++)
         {
             var terrainQuadTreeNode = finalQuadTreeLevel[i];
 
@@ -64,8 +69,8 @@ public partial class Earth : Planet
     {
         foreach (var terrainQuadTreeNode in m_terrainQuadTree.GetLastQuadTreeLevel())
         {
-            AddChild(terrainQuadTreeNode.Chunk);
             terrainQuadTreeNode.Chunk.Load();
+            AddChild(terrainQuadTreeNode.Chunk);
         }
     }
 }

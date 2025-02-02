@@ -37,7 +37,7 @@ public static class WGS84EllipsoidMeshGenerator
 
 	  For most latitude/longitude combinations, this function returns a
 	  quadrilateral mesh made of two triangles. However, when the segment includes
-	  either the north pole (90°) or south pole (-90°), it returns a single triangle
+	  either the north pole (π/2°) or south pole (-π/2°), it returns a single triangle
 	  instead. This special handling for poles prevents overlapping geometry when
 	  multiple segments are combined to create a complete ellipsoid mesh, since all
 	  points at a pole share the same location regardless of longitude.

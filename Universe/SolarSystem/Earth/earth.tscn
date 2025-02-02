@@ -4,4 +4,3 @@
 
 [node name="Earth" type="StaticBody3D"]
 script = ExtResource("1_tenyr")
-showWireframe = true

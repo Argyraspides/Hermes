@@ -33,4 +33,3 @@ omni_range = 100000.0
 omni_attenuation = 0.2
 
 [node name="Earth" parent="." instance=ExtResource("3_bobqk")]
-showWireframe = false

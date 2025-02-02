@@ -24,27 +24,39 @@ using System.Threading.Tasks;
 public partial class MapAPI : Node
 {
 
+    private MapProvider m_mapProvider;
+
     // Requests a map tile at a particular latitude/longitude at a specified zoom level (degrees)
     // To understand map tiling, see: https://www.microimages.com/documentation/TechGuides/78BingStructure.pdf
-    public async Task<byte[]> RequestMapTileAsync(float latitudeDeg, float longitudeDeg, int zoom)
+
+    public MapAPI()
+    {
+        // TODO(Argyraspides, 02/02/2025): Do not hardcode map provider. Make this configurable somehow
+        // through maybe injection idk
+        m_mapProvider = new BingMapProvider();
+    }
+
+    public async Task<byte[]> RequestMapTileAsync(
+        float latitude,
+        float longitude,
+        int zoom,
+        MapType mapType,
+        MapUtils.MapImageType mapImageType
+    )
     {
 
-        double latRad = latitudeDeg * MapUtils.DEGREES_TO_RADIANS;
-        double lonRad = longitudeDeg * MapUtils.DEGREES_TO_RADIANS;
+        MapProvider.QueryParameters queryParameters = m_mapProvider.ConstructQueryParameters(
+            latitude,
+            longitude,
+            zoom,
+            mapType,
+            mapImageType
+        );
 
-        int tileY = MapUtils.LatitudeToTileCoordinateMercator(latRad, zoom);
-        int tileX = MapUtils.LongitudeToTileCoordinateMercator(lonRad, zoom);
-        string quadkey = MapUtils.TileCoordinatesToQuadkey(tileX, tileY, zoom);
-
-
-        BingMapProvider.BingMapTileParams bingMapTileParams =
-            new BingMapProvider.BingMapTileParams(quadkey, "523");
-
-        string queryString = BingMapProvider.ConstructQueryString(bingMapTileParams);
-
+        string queryString = m_mapProvider.ConstructQueryString(queryParameters);
         byte[] tileData = await TileFetcher.FetchTileDataAsync(queryString);
-
         return tileData;
     }
+
 
 }

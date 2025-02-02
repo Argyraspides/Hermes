@@ -38,6 +38,9 @@ public partial class TerrainChunk : Node
     private int m_zoomLevel;
     private MeshInstance3D m_meshInstance3D;
     private ShaderMaterial m_shaderMaterial;
+    private MapType m_mapType;
+
+    private MapUtils.MapImageType m_mapImageType;
 
     /// <summary>
     /// Gets or sets the latitude location of this terrain chunk in radians.
@@ -115,6 +118,22 @@ public partial class TerrainChunk : Node
     }
 
     /// <summary>
+    /// Type of map tile that this terrain chunk holds, e.g., a
+    /// satellite view, hybrid view, street view, etc
+    /// </summary>
+    public MapType MapType
+    {
+        get => m_mapType;
+        set => m_mapType = value;
+    }
+
+    public MapUtils.MapImageType MapImageType
+    {
+        get => m_mapImageType;
+        set => m_mapImageType = value;
+    }
+
+    /// <summary>
     /// Initializes a new instance of the TerrainChunk class.
     /// </summary>
     /// <param name="lat">Center latitude in radians.</param>
@@ -131,7 +150,8 @@ public partial class TerrainChunk : Node
         float lonRange = 0.0f,
         int zoomLevel = 0,
         MeshInstance3D meshInstance3D = null,
-        Texture2D texture2D = null
+        MapType mapType = MapType.SATELLITE,
+        MapUtils.MapImageType mapImageType = MapUtils.MapImageType.JPEG
     )
     {
         m_latitude = lat;
@@ -140,6 +160,8 @@ public partial class TerrainChunk : Node
         m_longitudeRange = lonRange;
         m_zoomLevel = zoomLevel;
         m_meshInstance3D = meshInstance3D;
+        m_mapType = mapType;
+        m_mapImageType = mapImageType;
     }
 
     public async void Load()
@@ -180,9 +202,11 @@ public partial class TerrainChunk : Node
     {
         var mapApi = new MapAPI();
         byte[] rawMapData = await mapApi.RequestMapTileAsync(
-            Mathf.RadToDeg(m_latitude),
-            Mathf.RadToDeg(m_longitude),
-            m_zoomLevel
+            m_latitude,
+            m_longitude,
+            m_zoomLevel,
+            m_mapType,
+            m_mapImageType
         );
 
         ApplyTexture(MapUtils.ByteArrayToImageTexture(rawMapData));
