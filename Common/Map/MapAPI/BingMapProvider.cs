@@ -95,7 +95,6 @@ public class BingMapProvider : MapProvider
             return data;
         }
 
-        GD.Print("Returning cached map tile!");
         // Else grab the cached map tile
         using var file = Godot.FileAccess.Open(cachedUrl, Godot.FileAccess.ModeFlags.Read);
         return file.GetBuffer((long) file.GetLength());
