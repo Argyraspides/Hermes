@@ -18,9 +18,7 @@
 */
 
 
-using Godot;
 using System.Collections.Generic;
-using System.Text;
 
 // TODO: Add documentation on what this is. Also add a cache store to point to a location where cached map tiles are stored
 // to retrieve those instead

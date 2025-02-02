@@ -19,7 +19,6 @@
 
 
 using Godot;
-using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -53,7 +52,7 @@ public class BingMapProvider : MapProvider
         : base(latitude, longitude, zoomLevel, mapType, mapImageType)
         {
             m_CACHED_MAP_TILE_PATH_SATELLITE =
-                ProjectSettings.GlobalizePath("res://") + "Common/Planet/PlanetTiles/EarthTiles/Bing";
+                ProjectSettings.GlobalizePath("res://") + "Common/Planet/PlanetTiles/EarthTiles/Bing/Satellite";
             NextServerNumber();
         }
 
