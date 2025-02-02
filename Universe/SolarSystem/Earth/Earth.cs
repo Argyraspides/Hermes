@@ -29,7 +29,7 @@ public partial class Earth : Planet
     {
         m_planetID = PlanetID.EARTH;
         m_planetShapeType = PlanetShapeType.WGS84_ELLIPSOID;
-        m_defaultZoomLevel = 4;
+        m_defaultZoomLevel = 6;
 
         base._Ready();
     }

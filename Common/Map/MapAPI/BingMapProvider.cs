@@ -76,7 +76,7 @@ public class BingMapProvider : MapProvider
             int latTileCoo = MapUtils.LatitudeToTileCoordinateMercator(m_latitude, m_zoomlevel);
             int lonTileCoo = MapUtils.LongitudeToTileCoordinateMercator(m_longitude, m_zoomlevel);
 
-            string quadKey = MapUtils.TileCoordinatesToQuadkey(latTileCoo, lonTileCoo, m_zoomlevel);
+            string quadKey = MapUtils.TileCoordinatesToQuadkey(lonTileCoo, latTileCoo, m_zoomlevel);
 
             // TODO(Argyraspides, 02/02/2025): Do not hardcode API version
             string apiVersion = "523";
