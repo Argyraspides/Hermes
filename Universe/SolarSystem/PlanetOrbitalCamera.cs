@@ -23,7 +23,7 @@ public partial class PlanetOrbitalCamera : Camera3D
     #region Camera Distance Configuration
     [Export] private float m_minCameraRadialDistance = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
     [Export] private float m_maxCameraRadialDistance = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * 10;
-    [Export] private float m_cameraRadialDistance = 18539;
+    [Export] private float m_cameraRadialDistance = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * 5;
     private float m_targetCameraRadialDistance;
     #endregion
 
@@ -35,7 +35,12 @@ public partial class PlanetOrbitalCamera : Camera3D
     [Export] private float m_cameraZoomIncrement = 500.0f;
     #endregion
 
-
+    #region Camera Visibility & Position Information
+    private float m_visibleLatitudeRange; // Visible latitude range of the Earth given the camera's distance & FOV
+    private float m_visibleLongitudeRange; // Visible longitude range of the Earth given the camera's distance & FOV
+    private float m_cameraLatitude; // Line of latitude that the center of the camera is looking at
+    private float m_cameraLongitude; // Line of longitude that the center of the camera is looking at
+    #endregion
 
     #region Mouse Input State
     private bool m_isDragging = false;
@@ -178,4 +183,26 @@ public partial class PlanetOrbitalCamera : Camera3D
         Position = new Vector3(0, 0, m_cameraRadialDistance);
     }
     #endregion
+
+    private float GetVisibleLatitudeRange()
+    {
+        return 0.0f;
+    }
+
+    private float GetVisibleLongitudeRange()
+    {
+        return 0.0f;
+    }
+
+    private float GetCameraLatitude()
+    {
+        return 0.0f;
+    }
+
+    private float GetCameraLongitude()
+    {
+        return 0.0f;
+    }
+
+
 }
