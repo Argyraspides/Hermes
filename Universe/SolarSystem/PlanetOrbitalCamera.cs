@@ -19,54 +19,70 @@
 
 
 using Godot;
-using System;
 
 public partial class PlanetOrbitalCamera : Camera3D
 {
-
-    // TODO: Since we are using an ellipsoid and not a sphere, the distance to the surface is not
-    // the same from all angles. Change this to be dynamic based on lat/long of camera
     [Export]
     private float m_minCameraRadialDistance = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
 
     [Export]
-    private float m_maxCameraRadialDistance = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * 4;
+    private float m_maxCameraRadialDistance = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * 10;
 
-    // Distance of the camera from the Earth's center.
-    private float m_cameraRadialDistance = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * 4;
+    // Distance of the camera from the Earth's *center*.
+    [Export]
+    private float m_cameraRadialDistance = 18539;
 
     // Is the user currently dragging their mouse across the screen?
     private bool m_isDragging = false;
-    // If they're dragging, where is their mouse currently?
+
+    // If they're dragging their mouse across the screen to pan, where is their mouse currently?
     private Vector2 m_dragStartPos;
 
-    // How fast does the camera pan (multiplier)?
+    // How fast does the camera pan? (Multiplier)
     [Export]
     private float m_cameraPanSpeedMultiplier = 5.0f;
 
-    // How fast does the camera zoom in/out (absolute)?
-    // TODO: Change this so that the zooming increments decrease as we get closer to the surface
+    // Smooth zooming linear interpolation factor
     [Export]
-    private float m_cameraZoomIncrement = 50.0f;
+    private float m_cameraZoomSmoothingMultiplier = 5.0f;
 
+    // How fast does the camera zoom in/out?
+    [Export]
+    private float m_cameraZoomIncrement = 500.0f;
 
+    // Target distance for the camera to zoom to for smooth zooming in/out
+    // via linear interpolation
+    private float m_targetCameraRadialDistance;
 
+    private Vector3 m_targetCameraPanPosition;
+
+    // Smooth panning linear interpolation factor
+    [Export]
+    private float m_cameraPanSmoothingMultiplier = 5.0f;
 
     public override void _Ready()
     {
+        m_targetCameraRadialDistance = m_cameraRadialDistance;
+        m_targetCameraPanPosition = Position;
     }
 
     public override void _Process(double delta)
     {
+        m_cameraRadialDistance = Mathf.Lerp(m_cameraRadialDistance, m_targetCameraRadialDistance, (float)delta * m_cameraZoomSmoothingMultiplier);
+        UpdateCameraRadialDistance(m_cameraRadialDistance);
+
+        Position = Position.Slerp(m_targetCameraPanPosition, (float)delta * m_cameraPanSmoothingMultiplier);
+        LookAt(Vector3.Zero, Vector3.Up);
+
     }
 
     public override void _Input(InputEvent @event)
     {
-        HandleCameraPanning(@event);
-        HandleCameraZooming(@event);
+        HandleCameraPanningInput(@event);
+        HandleCameraZoomingInput(@event);
     }
 
-    private void HandleCameraPanning(InputEvent @event)
+    private void HandleCameraPanningInput(InputEvent @event)
     {
         if (@event is InputEventMouseButton mouseButton)
         {
@@ -89,14 +105,14 @@ public partial class PlanetOrbitalCamera : Camera3D
             Vector2 dragDelta = m_dragStartPos - mouseMotionEvent.Position;
             m_dragStartPos = mouseMotionEvent.Position;
             Vector2 dragDeltaNormalized = dragDelta.Normalized();
-            PanCamera(dragDeltaNormalized);
+            UpdateCameraPanTargetPosition(dragDeltaNormalized);
         }
     }
 
-    private void PanCamera(Vector2 delta)
+    private void UpdateCameraPanTargetPosition(Vector2 delta)
     {
         // Convert the current camera position to spherical coordinates
-        float radius = m_cameraRadialDistance;                // We keep this constant
+        float radius = m_cameraRadialDistance;              // We keep this constant
         float theta = Mathf.Atan2(Position.Z, Position.X);  // Azimuthal angle (horizontal rotation)
         float phi = Mathf.Acos(Position.Y / radius);        // Polar angle (vertical rotation)
 
@@ -116,33 +132,34 @@ public partial class PlanetOrbitalCamera : Camera3D
             radius * Mathf.Sin(phi) * Mathf.Sin(theta)
         );
 
-        Position = newPos;
-
-        // Always look at the center (0,0,0) where the planet is
-        LookAt(Vector3.Zero, Vector3.Up);
+        m_targetCameraPanPosition = newPos;
     }
 
 
-    private void HandleCameraZooming(InputEvent @event)
+    private void HandleCameraZoomingInput(InputEvent @event)
     {
         if (@event is InputEventMouseButton mouseButtonEvent)
         {
             if (mouseButtonEvent.ButtonIndex == MouseButton.WheelUp)
             {
-                if(m_cameraRadialDistance <= m_minCameraRadialDistance) return;
-                m_cameraRadialDistance -= m_cameraZoomIncrement;
-                ZoomCamera(m_cameraRadialDistance);
+                if (m_cameraRadialDistance <= m_minCameraRadialDistance)
+                {
+                    return;
+                }
+                m_targetCameraRadialDistance = Mathf.Max(m_minCameraRadialDistance, m_targetCameraRadialDistance - m_cameraZoomIncrement);
             }
             else if (mouseButtonEvent.ButtonIndex == MouseButton.WheelDown)
             {
-                if(m_cameraRadialDistance >= m_maxCameraRadialDistance) return;
-                m_cameraRadialDistance += m_cameraZoomIncrement;
-                ZoomCamera(m_cameraRadialDistance);
+                if (m_cameraRadialDistance >= m_maxCameraRadialDistance)
+                {
+                    return;
+                }
+                m_targetCameraRadialDistance = Mathf.Max(m_minCameraRadialDistance, m_targetCameraRadialDistance + m_cameraZoomIncrement);
             }
         }
     }
 
-    private void ZoomCamera(float distance)
+    private void UpdateCameraRadialDistance(float distance)
     {
         Vector3 normalizedVec = Position.Normalized();
         float distXComponent = distance * normalizedVec.X;
@@ -154,6 +171,8 @@ public partial class PlanetOrbitalCamera : Camera3D
             distZComponent
         );
         Position = newPos;
+        LookAt(Vector3.Zero, Vector3.Up);
+
     }
 
     private void InitializeCameraPosition()

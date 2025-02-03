@@ -39,6 +39,7 @@ public static class SolarSystemConstants
 		(EARTH_SEMI_MAJOR_AXIS_LEN_KM * EARTH_SEMI_MAJOR_AXIS_LEN_KM);
 
 
+
 	// Semi *major* axis length of the a "blank planet" in meters and kilometers
 	// Can be used as a default value for debugging/test purposes. This is double
     // the size of the semi *minor* axis to make it abundantly clear that this is
