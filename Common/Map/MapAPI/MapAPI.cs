@@ -26,8 +26,7 @@ public partial class MapAPI : Node
 
     private MapProvider m_mapProvider;
 
-    // Requests a map tile at a particular latitude/longitude at a specified zoom level (degrees)
-    // To understand map tiling, see: https://www.microimages.com/documentation/TechGuides/78BingStructure.pdf
+
 
     public MapAPI()
     {
@@ -36,6 +35,9 @@ public partial class MapAPI : Node
         m_mapProvider = new BingMapProvider();
     }
 
+    // Requests a map tile at a particular latitude/longitude at a specified zoom level (degrees), with a map type
+    // (e.g., satellite, street, hybrid, etc.), and an image type (PNG, JPG, etc.).
+    // To understand map tiling, see: https://www.microimages.com/documentation/TechGuides/78BingStructure.pdf
     public async Task<byte[]> RequestMapTileAsync(
         float latitude,
         float longitude,

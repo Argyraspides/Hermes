@@ -194,7 +194,7 @@ public partial class TerrainChunk : Node
         shaderMat.SetShaderParameter("zoom_level", m_zoomLevel);
         m_meshInstance3D.MaterialOverride = shaderMat;
 
-        // TODO(dev, 2025-01-29): Handle east-west inversion in shader instead of mesh scale
+        // TODO(Argyraspides, 2025-01-29): Handle east-west inversion in shader instead of mesh scale
         m_meshInstance3D.Scale = new Vector3(-1, 1, 1);
     }
 
