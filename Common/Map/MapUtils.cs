@@ -23,20 +23,24 @@ using System.Text;
 using Godot;
 
 
-// This class just holds a bunch of static functions and definitions for anything map related.
-// E.g., converting latitude/longitude to tile coordinates, specifying map types, constructing quadrant keys,
-// image manipulation of certain map tile projections such that they can be fitted again to a 3D sphere, etc.
-// We speak the language of Mathematics, and as such, all angles are in radians unless it is impossible
-// to work with
+/// <summary>
+/// This class just holds a bunch of static functions and definitions for anything map related.
+/// E.g., converting latitude/longitude to tile coordinates, specifying map types, constructing quadrant keys,
+/// image manipulation of certain map tile projections such that they can be fitted again to a 3D sphere, etc.
+/// We speak the language of Mathematics, and as such, all angles are in radians unless it is impossible
+/// to work with
+/// </summary>
 public static class MapUtils
 {
 
 
     public const double PI = Math.PI;
 
-    // These aren't necessarily a universal constant. You can stop the Web Mercator projection at
-    // any latitude you want besides the poles themselves which stretch to infinity. These
-    // are just constants that most map providers use
+    /// <summary>
+    /// These aren't necessarily a universal constant. You can stop the Web Mercator projection at
+    /// any latitude you want besides the poles themselves which stretch to infinity. These
+    /// are just constants that most map providers use
+    /// </summary>
     public const double MIN_LATITUDE_LEVEL_WEB_MERCATOR = -1.484422229745;
     public const double MAX_LATITUDE_LEVEL_WEB_MERCATOR = 1.484422229745;
 
@@ -63,12 +67,14 @@ public static class MapUtils
         UNKNOWN
     }
 
-    // Converts line of latitude (radians) to a latitude tile coordinate (y axis) on the Mercator projection,
-    // using a quadtree to represent the map (each successive zoom level doubles the tiles on the X and Y axis)
-    // To understand map tiling, see: https://www.microimages.com/documentation/TechGuides/78BingStructure.pdf
-    //
-    // Formula from:
-    // https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#2._Convert_the_coordinate_to_the_Web_Mercator_projection_(https://epsg.io/3857)
+    /// <summary>
+    /// Converts line of latitude (radians) to a latitude tile coordinate (y axis) on the Mercator projection,
+    /// using a quadtree to represent the map (each successive zoom level doubles the tiles on the X and Y axis).
+    /// To understand map tiling, see: https://www.microimages.com/documentation/TechGuides/78BingStructure.pdf
+    ///
+    /// Formula from:
+    /// https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#2._Convert_the_coordinate_to_the_Web_Mercator_projection_(https://epsg.io/3857)
+    /// </summary>
     public static int LatitudeToTileCoordinateMercator(double lat, int zoom)
     {
         lat = Math.Clamp(
@@ -91,12 +97,14 @@ public static class MapUtils
 
     }
 
-    // Converts line of longitude (radians) to a longitude tile coordinate (y axis) on the Mercator projection,
-    // using a quadtree to represent the map (each successive zoom level doubles the tiles on the X and Y axis)
-    // To understand map tiling, see: https://www.microimages.com/documentation/TechGuides/78BingStructure.pdf
-    //
-    // Formula from:
-    // https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#2._Convert_the_coordinate_to_the_Web_Mercator_projection_(https://epsg.io/3857)
+    /// <summary>
+    /// Converts line of longitude (radians) to a longitude tile coordinate (y axis) on the Mercator projection,
+    /// using a quadtree to represent the map (each successive zoom level doubles the tiles on the X and Y axis).
+    /// To understand map tiling, see: https://www.microimages.com/documentation/TechGuides/78BingStructure.pdf
+    ///
+    /// Formula from:
+    /// https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#2._Convert_the_coordinate_to_the_Web_Mercator_projection_(https://epsg.io/3857)
+    /// </summary>
     public static int LongitudeToTileCoordinateMercator(double lon, int zoom)
     {
 
@@ -114,65 +122,59 @@ public static class MapUtils
         return (int)Math.Floor((finalExpr >= tilesPerSide) ? (tilesPerSide - 1) : finalExpr);
     }
 
-    // Converts a map tile's x-coordinate to the corresponding line of longitude (radians)
-    // on the Mercator projection, using the Web Mercator tiling system.
-    // Each successive zoom level doubles the number of tiles along both the x and y axes,
-    // and tiles are indexed starting from the top-left of the map (0,0) at zoom level 0.
-    // Formula from:
-    // https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Tile_numbers_to_lon..2Flat._2
-    //
-    // Parameters:
-    // tx - Tile x-coordinate
-    // zoom - Zoom level (determines the total number of tiles at this zoom)
-    //
-    // Returns:
-    // Longitude of the tile's western edge, in radians.
+
+    /// <summary>
+    /// Converts a map tile's x-coordinate to the corresponding line of longitude (radians)
+    /// on the Mercator projection, using the Web Mercator tiling system.
+    /// Each successive zoom level doubles the number of tiles along both the x and y axes,
+    /// and tiles are indexed starting from the top-left of the map (0,0) at zoom level 0.
+    /// Formula from:
+    /// https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Tile_numbers_to_lon..2Flat._2
+    /// </summary>
+    /// <param name="tx">Tile x-coordinate</param>
+    /// <param name="zoom">Zoom level (determines the total number of tiles at this zoom)</param>
+    /// <returns>Longitude of the tile's western edge, in radians.</returns>
     public static double MapTileToLongitude(int tx, int zoom)
     {
         return (double)tx / (1 << zoom) * TWO_PI - PI;
     }
 
-    // Converts a map tile's y-coordinate to the corresponding line of latitude (radians)
-    // on the Mercator projection, using the Web Mercator tiling system.
-    // Each successive zoom level doubles the number of tiles along both the x and y axes,
-    // and tiles are indexed starting from the top-left of the map (0,0) at zoom level 0.
-    // Formula from:
-    // https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Tile_numbers_to_lon..2Flat._2
-    //
-    // Parameters:
-    // ty - Tile y-coordinate
-    // zoom - Zoom level (determines the total number of tiles at this zoom)
-    //
-    // Returns:
-    // Latitude of the tile's northern edge, in radians.
+    /// <summary>
+    /// Converts a map tile's y-coordinate to the corresponding line of latitude (radians)
+    /// on the Mercator projection, using the Web Mercator tiling system.
+    /// Each successive zoom level doubles the number of tiles along both the x and y axes,
+    /// and tiles are indexed starting from the top-left of the map (0,0) at zoom level 0.
+    /// Formula from:
+    /// https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Tile_numbers_to_lon..2Flat._2
+    /// </summary>
+    /// <param name="ty">Tile y-coordinate</param>
+    /// <param name="zoom">Zoom level (determines the total number of tiles at this zoom)</param>
+    /// <returns>Latitude of the tile's northern edge, in radians.</returns>
     public static double MapTileToLatitude(int ty, int zoom)
     {
         double n = PI - (2.0 * PI * (double)ty / (1 << zoom));
         return Math.Atan(0.5 * (Math.Exp(n) - Math.Exp(-n)));
     }
 
-    // Calculates the geographical bounds (latitude and longitude) of a specific map tile
-    // at a given zoom level on the Mercator projection. The bounds are defined by the
-    // minimum and maximum latitudes and longitudes that the tile covers.
-    //
-    // Each map tile is a rectangular region on the Earth's surface, and its size
-    // decreases as the zoom level increases (each successive zoom level doubles the
-    // number of tiles along both x and y axes).
-    //
-    // Parameters:
-    // tx - Tile x-coordinate (longitude direction)
-    // ty - Tile y-coordinate (latitude direction)
-    // zoom - Zoom level (determines the total number of tiles at this zoom)
-    //
-    // Returns:
-    // A tuple containing:
-    // - latMin: Minimum latitude (southern edge of the tile), in radians
-    // - latMax: Maximum latitude (northern edge of the tile), in radians
-    // - lonMin: Minimum longitude (western edge of the tile), in radians
-    // - lonMax: Maximum longitude (eastern edge of the tile), in radians
-    //
-    // Formula reference:
-    // https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Tile_numbers_to_lon..2Flat._2
+    /// <summary>
+    /// Calculates the geographical bounds (latitude and longitude) of a specific map tile
+    /// at a given zoom level on the Mercator projection. The bounds are defined by the
+    /// minimum and maximum latitudes and longitudes that the tile covers.
+    ///
+    /// Each map tile is a rectangular region on the Earth's surface, and its size
+    /// decreases as the zoom level increases (each successive zoom level doubles the
+    /// number of tiles along both x and y axes).
+    /// </summary>
+    /// <param name="tx">Tile x-coordinate (longitude direction)</param>
+    /// <param name="ty">Tile y-coordinate (latitude direction)</param>
+    /// <param name="zoom">Zoom level (determines the total number of tiles at this zoom)</param>
+    /// <returns>
+    /// A tuple containing:
+    /// - latMin: Minimum latitude (southern edge of the tile), in radians
+    /// - latMax: Maximum latitude (northern edge of the tile), in radians
+    /// - lonMin: Minimum longitude (western edge of the tile), in radians
+    /// - lonMax: Maximum longitude (eastern edge of the tile), in radians
+    /// </returns>
     public static (double latMin, double latMax, double lonMin, double lonMax) GetTileLatLonBounds(int tx, int ty, int zoom)
     {
         double lonMin = MapTileToLongitude(tx, zoom);
@@ -183,12 +185,13 @@ public static class MapUtils
     }
 
 
-
-    // Converts *TILE* coordinates (x,y) for a line of latitude (y) and line of longitude (x)
-    // at a particular zoom level to a quadkey.
-    //
-    // To understand quadkeys, see: https://www.microimages.com/documentation/TechGuides/78BingStructure.pdf
-    // This kind of tile indexing is used mainly for the Bing maps API
+    /// <summary>
+    /// Converts *TILE* coordinates (x,y) for a line of latitude (y) and line of longitude (x)
+    /// at a particular zoom level to a quadkey.
+    ///
+    /// To understand quadkeys, see: https://www.microimages.com/documentation/TechGuides/78BingStructure.pdf
+    /// This kind of tile indexing is used mainly for the Bing maps API
+    /// </summary>
     public static string TileCoordinatesToQuadkey(int x, int y, int zoom)
     {
 
@@ -218,7 +221,9 @@ public static class MapUtils
     }
 
 
-    // Returns the number of radians of latitude that a tile spans at a given tile row and zoom level.
+    /// <summary>
+    /// Returns the number of radians of latitude that a tile spans at a given tile row and zoom level.
+    /// </summary>
     public static double TileToLatRange(int tileY, int zoom)
     {
         // Compute the top (northern) latitude of the tile
@@ -233,7 +238,9 @@ public static class MapUtils
 
     }
 
-    // Returns the number of radians of longitude that a tile spans at a given zoom level.
+    /// <summary>
+    /// Returns the number of radians of longitude that a tile spans at a given zoom level.
+    /// </summary>
     public static double TileToLonRange(int zoom)
     {
         // The full 360° of longitude is divided evenly among 2^zoom tiles.
@@ -241,6 +248,11 @@ public static class MapUtils
     }
 
 
+    /// <summary>
+    /// Determines the type of image format based on raw image data
+    /// </summary>
+    /// <param name="imageData"></param>
+    /// <returns>A MapImageType enum containing the specific image type</returns>
     public static MapImageType GetImageFormat(byte[] imageData)
     {
         // Check if we have enough bytes to check the header
@@ -283,9 +295,11 @@ public static class MapUtils
         return MapImageType.UNKNOWN;
     }
 
-    // Converts latitude and longitude from radians to the Earth-Centered, Earth-Fixed (ECEF)
-    // coordinate system, which is a Cartesian system centered at the Earth's center of mass
-    // Returns value as kilometers. Takes the Earth as a WGS84 ellipsoid.
+    /// <summary>
+    /// Converts latitude and longitude from radians to the Earth-Centered, Earth-Fixed (ECEF)
+    /// coordinate system, which is a Cartesian system centered at the Earth's center of mass.
+    /// Returns value as kilometers. Takes the Earth as a WGS84 ellipsoid.
+    /// </summary>
     public static Vector3 LatLonToCartesian(double lat, double lon)
     {
         // Calculate the radius of the parallel (distance from the Earth's axis of rotation)
@@ -312,9 +326,11 @@ public static class MapUtils
         );
     }
 
-    // Converts a raw byte array to an image texture.
-    // Detects whether the image is a JPEG, PNG, or BMP, and returns the
-    // appropriate ImageTexture
+    /// <summary>
+    /// Converts a raw byte array to an image texture.
+    /// Detects whether the image is a JPEG, PNG, or BMP, and returns the
+    /// appropriate ImageTexture
+    /// </summary>
     public static ImageTexture ByteArrayToImageTexture(byte[] rawMapData)
     {
 
@@ -338,6 +354,17 @@ public static class MapUtils
         ImageTexture texture = new ImageTexture();
         texture.SetImage(image);
         return texture;
+    }
+
+
+    public static float GetVisibleLatitudeRange()
+    {
+        return 0.0f;
+    }
+
+    public static float GetVisibleLongitudeRange()
+    {
+        return 0.0f;
     }
 
 }
