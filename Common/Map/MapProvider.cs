@@ -33,10 +33,8 @@ public abstract class MapProvider
     }
 
     protected MapType m_mapType;
+    // TODO(Argyraspides, 05/02/2025): These are all static so all map providers are gonna share them. Change it asap!!
     protected static readonly HttpClient m_client = new HttpClient();
-
-
-    // Key = previously queried URL, value = cached file path to the map tile
     protected static string m_CACHED_MAP_TILE_PATH;
     protected static List<string> m_QUERY_STR_PARAM_NAMES;
     protected static string m_QUERY_STR_TEMPLATE;

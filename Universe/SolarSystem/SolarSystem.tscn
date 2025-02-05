@@ -21,7 +21,9 @@ script = ExtResource("1_ks12t")
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_sabak")
 
-[node name="EarthOrbitalCamera" type="Camera3D" parent="."]
+[node name="Earth" parent="." instance=ExtResource("3_bobqk")]
+
+[node name="EarthOrbitalCamera" type="Camera3D" parent="Earth"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 25000)
 current = true
 fov = 60.0
@@ -30,10 +32,8 @@ script = ExtResource("3_jsn1l")
 m_cameraRadialDistance = 31098.0
 m_cameraPanSpeedMultiplier = 20.415
 
-[node name="OmniLight3D" type="OmniLight3D" parent="EarthOrbitalCamera"]
+[node name="OmniLight3D" type="OmniLight3D" parent="Earth/EarthOrbitalCamera"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17000, 12000, 10000)
 light_energy = 8.733
 omni_range = 100000.0
 omni_attenuation = 0.2
-
-[node name="Earth" parent="." instance=ExtResource("3_bobqk")]

@@ -17,9 +17,19 @@
 
 */
 
+using System;
 using Godot;
 public partial class PlanetOrbitalCamera : Camera3D
 {
+
+
+    #region Camera Signals
+
+    [Signal]
+    public delegate void OrbitalCameraPosChangedEventHandler(Vector3 position);
+
+    #endregion
+
     #region Camera Distance Configuration
     [Export] private float m_minCameraRadialDistance = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
     [Export] private float m_maxCameraRadialDistance = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * 10;
@@ -36,8 +46,8 @@ public partial class PlanetOrbitalCamera : Camera3D
     #endregion
 
     #region Camera Visibility & Position Information
-    private float m_visibleLatitudeRange; // Visible latitude range of the Earth given the camera's distance & FOV
-    private float m_visibleLongitudeRange; // Visible longitude range of the Earth given the camera's distance & FOV
+    private float m_approxVisibleLatitudeRange; // Visible latitude range of the Earth given the camera's distance & FOV
+    private float m_approxVisibleLongitudeRange; // Visible longitude range of the Earth given the camera's distance & FOV
     private float m_cameraLatitude; // Line of latitude that the center of the camera is looking at
     private float m_cameraLongitude; // Line of longitude that the center of the camera is looking at
     #endregion
@@ -53,14 +63,13 @@ public partial class PlanetOrbitalCamera : Camera3D
     {
         m_targetCameraRadialDistance = m_cameraRadialDistance;
         m_targetCameraPanPosition = Position;
-
-        InitializeCameraPosition();
     }
 
     public override void _Process(double delta)
     {
         UpdateCameraDistance((float)delta);
         UpdateCameraOrientation((float)delta);
+        UpdateVisibleLonLat();
     }
 
     public override void _Input(InputEvent @event)
@@ -119,6 +128,27 @@ public partial class PlanetOrbitalCamera : Camera3D
             radius * Mathf.Sin(phi) * Mathf.Sin(theta)
         );
     }
+
+    private void UpdateVisibleLonLat()
+    {
+        // Radius of the circular area we can see on a flat surface given camera FOV and
+        // distance away from the flat surface
+        float fovRadians = Mathf.DegToRad(Fov);
+        float viewCircleRad = (float)(m_cameraRadialDistance * Mathf.Tan(fovRadians));
+
+        m_cameraLatitude = 0.0f;
+        m_cameraLongitude = 0.0f;
+
+        (double latRange, double lonRange) =
+            MapUtils.DistanceToLatLonRange(
+                (double)viewCircleRad,
+                SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM
+            );
+
+
+
+    }
+
     #endregion
 
     #region Input Handlers
@@ -127,10 +157,12 @@ public partial class PlanetOrbitalCamera : Camera3D
         if (@event is InputEventMouseButton mouseButton)
         {
             HandleMouseButtonPanInput(mouseButton);
+            EmitSignal("OrbitalCameraPosChanged", Position);
         }
         else if (@event is InputEventMouseMotion mouseMotion && m_isDragging)
         {
             HandleMouseMotionPanInput(mouseMotion);
+            EmitSignal("OrbitalCameraPosChanged", Position);
         }
     }
 
@@ -142,6 +174,7 @@ public partial class PlanetOrbitalCamera : Camera3D
             if (m_isDragging)
             {
                 m_dragStartPos = mouseButton.Position;
+                EmitSignal("OrbitalCameraPosChanged", Position);
             }
         }
     }
@@ -178,31 +211,11 @@ public partial class PlanetOrbitalCamera : Camera3D
     #endregion
 
     #region Initialization
-    private void InitializeCameraPosition()
+    public void InitializeCameraPosition(Vector3 position)
     {
-        Position = new Vector3(0, 0, m_cameraRadialDistance);
+        Position = position;
     }
     #endregion
-
-    private float GetVisibleLatitudeRange()
-    {
-        return 0.0f;
-    }
-
-    private float GetVisibleLongitudeRange()
-    {
-        return 0.0f;
-    }
-
-    private float GetCameraLatitude()
-    {
-        return 0.0f;
-    }
-
-    private float GetCameraLongitude()
-    {
-        return 0.0f;
-    }
 
 
 }

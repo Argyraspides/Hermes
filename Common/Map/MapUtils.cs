@@ -57,6 +57,8 @@ public static class MapUtils
         HYBRID
     }
 
+    // TODO(Argyraspides, 05/02/2025): These are not just MapImageType ... these are fucking normal image types
+    // that can be used for anything. FIX IT UP!!! This should be in its own enum/class on its own.
     public enum MapImageType
     {
         BMP,
@@ -357,14 +359,21 @@ public static class MapUtils
     }
 
 
-    public static float GetVisibleLatitudeRange()
+    /// <summary>
+    /// Given a radius in meters and the circumference of a sphere, returns the radians of latitude and longitude
+    /// that the radius mapped onto the surface corresponds to. Assumes the radius is mapped parallel to the
+    /// lines of latitude and longitude
+    /// </summary>
+    /// <param name="radius"></param>
+    /// <returns>latitude and longitude range of the mapped radius in radians</returns>
+    public static (double latRange, double lonRange) DistanceToLatLonRange(
+        double radius,
+        double sphereCircum
+    )
     {
-        return 0.0f;
-    }
-
-    public static float GetVisibleLongitudeRange()
-    {
-        return 0.0f;
+        double latRange = (radius / sphereCircum) * TWO_PI;
+        double lonRange = (radius / sphereCircum) * TWO_PI;
+        return (latRange, lonRange);
     }
 
 }

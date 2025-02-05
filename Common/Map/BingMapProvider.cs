@@ -46,6 +46,16 @@ public class BingMapProvider : MapProvider
     // Constructs a query string for obtaining a map tile from Bing's map provider API.
     // Takes in a BingMapTileParams struct which should contain mappings from the name of the
     // parameter name (string) to the value of the parameter (string)
+
+    // TODO(Argyraspides, 05/02/2025) Building URLs should be done by another class which has this dedicated functionality.
+    // Also, right now the QueryParameters object forces you to have lat/lon/image type/etc. There should be a generic QueryParameters type
+    // that lets you define whatever you want to be in a query parameter
+    // So the fix would be:
+    // - Make some sort of URL builder interface which defines functions for building URLs, and a generic QueryParameters object. This
+    // URL builder will be generic and in its own folder tucked away for reuse for any other project
+    // - In the MapProvider part of the project, make a subfolder where, just like now, BingMapProvider extends MapProvider and also contains a
+    // BingURLMapProviderBuilder which implements the URL building interface. Then, BingMapProvider can use this to build its own query string using
+    // a BingQueryParameters object which extends the generic QueryParameters object
     public override string ConstructQueryString(QueryParameters queryParameters)
     {
 

@@ -19,19 +19,20 @@
 
 
 using Godot;
-using System;
 
 public partial class Earth : Planet
 {
 
+    private PlanetOrbitalCamera m_planetOrbitalCamera;
 
     public override void _Ready()
     {
         m_planetID = PlanetID.EARTH;
         m_planetShapeType = PlanetShapeType.WGS84_ELLIPSOID;
         m_defaultZoomLevel = 6;
-
         base._Ready();
+
+        InitializeCamera();
     }
 
     protected override void InitializePlanetDimensions()
@@ -65,6 +66,26 @@ public partial class Earth : Planet
         }
     }
 
+    private void InitializeCamera()
+    {
+
+        m_planetOrbitalCamera = GetNode<PlanetOrbitalCamera>("EarthOrbitalCamera");
+        m_planetOrbitalCamera.OrbitalCameraPosChanged += OnOrbitalCameraPosChangedSignal;
+
+
+        // Find the map tile that corresponds to the prime meridian and equator
+
+        var finalQuadTreeLevel = m_terrainQuadTree.GetLastQuadTreeLevel();
+
+        // TerrainChunk corresponding to map tile location (0,0)
+        TerrainChunk nullIsland = finalQuadTreeLevel[finalQuadTreeLevel.Count / 2].Chunk;
+        Vector3 nullIslandGlobalPosition = nullIsland.MeshInstance.Position;
+
+        m_planetOrbitalCamera.Position = nullIslandGlobalPosition * 2.0f;
+        m_planetOrbitalCamera.LookAt(Vector3.Zero, Vector3.Up);
+
+    }
+
     public override void LoadPlanet()
     {
         foreach (var terrainQuadTreeNode in m_terrainQuadTree.GetLastQuadTreeLevel())
@@ -73,4 +94,14 @@ public partial class Earth : Planet
             AddChild(terrainQuadTreeNode.Chunk);
         }
     }
+
+    public void OnOrbitalCameraPosChangedSignal(Vector3 position)
+    {
+        int x = 5;
+    }
+
+
+
+
+
 }
