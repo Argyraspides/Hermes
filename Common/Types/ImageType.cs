@@ -1,5 +1,5 @@
 
-public class ImageType
+public struct ImageType
 {
     public const int BMP = 0;
     public const int JPEG = 1;
