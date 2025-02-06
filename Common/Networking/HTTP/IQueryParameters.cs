@@ -16,4 +16,5 @@ public interface IQueryParameters
     /// </summary>
     /// <returns></returns>
     IDictionary<string, string> ToQueryDictionary();
+
 }

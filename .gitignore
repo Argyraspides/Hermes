@@ -9,4 +9,4 @@ Common/Communications/Protocols/MAVLink/MAVLinkDefinitionGeneration/MAVLinkDefin
 .vscode/
 
 # Large asset folder
-Common/Planet/PlanetTiles/
+Universe/SolarSystem/Earth/Assets

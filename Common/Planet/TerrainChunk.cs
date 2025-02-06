@@ -39,8 +39,7 @@ public partial class TerrainChunk : Node
     private MeshInstance3D m_meshInstance3D;
     private ShaderMaterial m_shaderMaterial;
     private MapType m_mapType;
-
-    private MapUtils.MapImageType m_mapImageType;
+    private ImageType m_mapImageType;
 
     /// <summary>
     /// Gets or sets the latitude location of this terrain chunk in radians.
@@ -127,7 +126,7 @@ public partial class TerrainChunk : Node
         set => m_mapType = value;
     }
 
-    public MapUtils.MapImageType MapImageType
+    public ImageType MapImageType
     {
         get => m_mapImageType;
         set => m_mapImageType = value;
@@ -151,7 +150,7 @@ public partial class TerrainChunk : Node
         int zoomLevel = 0,
         MeshInstance3D meshInstance3D = null,
         MapType mapType = MapType.SATELLITE,
-        MapUtils.MapImageType mapImageType = MapUtils.MapImageType.PNG
+        ImageType mapImageType = ImageType.PNG
     )
     {
         m_latitude = lat;
@@ -201,7 +200,7 @@ public partial class TerrainChunk : Node
     private async Task InitializeTerrainChunkAsync()
     {
         var mapApi = new MapAPI();
-        byte[] rawMapData = await mapApi.RequestMapTileAsync(
+        byte[] rawMapData = await mapApi.RequestRawMapTileAsync(
             m_latitude,
             m_longitude,
             m_zoomLevel,

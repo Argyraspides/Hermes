@@ -57,18 +57,6 @@ public static class MapUtils
         HYBRID
     }
 
-    // TODO(Argyraspides, 05/02/2025): These are not just MapImageType ... these are fucking normal image types
-    // that can be used for anything. FIX IT UP!!! This should be in its own enum/class on its own.
-    public enum MapImageType
-    {
-        BMP,
-        JPEG,
-        GIF,
-        TIFF,
-        PNG,
-        UNKNOWN
-    }
-
     /// <summary>
     /// Converts line of latitude (radians) to a latitude tile coordinate (y axis) on the Mercator projection,
     /// using a quadtree to represent the map (each successive zoom level doubles the tiles on the X and Y axis).
@@ -222,6 +210,24 @@ public static class MapUtils
         return quadkey.ToString();
     }
 
+    /// <summary>
+    /// Converts a latitude and longitude at a particular zoom level to a quadkey.
+    ///
+    /// To understand quadkeys, see: https://www.microimages.com/documentation/TechGuides/78BingStructure.pdf
+    /// This kind of tile indexing is used mainly for the Bing maps API
+    ///
+    /// </summary>
+    /// <param name="lat"></param>
+    /// <param name="lon"></param>
+    /// <param name="zoom"></param>
+    /// <returns></returns>
+    public static string LatLonAndZoomToQuadKey(double lat, double lon, int zoom)
+    {
+        int latTileCoo = LatitudeToTileCoordinateMercator(lat, zoom);
+        int lonTileCoo = LongitudeToTileCoordinateMercator(lon, zoom);
+        return TileCoordinatesToQuadkey(lonTileCoo, latTileCoo, zoom);
+    }
+
 
     /// <summary>
     /// Returns the number of radians of latitude that a tile spans at a given tile row and zoom level.
@@ -255,46 +261,46 @@ public static class MapUtils
     /// </summary>
     /// <param name="imageData"></param>
     /// <returns>A MapImageType enum containing the specific image type</returns>
-    public static MapImageType GetImageFormat(byte[] imageData)
+    public static ImageType GetImageFormat(byte[] imageData)
     {
         // Check if we have enough bytes to check the header
         if (imageData == null || imageData.Length < 4)
         {
-            return MapImageType.UNKNOWN;
+            return ImageType.UNKNOWN;
         }
 
         // JPEG starts with FF D8 FF
         if (imageData[0] == 0xFF && imageData[1] == 0xD8 && imageData[2] == 0xFF)
         {
-            return MapImageType.JPEG;
+            return ImageType.JPEG;
         }
 
         // PNG starts with 89 50 4E 47 0D 0A 1A 0A
         if (imageData[0] == 0x89 && imageData[1] == 0x50 && imageData[2] == 0x4E && imageData[3] == 0x47)
         {
-            return MapImageType.PNG;
+            return ImageType.PNG;
         }
 
         // GIF starts with GIF87a or GIF89a
         if (imageData[0] == 0x47 && imageData[1] == 0x49 && imageData[2] == 0x46 && imageData[3] == 0x38)
         {
-            return MapImageType.GIF;
+            return ImageType.GIF;
         }
 
         // BMP starts with BM
         if (imageData[0] == 0x42 && imageData[1] == 0x4D)
         {
-            return MapImageType.BMP;
+            return ImageType.BMP;
         }
 
         // TIFF starts with II (little endian) or MM (big endian)
         if ((imageData[0] == 0x49 && imageData[1] == 0x49) ||
             (imageData[0] == 0x4D && imageData[1] == 0x4D))
         {
-            return MapImageType.TIFF;
+            return ImageType.TIFF;
         }
 
-        return MapImageType.UNKNOWN;
+        return ImageType.UNKNOWN;
     }
 
     /// <summary>
@@ -336,19 +342,19 @@ public static class MapUtils
     public static ImageTexture ByteArrayToImageTexture(byte[] rawMapData)
     {
 
-        MapImageType imageType = GetImageFormat(rawMapData);
+        ImageType imageType = GetImageFormat(rawMapData);
 
         Image image = new Image();
 
-        if (imageType == MapImageType.JPEG)
+        if (imageType == ImageType.JPEG)
         {
             image.LoadJpgFromBuffer(rawMapData);
         }
-        if (imageType == MapImageType.PNG)
+        if (imageType == ImageType.PNG)
         {
             image.LoadPngFromBuffer(rawMapData);
         }
-        if (imageType == MapImageType.BMP)
+        if (imageType == ImageType.BMP)
         {
             image.LoadBmpFromBuffer(rawMapData);
         }
@@ -376,4 +382,72 @@ public static class MapUtils
         return (latRange, lonRange);
     }
 
+
+    /// <summary>
+    /// Converts a quadkey to the latitude and longitude at the center of the corresponding map tile,
+    /// as well as the zoom level.
+    ///
+    /// The quadkey encodes the tile x and y coordinates along with the zoom level.
+    /// This method decodes the quadkey, calculates the tile's geographical bounds, and
+    /// returns the center point of the tile.
+    /// </summary>
+    /// <param name="quadkey">The quadkey string.</param>
+    /// <returns>
+    /// A tuple containing:
+    /// - centerLat: Center latitude of the tile (in radians)
+    /// - centerLon: Center longitude of the tile (in radians)
+    /// - zoom: The zoom level of the quadkey
+    /// </returns>
+    public static (double centerLat, double centerLon, int zoom) QuadKeyToLatLonAndZoom(string quadkey)
+    {
+        if (string.IsNullOrEmpty(quadkey))
+        {
+            throw new ArgumentException("Quadkey cannot be null or empty.");
+        }
+
+        // The zoom level is the length of the quadkey
+        int zoom = quadkey.Length;
+        int x = 0;
+        int y = 0;
+
+        // Decode the quadkey to obtain the tile x and y coordinates.
+        // Each character in the quadkey represents two bits of the tile coordinates.
+        for (int i = 0; i < quadkey.Length; i++)
+        {
+            int bit = zoom - i - 1;
+            int mask = 1 << bit;
+            char digit = quadkey[i];
+
+            switch (digit)
+            {
+                case '0':
+                    // No bits are set.
+                    break;
+                case '1':
+                    // Set the bit corresponding to the x coordinate.
+                    x |= mask;
+                    break;
+                case '2':
+                    // Set the bit corresponding to the y coordinate.
+                    y |= mask;
+                    break;
+                case '3':
+                    // Set both bits.
+                    x |= mask;
+                    y |= mask;
+                    break;
+                default:
+                    throw new ArgumentException($"Invalid QuadKey digit: {digit}");
+            }
+        }
+
+        // Get the geographical bounds of the tile.
+        var (latMin, latMax, lonMin, lonMax) = GetTileLatLonBounds(x, y, zoom);
+
+        // Calculate the center of the tile.
+        double centerLat = (latMin + latMax) / 2.0;
+        double centerLon = (lonMin + lonMax) / 2.0;
+
+        return (centerLat, centerLon, zoom);
+    }
 }

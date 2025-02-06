@@ -24,9 +24,7 @@ using System.Threading.Tasks;
 public partial class MapAPI : Node
 {
 
-    private MapProvider m_mapProvider;
-
-
+    private BingMapProvider m_mapProvider;
 
     public MapAPI()
     {
@@ -38,22 +36,46 @@ public partial class MapAPI : Node
     // Requests a map tile at a particular latitude/longitude at a specified zoom level (degrees), with a map type
     // (e.g., satellite, street, hybrid, etc.), and an image type (PNG, JPG, etc.).
     // To understand map tiling, see: https://www.microimages.com/documentation/TechGuides/78BingStructure.pdf
-    public async Task<byte[]> RequestMapTileAsync(
+    public async Task<MercatorMapTile> RequestMapTileAsync(
         float latitude,
         float longitude,
         int zoom,
         MapType mapType,
-        MapUtils.MapImageType mapImageType
+        ImageType mapImageType
     )
     {
-        MapProvider.QueryParameters queryParameters = m_mapProvider.ConstructQueryParameters(
-            latitude,
-            longitude,
-            zoom,
+
+        BingQueryParameters bingQueryParameters = new BingQueryParameters(
+            0,
             mapType,
-            mapImageType
+            MapUtils.LatLonAndZoomToQuadKey(latitude, longitude, zoom),
+            mapImageType,
+            "523",
+            "en"
         );
-        return await m_mapProvider.RequestMapTileAsync(queryParameters);
+
+        return await m_mapProvider.RequestMapTileAsync(bingQueryParameters);
+    }
+
+    public async Task<byte[]> RequestRawMapTileAsync(
+                float latitude,
+        float longitude,
+        int zoom,
+        MapType mapType,
+        ImageType mapImageType
+    )
+    {
+
+        BingQueryParameters bingQueryParameters = new BingQueryParameters(
+            0,
+            mapType,
+            MapUtils.LatLonAndZoomToQuadKey(latitude, longitude, zoom),
+            mapImageType,
+            "523",
+            "en"
+        );
+
+        return await m_mapProvider.RequestRawMapTileAsync(bingQueryParameters);
     }
 
 
