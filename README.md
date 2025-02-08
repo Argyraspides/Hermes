@@ -89,3 +89,6 @@ You should now be able to run & debug Hermes.
 
 ### Step 3 (Optional -- Reccommended): JetBrains Rider Setup
 Simply download [JetBrains Rider](https://www.jetbrains.com/rider/download) and open up the Godot cloned repo. That's it. JetBrains has a [baked-in plugin for Godot development](https://www.jetbrains.com/help/rider/Godot.html#running-and-debugging) which should get you up and running right out of the box with debugging support.
+
+### Step 4: Download the Earth asset pack
+Go to the releases tab and download the asset pack for Earth. Follow the instructions there.
