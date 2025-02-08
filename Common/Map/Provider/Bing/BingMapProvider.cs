@@ -36,7 +36,7 @@ public class BingMapProvider : IMapProvider<BingMapTileQueryParameters>
         throw new System.NotImplementedException();
     }
 
-    public async Task<MercatorMapTile> RequestMapTileAsync(BingMapTileQueryParameters queryParameters)
+    public async Task<MapTile> RequestMapTileAsync(BingMapTileQueryParameters queryParameters)
     {
 
         // Check if resource already exists and return the cached map tile if it does

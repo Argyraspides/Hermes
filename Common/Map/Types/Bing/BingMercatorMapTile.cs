@@ -1,4 +1,4 @@
-public class BingMercatorMapTile : MercatorMapTile
+public class BingMercatorMapTile : MapTile
 {
 
     public string m_quadKey { get; private set; }

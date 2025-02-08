@@ -234,6 +234,10 @@ public static class MapUtils
     /// </summary>
     public static double TileToLatRange(int tileY, int zoom)
     {
+        if(zoom == 0)
+        {
+            return PI;
+        }
         // Compute the top (northern) latitude of the tile
         double latTop = MapTileToLatitude(tileY, zoom);
 

@@ -81,10 +81,7 @@ public class TerrainQuadTree
         m_terrainQuadTreeNodes = new List<List<TerrainQuadTreeNode>>();
 
         TerrainQuadTreeNode rootNode = new TerrainQuadTreeNode(new TerrainChunk(
-            0,
-            0,
-            (float)Math.PI,
-            (float)(2.0 * Math.PI)
+            new MapTile(0, 0, 0)
         ));
 
         var queue = new Queue<(TerrainQuadTreeNode, int parentRow, int parentCol)>();
@@ -139,11 +136,7 @@ public class TerrainQuadTree
                     childLon += childLonHalfRange;
 
                     TerrainChunk childChunk = new TerrainChunk(
-                            childLat,
-                            childLon,
-                            childLatRange,
-                            childLonRange,
-                            currZoomLevel + 1
+                            new MapTile(childLat, childLon, currZoomLevel + 1)
                         );
 
                     TerrainQuadTreeNode childNode = new TerrainQuadTreeNode(childChunk);

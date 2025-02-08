@@ -22,6 +22,6 @@ using System.Threading.Tasks;
 
 public interface IMapProvider<TQueryParameters> where TQueryParameters : IQueryParameters
 {
-    public Task<MercatorMapTile> RequestMapTileAsync(TQueryParameters queryParameters);
+    public Task<MapTile> RequestMapTileAsync(TQueryParameters queryParameters);
     public Task<byte[]> RequestRawMapTileAsync(TQueryParameters queryParameters);
 }

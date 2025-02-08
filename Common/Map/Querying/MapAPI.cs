@@ -35,7 +35,7 @@ public partial class MapAPI : Node
     // Requests a map tile at a particular latitude/longitude at a specified zoom level (degrees), with a map type
     // (e.g., satellite, street, hybrid, etc.), and an image type (PNG, JPG, etc.).
     // To understand map tiling, see: https://www.microimages.com/documentation/TechGuides/78BingStructure.pdf
-    public async Task<MercatorMapTile> RequestMapTileAsync(
+    public async Task<MapTile> RequestMapTileAsync(
         float latitude,
         float longitude,
         int zoom,

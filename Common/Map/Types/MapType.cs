@@ -26,3 +26,9 @@ public enum MapType
 
     UNKNOWN
 }
+
+public enum MapTileType
+{
+    WEB_MERCATOR,
+    UNKNOWN
+}

@@ -54,15 +54,14 @@ public partial class Earth : Planet
             var terrainQuadTreeNode = finalQuadTreeLevel[i];
 
             ArrayMesh meshSegment = WGS84EllipsoidMeshGenerator.CreateEllipsoidMeshSegment(
-                terrainQuadTreeNode.Chunk.Latitude,
-                terrainQuadTreeNode.Chunk.Longitude,
-                terrainQuadTreeNode.Chunk.LatitudeRange,
-                terrainQuadTreeNode.Chunk.LongitudeRange
+                (float)terrainQuadTreeNode.Chunk.MapTile.m_latitude,
+                (float)terrainQuadTreeNode.Chunk.MapTile.m_longitude,
+                (float)terrainQuadTreeNode.Chunk.MapTile.m_latitudeRange,
+                (float)terrainQuadTreeNode.Chunk.MapTile.m_longitudeRange
             );
 
             terrainQuadTreeNode.Chunk.MeshInstance = new MeshInstance3D { Mesh = meshSegment };
             terrainQuadTreeNode.Chunk.Name = $"TerrainChunk_z{zoomLevel}_tn{i}";
-            terrainQuadTreeNode.Chunk.Load();
         }
     }
 
@@ -97,7 +96,6 @@ public partial class Earth : Planet
 
     public void OnOrbitalCameraPosChangedSignal(Vector3 position)
     {
-        int x = 5;
     }
 
 
