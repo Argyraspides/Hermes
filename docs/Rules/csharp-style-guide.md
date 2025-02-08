@@ -1,4 +1,4 @@
-# C# Style Guide for Godot Earth Project
+# C# Style Guide for Hermes
 
 ## Table of Contents
 1. Naming Conventions
