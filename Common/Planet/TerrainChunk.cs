@@ -200,7 +200,7 @@ public partial class TerrainChunk : Node
     private async Task InitializeTerrainChunkAsync()
     {
         var mapApi = new MapAPI();
-        byte[] rawMapData = await mapApi.RequestRawMapTileAsync(
+        MercatorMapTile mapTile = await mapApi.RequestMapTileAsync(
             m_latitude,
             m_longitude,
             m_zoomLevel,
@@ -208,6 +208,6 @@ public partial class TerrainChunk : Node
             m_mapImageType
         );
 
-        ApplyTexture(MapUtils.ByteArrayToImageTexture(rawMapData));
+        ApplyTexture(mapTile.m_texture2D);
     }
 }

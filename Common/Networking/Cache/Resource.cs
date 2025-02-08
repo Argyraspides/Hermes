@@ -1,6 +1,8 @@
-public abstract class Resource
+public class Resource
 {
-    public string ID { get; set; }
-    public byte[] ResourceData { get; set; }
-    public string ResourcePath { get; set; }
+    public string Hash { get; protected set; }
+    public byte[] ResourceData { get; protected set; }
+    public string ResourcePath { get; protected set; }
+    public bool IsExternalResource { get; protected set; }
+    public virtual void GenerateHash() { Hash = ""; }
 }

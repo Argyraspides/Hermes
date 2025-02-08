@@ -8,7 +8,7 @@
 /// TODO::WARNING(Argyraspides, 06/02/2025) The URL that this class uses will be deprecated in June. Fix it up before then!
 ///
 /// </summary>
-public class BingMapTileURLBuilder : IUrlBuilder<BingQueryParameters>
+public class BingMapTileURLBuilder : IUrlBuilder<BingMapTileQueryParameters>
 {
 
     public const string serverInstanceStr = "serverInstance";
@@ -18,10 +18,10 @@ public class BingMapTileURLBuilder : IUrlBuilder<BingQueryParameters>
     public const string apiVersionStr = "apiVersion";
     public const string langStr = "lang";
 
-    public string URLTemplate =
+    public readonly string URLTemplate =
     $"https://ecn.t{serverInstanceStr}.tiles.virtualearth.net/tiles/{mapTypeStr}{quadKeyStr}.{mapImgTypeStr}?g={apiVersionStr}&mkt={langStr}";
 
-    public string BuildUrl(BingQueryParameters parameters)
+    public string BuildUrl(BingMapTileQueryParameters parameters)
     {
         var parameterKvp = parameters.ToQueryDictionary();
         string finalURL = URLTemplate;

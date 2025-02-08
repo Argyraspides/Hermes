@@ -23,7 +23,6 @@ using System.Threading.Tasks;
 
 public partial class MapAPI : Node
 {
-
     private BingMapProvider m_mapProvider;
 
     public MapAPI()
@@ -45,20 +44,24 @@ public partial class MapAPI : Node
     )
     {
 
-        BingQueryParameters bingQueryParameters = new BingQueryParameters(
+        BingMapTileQueryParameters bingQueryParameters = new BingMapTileQueryParameters(
             0,
             mapType,
             MapUtils.LatLonAndZoomToQuadKey(latitude, longitude, zoom),
             mapImageType,
+            // TODO(Argyraspides, 08/02/2025) Don't hardcode API version. I don't really know  how to make this like parametrized though.
+            // Learn the differences between versions and come up with a design decision on how to parametrize this accordingly
             "523",
-            "en"
+            // TODO(Argyraspides, 08/02/2025) I suppose this would just depend on the language setting of Hermes, so this should easily
+            // be parametrized in the future. Maybe a singleton variable injected into here based on the application's language setting
+            Language.en
         );
 
         return await m_mapProvider.RequestMapTileAsync(bingQueryParameters);
     }
 
     public async Task<byte[]> RequestRawMapTileAsync(
-                float latitude,
+        float latitude,
         float longitude,
         int zoom,
         MapType mapType,
@@ -66,13 +69,13 @@ public partial class MapAPI : Node
     )
     {
 
-        BingQueryParameters bingQueryParameters = new BingQueryParameters(
+        BingMapTileQueryParameters bingQueryParameters = new BingMapTileQueryParameters(
             0,
             mapType,
             MapUtils.LatLonAndZoomToQuadKey(latitude, longitude, zoom),
             mapImageType,
             "523",
-            "en"
+            Language.en
         );
 
         return await m_mapProvider.RequestRawMapTileAsync(bingQueryParameters);

@@ -62,7 +62,7 @@ public partial class Earth : Planet
 
             terrainQuadTreeNode.Chunk.MeshInstance = new MeshInstance3D { Mesh = meshSegment };
             terrainQuadTreeNode.Chunk.Name = $"TerrainChunk_z{zoomLevel}_tn{i}";
-
+            terrainQuadTreeNode.Chunk.Load();
         }
     }
 
