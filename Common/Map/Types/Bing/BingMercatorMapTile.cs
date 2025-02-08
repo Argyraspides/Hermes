@@ -37,7 +37,10 @@ public class BingMercatorMapTile : MercatorMapTile
         m_width = 256;
         m_height = 256;
 
-        m_texture2D = MapUtils.ByteArrayToImageTexture(imageData);
+        if (imageData != null)
+        {
+            m_texture2D = MapUtils.ByteArrayToImageTexture(imageData);
+        }
 
         ResourceData = imageData;
 

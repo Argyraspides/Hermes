@@ -21,7 +21,7 @@ ExternalLauncher="*res://Common/Communications/ExternalLaunchers/ExternalLaunche
 WorldListener="*res://Common/Communications/WorldListener/WorldListener.cs"
 MavLinkDeserializer="*res://Common/Communications/Protocols/MAVLink/MAVLinkDeserializer.cs"
 MavLinkStateConverter="*res://State/StateConverters/MAVLinkStateConverter/MAVLinkStateConverter.cs"
-MapApi="*res://Common/Map/MapAPI/MapAPI.cs"
+MapApi="*res://Common/Map/Querying/MapAPI.cs"
 
 [debug]
 

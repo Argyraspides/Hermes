@@ -33,7 +33,7 @@ public class BingMapTileCacher : ICacheCapability<BingMercatorMapTile>
     /// Contains the default high-resolution Earth textures
     /// </summary>
     private readonly string DEFAULT_CACHE_FOLDER_PATH =
-        "res://Universe/SolarSystem/Assets/Earth/MapTiles";
+        "res://Universe/SolarSystem/Planets/Earth/Assets/MapTiles";
 
     private readonly string USER_RESOURCE_MAP_PATH = Path.Combine(OS.GetUserDataDir(), "BingMapProvider", "Cache", "BingResourceCacheMap.csv");
 

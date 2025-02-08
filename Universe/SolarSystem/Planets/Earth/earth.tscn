@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://u6dcfgabkcf3"]
 
-[ext_resource type="Script" path="res://Universe/SolarSystem/Earth/Earth.cs" id="1_tenyr"]
+[ext_resource type="Script" path="res://Universe/SolarSystem/Planets/Earth/Earth.cs" id="1_tenyr"]
 
 [node name="Earth" type="StaticBody3D"]
 script = ExtResource("1_tenyr")
