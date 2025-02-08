@@ -8,7 +8,7 @@ Hermes: Messenger of the Machines
 
 ## Setup Instructions
 
-### Step 1: Downlaod the Godot Game Engine
+### Step 1: Download the Godot Game Engine
 Ensure you have [Godot 4.3 Mono installed](https://godotengine.org/). It is important you download the mono version (.NET) and not the regular version as Hermes is written entirely in C#.
 
 You can get up and running with the Godot editor itself and nothing more, though it is recommended to use VSCode/JetBrains Rider as the built-in Godot editor has poor support for C#, meanwhile VSCode and JetBrains Rider both have good support for Godot development in GDScript and C#.
