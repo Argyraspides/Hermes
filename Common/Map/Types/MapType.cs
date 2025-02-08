@@ -22,5 +22,7 @@ public enum MapType
 {
     SATELLITE,
     STREET,
-    HYBRID
+    HYBRID,
+
+    UNKNOWN
 }

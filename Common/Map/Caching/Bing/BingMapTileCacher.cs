@@ -20,8 +20,6 @@ public class BingMapTileCacher : ICacheCapability<BingMercatorMapTile>
             { }
             GD.Print("Bing cache dictionary file created at: " + USER_RESOURCE_MAP_PATH);
         }
-
-        // LoadResourceMap();
     }
 
     /// <summary>
@@ -36,27 +34,6 @@ public class BingMapTileCacher : ICacheCapability<BingMercatorMapTile>
         "res://Universe/SolarSystem/Planets/Earth/Assets/MapTiles";
 
     private readonly string USER_RESOURCE_MAP_PATH = Path.Combine(OS.GetUserDataDir(), "BingMapProvider", "Cache", "BingResourceCacheMap.csv");
-
-    // private Dictionary<string, string> m_userResourceMap;
-
-
-    // private void LoadResourceMap()
-    // {
-    //     m_userResourceMap = new Dictionary<string, string>();
-
-    //     if (File.Exists(USER_RESOURCE_MAP_PATH))
-    //     {
-    //         foreach (var line in File.ReadLines(USER_RESOURCE_MAP_PATH))
-    //         {
-    //             var parts = line.Split(',');
-    //             if (parts.Length == 2)
-    //             {
-    //                 m_userResourceMap[parts[0].Trim()] = parts[1].Trim();
-    //             }
-    //         }
-    //         GD.Print($"Loaded {m_userResourceMap.Count} entries from cache.");
-    //     }
-    // }
 
     public void CacheResource(BingMercatorMapTile resource)
     {
@@ -110,7 +87,6 @@ public class BingMapTileCacher : ICacheCapability<BingMercatorMapTile>
         }
         return bingMercatorMapTile;
     }
-    // res://Universe/SolarSystem/Assets/Earth/MapTiles/Bing/SATELLITE/png/en/6/tile_1_0.png
 
     public bool ResourceExists(BingMercatorMapTile partialResource)
     {

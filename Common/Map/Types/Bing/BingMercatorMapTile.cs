@@ -11,7 +11,13 @@ public class BingMercatorMapTile : MercatorMapTile
     /// <param name="mapType"></param>
     /// <param name="imageType"></param>
     /// <param name="language"></param>
-    public BingMercatorMapTile(string quadKey, MapType mapType, Language language, ImageType imageType = ImageType.UNKNOWN, byte[] imageData = null)
+    public BingMercatorMapTile(
+        string quadKey,
+        MapType mapType = MapType.UNKNOWN,
+        Language language = Language.UNKNOWN,
+        ImageType imageType = ImageType.UNKNOWN,
+        byte[] imageData = null
+    )
     {
         m_mapType = mapType;
         m_language = language;
@@ -44,20 +50,21 @@ public class BingMercatorMapTile : MercatorMapTile
 
         ResourceData = imageData;
 
+        // TODO(Argyraspides, 08/02/2025) Find a way to do this automatically in the Resource class after the most derived class' constructor is
+        // already finished. Do not assume a programmer will remember to GenerateHash() after deriving a class from Resource. This should
+        // be completely automatic.
         GenerateHash();
     }
 
     public BingMercatorMapTile()
     {
-
+        GenerateHash();
     }
 
-    public override void GenerateHash()
+    public override string GenerateHashCore()
     {
-        // Can be used as a folder path. E.g.,
-        // ID = Bing/SATELLITE/PNG/en/6/tile_5_24.png
         var format = "Bing/{0}/{1}/{2}/{3}/tile_{4}_{5}.{6}";
-        Hash = string.Format(format,
+        return string.Format(format,
             m_mapType,
             m_mapImageType.ToString().ToLower(),
             m_language,
@@ -65,6 +72,18 @@ public class BingMercatorMapTile : MercatorMapTile
             m_longitudeTileCoo,
             m_latitudeTileCoo,
             m_mapImageType.ToString().ToLower());
+    }
+
+    public override bool IsHashable()
+    {
+        return m_mapType != MapType.UNKNOWN
+            && m_mapImageType != ImageType.UNKNOWN
+            && m_language != Language.UNKNOWN
+            && m_zoomLevel > 0
+            && m_longitudeTileCoo >= 0
+            && m_longitudeTileCoo < int.MaxValue
+            && m_latitudeTileCoo >= 0
+            && m_latitudeTileCoo < int.MaxValue;
     }
 
 }

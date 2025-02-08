@@ -47,8 +47,13 @@ public class MercatorMapTile : Resource
         m_language = Language.en;
     }
 
-    public override void GenerateHash()
+    public override bool IsHashable()
     {
-        throw new NotImplementedException();
+        throw new NotImplementedException("Resource " + this + " cannot be determined hashable. You must implement this function in any derived class of Resource");
+    }
+
+    public override string GenerateHashCore()
+    {
+        throw new NotImplementedException("Resource " + this + " cannot have a hash generated. You must implement this function in any derived class of Resource");
     }
 }
