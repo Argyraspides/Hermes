@@ -49,6 +49,8 @@ public class TerrainQuadTree
     /// </summary>
     private List<List<TerrainQuadTreeNode>> m_terrainQuadTreeNodes { get; set; }
 
+    private List<TerrainQuadTreeNode> m_nullIslandNodes {get; set; }
+
     /// <summary>
     /// Splits the quadtree node associated with the particular latitude/longitude.
     /// </summary>
@@ -79,6 +81,7 @@ public class TerrainQuadTree
 
         // Initialize the outer list.
         m_terrainQuadTreeNodes = new List<List<TerrainQuadTreeNode>>();
+        m_nullIslandNodes = new List<TerrainQuadTreeNode>();
 
         TerrainQuadTreeNode rootNode = new TerrainQuadTreeNode(new TerrainChunk(
             new MapTile(0, 0, 0)
@@ -125,6 +128,8 @@ public class TerrainQuadTree
                         childRow++;
                     }
 
+
+
                     float childLat = (float)MapUtils.MapTileToLatitude(childRow, currZoomLevel + 1);
                     float childLatRange = (float)MapUtils.TileToLatRange(childRow, currZoomLevel + 1);
                     float childLatHalfRange = childLatRange / 2;
@@ -142,6 +147,14 @@ public class TerrainQuadTree
                     TerrainQuadTreeNode childNode = new TerrainQuadTreeNode(childChunk);
                     node.ChildChunks.Add(childChunk);
                     queue.Enqueue((childNode, childRow, childCol));
+
+                    if(childRow == (1 << (currZoomLevel + 1)) / 2)
+                    {
+                        if(childCol == (1 << (currZoomLevel + 1)) / 2)
+                        {
+                            m_nullIslandNodes.Add(childNode);
+                        }
+                    }
                 }
             }
         }
@@ -154,6 +167,15 @@ public class TerrainQuadTree
             throw new IndexOutOfRangeException("In TerrainQuadTree: Trying to grab quadtree level that doesn't exist");
         }
         return m_terrainQuadTreeNodes[zoomLevel];
+    }
+
+    public TerrainQuadTreeNode GetCenter(int zoomLevel)
+    {
+        if(zoomLevel >= m_nullIslandNodes.Count)
+        {
+            throw new IndexOutOfRangeException();
+        }
+        return m_nullIslandNodes[zoomLevel];
     }
 
     public List<TerrainQuadTreeNode> GetLastQuadTreeLevel()

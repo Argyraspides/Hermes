@@ -32,12 +32,11 @@ shader_type spatial;
 const float TWO_PI = 6.28318530718;
 const float QUARTER_PI = 0.78539816339;
 const float RAD_TO_DEG_FRAC = 57.2957795131; // Equals (180.0 / PI);
-// TODO: Do not assume a 256x256 tile size.
-const int TILE_SIZE = 256;
 
 // Uniforms
 uniform sampler2D map_tile;
 uniform int zoom_level;
+uniform int tile_size;
 
 // Varying
 varying vec2 vertex_lat_lon;
@@ -52,7 +51,7 @@ float lat_to_pixel(float lat) {
     float y_tile = n * y;
     float frac_tile = y_tile - floor(y_tile);
 
-    return frac_tile * float(TILE_SIZE);
+    return frac_tile * float(tile_size);
 }
 
 // Converts longitude to pixel coordinate on the specific map tile
@@ -66,7 +65,7 @@ float lon_to_pixel(float lon) {
     float x_tile = n * x;
     float frac_tile = x_tile - floor(x_tile);
 
-    return frac_tile * float(TILE_SIZE);
+    return frac_tile * float(tile_size);
 }
 
 void vertex() {
@@ -83,7 +82,7 @@ void fragment() {
     float py = lat_to_pixel(lat);
 
     // Convert to UV coordinates (0 to 1 range)
-    vec2 uv = vec2(px, py) / float(TILE_SIZE);
+    vec2 uv = vec2(px, py) / float(tile_size);
     uv = clamp(uv, 0.0, 1.0);
 
     // Sample and apply the map tile texture

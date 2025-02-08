@@ -24,7 +24,6 @@ environment = SubResource("Environment_sabak")
 [node name="Earth" parent="." instance=ExtResource("3_bobqk")]
 
 [node name="EarthOrbitalCamera" type="Camera3D" parent="Earth"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 25000)
 current = true
 fov = 60.0
 far = 100000.0

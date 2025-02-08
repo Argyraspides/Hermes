@@ -109,6 +109,7 @@ public partial class TerrainChunk : Node
         };
         shaderMat.SetShaderParameter("map_tile", texture2D);
         shaderMat.SetShaderParameter("zoom_level", MapTile.m_zoomLevel);
+        shaderMat.SetShaderParameter("tile_size", MapTile.m_size);
         MeshInstance3D.MaterialOverride = shaderMat;
 
         // TODO(Argyraspides, 2025-01-29): Handle east-west inversion in shader instead of mesh scale

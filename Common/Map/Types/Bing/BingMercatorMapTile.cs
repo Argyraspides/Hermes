@@ -40,8 +40,7 @@ public class BingMercatorMapTile : MapTile
         // Standard web mercator tile dimensions
         // TODO(Argyraspides, 06/02/2025) Change this so that the image resolution is determined from the raw byte array
         // at runtime instead of being hardcoded like this
-        m_width = 256;
-        m_height = 256;
+        m_size = 256;
 
         if (imageData != null)
         {

@@ -18,6 +18,7 @@
 */
 
 
+using System.Linq;
 using Godot;
 
 public partial class Earth : Planet
@@ -25,6 +26,8 @@ public partial class Earth : Planet
 
     private PlanetOrbitalCamera m_planetOrbitalCamera;
 
+    [Export]
+    private Vector3 m_nullIsland;
     public override void _Ready()
     {
         m_planetID = PlanetID.EARTH;
@@ -71,18 +74,22 @@ public partial class Earth : Planet
         m_planetOrbitalCamera = GetNode<PlanetOrbitalCamera>("EarthOrbitalCamera");
         m_planetOrbitalCamera.OrbitalCameraPosChanged += OnOrbitalCameraPosChangedSignal;
 
+        var nullIslandNode = m_terrainQuadTree.GetCenter(m_defaultZoomLevel - 1);
 
-        // Find the map tile that corresponds to the prime meridian and equator
+        var surfaceArrays = nullIslandNode.Chunk.MeshInstance.Mesh.SurfaceGetArrays((int)Mesh.ArrayType.Vertex);
 
-        var finalQuadTreeLevel = m_terrainQuadTree.GetLastQuadTreeLevel();
+        Vector3[] vertices = surfaceArrays[0].AsVector3Array();
 
-        // TerrainChunk corresponding to map tile location (0,0)
-        TerrainChunk nullIsland = finalQuadTreeLevel[finalQuadTreeLevel.Count / 2].Chunk;
-        Vector3 nullIslandGlobalPosition = nullIsland.MeshInstance.Position;
+        m_nullIsland =
+                vertices.Aggregate(Vector3.Zero, (currTotalVec, currVec) => currTotalVec + currVec) / vertices.Length;
 
-        m_planetOrbitalCamera.Position = nullIslandGlobalPosition * 2.0f;
-        m_planetOrbitalCamera.LookAt(Vector3.Zero, Vector3.Up);
-
+        // TODO(Argyraspides, 08/02/2025): This is somewhat of a deep issue. I suspect that the mesh generator when using the trig functions
+        // is going counterclockwise/clockwise, while whatever direction is used to measure longitude is going in the oppostie direction. Meaning
+        // that our null island point (lat/lon of 0,0) is actually on the opposite side (0, 2pi), so we have to flip it here to actually face
+        // Africa off the coast of Guinea. Make sure to fix this. This may have implications as well with the map shader as
+        // that currently needs to be manually flipped inside of TerrainChunk rather than being taken care of in the shader
+        // directly
+        m_planetOrbitalCamera.InitializeCameraPosition(-m_nullIsland);
     }
 
     public override void LoadPlanet()

@@ -17,7 +17,6 @@
 
 */
 
-using System;
 using Godot;
 public partial class PlanetOrbitalCamera : Camera3D
 {
@@ -101,9 +100,11 @@ public partial class PlanetOrbitalCamera : Camera3D
 
     private void UpdateCameraOrientation(float delta)
     {
+        float slerpWeight = delta * m_cameraPanSmoothingMultiplier;
+        slerpWeight = (float)Mathf.Clamp(slerpWeight, 0.0, 1.0);
         Position = Position.Slerp(
             m_targetCameraPanPosition,
-            (float)delta * m_cameraPanSmoothingMultiplier
+            slerpWeight
         );
         LookAt(Vector3.Zero, Vector3.Up);
     }
@@ -139,14 +140,13 @@ public partial class PlanetOrbitalCamera : Camera3D
         m_cameraLatitude = 0.0f;
         m_cameraLongitude = 0.0f;
 
-        (double latRange, double lonRange) =
+        (double lat, double lon) =
             MapUtils.DistanceToLatLonRange(
                 (double)viewCircleRad,
                 SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM
             );
-
-
-
+        m_approxVisibleLatitudeRange = (float)lat;
+        m_approxVisibleLongitudeRange = (float)lon;
     }
 
     #endregion
@@ -214,6 +214,7 @@ public partial class PlanetOrbitalCamera : Camera3D
     public void InitializeCameraPosition(Vector3 position)
     {
         Position = position;
+        LookAt(Vector3.Zero, Vector3.Up);
     }
     #endregion
 

@@ -4,8 +4,7 @@ using System;
 public class MapTile : Resource
 {
     // Tile dimensions
-    public int m_width { get; protected set; }
-    public int m_height { get; protected set; }
+    public int m_size { get; protected set; }
 
     // Geographic coordinates and ranges
     public double m_latitude { get; protected set; }
@@ -67,8 +66,7 @@ public class MapTile : Resource
         m_mapTileType = MapTileType.WEB_MERCATOR;
 
         // Initialize with common web mercator tile dimensions
-        m_width = 256;
-        m_height = 256;
+        m_size = 256;
     }
 
     private void AutoDetermineFields(double latitude, double longitude, int zoomLevel)
