@@ -113,8 +113,11 @@ public partial class PlanetOrbitalCamera : Camera3D
     {
         // Convert current camera position to spherical coordinates
         float radius = m_cameraRadialDistance;
-        float theta = Mathf.Atan2(Position.Z, Position.X);  // Azimuthal angle
-        float phi = Mathf.Acos(Position.Y / radius);        // Polar angle
+        float theta = Mathf.Atan2(Position.Z, Position.X);  // Azimuthal angle, longitude equivalent
+        float phi = Mathf.Acos(Position.Y / radius);        // Polar angle, latitude equivalent
+
+        m_cameraLatitude = Mathf.Acos(-Position.Y / radius) - (Mathf.Pi / 2);
+        m_cameraLongitude = -Mathf.Atan2(-Position.Z, -Position.X);
 
         // Update angles based on mouse movement
         float deltaTime = (float)GetProcessDeltaTime();
@@ -136,9 +139,6 @@ public partial class PlanetOrbitalCamera : Camera3D
         // distance away from the flat surface
         float fovRadians = Mathf.DegToRad(Fov);
         float viewCircleRad = (float)(m_cameraRadialDistance * Mathf.Tan(fovRadians));
-
-        m_cameraLatitude = 0.0f;
-        m_cameraLongitude = 0.0f;
 
         (double lat, double lon) =
             MapUtils.DistanceToLatLonRange(
@@ -214,6 +214,11 @@ public partial class PlanetOrbitalCamera : Camera3D
     public void InitializeCameraPosition(Vector3 position)
     {
         Position = position;
+
+        // TODO(Argyraspides, 08/02/2025)
+        // Somehow make this intelligent to automatically determine lat/lon based on world position, or explicitly pass them in
+        m_cameraLatitude = 0.0f;
+        m_cameraLongitude = 0.0f;
         LookAt(Vector3.Zero, Vector3.Up);
     }
     #endregion

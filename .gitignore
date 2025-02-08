@@ -1,5 +1,8 @@
 # Godot 4+ specific ignores
 .godot/
+# Testing JetBrains Rider for a very limited time ...
+.idea/
+Hermes.sln.DotSettings.user
 /android/
 
 # MAVLink Auto-generated definitions

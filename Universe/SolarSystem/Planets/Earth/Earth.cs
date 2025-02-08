@@ -104,9 +104,4 @@ public partial class Earth : Planet
     public void OnOrbitalCameraPosChangedSignal(Vector3 position)
     {
     }
-
-
-
-
-
 }

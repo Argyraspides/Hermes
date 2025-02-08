@@ -1,4 +1,3 @@
-
 public interface ICacheCapability<Resource>
 {
     void CacheResource(Resource resource);
