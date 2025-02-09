@@ -32,8 +32,6 @@ using Godot;
 /// </summary>
 public static class MapUtils
 {
-
-
     public const double PI = Math.PI;
 
     /// <summary>
@@ -42,6 +40,7 @@ public static class MapUtils
     /// are just constants that most map providers use
     /// </summary>
     public const double MIN_LATITUDE_LEVEL_WEB_MERCATOR = -1.484422229745;
+
     public const double MAX_LATITUDE_LEVEL_WEB_MERCATOR = 1.484422229745;
 
     public const double RADIANS_TO_DEGREES = 180.0 / PI;
@@ -84,7 +83,6 @@ public static class MapUtils
         double finalExpr = bracketExpr * (1 << (zoom - 1));
 
         return (int)Math.Floor((finalExpr >= (1 << zoom)) ? (1 << zoom) - 1 : finalExpr);
-
     }
 
     /// <summary>
@@ -97,7 +95,6 @@ public static class MapUtils
     /// </summary>
     public static int LongitudeToTileCoordinateMercator(double lon, int zoom)
     {
-
         double lonDeg = lon * RADIANS_TO_DEGREES;
 
         int tilesPerSide = 1 << zoom;
@@ -165,7 +162,8 @@ public static class MapUtils
     /// - lonMin: Minimum longitude (western edge of the tile), in radians
     /// - lonMax: Maximum longitude (eastern edge of the tile), in radians
     /// </returns>
-    public static (double latMin, double latMax, double lonMin, double lonMax) GetTileLatLonBounds(int tx, int ty, int zoom)
+    public static (double latMin, double latMax, double lonMin, double lonMax) GetTileLatLonBounds(int tx, int ty,
+        int zoom)
     {
         double lonMin = MapTileToLongitude(tx, zoom);
         double lonMax = MapTileToLongitude(tx + 1, zoom);
@@ -184,7 +182,6 @@ public static class MapUtils
     /// </summary>
     public static string TileCoordinatesToQuadkey(int x, int y, int zoom)
     {
-
         int maxTile = (1 << zoom) - 1;
         if (x < 0 || x > maxTile || y < 0 || y > maxTile)
         {
@@ -234,10 +231,11 @@ public static class MapUtils
     /// </summary>
     public static double TileToLatRange(int tileY, int zoom)
     {
-        if(zoom == 0)
+        if (zoom == 0)
         {
             return PI;
         }
+
         // Compute the top (northern) latitude of the tile
         double latTop = MapTileToLatitude(tileY, zoom);
 
@@ -247,7 +245,6 @@ public static class MapUtils
 
         // The difference in latitude (in radians) is:
         return latTop - latBottom;
-
     }
 
     /// <summary>
@@ -316,8 +313,9 @@ public static class MapUtils
     {
         // Calculate the radius of the parallel (distance from the Earth's axis of rotation)
         // at the given latitude. This accounts for the Earth's ellipsoidal shape.
-        double N = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM / Math.Sqrt(1.0 - (SolarSystemConstants.EARTH_ECCENTRICITY_SQUARED *
-                                              Math.Pow(Math.Sin(lat), 2)));
+        double N = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM / Math.Sqrt(1.0 -
+            (SolarSystemConstants.EARTH_ECCENTRICITY_SQUARED *
+             Math.Pow(Math.Sin(lat), 2)));
 
         // X coordinate: distance from the Earth's axis (prime meridian)
         double x = N * Math.Cos(lat) * Math.Cos(lon);
@@ -332,9 +330,9 @@ public static class MapUtils
         // Convert to Godot's coordinate system
         // Godot's default: Y is up, X is right, Z is forward
         return new Vector3(
-            (float)(x / SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM),  // Normalize by dividing by semi-major axis
-            (float)(z / SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM),  // Y is up in Godot
-            (float)(y / SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM)   // Swap Y and Z for Godot's coordinate system
+            (float)(x / SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM), // Normalize by dividing by semi-major axis
+            (float)(z / SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM), // Y is up in Godot
+            (float)(y / SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM) // Swap Y and Z for Godot's coordinate system
         );
     }
 
@@ -345,7 +343,6 @@ public static class MapUtils
     /// </summary>
     public static ImageTexture ByteArrayToImageTexture(byte[] rawMapData)
     {
-
         ImageType imageType = GetImageFormat(rawMapData);
 
         Image image = new Image();
@@ -354,10 +351,12 @@ public static class MapUtils
         {
             image.LoadJpgFromBuffer(rawMapData);
         }
+
         if (imageType == ImageType.PNG)
         {
             image.LoadPngFromBuffer(rawMapData);
         }
+
         if (imageType == ImageType.BMP)
         {
             image.LoadBmpFromBuffer(rawMapData);
@@ -370,7 +369,7 @@ public static class MapUtils
 
 
     /// <summary>
-    /// Given a radius in meters and the circumference of a sphere, returns the radians of latitude and longitude
+    /// Given a radius and the circumference of a sphere, returns the radians of latitude and longitude
     /// that the radius mapped onto the surface corresponds to. Assumes the radius is mapped parallel to the
     /// lines of latitude and longitude
     /// </summary>

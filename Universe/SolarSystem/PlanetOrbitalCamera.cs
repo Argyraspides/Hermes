@@ -35,7 +35,7 @@ public partial class PlanetOrbitalCamera : Camera3D
     [Export] private float m_initialCameraRadialDistance = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * 5;
 
     // The current (smoothed) distance and the target distance
-    private float m_currentDistance;
+    [Export] private float m_currentDistance;
     private float m_targetDistance;
 
     #endregion
@@ -57,6 +57,22 @@ public partial class PlanetOrbitalCamera : Camera3D
     // phi: polar (radians) - angle from the Y axis (0 = top) (latitude equivalent)
     private float m_currentTheta;
     private float m_currentPhi;
+
+    // Latitude and longitude that the center of the camera is looking at
+    [Export] private float m_currentLat;
+    [Export] private float m_currentLon;
+
+    // Approximate lat/lon radius range that the camera is able to see of the Earth's surface.
+    // Calculated by via a vision cone, where the circumference
+    // of the cones base (the cone's height is the distance from the camera to the Earth's surface)
+    // is projected onto the Earth's surface. The range
+    // of this circumference on the Earth's surface is turned into a lat/lon range.
+    // This will slightly overestimate the truly visible lat/lon range,
+    // but simplifies calculation drastically and improves performance. Used
+    // to determine where to split the quadtree for LoD.
+    [Export] private float m_approxVisibleLatRadius;
+    [Export] private float m_approxVisibleLonRadius;
+
     private float m_targetTheta;
     private float m_targetPhi;
 
@@ -108,6 +124,9 @@ public partial class PlanetOrbitalCamera : Camera3D
         m_currentTheta = Mathf.LerpAngle(m_currentTheta, m_targetTheta, m_panSmoothing);
         m_currentPhi = Mathf.Lerp(m_currentPhi, m_targetPhi, m_panSmoothing);
 
+        m_currentLon = m_currentTheta + Mathf.Pi;
+        m_currentLat = m_currentPhi - (Mathf.Pi / 2.0f);
+
         // Convert spherical coordinates back to Cartesian coordinates.
         // Spherical to Cartesian conversion:
         // x = r * sin(phi) * cos(theta)
@@ -120,6 +139,8 @@ public partial class PlanetOrbitalCamera : Camera3D
         );
         Position = newPos;
         LookAt(Vector3.Zero, Vector3.Up);
+
+        UpdateVisibleLatLonRange();
 
         EmitSignal("OrbitalCameraPosChanged", Position);
     }
@@ -143,6 +164,16 @@ public partial class PlanetOrbitalCamera : Camera3D
                 HandlePanInput(mouseMotion);
             }
         }
+    }
+
+    void UpdateVisibleLatLonRange()
+    {
+        float fovRad = Mathf.DegToRad(Fov);
+        float distanceFromEarthSurface = m_currentDistance - SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
+
+        float circleViewRadius = distanceFromEarthSurface * Mathf.Tan(fovRad / 2.0f);
+        (m_approxVisibleLatRadius, m_approxVisibleLonRadius) =
+            MapUtils.DistanceToLatLonRange(circleViewRadius, SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM);
     }
 
     #endregion
