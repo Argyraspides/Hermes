@@ -20,7 +20,6 @@
 
 public class BingMercatorMapTile : MapTile
 {
-
     public string m_quadKey { get; private set; }
 
     /// <summary>
@@ -39,32 +38,32 @@ public class BingMercatorMapTile : MapTile
         byte[] imageData = null
     )
     {
-        m_mapType = mapType;
-        m_language = language;
-        m_mapImageType = (imageType == ImageType.UNKNOWN) ? MapUtils.GetImageFormat(imageData) : imageType;
+        MapType = mapType;
+        Language = language;
+        MapImageType = (imageType == ImageType.UNKNOWN) ? MapUtils.GetImageFormat(imageData) : imageType;
 
         m_quadKey = quadKey;
 
         // Extract zoom level from quadkey length
-        m_zoomLevel = quadKey.Length;
+        ZoomLevel = quadKey.Length;
 
         // Convert tile coordinates to lat/lon
-        (m_latitude, m_longitude, m_zoomLevel) = MapUtils.QuadKeyToLatLonAndZoom(quadKey);
+        (Latitude, Longitude, ZoomLevel) = MapUtils.QuadKeyToLatLonAndZoom(quadKey);
 
-        m_latitudeTileCoo = MapUtils.LatitudeToTileCoordinateMercator(m_latitude, m_zoomLevel);
-        m_longitudeTileCoo = MapUtils.LongitudeToTileCoordinateMercator(m_longitude, m_zoomLevel);
+        LatitudeTileCoo = MapUtils.LatitudeToTileCoordinateMercator(Latitude, ZoomLevel);
+        LongitudeTileCoo = MapUtils.LongitudeToTileCoordinateMercator(Longitude, ZoomLevel);
 
-        m_latitudeRange = MapUtils.TileToLatRange(m_latitudeTileCoo, m_zoomLevel);
-        m_longitudeRange = MapUtils.TileToLonRange(m_longitudeTileCoo);
+        LatitudeRange = MapUtils.TileToLatRange(LatitudeTileCoo, ZoomLevel);
+        LongitudeRange = MapUtils.TileToLonRange(LongitudeTileCoo);
 
         // Standard web mercator tile dimensions
         // TODO(Argyraspides, 06/02/2025) Change this so that the image resolution is determined from the raw byte array
         // at runtime instead of being hardcoded like this
-        m_size = 256;
+        Size = 256;
 
         if (imageData != null)
         {
-            m_texture2D = MapUtils.ByteArrayToImageTexture(imageData);
+            Texture2D = MapUtils.ByteArrayToImageTexture(imageData);
         }
 
         ResourceData = imageData;
@@ -84,25 +83,24 @@ public class BingMercatorMapTile : MapTile
     {
         var format = "Bing/{0}/{1}/{2}/{3}/tile_{4}_{5}.{6}";
         return string.Format(format,
-            m_mapType,
-            m_mapImageType.ToString().ToLower(),
-            m_language,
-            m_zoomLevel,
-            m_longitudeTileCoo,
-            m_latitudeTileCoo,
-            m_mapImageType.ToString().ToLower());
+            MapType,
+            MapImageType.ToString().ToLower(),
+            Language,
+            ZoomLevel,
+            LongitudeTileCoo,
+            LatitudeTileCoo,
+            MapImageType.ToString().ToLower());
     }
 
     public override bool IsHashable()
     {
-        return m_mapType != MapType.UNKNOWN
-            && m_mapImageType != ImageType.UNKNOWN
-            && m_language != Language.UNKNOWN
-            && m_zoomLevel > 0
-            && m_longitudeTileCoo >= 0
-            && m_longitudeTileCoo < int.MaxValue
-            && m_latitudeTileCoo >= 0
-            && m_latitudeTileCoo < int.MaxValue;
+        return MapType != MapType.UNKNOWN
+               && MapImageType != ImageType.UNKNOWN
+               && Language != Language.UNKNOWN
+               && ZoomLevel > 0
+               && LongitudeTileCoo >= 0
+               && LongitudeTileCoo < int.MaxValue
+               && LatitudeTileCoo >= 0
+               && LatitudeTileCoo < int.MaxValue;
     }
-
 }

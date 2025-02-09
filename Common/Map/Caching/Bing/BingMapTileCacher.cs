@@ -23,10 +23,8 @@ using Godot;
 
 public class BingMapTileCacher : ICacheCapability<BingMercatorMapTile>
 {
-
     public BingMapTileCacher()
     {
-
         if (!Directory.Exists(USER_CACHE_FOLDER_PATH))
         {
             Directory.CreateDirectory(USER_CACHE_FOLDER_PATH);
@@ -36,7 +34,9 @@ public class BingMapTileCacher : ICacheCapability<BingMercatorMapTile>
         if (!File.Exists(USER_RESOURCE_MAP_PATH))
         {
             using (File.CreateText(USER_RESOURCE_MAP_PATH))
-            { }
+            {
+            }
+
             GD.Print("Bing cache dictionary file created at: " + USER_RESOURCE_MAP_PATH);
         }
     }
@@ -52,7 +52,8 @@ public class BingMapTileCacher : ICacheCapability<BingMercatorMapTile>
     private readonly string DEFAULT_CACHE_FOLDER_PATH =
         "res://Universe/SolarSystem/Planets/Earth/Assets/MapTiles";
 
-    private readonly string USER_RESOURCE_MAP_PATH = Path.Combine(OS.GetUserDataDir(), "BingMapProvider", "Cache", "BingResourceCacheMap.csv");
+    private readonly string USER_RESOURCE_MAP_PATH =
+        Path.Combine(OS.GetUserDataDir(), "BingMapProvider", "Cache", "BingResourceCacheMap.csv");
 
     public void CacheResource(BingMercatorMapTile resource)
     {
@@ -84,9 +85,9 @@ public class BingMapTileCacher : ICacheCapability<BingMercatorMapTile>
             using var file = Godot.FileAccess.Open(filePath, Godot.FileAccess.ModeFlags.Read);
             bingMercatorMapTile = new BingMercatorMapTile(
                 partialResource.m_quadKey,
-                partialResource.m_mapType,
-                partialResource.m_language,
-                partialResource.m_mapImageType,
+                partialResource.MapType,
+                partialResource.Language,
+                partialResource.MapImageType,
                 file.GetBuffer((long)file.GetLength())
             );
         }
@@ -98,12 +99,13 @@ public class BingMapTileCacher : ICacheCapability<BingMercatorMapTile>
             using var file = Godot.FileAccess.Open(filePath, Godot.FileAccess.ModeFlags.Read);
             bingMercatorMapTile = new BingMercatorMapTile(
                 partialResource.m_quadKey,
-                partialResource.m_mapType,
-                partialResource.m_language,
-                partialResource.m_mapImageType,
+                partialResource.MapType,
+                partialResource.Language,
+                partialResource.MapImageType,
                 file.GetBuffer((long)file.GetLength())
             );
         }
+
         return bingMercatorMapTile;
     }
 

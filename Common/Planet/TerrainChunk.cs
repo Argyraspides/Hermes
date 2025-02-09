@@ -72,10 +72,11 @@ public partial class TerrainChunk : Node
     )
     {
         MapTile = mapTile;
-        if(mapTile.m_mapTileType == MapTileType.WEB_MERCATOR)
+        if (mapTile.MapTileType == MapTileType.WEB_MERCATOR)
         {
             SHADER_PATH = "res://Common/Shaders/WebMercatorToWGS84Shader.gdshader";
         }
+
         // TODO(Argyraspides, 02/08/2025): Handle cases where the map tile is unknown
         MeshInstance3D = meshInstance3D;
         ShaderMaterial = shaderMaterial;
@@ -103,13 +104,10 @@ public partial class TerrainChunk : Node
     /// <param name="texture2D">The texture to apply to the terrain.</param>
     private void ApplyTexture(Texture2D texture2D)
     {
-        var shaderMat = new ShaderMaterial
-        {
-            Shader = ResourceLoader.Load<Shader>(SHADER_PATH)
-        };
+        var shaderMat = new ShaderMaterial { Shader = ResourceLoader.Load<Shader>(SHADER_PATH) };
         shaderMat.SetShaderParameter("map_tile", texture2D);
-        shaderMat.SetShaderParameter("zoom_level", MapTile.m_zoomLevel);
-        shaderMat.SetShaderParameter("tile_size", MapTile.m_size);
+        shaderMat.SetShaderParameter("zoom_level", MapTile.ZoomLevel);
+        shaderMat.SetShaderParameter("tile_size", MapTile.Size);
         MeshInstance3D.MaterialOverride = shaderMat;
 
         // TODO(Argyraspides, 2025-01-29): Handle east-west inversion in shader instead of mesh scale
@@ -120,13 +118,13 @@ public partial class TerrainChunk : Node
     {
         var mapApi = new MapAPI();
         MapTile mapTile = await mapApi.RequestMapTileAsync(
-            (float)MapTile.m_latitude,
-            (float)MapTile.m_longitude,
-            MapTile.m_zoomLevel,
-            MapTile.m_mapType,
-            MapTile.m_mapImageType
+            (float)MapTile.Latitude,
+            (float)MapTile.Longitude,
+            MapTile.ZoomLevel,
+            MapTile.MapType,
+            MapTile.MapImageType
         );
 
-        ApplyTexture(mapTile.m_texture2D);
+        ApplyTexture(mapTile.Texture2D);
     }
 }

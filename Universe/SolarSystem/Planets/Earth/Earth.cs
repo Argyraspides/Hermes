@@ -47,23 +47,6 @@ public partial class Earth : Planet
     {
         m_terrainQuadTree = new TerrainQuadTree();
         m_terrainQuadTree.InitializeQuadTree(zoomLevel);
-
-        var finalQuadTreeLevel = m_terrainQuadTree.GetLastQuadTreeLevel();
-
-        for (int i = 0; i < finalQuadTreeLevel.Count; i++)
-        {
-            var terrainQuadTreeNode = finalQuadTreeLevel[i];
-
-            ArrayMesh meshSegment = WGS84EllipsoidMeshGenerator.CreateEllipsoidMeshSegment(
-                (float)terrainQuadTreeNode.Chunk.MapTile.m_latitude,
-                (float)terrainQuadTreeNode.Chunk.MapTile.m_longitude,
-                (float)terrainQuadTreeNode.Chunk.MapTile.m_latitudeRange,
-                (float)terrainQuadTreeNode.Chunk.MapTile.m_longitudeRange
-            );
-
-            terrainQuadTreeNode.Chunk.MeshInstance = new MeshInstance3D { Mesh = meshSegment };
-            terrainQuadTreeNode.Chunk.Name = $"TerrainChunk_z{zoomLevel}_tn{i}";
-        }
     }
 
     private void InitializeCamera()
@@ -92,11 +75,7 @@ public partial class Earth : Planet
 
     public override void LoadPlanet()
     {
-        foreach (var terrainQuadTreeNode in m_terrainQuadTree.GetLastQuadTreeLevel())
-        {
-            terrainQuadTreeNode.Chunk.Load();
-            AddChild(terrainQuadTreeNode.Chunk);
-        }
+        AddChild(m_terrainQuadTree);
     }
 
     public void OnOrbitalCameraPosChangedSignal(Vector3 position)

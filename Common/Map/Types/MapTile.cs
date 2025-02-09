@@ -24,87 +24,89 @@ using System;
 public class MapTile : Resource
 {
     // Tile dimensions
-    public int m_size { get; protected set; }
+    public int Size { get; protected set; }
 
     // Geographic coordinates and ranges
-    public double m_latitude { get; protected set; }
-    public double m_longitude { get; protected set; }
-    public int m_latitudeTileCoo { get; protected set; }
-    public int m_longitudeTileCoo { get; protected set; }
-    public double m_latitudeRange { get; protected set; }
-    public double m_longitudeRange { get; protected set; }
+    public double Latitude { get; protected set; }
+    public double Longitude { get; protected set; }
+    public int LatitudeTileCoo { get; protected set; }
+    public int LongitudeTileCoo { get; protected set; }
+    public double LatitudeRange { get; protected set; }
+    public double LongitudeRange { get; protected set; }
 
     // Tile metadata
-    public int m_zoomLevel { get; protected set; }
-    public MapType m_mapType { get; protected set; }
-    public ImageType m_mapImageType { get; protected set; }
-    public Texture2D m_texture2D { get; protected set; }
+    public int ZoomLevel { get; protected set; }
+    public MapType MapType { get; protected set; }
+    public ImageType MapImageType { get; protected set; }
+    public Texture2D Texture2D { get; protected set; }
 
     // If the map tile is a street view map tile/hybrid, the names of various places
     // will show up, hence a map tile must have a language field
-    public Language m_language { get; protected set; }
+    public Language Language { get; protected set; }
 
-    public MapTileType m_mapTileType { get; protected set; }
+    public MapTileType MapTileType { get; protected set; }
 
     public MapTile()
     {
         // Default to null island (0,0) with a small range
-        m_latitude = 0.0f;
-        m_longitude = 0.0f;
+        Latitude = 0.0f;
+        Longitude = 0.0f;
 
         // Default zoom level for city-scale viewing
-        m_zoomLevel = 12;
+        ZoomLevel = 12;
 
         // Automatically determine tile coordinate, latitude/longitude range
-        m_latitudeTileCoo = MapUtils.LatitudeToTileCoordinateMercator(m_latitude, m_zoomLevel);
-        m_longitudeTileCoo = MapUtils.LongitudeToTileCoordinateMercator(m_longitude, m_zoomLevel);
+        LatitudeTileCoo = MapUtils.LatitudeToTileCoordinateMercator(Latitude, ZoomLevel);
+        LongitudeTileCoo = MapUtils.LongitudeToTileCoordinateMercator(Longitude, ZoomLevel);
 
-        m_latitudeRange = MapUtils.TileToLatRange(m_latitudeTileCoo, m_zoomLevel);
-        m_longitudeRange = MapUtils.TileToLonRange(m_zoomLevel);
+        LatitudeRange = MapUtils.TileToLatRange(LatitudeTileCoo, ZoomLevel);
+        LongitudeRange = MapUtils.TileToLonRange(ZoomLevel);
 
-        AutoDetermineFields(m_latitude, m_longitude, m_zoomLevel);
+        AutoDetermineFields(Latitude, Longitude, ZoomLevel);
         InitializeDefaultFields();
     }
 
     public MapTile(float latitude, float longitude, int zoomLevel)
     {
-        m_latitude = latitude;
-        m_longitude = longitude;
-        m_zoomLevel = zoomLevel;
+        Latitude = latitude;
+        Longitude = longitude;
+        ZoomLevel = zoomLevel;
 
-        AutoDetermineFields(m_latitude, m_longitude, m_zoomLevel);
+        AutoDetermineFields(Latitude, Longitude, ZoomLevel);
         InitializeDefaultFields();
     }
 
     private void InitializeDefaultFields()
     {
         // Default to standard map types
-        m_mapType = MapType.SATELLITE;
-        m_mapImageType = ImageType.PNG;
-        m_texture2D = null;
-        m_language = Language.en;
-        m_mapTileType = MapTileType.WEB_MERCATOR;
+        MapType = MapType.SATELLITE;
+        MapImageType = ImageType.PNG;
+        Texture2D = null;
+        Language = Language.en;
+        MapTileType = MapTileType.WEB_MERCATOR;
 
         // Initialize with common web mercator tile dimensions
-        m_size = 256;
+        Size = 256;
     }
 
     private void AutoDetermineFields(double latitude, double longitude, int zoomLevel)
     {
         // Automatically determine tile coordinate, latitude/longitude range
-        m_latitudeTileCoo = MapUtils.LatitudeToTileCoordinateMercator(latitude, zoomLevel);
-        m_longitudeTileCoo = MapUtils.LongitudeToTileCoordinateMercator(longitude, zoomLevel);
-        m_latitudeRange = MapUtils.TileToLatRange(m_latitudeTileCoo, zoomLevel);
-        m_longitudeRange = MapUtils.TileToLonRange(zoomLevel);
+        LatitudeTileCoo = MapUtils.LatitudeToTileCoordinateMercator(latitude, zoomLevel);
+        LongitudeTileCoo = MapUtils.LongitudeToTileCoordinateMercator(longitude, zoomLevel);
+        LatitudeRange = MapUtils.TileToLatRange(LatitudeTileCoo, zoomLevel);
+        LongitudeRange = MapUtils.TileToLonRange(zoomLevel);
     }
 
     public override bool IsHashable()
     {
-        throw new NotImplementedException("Resource " + this + " cannot be determined hashable. You must implement this function in any derived class of Resource");
+        throw new NotImplementedException("Resource " + this +
+                                          " cannot be determined hashable. You must implement this function in any derived class of Resource");
     }
 
     public override string GenerateHashCore()
     {
-        throw new NotImplementedException("Resource " + this + " cannot have a hash generated. You must implement this function in any derived class of Resource");
+        throw new NotImplementedException("Resource " + this +
+                                          " cannot have a hash generated. You must implement this function in any derived class of Resource");
     }
 }
