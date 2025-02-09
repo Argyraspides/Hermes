@@ -28,8 +28,6 @@ current = true
 fov = 60.0
 far = 100000.0
 script = ExtResource("3_jsn1l")
-m_cameraRadialDistance = 31098.0
-m_cameraPanSpeedMultiplier = 20.415
 
 [node name="OmniLight3D" type="OmniLight3D" parent="Earth/EarthOrbitalCamera"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17000, 12000, 10000)

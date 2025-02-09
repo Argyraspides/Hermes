@@ -23,11 +23,10 @@ using Godot;
 
 public partial class Earth : Planet
 {
-
     private PlanetOrbitalCamera m_planetOrbitalCamera;
 
-    [Export]
-    private Vector3 m_nullIsland;
+    [Export] private Vector3 m_nullIsland;
+
     public override void _Ready()
     {
         m_planetID = PlanetID.EARTH;
@@ -46,7 +45,6 @@ public partial class Earth : Planet
 
     protected override void InitializePlanetSurface(int zoomLevel)
     {
-
         m_terrainQuadTree = new TerrainQuadTree();
         m_terrainQuadTree.InitializeQuadTree(zoomLevel);
 
@@ -70,7 +68,6 @@ public partial class Earth : Planet
 
     private void InitializeCamera()
     {
-
         m_planetOrbitalCamera = GetNode<PlanetOrbitalCamera>("EarthOrbitalCamera");
         m_planetOrbitalCamera.OrbitalCameraPosChanged += OnOrbitalCameraPosChangedSignal;
 
@@ -81,7 +78,7 @@ public partial class Earth : Planet
         Vector3[] vertices = surfaceArrays[0].AsVector3Array();
 
         m_nullIsland =
-                vertices.Aggregate(Vector3.Zero, (currTotalVec, currVec) => currTotalVec + currVec) / vertices.Length;
+            vertices.Aggregate(Vector3.Zero, (currTotalVec, currVec) => currTotalVec + currVec) / vertices.Length;
 
         // TODO(Argyraspides, 08/02/2025): This is somewhat of a deep issue. I suspect that the mesh generator when using the trig functions
         // is going counterclockwise/clockwise, while whatever direction is used to measure longitude is going in the oppostie direction. Meaning
@@ -89,7 +86,8 @@ public partial class Earth : Planet
         // Africa off the coast of Guinea. Make sure to fix this. This may have implications as well with the map shader as
         // that currently needs to be manually flipped inside of TerrainChunk rather than being taken care of in the shader
         // directly
-        m_planetOrbitalCamera.InitializeCameraPosition(-m_nullIsland);
+        // Camera will be directly on null island. Push back 15,000km
+        m_planetOrbitalCamera.InitializeCameraPosition(-m_nullIsland + new Vector3(-15000, 0, 0));
     }
 
     public override void LoadPlanet()

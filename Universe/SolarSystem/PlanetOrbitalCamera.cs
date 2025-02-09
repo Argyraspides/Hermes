@@ -18,10 +18,9 @@
 */
 
 using Godot;
+
 public partial class PlanetOrbitalCamera : Camera3D
 {
-
-
     #region Camera Signals
 
     [Signal]
@@ -30,198 +29,168 @@ public partial class PlanetOrbitalCamera : Camera3D
     #endregion
 
     #region Camera Distance Configuration
+
     [Export] private float m_minCameraRadialDistance = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
     [Export] private float m_maxCameraRadialDistance = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * 10;
-    [Export] private float m_cameraRadialDistance = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * 5;
-    private float m_targetCameraRadialDistance;
+    [Export] private float m_initialCameraRadialDistance = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * 5;
+
+    // The current (smoothed) distance and the target distance
+    private float m_currentDistance;
+    private float m_targetDistance;
+
     #endregion
 
     #region Camera Movement Configuration
-    [Export] private float m_cameraPanSpeedMultiplier = 20.0f;
-    [Export] private float m_cameraPanSmoothingMultiplier = 5.0f;
 
-    [Export] private float m_cameraZoomSmoothingMultiplier = 5.0f;
-    [Export] private float m_cameraZoomIncrement = 500.0f;
+    [Export] private float m_panSpeedMultiplier = 0.005f;
+    [Export] private float m_panSmoothing = 0.1f; // Lower = slower smoothing
+
+    [Export] private float m_zoomSmoothing = 0.15f; // Lower = slower smoothing
+    [Export] private float m_zoomIncrement = 500.0f;
+
     #endregion
 
-    #region Camera Visibility & Position Information
-    private float m_approxVisibleLatitudeRange; // Visible latitude range of the Earth given the camera's distance & FOV
-    private float m_approxVisibleLongitudeRange; // Visible longitude range of the Earth given the camera's distance & FOV
-    private float m_cameraLatitude; // Line of latitude that the center of the camera is looking at
-    private float m_cameraLongitude; // Line of longitude that the center of the camera is looking at
+    #region Camera Spherical Coordinates
+
+    // We represent the camera position in spherical coordinates.
+    // theta: azimuth (radians) - horizontal angle around the origin (longitude equivalent)
+    // phi: polar (radians) - angle from the Y axis (0 = top) (latitude equivalent)
+    private float m_currentTheta;
+    private float m_currentPhi;
+    private float m_targetTheta;
+    private float m_targetPhi;
+
     #endregion
 
     #region Mouse Input State
+
     private bool m_isDragging = false;
-    private Vector2 m_dragStartPos;
-    private Vector3 m_targetCameraPanPosition;
+
     #endregion
 
     #region Lifecycle Methods
+
     public override void _Ready()
     {
-        m_targetCameraRadialDistance = m_cameraRadialDistance;
-        m_targetCameraPanPosition = Position;
+        // Initialize distance
+        m_currentDistance = m_initialCameraRadialDistance;
+        m_targetDistance = m_initialCameraRadialDistance;
+
+        // Derive initial spherical coordinates from the current position.
+        // If the position hasn't been set, we default to a standard view.
+        if (Position == Vector3.Zero)
+        {
+            // Default angles: look from an angle (e.g., 45° down)
+            m_currentTheta = Mathf.DegToRad(45);
+            m_currentPhi = Mathf.DegToRad(45);
+        }
+        else
+        {
+            m_currentDistance = Position.Length();
+            m_targetDistance = m_currentDistance;
+            // theta: angle around Y
+            m_currentTheta = Mathf.Atan2(Position.Z, Position.X);
+            // phi: angle from the Y axis (avoid the poles)
+            m_currentPhi = Mathf.Clamp(Mathf.Acos(Position.Y / m_currentDistance), 0.1f, Mathf.Pi - 0.1f);
+        }
+
+        // Start with target values equal to current values
+        m_targetTheta = m_currentTheta;
+        m_targetPhi = m_currentPhi;
     }
 
     public override void _Process(double delta)
     {
-        UpdateCameraDistance((float)delta);
-        UpdateCameraOrientation((float)delta);
-        UpdateVisibleLonLat();
+        float dt = (float)delta;
+
+        // Smoothly update distance and angles
+        m_currentDistance = Mathf.Lerp(m_currentDistance, m_targetDistance, m_zoomSmoothing);
+        m_currentTheta = Mathf.LerpAngle(m_currentTheta, m_targetTheta, m_panSmoothing);
+        m_currentPhi = Mathf.Lerp(m_currentPhi, m_targetPhi, m_panSmoothing);
+
+        // Convert spherical coordinates back to Cartesian coordinates.
+        // Spherical to Cartesian conversion:
+        // x = r * sin(phi) * cos(theta)
+        // y = r * cos(phi)
+        // z = r * sin(phi) * sin(theta)
+        Vector3 newPos = new Vector3(
+            m_currentDistance * Mathf.Sin(m_currentPhi) * Mathf.Cos(m_currentTheta),
+            m_currentDistance * Mathf.Cos(m_currentPhi),
+            m_currentDistance * Mathf.Sin(m_currentPhi) * Mathf.Sin(m_currentTheta)
+        );
+        Position = newPos;
+        LookAt(Vector3.Zero, Vector3.Up);
+
+        EmitSignal("OrbitalCameraPosChanged", Position);
     }
 
     public override void _Input(InputEvent @event)
     {
-        HandleCameraPanningInput(@event);
-        HandleCameraZoomingInput(@event);
-    }
-    #endregion
+        // Handle panning input.
+        if (@event is InputEventMouseButton mouseButton)
+        {
+            if (mouseButton.ButtonIndex == MouseButton.Left)
+            {
+                m_isDragging = mouseButton.Pressed;
+            }
 
-    #region Camera Position Updates
-    private void UpdateCameraDistance(float delta)
-    {
-        m_cameraRadialDistance = Mathf.Lerp(
-            m_cameraRadialDistance,
-            m_targetCameraRadialDistance,
-            (float)delta * m_cameraZoomSmoothingMultiplier
-        );
-
-        Vector3 normalizedVec = Position.Normalized();
-
-        Vector3 newPos = new Vector3(
-            m_cameraRadialDistance * normalizedVec.X,
-            m_cameraRadialDistance * normalizedVec.Y,
-            m_cameraRadialDistance * normalizedVec.Z
-        );
-        Position = newPos;
-        LookAt(Vector3.Zero, Vector3.Up);
-    }
-
-    private void UpdateCameraOrientation(float delta)
-    {
-        float slerpWeight = delta * m_cameraPanSmoothingMultiplier;
-        slerpWeight = (float)Mathf.Clamp(slerpWeight, 0.0, 1.0);
-        Position = Position.Slerp(
-            m_targetCameraPanPosition,
-            slerpWeight
-        );
-        LookAt(Vector3.Zero, Vector3.Up);
-    }
-
-    private void UpdateCameraPanTargetPosition(Vector2 delta)
-    {
-        // Convert current camera position to spherical coordinates
-        float radius = m_cameraRadialDistance;
-        float theta = Mathf.Atan2(Position.Z, Position.X);  // Azimuthal angle, longitude equivalent
-        float phi = Mathf.Acos(Position.Y / radius);        // Polar angle, latitude equivalent
-
-        m_cameraLatitude = Mathf.Acos(-Position.Y / radius) - (Mathf.Pi / 2);
-        m_cameraLongitude = -Mathf.Atan2(-Position.Z, -Position.X);
-
-        // Update angles based on mouse movement
-        float deltaTime = (float)GetProcessDeltaTime();
-        theta -= delta.X * m_cameraPanSpeedMultiplier * deltaTime;
-        phi += delta.Y * m_cameraPanSpeedMultiplier * deltaTime;
-        phi = Mathf.Clamp(phi, 0.1f, Mathf.Pi - 0.1f);     // Prevent camera flip at poles
-
-        // Convert back to Cartesian coordinates
-        m_targetCameraPanPosition = new Vector3(
-            radius * Mathf.Sin(phi) * Mathf.Cos(theta),
-            radius * Mathf.Cos(phi),
-            radius * Mathf.Sin(phi) * Mathf.Sin(theta)
-        );
-    }
-
-    private void UpdateVisibleLonLat()
-    {
-        // Radius of the circular area we can see on a flat surface given camera FOV and
-        // distance away from the flat surface
-        float fovRadians = Mathf.DegToRad(Fov);
-        float viewCircleRad = (float)(m_cameraRadialDistance * Mathf.Tan(fovRadians));
-
-        (double lat, double lon) =
-            MapUtils.DistanceToLatLonRange(
-                (double)viewCircleRad,
-                SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM
-            );
-        m_approxVisibleLatitudeRange = (float)lat;
-        m_approxVisibleLongitudeRange = (float)lon;
+            HandleZoomInput(mouseButton);
+        }
+        else if (@event is InputEventMouseMotion mouseMotion)
+        {
+            if (m_isDragging)
+            {
+                HandlePanInput(mouseMotion);
+            }
+        }
     }
 
     #endregion
 
     #region Input Handlers
-    private void HandleCameraPanningInput(InputEvent @event)
+
+    private void HandlePanInput(InputEventMouseMotion mouseMotion)
     {
-        if (@event is InputEventMouseButton mouseButton)
+        float deltaX = -mouseMotion.Relative.X * m_panSpeedMultiplier;
+        float deltaY = -mouseMotion.Relative.Y * m_panSpeedMultiplier;
+
+        m_targetTheta -= deltaX;
+        m_targetPhi += deltaY;
+
+        // Clamp phi so that we don't flip over at the poles.
+        m_targetPhi = Mathf.Clamp(m_targetPhi, 0.1f, Mathf.Pi - 0.1f);
+    }
+
+    private void HandleZoomInput(InputEventMouseButton mouseButton)
+    {
+        if (mouseButton.ButtonIndex == MouseButton.WheelUp)
         {
-            HandleMouseButtonPanInput(mouseButton);
-            EmitSignal("OrbitalCameraPosChanged", Position);
+            m_targetDistance = Mathf.Max(m_minCameraRadialDistance, m_targetDistance - m_zoomIncrement);
         }
-        else if (@event is InputEventMouseMotion mouseMotion && m_isDragging)
+        else if (mouseButton.ButtonIndex == MouseButton.WheelDown)
         {
-            HandleMouseMotionPanInput(mouseMotion);
-            EmitSignal("OrbitalCameraPosChanged", Position);
+            m_targetDistance = Mathf.Min(m_maxCameraRadialDistance, m_targetDistance + m_zoomIncrement);
         }
     }
 
-    private void HandleMouseButtonPanInput(InputEventMouseButton mouseButton)
-    {
-        if (mouseButton.ButtonIndex == MouseButton.Left)
-        {
-            m_isDragging = mouseButton.Pressed;
-            if (m_isDragging)
-            {
-                m_dragStartPos = mouseButton.Position;
-                EmitSignal("OrbitalCameraPosChanged", Position);
-            }
-        }
-    }
-
-    private void HandleMouseMotionPanInput(InputEventMouseMotion mouseMotion)
-    {
-        Vector2 dragDelta = m_dragStartPos - mouseMotion.Position;
-        m_dragStartPos = mouseMotion.Position;
-        UpdateCameraPanTargetPosition(dragDelta.Normalized());
-    }
-
-    private void HandleCameraZoomingInput(InputEvent @event)
-    {
-        if (@event is not InputEventMouseButton mouseButton)
-        {
-            return;
-        }
-
-        if (mouseButton.ButtonIndex == MouseButton.WheelUp && m_cameraRadialDistance > m_minCameraRadialDistance)
-        {
-            m_targetCameraRadialDistance = Mathf.Max(
-                m_minCameraRadialDistance,
-                m_targetCameraRadialDistance - m_cameraZoomIncrement
-            );
-        }
-        else if (mouseButton.ButtonIndex == MouseButton.WheelDown && m_cameraRadialDistance < m_maxCameraRadialDistance)
-        {
-            m_targetCameraRadialDistance = Mathf.Min(
-                m_maxCameraRadialDistance,
-                m_targetCameraRadialDistance + m_cameraZoomIncrement
-            );
-        }
-    }
     #endregion
 
-    #region Initialization
+    #region Public API
+
     public void InitializeCameraPosition(Vector3 position)
     {
+        // This method sets the camera to a given position and recalculates spherical coordinates.
         Position = position;
+        m_currentDistance = position.Length();
+        m_targetDistance = m_currentDistance;
+        m_currentTheta = Mathf.Atan2(position.Z, position.X);
+        m_currentPhi = Mathf.Clamp(Mathf.Acos(position.Y / m_currentDistance), 0.1f, Mathf.Pi - 0.1f);
 
-        // TODO(Argyraspides, 08/02/2025)
-        // Somehow make this intelligent to automatically determine lat/lon based on world position, or explicitly pass them in
-        m_cameraLatitude = 0.0f;
-        m_cameraLongitude = 0.0f;
+        m_targetTheta = m_currentTheta;
+        m_targetPhi = m_currentPhi;
+
         LookAt(Vector3.Zero, Vector3.Up);
     }
+
     #endregion
-
-
 }
