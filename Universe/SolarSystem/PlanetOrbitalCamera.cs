@@ -172,8 +172,10 @@ public partial class PlanetOrbitalCamera : Camera3D
         float distanceFromEarthSurface = m_currentDistance - SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
 
         float circleViewRadius = distanceFromEarthSurface * Mathf.Tan(fovRad / 2.0f);
-        (m_approxVisibleLatRadius, m_approxVisibleLonRadius) =
+        (double lat, double lon) =
             MapUtils.DistanceToLatLonRange(circleViewRadius, SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM);
+        m_approxVisibleLatRadius = (float)lat;
+        m_approxVisibleLonRadius = (float)lon;
     }
 
     #endregion
