@@ -225,6 +225,26 @@ public static class MapUtils
         return TileCoordinatesToQuadkey(lonTileCoo, latTileCoo, zoom);
     }
 
+    /// <summary>
+    /// Computes the center latitude of a tile given its row index and zoom level.
+    /// </summary>
+    public static double ComputeCenterLatitude(int latTileCoo, int zoom)
+    {
+        double northEdge = MapTileToLatitude(latTileCoo, zoom);
+        double latRange = TileToLatRange(latTileCoo, zoom);
+        return northEdge - latRange / 2;
+    }
+
+    /// <summary>
+    /// Computes the center longitude of a tile given its column index and zoom level.
+    /// </summary>
+    public static double ComputeCenterLongitude(int lonTileCoo, int zoom)
+    {
+        double westEdge = MapTileToLongitude(lonTileCoo, zoom);
+        double lonRange = TileToLonRange(zoom);
+        return westEdge + lonRange / 2;
+    }
+
 
     /// <summary>
     /// Returns the number of radians of latitude that a tile spans at a given tile row and zoom level.

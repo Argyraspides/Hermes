@@ -27,6 +27,33 @@ public partial class Earth : Planet
 
     [Export] private Vector3 m_nullIsland;
 
+    float[] lodSplitThresholds =
+    {
+        80000f, // Zoom Level 0
+        40000f, // Zoom Level 1
+        20000f, // Zoom Level 2
+        10000f, // Zoom Level 3
+        5000f, // Zoom Level 4
+        2500f, // Zoom Level 5
+        1250f, // Zoom Level 6
+        600f, // Zoom Level 7
+        300f, // Zoom Level 8
+        150f, // Zoom Level 9
+        75f, // Zoom Level 10
+        38f, // Zoom Level 11
+        19f, // Zoom Level 12
+        9.5f, // Zoom Level 13
+        4.8f, // Zoom Level 14
+        2.4f, // Zoom Level 15
+        1.2f, // Zoom Level 16
+        0.6f, // Zoom Level 17
+        0.3f, // Zoom Level 18
+        0.15f // Zoom Level 19
+    };
+
+    private int m_currentZoomLevel = 6;
+
+
     public override void _Ready()
     {
         m_planetID = PlanetID.EARTH;
@@ -47,6 +74,7 @@ public partial class Earth : Planet
     {
         m_terrainQuadTree = new TerrainQuadTree();
         m_terrainQuadTree.InitializeQuadTree(zoomLevel);
+        m_currentZoomLevel = zoomLevel;
     }
 
     private void InitializeCamera()
@@ -78,7 +106,27 @@ public partial class Earth : Planet
         AddChild(m_terrainQuadTree);
     }
 
+    // TODO: Bruh idek anymore just do this tomorrow im too tired
     public void OnOrbitalCameraPosChangedSignal(Vector3 position)
     {
+        float minLatRange = m_planetOrbitalCamera.CurrentLat - m_planetOrbitalCamera.ApproxVisibleLatRadius;
+        float maxLatRange = m_planetOrbitalCamera.CurrentLat + m_planetOrbitalCamera.ApproxVisibleLatRadius;
+
+        float minLonRange = m_planetOrbitalCamera.CurrentLon - m_planetOrbitalCamera.ApproxVisibleLonRadius;
+        float maxLonRange = m_planetOrbitalCamera.CurrentLon + m_planetOrbitalCamera.ApproxVisibleLonRadius;
+
+        int minLatTile = MapUtils.LatitudeToTileCoordinateMercator(minLatRange, m_currentZoomLevel);
+        int maxLatTile = MapUtils.LatitudeToTileCoordinateMercator(maxLatRange, m_currentZoomLevel);
+
+        int minLonTile = MapUtils.LongitudeToTileCoordinateMercator(minLonRange, m_currentZoomLevel);
+        int maxLonTIle = MapUtils.LongitudeToTileCoordinateMercator(maxLonRange, m_currentZoomLevel);
+
+        for (int i = minLatTile; i <= maxLatTile; i++)
+        {
+            for (int j = minLonTile; j <= maxLonTIle; j++)
+            {
+                m_terrainQuadTree.SplitAndLoadQuadTreeNode(5, 5, 5);
+            }
+        }
     }
 }

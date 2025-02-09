@@ -59,8 +59,8 @@ public partial class PlanetOrbitalCamera : Camera3D
     private float m_currentPhi;
 
     // Latitude and longitude that the center of the camera is looking at
-    [Export] private float m_currentLat;
-    [Export] private float m_currentLon;
+    [Export] public float CurrentLat { get; private set; }
+    [Export] public float CurrentLon { get; private set; }
 
     // Approximate lat/lon radius range that the camera is able to see of the Earth's surface.
     // Calculated by via a vision cone, where the circumference
@@ -70,8 +70,8 @@ public partial class PlanetOrbitalCamera : Camera3D
     // This will slightly overestimate the truly visible lat/lon range,
     // but simplifies calculation drastically and improves performance. Used
     // to determine where to split the quadtree for LoD.
-    [Export] private float m_approxVisibleLatRadius;
-    [Export] private float m_approxVisibleLonRadius;
+    [Export] public float ApproxVisibleLatRadius { get; private set; }
+    [Export] public float ApproxVisibleLonRadius { get; private set; }
 
     private float m_targetTheta;
     private float m_targetPhi;
@@ -124,8 +124,8 @@ public partial class PlanetOrbitalCamera : Camera3D
         m_currentTheta = Mathf.LerpAngle(m_currentTheta, m_targetTheta, m_panSmoothing);
         m_currentPhi = Mathf.Lerp(m_currentPhi, m_targetPhi, m_panSmoothing);
 
-        m_currentLon = m_currentTheta + Mathf.Pi;
-        m_currentLat = m_currentPhi - (Mathf.Pi / 2.0f);
+        CurrentLon = m_currentTheta + Mathf.Pi;
+        CurrentLat = m_currentPhi - (Mathf.Pi / 2.0f);
 
         // Convert spherical coordinates back to Cartesian coordinates.
         // Spherical to Cartesian conversion:
@@ -174,8 +174,8 @@ public partial class PlanetOrbitalCamera : Camera3D
         float circleViewRadius = distanceFromEarthSurface * Mathf.Tan(fovRad / 2.0f);
         (double lat, double lon) =
             MapUtils.DistanceToLatLonRange(circleViewRadius, SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM);
-        m_approxVisibleLatRadius = (float)lat;
-        m_approxVisibleLonRadius = (float)lon;
+        ApproxVisibleLatRadius = (float)lat;
+        ApproxVisibleLonRadius = (float)lon;
     }
 
     #endregion

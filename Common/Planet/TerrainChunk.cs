@@ -30,7 +30,6 @@ using Godot;
 public partial class TerrainChunk : Node
 {
     private readonly string SHADER_PATH;
-
     public MapTile MapTile { get; private set; }
 
     /// <summary>
@@ -93,6 +92,11 @@ public partial class TerrainChunk : Node
         {
             GD.PrintErr($"Failed to initialize terrain: {ex}");
         }
+    }
+
+    public void ToggleVisible(bool visible)
+    {
+        MeshInstance3D.Visible = visible;
     }
 
     /// <summary>

@@ -122,6 +122,19 @@ public partial class TerrainQuadTree : Node
         SplitQuadTreeNode(node);
     }
 
+    public void SplitAndLoadQuadTreeNode(float latitude, float longitude, int zoom)
+    {
+        TerrainQuadTreeNode parent = FindQuadTreeNodeDFS(latitude, longitude, zoom);
+        SplitQuadTreeNode(parent);
+
+        parent.Chunk.ToggleVisible(false);
+
+        for (int c = 0; c < 4; c++)
+        {
+            ProcessLeafNode(parent.ChildNodes[c]);
+        }
+    }
+
     /// <summary>
     /// Finds a quadtree node at a specific latitude, longitude, and zoom level using the DFS algorithm.
     /// No stack is allocated for DFS.
@@ -174,71 +187,53 @@ public partial class TerrainQuadTree : Node
     /// <summary>
     /// Initializes a quadtree of the Earth up to a maximum zoom level using BFS.
     /// Each level of the quadtree is processed completely before moving on to the next.
-    ///
-    /// All planets are represented as a grid of tiles. Every successive zoom level, the
-    /// X and Y axes split by two, meaning each side will have twice as many tiles as before.
-    /// The tiles are indexed such that the top left is (0,0) and the bottom right is
-    /// (2^zoom - 1, 2^zoom - 1). This means that when a tile (x, y) is split, the
-    /// new coordinate of its top left tile will be (2x, 2y). Hence its top right
-    /// will be (2x + 1, 2y), bottom left (2x, 2y + 1) and bottom right (2x + 1, 2y + 1)
-    ///
     /// </summary>
     /// <param name="maxZoom">The maximum zoom level (depth) of the quadtree.</param>
     public void InitializeQuadTree(int maxZoom)
     {
         m_nullIslandNodes = new List<TerrainQuadTreeNode>();
-        m_rootNode = new TerrainQuadTreeNode(new TerrainChunk(
-            new MapTile(0, 0, 0)
-        ));
 
-        var queue = new Queue<(TerrainQuadTreeNode, int parentRow, int parentCol)>();
-        queue.Enqueue((m_rootNode, 0, 0));
+        // Create the root node (zoom level 0).
+        m_rootNode = new TerrainQuadTreeNode(new TerrainChunk(new MapTile(0, 0, 0)));
 
+        // Queue for BFS: each entry holds a node and its grid coordinates.
+        var nodeQueue = new Queue<(TerrainQuadTreeNode node, int row, int col)>();
+        nodeQueue.Enqueue((m_rootNode, 0, 0));
+
+        // Build the quadtree level by level.
         for (int currZoomLevel = 0; currZoomLevel < maxZoom; currZoomLevel++)
         {
-            // For all nodes in the queue, generate all their child nodes
-            int queueSize = (int)Math.Pow(4, currZoomLevel);
-            for (int i = 0; i < queueSize; i++)
+            // The children will be at zoom level (currZoomLevel + 1)
+            int childZoom = currZoomLevel + 1;
+            // At the current level there are exactly 4^currZoomLevel nodes.
+            int nodesAtCurrentLevel = (int)Math.Pow(4, currZoomLevel);
+
+            for (int i = 0; i < nodesAtCurrentLevel; i++)
             {
-                (TerrainQuadTreeNode parentNode, int parentRow, int parentCol) = queue.Dequeue();
-                // Generate children for this node. 0 = top left, 1 = top right, 2 = bottom left, 3 = bottom right
-                for (int c = 0; c < 4; c++ /* haha C++ in C# */)
+                var (parentNode, parentRow, parentCol) = nodeQueue.Dequeue();
+
+                // Create child nodes for each quadrant (0 = top-left, 1 = top-right,
+                // 2 = bottom-left, 3 = bottom-right)
+                foreach (var (rowOffset, colOffset, quadrantIndex) in GetChildQuadrants())
                 {
-                    // Top left
-                    int childRow = parentRow * 2;
-                    int childCol = parentCol * 2;
+                    int childRow = parentRow * 2 + rowOffset;
+                    int childCol = parentCol * 2 + colOffset;
 
-                    // Top right or bottom right respectively
-                    childCol += (c == 1 || c == 3) ? 1 : 0;
-                    // Bottom left or bottom right respectively
-                    childRow += (c == 2 || c == 3) ? 1 : 0;
+                    // Compute the center coordinates of the child tile.
+                    float childLat = (float)MapUtils.ComputeCenterLatitude(childRow, childZoom);
+                    float childLon = (float)MapUtils.ComputeCenterLongitude(childCol, childZoom);
 
-                    // The lat of a map tile is at its center, while MapUtils gives back
-                    // latitude of the northern edge, so we compute half the range and subtract to get the
-                    // center lat
-                    float childLat = (float)MapUtils.MapTileToLatitude(childRow, currZoomLevel + 1);
-                    float childLatRange = (float)MapUtils.TileToLatRange(childRow, currZoomLevel + 1);
-                    float childLatHalfRange = childLatRange / 2;
-                    childLat -= childLatHalfRange;
+                    // Create the map tile, terrain chunk and quadtree node.
+                    var childMapTile = new MapTile(childLat, childLon, childZoom);
+                    var childChunk = new TerrainChunk(childMapTile);
+                    var childNode = new TerrainQuadTreeNode(childChunk);
+                    parentNode.ChildNodes[quadrantIndex] = childNode;
 
-                    // The lat of a map tile is at its center, while the MapUtils gives back
-                    // longitude of the western edge, so we compute half the range and subtract to get the
-                    // center lon
-                    float childLon = (float)MapUtils.MapTileToLongitude(childCol, currZoomLevel + 1);
-                    float childLonRange = (float)MapUtils.TileToLonRange(currZoomLevel + 1);
-                    float childLonHalfRange = childLonRange / 2;
-                    childLon += childLonHalfRange;
+                    // Enqueue the child node for further subdivision.
+                    nodeQueue.Enqueue((childNode, childRow, childCol));
 
-                    // Create child node and give it to our parent
-                    MapTile childMapTile = new MapTile(childLat, childLon, currZoomLevel + 1);
-                    TerrainChunk childChunk = new TerrainChunk(childMapTile);
-                    TerrainQuadTreeNode childNode = new TerrainQuadTreeNode(childChunk);
-                    parentNode.ChildNodes[c] = childNode;
-
-                    queue.Enqueue((childNode, childRow, childCol));
-
-                    // Keep track of all nodes that represent null island (lat/lon of (0,0)).
-                    int midIndex = (1 << (currZoomLevel + 1)) / 2;
+                    // Check if this node represents "null island" (i.e. (0,0) center).
+                    int midIndex = (1 << childZoom) / 2;
                     if (childRow == midIndex && childCol == midIndex)
                     {
                         m_nullIslandNodes.Add(childNode);
@@ -247,26 +242,48 @@ public partial class TerrainQuadTree : Node
             }
         }
 
-        while (queue.Count > 0)
+        // Process remaining nodes in the queue (leaf nodes).
+        while (nodeQueue.Count > 0)
         {
-            (TerrainQuadTreeNode node, int parentRow, int parentCol) = queue.Dequeue();
-
-            ArrayMesh meshSegment = WGS84EllipsoidMeshGenerator.CreateEllipsoidMeshSegment(
-                (float)node.Chunk.MapTile.Latitude,
-                (float)node.Chunk.MapTile.Longitude,
-                (float)node.Chunk.MapTile.LatitudeRange,
-                (float)node.Chunk.MapTile.LongitudeRange
-            );
-
-            node.Chunk.MeshInstance = new MeshInstance3D { Mesh = meshSegment };
-            node.Chunk.Name =
-                $"TerrainChunk_z{node.Chunk.MapTile.ZoomLevel}_x{node.Chunk.MapTile.LongitudeTileCoo}_y{node.Chunk.MapTile.LatitudeTileCoo}";
-            node.Chunk.Load();
-            AddChild(node.Chunk);
+            var (node, _, _) = nodeQueue.Dequeue();
+            ProcessLeafNode(node);
         }
 
         m_currentDepth = maxZoom;
     }
+
+    /// <summary>
+    /// Returns the row and column offsets for each child quadrant.
+    /// </summary>
+    private IEnumerable<(int rowOffset, int colOffset, int quadrantIndex)> GetChildQuadrants()
+    {
+        // Order: top-left, top-right, bottom-left, bottom-right.
+        yield return (0, 0, 0);
+        yield return (0, 1, 1);
+        yield return (1, 0, 2);
+        yield return (1, 1, 3);
+    }
+
+
+    /// <summary>
+    /// Processes a leaf node by generating its mesh and loading the terrain chunk.
+    /// </summary>
+    private void ProcessLeafNode(TerrainQuadTreeNode node)
+    {
+        var tile = node.Chunk.MapTile;
+        ArrayMesh meshSegment = WGS84EllipsoidMeshGenerator.CreateEllipsoidMeshSegment(
+            (float)tile.Latitude,
+            (float)tile.Longitude,
+            (float)tile.LatitudeRange,
+            (float)tile.LongitudeRange
+        );
+
+        node.Chunk.MeshInstance = new MeshInstance3D { Mesh = meshSegment };
+        node.Chunk.Name = $"TerrainChunk_z{tile.ZoomLevel}_x{tile.LongitudeTileCoo}_y{tile.LatitudeTileCoo}";
+        node.Chunk.Load();
+        AddChild(node.Chunk);
+    }
+
 
     public TerrainQuadTreeNode GetCenter(int zoomLevel)
     {
