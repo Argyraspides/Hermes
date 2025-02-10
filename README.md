@@ -3,7 +3,7 @@ Hermes: Messenger of the Machines
 </h1>
   
 </p><p align="center">
-  <img src="https://github.com/user-attachments/assets/96d8bcdb-5f00-4acb-9837-756f1ef2c2fc" width="300" height="300">
+  <img src="https://github.com/Argyraspides/Hermes/blob/main/docs/Hermes.png" width="300" height="300">
 </p>
 
 ## Setup Instructions
