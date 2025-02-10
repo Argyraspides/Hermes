@@ -61,6 +61,11 @@ The way this will be used is:
 - The planet class is happy as all LoD and terrain management is done by the terrainquadtree,
 meanwhile the planet can focus on other stuff like cool atmospheric effects, orbits, etc.
 
+TODO: SUGGESTIONS
+- Implement frustum culling to determine which parent nodes might have visible children. Add these parents to a queue.
+- Now we have completely eliminated entire parts of the tree that won't be visible to our camera. We perform BFS
+on this parent queue significantly reducing BFS time. Perform memory optimizations as per above
+
  */
 public partial class TerrainQuadTree : Node
 {
@@ -116,7 +121,13 @@ public partial class TerrainQuadTree : Node
     // Removes an entire subtree from the quadtree, including the parent
     private void RemoveSubQuadTree(TerrainQuadTreeNode parent)
     {
+    }
 
+    // Performs a frustum culling procedure on the quadtree and returns a queue of parent nodes
+    // which contain visible children (or the parent itself is visible).
+    private Queue<TerrainQuadTreeNode> PerformFrustumCulling(TerrainQuadTreeNode parent)
+    {
+        throw new NotImplementedException();
     }
 
     private sealed class TerrainQuadTreeNode
