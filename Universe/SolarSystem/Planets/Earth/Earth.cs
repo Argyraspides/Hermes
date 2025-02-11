@@ -30,24 +30,23 @@ public partial class Earth : Planet
 
     public override void _Ready()
     {
-        // m_planetID = PlanetID.EARTH;
-        // m_planetShapeType = PlanetShapeType.WGS84_ELLIPSOID;
-        // m_defaultZoomLevel = 6;
-        // base._Ready();
-        //
-        // InitializeCamera();
+        m_defaultZoomLevel = 6;
+        base._Ready();
+        InitializeCamera();
     }
 
-    protected override void InitializePlanetDimensions()
+    protected override void InitializePlanetData()
     {
-        // m_semiMajorAxisKm = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
-        // m_semiMinorAxisKm = SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM;
+        m_planetID = PlanetID.EARTH;
+        m_planetShapeType = PlanetShapeType.WGS84_ELLIPSOID;
+        m_semiMajorAxisKm = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
+        m_semiMinorAxisKm = SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM;
     }
 
     protected override void InitializePlanetSurface(int zoomLevel)
     {
-        // m_terrainQuadTree = new TerrainQuadTree();
-        // m_terrainQuadTree.InitializeQuadTree(zoomLevel);
+        m_terrainQuadTree = new TerrainQuadTree(m_planetOrbitalCamera);
+        m_terrainQuadTree.InitializeQuadTree(6);
     }
 
     private void InitializeCamera()
@@ -74,9 +73,9 @@ public partial class Earth : Planet
         // m_planetOrbitalCamera.InitializeCameraPosition(-m_nullIsland + new Vector3(-15000, 0, 0));
     }
 
-    public override void LoadPlanet()
+    public override void LoadPlanetSurface()
     {
-        // AddChild(m_terrainQuadTree);
+        AddChild(m_terrainQuadTree);
     }
 
     // TODO: Bruh idek anymore just do this tomorrow im too tired

@@ -66,6 +66,11 @@ public static class MapUtils
     /// </summary>
     public static int LatitudeToTileCoordinateMercator(double lat, int zoom)
     {
+        if (zoom == 0)
+        {
+            return 0;
+        }
+
         lat = Math.Clamp(
             lat,
             MIN_LATITUDE_LEVEL_WEB_MERCATOR,

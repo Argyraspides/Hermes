@@ -22,49 +22,40 @@ using System;
 using System.Collections.Generic;
 using Godot;
 
-/*
- TODO(Argyraspides, 10/02/2025):
 
-Here's how I think this should work:
+/**
 
-Note that when I say "split", I just mean loading up children and making the parent invisible. Remember we want to make things as smooth as
-possible for the user, so as they zoom out, we arent just discarding the entire tree below the zoom level that represents the map tiles
-the camera can see. Conversely, we aren't discarding the entire tree above us as we zoom in, either (in fact this would make it completely
-un-traversable anyways as now we have no root to start BFS from). This makes it so that if the user is zooming in/out a lot, we can quickly
-load/unload chunks as they are still in the tree, we just need to enable/disable visiblity or something equivalent. Thus, we are simply
-enabling/disabling parents and children as we go along. If we ever exceed our maximum allowed nodes, then we can start considering culling parts of the tree. We must always cull downwards, as
-culling upwards will break the tree (potentially removing the root node) and we cannot traverse it anymore.
+ Perform DFS
+ - If you encounter a node that IS loaded in, that means it is visible in the current game. This means it is the
+ lowest resolution node that was allowed given our camera distance at that particular moment in time.
+ It also means that all of its children must NOT be visible in the current game.
+ - If you encounter a node that is NOT loaded in, that means given the camera distance and FOV and whatever else we are considering,
+ it was at a level in the tree which didn't satisfy the level of detail requirements we wanted. This means that somewhere down the line,
+ one of its subtrees MUST be loaded in.
 
-- Every "game" loop, we will traverse the entire quadtree via BFS. For every node we encounter, we will check:
+ So, if you encounter a node that is NOT loaded in (meaning that it must have a subtree that IS loaded in) then you can ask:
+ - Okay, given the current camera distance and FOV and stuff -- does any of this nodes CHILDREN need to be split? We only
+ ask this question if any of the children ARE loaded in
+    - If it does need to be split, then split it.
+    - If it doesn't, don't do anything
+ - Okay, given the current camera distance and FOV and stuff -- does any of this nodes  CHILDREN need to be merged back
+ into the parent? We only ask this question if any of the children ARE loaded in
+    - If it does need to be merged -- then merge it
+    - If it doesn't, don't do anything
 
-    - Is the node currently loaded in the scene tree? If so, we can check if it needs to be split/merged. If it doesn't need to be split,
-    we can just leave it. If it doesn't need to be split, AND we have exceeded the maximum amount of nodes, then we can cut off the entire
-    sub-tree below this node as they currently aren't visible anyways, and we need to clean up.
-        - If we do need to split, then we can just split, and disable the parent.
+If it turns out we do NOT need to merge, and we do NOT need to split -- then we can terminate our DFS right here, as
+this node satisfies our level of detail requirements.
 
-    - Is the node a leaf node and NOT loaded in the scene tree? If so, check the maximum amount of allowed nodes. If
-    we have exceeded it, then remove the node entirely as it is not needed.
+The reason we ask if any of the CHILDREN need to be split/merged and not just the node we encounter is because in the case
+that we want to merge, then we don't need all the children to have a reference to the parent. We can simply "absorb"
+the children from the parent node by toggling their visibility off, and toggling the parent visibility on.
 
-This is all I can think of in terms of removing unnecessary nodes. This will also make tree traversal more efficient as we have a cap on
-the maximum number of nodes.
-
-Since this is going to be within some Planet class (planets will have a quadtree that they will use to manage their
-surface LoD system), then TerrainQuadTree must be part of the main Godot scene tree and thus must be a part of the main thread.
-The constant BFS across every loop warrants this particular function loop to be offloaded to another thread. Therefore,
-the UpdateQuadTree() should run in a separate thread.
-
-The way this will be used is:
-
-- A planet class will have this quadtree class instance
-- A planet will give the quadtree the game camera
-- The terrain quad tree constantly updates based on the camera
-- The planet class is happy as all LoD and terrain management is done by the terrainquadtree,
-meanwhile the planet can focus on other stuff like cool atmospheric effects, orbits, etc.
-
-TODO: SUGGESTIONS
-- Implement frustum culling to determine which parent nodes might have visible children. Add these parents to a queue.
-- Now we have completely eliminated entire parts of the tree that won't be visible to our camera. We perform BFS
-on this parent queue significantly reducing BFS time. Perform memory optimizations as per above
+And finally -- for memory, if we ever encounter a time where we can terminate our DFS search (so we've hit a node that is
+loaded in and doesn't need to have its children split/merged, OR we have JUST split/merged some nodes, meaning that we have
+either generated children that are now visible in the scene tree, or we have just merged children back into the parent,
+meaning that the parent is now the visible one and it'll have no subtrees that are in the scene tree), AND we have exceeded
+the maximum node count, then we can completely cut off all of the current node's children. Since we terminated our DFS here,
+then we never needed any of the subtrees anyway. The garbage collector can then work its magic.
 
  */
 public partial class TerrainQuadTree : Node
@@ -76,9 +67,34 @@ public partial class TerrainQuadTree : Node
     // unused nodes are culled
     private long m_maxNodes;
 
-    TerrainQuadTree(Camera3D camera, int maxNodes = (1 << 10))
+    private int m_maxDepth;
+
+    // Altitude thresholds for when we should start merging/splitting tiles based on altitude (meters)
+    private float[] m_thresholds;
+
+    public TerrainQuadTree(Camera3D camera, int maxNodes = 10000, int maxDepth = 21)
     {
+        if (maxDepth > 23 || maxDepth < 1)
+        {
+            throw new ArgumentException("maxDepth must be greater than 1 and less than 23");
+        }
+
         m_camera = camera;
+        m_maxDepth = maxDepth;
+        m_thresholds = new float[maxDepth];
+
+        // Change this to the desired latitude (in degrees)
+        double latitude = 0.0;
+        // Convert latitude to radians
+        double latitudeRadians = latitude * Math.PI / 180;
+        // Compute the altitude thresholds for zoom levels 0 to 23
+        double[] altitudeThresholds = new double[maxDepth + 1];
+        for (int zoom = 0; zoom <= maxDepth; zoom++)
+        {
+            double threshold =
+                (SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * Math.Cos(latitudeRadians)) / Math.Pow(2, zoom);
+            altitudeThresholds[zoom] = threshold;
+        }
     }
 
     // Constantly performs BFS on the quadtree and splits/merge terrain quad tree nodes
@@ -90,6 +106,98 @@ public partial class TerrainQuadTree : Node
     // Initializes the quadtree to a particular zoom level.
     public void InitializeQuadTree(int zoomLevel)
     {
+        if (zoomLevel > m_maxDepth)
+        {
+            throw new ArgumentException("zoomLevel must be less than or equal to maxDepth");
+        }
+
+        m_rootNode = new TerrainQuadTreeNode(new TerrainChunk(new MapTile(
+            0.0F,
+            0.0F,
+            0
+        )));
+
+        Queue<TerrainQuadTreeNode> q = new Queue<TerrainQuadTreeNode>();
+        q.Enqueue(m_rootNode);
+        int ct = 0;
+        for (int zLevel = 0; zLevel < zoomLevel; zLevel++)
+        {
+            // Number of nodes in a quadtree level = 4^z, or 2^z * 2^z
+
+            int nodesInLevel = (1 << zLevel) * (1 << zLevel);
+            for (int n = 0; n < nodesInLevel; n++)
+            {
+                TerrainQuadTreeNode parentNode = q.Dequeue();
+                ct++;
+                int parentLatTileCoo = parentNode.Chunk.MapTile.LatitudeTileCoo;
+                int parentLonTileCoo = parentNode.Chunk.MapTile.LongitudeTileCoo;
+
+                // Generate all children
+                for (int i = 0; i < 4; i++)
+                {
+                    int childLatTileCoo = parentLatTileCoo * 2;
+                    int childLonTileCoo = parentLonTileCoo * 2;
+                    int childZoomLevel = zLevel + 1; // The children we are generating are one level down
+
+                    // (2 * row, 2 * col)         -- Top left child (i == 0)
+                    // (2 * row, 2 * col + 1)     -- Top right child (i == 1)
+                    // (2 * row + 1, 2 * col)     -- Bottom left child (i == 2)
+                    // (2 * row + 1, 2 * col + 1) -- Bottom right child (i == 3)
+                    childLatTileCoo += (i == 2 || i == 3) ? 1 : 0;
+                    childLonTileCoo += (i == 1 || i == 3) ? 1 : 0;
+
+                    // TODO(Argyraspides, 11/02/2025): Whether or not this is mercator should be abstracted away. Perhaps make
+                    // the MapTile have a constructor that can also take in lat/lon tile coordinates and then
+                    // automagically determine its fields. Then we can just pass in the lat/lon tile coordinates
+                    // and not worry about this conversion
+                    double childLat = MapUtils.MapTileToLatitude(childLatTileCoo, childZoomLevel);
+                    double childLon = MapUtils.MapTileToLongitude(childLonTileCoo, childZoomLevel);
+
+                    double childLatRange = MapUtils.TileToLatRange(childLatTileCoo, childZoomLevel);
+                    double childLonRange = MapUtils.TileToLonRange(childZoomLevel);
+
+                    double halfChildLatRange = childLatRange / 2;
+                    double halfChildLonRange = childLonRange / 2;
+
+                    double childCenterLat = childLat - halfChildLatRange;
+                    double childCenterLon = childLon + halfChildLonRange;
+
+                    parentNode.ChildNodes[i] = new TerrainQuadTreeNode(new TerrainChunk(new MapTile(
+                        (float)childCenterLat,
+                        (float)childCenterLon,
+                        childZoomLevel
+                    )));
+                    q.Enqueue(parentNode.ChildNodes[i]);
+                }
+            }
+        }
+
+        while (q.Count > 0)
+        {
+            TerrainQuadTreeNode node = q.Dequeue();
+            InitializeTerrainQuadTreeNodeMesh(node);
+            ct++;
+        }
+
+        GD.Print("Total number of nodes: " + ct);
+    }
+
+    private void InitializeTerrainQuadTreeNodeMesh(TerrainQuadTreeNode node)
+    {
+        var tile = node.Chunk.MapTile;
+        // TODO(Argyraspides, 11/02/2025): Again, please, PLEASE make this WGS84 thing abstracted away too. TerrainQuadTree
+        // shouldn't need to worry about this. Just generate the mesh and be done with it. Interfaces, interfaces,
+        // interfaces!!!
+        ArrayMesh meshSegment = WGS84EllipsoidMeshGenerator.CreateEllipsoidMeshSegment(
+            (float)tile.Latitude,
+            (float)tile.Longitude,
+            (float)tile.LatitudeRange,
+            (float)tile.LongitudeRange
+        );
+        node.Chunk.MeshInstance = new MeshInstance3D { Mesh = meshSegment };
+        node.Chunk.Name = $"TerrainChunk_z{tile.ZoomLevel}_x{tile.LongitudeTileCoo}_y{tile.LatitudeTileCoo}";
+        node.Chunk.Load();
+        AddChild(node.Chunk);
     }
 
     // Determines if the input terrain quad tree node should be split or not based on the camera distance,
@@ -134,7 +242,6 @@ public partial class TerrainQuadTree : Node
     {
         public TerrainChunk Chunk { get; set; }
         public TerrainQuadTreeNode[] ChildNodes { get; set; }
-        public TerrainQuadTreeNode ParentNode { get; set; }
 
         // Tells us if the quadtree node is loaded in the actual scene.
         // When we are traversing the quadtree, if we ever encounter something that *is* loaded
@@ -150,7 +257,7 @@ public partial class TerrainQuadTree : Node
         public TerrainQuadTreeNode(TerrainChunk chunk)
         {
             Chunk = chunk;
-            ChildNodes = new TerrainQuadTreeNode[4];
+            ChildNodes = new TerrainQuadTreeNode[4] { null, null, null, null };
             isLoadedInScene = false;
         }
     }
