@@ -46,6 +46,8 @@ public partial class Earth : Planet
     protected override void InitializePlanetSurface(int zoomLevel)
     {
         m_terrainQuadTree = new TerrainQuadTree(m_planetOrbitalCamera);
+        AddChild(m_terrainQuadTree);
+        m_terrainQuadTree.Name = "EarthTerrainQuadTree";
         m_terrainQuadTree.InitializeQuadTree(6);
     }
 
@@ -71,11 +73,6 @@ public partial class Earth : Planet
         // // directly
         // // Camera will be directly on null island. Push back 15,000km
         // m_planetOrbitalCamera.InitializeCameraPosition(-m_nullIsland + new Vector3(-15000, 0, 0));
-    }
-
-    public override void LoadPlanetSurface()
-    {
-        AddChild(m_terrainQuadTree);
     }
 
     // TODO: Bruh idek anymore just do this tomorrow im too tired

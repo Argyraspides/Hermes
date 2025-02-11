@@ -27,7 +27,7 @@ using Godot;
 /// Handles loading and display of map tiles from a Web Mercator projection, reprojecting them
 /// onto an ellipsoidal surface. Each chunk knows its position (lat/lon in radians) and coverage area.
 /// </summary>
-public partial class TerrainChunk : Node
+public partial class TerrainChunk : Node3D
 {
     private readonly string SHADER_PATH;
     public MapTile MapTile { get; private set; }
@@ -70,6 +70,11 @@ public partial class TerrainChunk : Node
         ShaderMaterial shaderMaterial = null
     )
     {
+        if (mapTile == null)
+        {
+            throw new ArgumentNullException("Cannot create a TerrainChunk with a null map tile");
+        }
+
         MapTile = mapTile;
         if (mapTile.MapTileType == MapTileType.WEB_MERCATOR)
         {
@@ -130,5 +135,33 @@ public partial class TerrainChunk : Node
         );
 
         ApplyTexture(mapTile.Texture2D);
+    }
+
+    public void SetPosition()
+    {
+        // if (MapTile == null)
+        // {
+        //     throw new ArgumentNullException("Cannot set position of a terrain chunk with a null map tile");
+        // }
+        //
+        // double x =
+        //     SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * Mathf.Cos(MapTile.Latitude) *
+        //     Mathf.Cos(MapTile.Longitude);
+        //
+        // double y =
+        //     SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM * Mathf.Sin(MapTile.Latitude);
+        //
+        // double z =
+        //     SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * Mathf.Cos(MapTile.Latitude) *
+        //     Mathf.Sin(MapTile.Longitude);
+        //
+        // // Convert to Godot's coordinate system:
+        // // - Original ECEF: X(east), Y(north), Z(up)
+        // // - Godot: X(east), Y(up), Z(south)
+        // GlobalPosition = new Vector3(
+        //     (float)x, // X remains as east
+        //     (float)y, // Y becomes up (from ECEF's north)
+        //     (float)-z // Z becomes south (negative of ECEF's east)
+        // );
     }
 }

@@ -99,7 +99,7 @@ public partial class TerrainQuadTree : Node
 
     // Constantly performs BFS on the quadtree and splits/merge terrain quad tree nodes
     // based on the camera
-    public void UpdateQuadTree(Camera3D camera3D)
+    private void UpdateQuadTree(Camera3D camera3D, TerrainQuadTreeNode node)
     {
     }
 
@@ -176,10 +176,7 @@ public partial class TerrainQuadTree : Node
         {
             TerrainQuadTreeNode node = q.Dequeue();
             InitializeTerrainQuadTreeNodeMesh(node);
-            ct++;
         }
-
-        GD.Print("Total number of nodes: " + ct);
     }
 
     private void InitializeTerrainQuadTreeNodeMesh(TerrainQuadTreeNode node)
@@ -198,6 +195,7 @@ public partial class TerrainQuadTree : Node
         node.Chunk.Name = $"TerrainChunk_z{tile.ZoomLevel}_x{tile.LongitudeTileCoo}_y{tile.LatitudeTileCoo}";
         node.Chunk.Load();
         AddChild(node.Chunk);
+        node.Chunk.SetPosition();
     }
 
     // Determines if the input terrain quad tree node should be split or not based on the camera distance,

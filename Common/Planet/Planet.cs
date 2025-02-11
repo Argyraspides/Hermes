@@ -74,7 +74,6 @@ public abstract partial class Planet : StaticBody3D
     {
         InitializePlanetData();
         InitializePlanetSurface(m_defaultZoomLevel);
-        LoadPlanetSurface();
     }
 
     public override void _Process(double delta)
@@ -86,10 +85,7 @@ public abstract partial class Planet : StaticBody3D
     }
 
     protected abstract void InitializePlanetData();
-
     protected abstract void InitializePlanetSurface(int zoomLevel);
-
-    public abstract void LoadPlanetSurface();
 
     protected void UpdateWireframeState()
     {
