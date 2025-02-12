@@ -356,7 +356,7 @@ public static class MapUtils
         // Godot's default: Y is up, X is right, Z is forward
         return new Vector3(
             (float)(x / SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM), // Normalize by dividing by semi-major axis
-            (float)(z / SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM), // Y is up in Godot
+            (float)(z / SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM), // Y is up in Godot
             (float)(y / SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM) // Swap Y and Z for Godot's coordinate system
         );
     }

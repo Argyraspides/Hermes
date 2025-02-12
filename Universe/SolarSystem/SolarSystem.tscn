@@ -32,6 +32,7 @@ script = ExtResource("3_jsn1l")
 
 [node name="OmniLight3D" type="OmniLight3D" parent="Earth/EarthOrbitalCamera"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17000, 12000, 10000)
-light_energy = 8.733
+light_energy = 12.325
+light_indirect_energy = 1.03
 omni_range = 100000.0
-omni_attenuation = 0.2
+omni_attenuation = 3.06

@@ -118,9 +118,6 @@ public partial class TerrainChunk : Node3D
         shaderMat.SetShaderParameter("zoom_level", MapTile.ZoomLevel);
         shaderMat.SetShaderParameter("tile_size", MapTile.Size);
         MeshInstance3D.MaterialOverride = shaderMat;
-
-        // TODO(Argyraspides, 2025-01-29): Handle east-west inversion in shader instead of mesh scale
-        MeshInstance3D.Scale = new Vector3(-1, 1, 1);
     }
 
     private async Task InitializeTerrainChunkAsync()
@@ -139,29 +136,26 @@ public partial class TerrainChunk : Node3D
 
     public void SetPosition()
     {
-        // if (MapTile == null)
-        // {
-        //     throw new ArgumentNullException("Cannot set position of a terrain chunk with a null map tile");
-        // }
-        //
-        // double x =
-        //     SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * Mathf.Cos(MapTile.Latitude) *
-        //     Mathf.Cos(MapTile.Longitude);
-        //
-        // double y =
-        //     SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM * Mathf.Sin(MapTile.Latitude);
-        //
-        // double z =
-        //     SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * Mathf.Cos(MapTile.Latitude) *
-        //     Mathf.Sin(MapTile.Longitude);
-        //
-        // // Convert to Godot's coordinate system:
-        // // - Original ECEF: X(east), Y(north), Z(up)
-        // // - Godot: X(east), Y(up), Z(south)
-        // GlobalPosition = new Vector3(
-        //     (float)x, // X remains as east
-        //     (float)y, // Y becomes up (from ECEF's north)
-        //     (float)-z // Z becomes south (negative of ECEF's east)
-        // );
+        if (MapTile == null)
+        {
+            throw new ArgumentNullException("Cannot set position of a terrain chunk with a null map tile");
+        }
+
+        Vector3 cartesianPos = MapUtils.LatLonToCartesian(MapTile.Latitude, MapTile.Longitude);
+
+        float latScale = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
+        float lonScale = SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM;
+
+        // Terrainchunk should know its pos in ECEF space in the Godot world based on map tile lat/lon this works file
+        cartesianPos.X *= latScale;
+        cartesianPos.Y *= lonScale;
+        cartesianPos.Z *= latScale;
+
+        GlobalPosition = cartesianPos;
+
+        // However when we try and also scale the mesh instances or even just the terrainchunk itself,
+        // everything goes haywire. If we only scale and dont set position, everything looks fine.
+        // TODO(Argyraspides, 2025-01-29): Handle east-west inversion in shader instead of mesh scale
+        Scale = new Vector3(-latScale, lonScale, latScale);
     }
 }

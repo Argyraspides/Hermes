@@ -115,7 +115,7 @@ public partial class TerrainQuadTree : Node
             0.0F,
             0.0F,
             0
-        )));
+        )), 0);
 
         Queue<TerrainQuadTreeNode> q = new Queue<TerrainQuadTreeNode>();
         q.Enqueue(m_rootNode);
@@ -166,7 +166,7 @@ public partial class TerrainQuadTree : Node
                         (float)childCenterLat,
                         (float)childCenterLon,
                         childZoomLevel
-                    )));
+                    )), childZoomLevel);
                     q.Enqueue(parentNode.ChildNodes[i]);
                 }
             }
@@ -202,7 +202,9 @@ public partial class TerrainQuadTree : Node
     // what it can see, etc.
     private bool ShouldSplit(TerrainQuadTreeNode node)
     {
-        return false;
+        float distThreshold = m_thresholds[node.Depth];
+        float distToCam = node.Chunk.Position.DistanceTo(m_camera.Position);
+        return distThreshold < distToCam;
     }
 
     // Splits the terrain quad tree node into four children, and makes its parent invisible
@@ -250,13 +252,16 @@ public partial class TerrainQuadTree : Node
         // that aren't currently visible and hence don't need to be considered for splitting/merging.
         // Once we do encounter isLoadedInScene to be true, then we can also not add the children of this
         // node to our BFS, so we save on space as well
-        public bool isLoadedInScene { get; set; }
+        public bool IsLoadedInScene { get; set; }
 
-        public TerrainQuadTreeNode(TerrainChunk chunk)
+        public int Depth;
+
+        public TerrainQuadTreeNode(TerrainChunk chunk, int depth)
         {
             Chunk = chunk;
             ChildNodes = new TerrainQuadTreeNode[4] { null, null, null, null };
-            isLoadedInScene = false;
+            IsLoadedInScene = false;
+            Depth = depth;
         }
     }
 }

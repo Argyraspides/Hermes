@@ -25,359 +25,363 @@ using System.Collections.Generic;
 // TODO: Add documentation on what this is
 public static class WGS84EllipsoidMeshGenerator
 {
-	private const int LATITUDE_SEGMENTS = 32;
-	private const int LONGITUDE_SEGMENTS = 32;
-	/**
-	  Returns a MeshInstance3D quadrilateral or triangular segment that corresponds
-	  to a particular latitude and longitude (center of the segment) and a latitude
-	  and longitude range that the mesh should cover.
+    private const int LATITUDE_SEGMENTS = 32;
+    private const int LONGITUDE_SEGMENTS = 32;
 
-	  The returned mesh segment is curved and represents the surface of a WGS84
-	  ellipsoid. Units are in kilometers.
+    /**
+      Returns a MeshInstance3D quadrilateral or triangular segment that corresponds
+      to a particular latitude and longitude (center of the segment) and a latitude
+      and longitude range that the mesh should cover.
 
-	  For most latitude/longitude combinations, this function returns a
-	  quadrilateral mesh made of two triangles. However, when the segment includes
-	  either the north pole (π/2°) or south pole (-π/2°), it returns a single triangle
-	  instead. This special handling for poles prevents overlapping geometry when
-	  multiple segments are combined to create a complete ellipsoid mesh, since all
-	  points at a pole share the same location regardless of longitude.
+      The returned mesh segment is curved and represents the surface of a WGS84
+      ellipsoid. Units are in kilometers.
 
-	  Parameters:
-		lat:       The center latitude of the segment in radians
-		lon:       The center longitude of the segment in radians
-		latRange:  The total latitude range (height) the segment should cover in radians
-		lonRange:  The total longitude range (width) the segment should cover in radians
+      For most latitude/longitude combinations, this function returns a
+      quadrilateral mesh made of two triangles. However, when the segment includes
+      either the north pole (π/2°) or south pole (-π/2°), it returns a single triangle
+      instead. This special handling for poles prevents overlapping geometry when
+      multiple segments are combined to create a complete ellipsoid mesh, since all
+      points at a pole share the same location regardless of longitude.
 
-	  Returns:
-		An ArrayMesh containing either a quadrilateral (for non‐pole segments) or a
-		triangle (for pole segments).
-	*/
-	// TODO: This function is very very long (not necessarily a bad thing). Can definitely be cleaned up other
-	// wise if not in terms of length.
-	public static ArrayMesh CreateEllipsoidMeshSegment(float lat, float lon, float latRange, float lonRange)
-	{
-		var surfaceArray = new Godot.Collections.Array();
-		surfaceArray.Resize((int)Mesh.ArrayType.Max);
+      Parameters:
+        lat:       The center latitude of the segment in radians
+        lon:       The center longitude of the segment in radians
+        latRange:  The total latitude range (height) the segment should cover in radians
+        lonRange:  The total longitude range (width) the segment should cover in radians
 
-		var vertices = new List<Vector3>();
-		var normals = new List<Vector3>();
-		var uvs = new List<Vector2>();
-		// UV2 stores lat/lon for your reprojection shader:
-		var uv2s = new List<Vector2>();
-		var indices = new List<int>();
+      Returns:
+        An ArrayMesh containing either a quadrilateral (for non‐pole segments) or a
+        triangle (for pole segments).
+    */
+    // TODO: This function is very very long (not necessarily a bad thing). Can definitely be cleaned up other
+    // wise if not in terms of length.
+    public static ArrayMesh CreateEllipsoidMeshSegment(float lat, float lon, float latRange, float lonRange)
+    {
+        var surfaceArray = new Godot.Collections.Array();
+        surfaceArray.Resize((int)Mesh.ArrayType.Max);
 
-		// Half-ranges:
-		float halfLatRange = latRange / 2.0f;
-		float halfLonRange = lonRange / 2.0f;
+        var vertices = new List<Vector3>();
+        var normals = new List<Vector3>();
+        var uvs = new List<Vector2>();
+        // UV2 stores lat/lon for your reprojection shader:
+        var uv2s = new List<Vector2>();
+        var indices = new List<int>();
 
-		// Check whether this segment touches the north or south pole
-		bool touchesNorthPole = (lat + halfLatRange) >= (Mathf.Pi / 2.0f);
-		bool touchesSouthPole = (lat - halfLatRange) <= (-Mathf.Pi / 2.0f);
+        // Half-ranges:
+        float halfLatRange = latRange / 2.0f;
+        float halfLonRange = lonRange / 2.0f;
 
-		//=== CASE 1: North Pole segment (triangle)
-		if (touchesNorthPole)
-		{
-			// 3 vertices: bottom-left, bottom-right, top (pole)
-			float[] x = {
-			SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * Mathf.Cos(lat - halfLatRange) * Mathf.Cos(lon - halfLonRange),
-			SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * Mathf.Cos(lat - halfLatRange) * Mathf.Cos(lon + halfLonRange),
-			0 // Pole
-        };
+        // Check whether this segment touches the north or south pole
+        bool touchesNorthPole = (lat + halfLatRange) >= (Mathf.Pi / 2.0f);
+        bool touchesSouthPole = (lat - halfLatRange) <= (-Mathf.Pi / 2.0f);
 
-			float[] y = {
-			SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM * Mathf.Sin(lat - halfLatRange),
-			SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM * Mathf.Sin(lat - halfLatRange),
-			SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM // North pole is + (semi-minor)
-        };
+        //=== CASE 1: North Pole segment (triangle)
+        if (touchesNorthPole)
+        {
+            // 3 vertices: bottom-left, bottom-right, top (pole)
+            float[] x =
+            {
+                1 * Mathf.Cos(lat - halfLatRange) * Mathf.Cos(lon - halfLonRange),
+                1 * Mathf.Cos(lat - halfLatRange) * Mathf.Cos(lon + halfLonRange), 0 // Pole
+            };
 
-			float[] z = {
-			SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * Mathf.Cos(lat - halfLatRange) * Mathf.Sin(lon - halfLonRange),
-			SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * Mathf.Cos(lat - halfLatRange) * Mathf.Sin(lon + halfLonRange),
-			0 // Pole
-        };
+            float[] y =
+            {
+                1 * Mathf.Sin(lat - halfLatRange), 1 * Mathf.Sin(lat - halfLatRange), 1 // North pole is + (semi-minor)
+            };
 
-			for (int i = 0; i < 3; i++)
-			{
-				Vector3 vtx = new Vector3(x[i], y[i], z[i]);
-				vertices.Add(vtx);
-				normals.Add(vtx.Normalized());
+            float[] z =
+            {
+                1 * Mathf.Cos(lat - halfLatRange) * Mathf.Sin(lon - halfLonRange),
+                1 * Mathf.Cos(lat - halfLatRange) * Mathf.Sin(lon + halfLonRange), 0 // Pole
+            };
 
-				// Basic UV
-				float u = 0.0f, v = 0.0f;
-				// Lat/lon in UV2:
-				float u2 = 0.0f, v2 = 0.0f;
+            for (int i = 0; i < 3; i++)
+            {
+                Vector3 vtx = new Vector3(x[i], y[i], z[i]);
+                vertices.Add(vtx);
+                normals.Add(vtx.Normalized());
 
-				if (i == 0) // bottom-left
-				{
-					u = 0.0f;
-					v = 1.0f;
-					u2 = lon - halfLonRange;
-					v2 = lat - halfLatRange;
-				}
-				else if (i == 1) // bottom-right
-				{
-					u = 1.0f;
-					v = 1.0f;
-					u2 = lon + halfLonRange;
-					v2 = lat - halfLatRange;
-				}
-				else // i == 2 => pole (top)
-				{
-					u = 0.5f;
-					v = 0.0f;
-					u2 = lon;
-					v2 = lat + halfLatRange;
-				}
+                // Basic UV
+                float u = 0.0f, v = 0.0f;
+                // Lat/lon in UV2:
+                float u2 = 0.0f, v2 = 0.0f;
 
-				uvs.Add(new Vector2(u, v));
-				uv2s.Add(new Vector2(u2, v2));
-			}
+                if (i == 0) // bottom-left
+                {
+                    u = 0.0f;
+                    v = 1.0f;
+                    u2 = lon - halfLonRange;
+                    v2 = lat - halfLatRange;
+                }
+                else if (i == 1) // bottom-right
+                {
+                    u = 1.0f;
+                    v = 1.0f;
+                    u2 = lon + halfLonRange;
+                    v2 = lat - halfLatRange;
+                }
+                else // i == 2 => pole (top)
+                {
+                    u = 0.5f;
+                    v = 0.0f;
+                    u2 = lon;
+                    v2 = lat + halfLatRange;
+                }
 
-			// One triangle: [0, 1, 2]
-			indices.Add(0);
-			indices.Add(1);
-			indices.Add(2);
-		}
-		//=== CASE 2: South Pole segment (triangle)
-		else if (touchesSouthPole)
-		{
-			// 3 vertices: bottom (pole), top-right, top-left
-			float[] x = {
-			0, // Pole
-            SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * Mathf.Cos(lat + halfLatRange) * Mathf.Cos(lon + halfLonRange),
-			SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * Mathf.Cos(lat + halfLatRange) * Mathf.Cos(lon - halfLonRange),
-		};
+                uvs.Add(new Vector2(u, v));
+                uv2s.Add(new Vector2(u2, v2));
+            }
 
-			float[] y = {
-			-SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM, // South pole
-            SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM * Mathf.Sin(lat + halfLatRange),
-			SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM * Mathf.Sin(lat + halfLatRange),
-		};
+            // One triangle: [0, 1, 2]
+            indices.Add(0);
+            indices.Add(1);
+            indices.Add(2);
+        }
+        //=== CASE 2: South Pole segment (triangle)
+        else if (touchesSouthPole)
+        {
+            // 3 vertices: bottom (pole), top-right, top-left
+            float[] x =
+            {
+                0, // Pole
+                1 * Mathf.Cos(lat + halfLatRange) * Mathf.Cos(lon + halfLonRange),
+                1 * Mathf.Cos(lat + halfLatRange) * Mathf.Cos(lon - halfLonRange),
+            };
 
-			float[] z = {
-			0, // Pole
-            SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * Mathf.Cos(lat + halfLatRange) * Mathf.Sin(lon + halfLonRange),
-			SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * Mathf.Cos(lat + halfLatRange) * Mathf.Sin(lon - halfLonRange),
-		};
+            float[] y =
+            {
+                -1, // South pole
+                1 * Mathf.Sin(lat + halfLatRange), 1 * Mathf.Sin(lat + halfLatRange),
+            };
 
-			for (int i = 0; i < 3; i++)
-			{
-				Vector3 vtx = new Vector3(x[i], y[i], z[i]);
-				vertices.Add(vtx);
-				normals.Add(vtx.Normalized());
+            float[] z =
+            {
+                0, // Pole
+                1 * Mathf.Cos(lat + halfLatRange) * Mathf.Sin(lon + halfLonRange),
+                1 * Mathf.Cos(lat + halfLatRange) * Mathf.Sin(lon - halfLonRange),
+            };
 
-				float u = 0.0f, v = 0.0f;
-				float u2 = 0.0f, v2 = 0.0f;
+            for (int i = 0; i < 3; i++)
+            {
+                Vector3 vtx = new Vector3(x[i], y[i], z[i]);
+                vertices.Add(vtx);
+                normals.Add(vtx.Normalized());
 
-				if (i == 0) // bottom => south pole
-				{
-					u = 0.5f;
-					v = 1.0f;
-					u2 = lon;
-					v2 = lat - halfLatRange;
-				}
-				else if (i == 1) // top-right
-				{
-					u = 1.0f;
-					v = 0.0f;
-					u2 = lon + halfLonRange;
-					v2 = lat + halfLatRange;
-				}
-				else // i == 2 => top-left
-				{
-					u = 0.0f;
-					v = 0.0f;
-					u2 = lon - halfLonRange;
-					v2 = lat + halfLatRange;
-				}
+                float u = 0.0f, v = 0.0f;
+                float u2 = 0.0f, v2 = 0.0f;
 
-				uvs.Add(new Vector2(u, v));
-				uv2s.Add(new Vector2(u2, v2));
-			}
+                if (i == 0) // bottom => south pole
+                {
+                    u = 0.5f;
+                    v = 1.0f;
+                    u2 = lon;
+                    v2 = lat - halfLatRange;
+                }
+                else if (i == 1) // top-right
+                {
+                    u = 1.0f;
+                    v = 0.0f;
+                    u2 = lon + halfLonRange;
+                    v2 = lat + halfLatRange;
+                }
+                else // i == 2 => top-left
+                {
+                    u = 0.0f;
+                    v = 0.0f;
+                    u2 = lon - halfLonRange;
+                    v2 = lat + halfLatRange;
+                }
 
-			// One triangle: [0, 1, 2]
-			indices.Add(0);
-			indices.Add(1);
-			indices.Add(2);
-		}
-		//=== CASE 3: Regular quadrilateral (split into two triangles)
-		else
-		{
-			// 4 corners: bottom-left, bottom-right, top-right, top-left
-			float[] x = {
-			SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * Mathf.Cos(lat - halfLatRange) * Mathf.Cos(lon - halfLonRange),
-			SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * Mathf.Cos(lat - halfLatRange) * Mathf.Cos(lon + halfLonRange),
-			SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * Mathf.Cos(lat + halfLatRange) * Mathf.Cos(lon + halfLonRange),
-			SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * Mathf.Cos(lat + halfLatRange) * Mathf.Cos(lon - halfLonRange)
-		};
+                uvs.Add(new Vector2(u, v));
+                uv2s.Add(new Vector2(u2, v2));
+            }
 
-			float[] y = {
-			SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM * Mathf.Sin(lat - halfLatRange),
-			SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM * Mathf.Sin(lat - halfLatRange),
-			SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM * Mathf.Sin(lat + halfLatRange),
-			SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM * Mathf.Sin(lat + halfLatRange)
-		};
+            // One triangle: [0, 1, 2]
+            indices.Add(0);
+            indices.Add(1);
+            indices.Add(2);
+        }
+        //=== CASE 3: Regular quadrilateral (split into two triangles)
+        else
+        {
+            // 4 corners: bottom-left, bottom-right, top-right, top-left
+            float[] x =
+            {
+                1 * Mathf.Cos(lat - halfLatRange) * Mathf.Cos(lon - halfLonRange),
+                1 * Mathf.Cos(lat - halfLatRange) * Mathf.Cos(lon + halfLonRange),
+                1 * Mathf.Cos(lat + halfLatRange) * Mathf.Cos(lon + halfLonRange),
+                1 * Mathf.Cos(lat + halfLatRange) * Mathf.Cos(lon - halfLonRange)
+            };
 
-			float[] z = {
-			SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * Mathf.Cos(lat - halfLatRange) * Mathf.Sin(lon - halfLonRange),
-			SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * Mathf.Cos(lat - halfLatRange) * Mathf.Sin(lon + halfLonRange),
-			SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * Mathf.Cos(lat + halfLatRange) * Mathf.Sin(lon + halfLonRange),
-			SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * Mathf.Cos(lat + halfLatRange) * Mathf.Sin(lon - halfLonRange)
-		};
+            float[] y =
+            {
+                1 * Mathf.Sin(lat - halfLatRange), 1 * Mathf.Sin(lat - halfLatRange),
+                1 * Mathf.Sin(lat + halfLatRange), 1 * Mathf.Sin(lat + halfLatRange)
+            };
 
-			// Add the four corners in CCW order
-			for (int i = 0; i < 4; i++)
-			{
-				Vector3 vtx = new Vector3(x[i], y[i], z[i]);
-				vertices.Add(vtx);
-				normals.Add(vtx.Normalized());
+            float[] z =
+            {
+                1 * Mathf.Cos(lat - halfLatRange) * Mathf.Sin(lon - halfLonRange),
+                1 * Mathf.Cos(lat - halfLatRange) * Mathf.Sin(lon + halfLonRange),
+                1 * Mathf.Cos(lat + halfLatRange) * Mathf.Sin(lon + halfLonRange),
+                1 * Mathf.Cos(lat + halfLatRange) * Mathf.Sin(lon - halfLonRange)
+            };
 
-				float u = 0.0f, v = 0.0f;
-				float u2 = 0.0f, v2 = 0.0f;
+            // Add the four corners in CCW order
+            for (int i = 0; i < 4; i++)
+            {
+                Vector3 vtx = new Vector3(x[i], y[i], z[i]);
+                vertices.Add(vtx);
+                normals.Add(vtx.Normalized());
 
-				if (i == 0) // bottom-left
-				{
-					u = 0.0f;
-					v = 1.0f;
-					u2 = lon - halfLonRange;
-					v2 = lat - halfLatRange;
-				}
-				else if (i == 1) // bottom-right
-				{
-					u = 1.0f;
-					v = 1.0f;
-					u2 = lon + halfLonRange;
-					v2 = lat - halfLatRange;
-				}
-				else if (i == 2) // top-right
-				{
-					u = 1.0f;
-					v = 0.0f;
-					u2 = lon + halfLonRange;
-					v2 = lat + halfLatRange;
-				}
-				else if (i == 3) // top-left
-				{
-					u = 0.0f;
-					v = 0.0f;
-					u2 = lon - halfLonRange;
-					v2 = lat + halfLatRange;
-				}
+                float u = 0.0f, v = 0.0f;
+                float u2 = 0.0f, v2 = 0.0f;
 
-				uvs.Add(new Vector2(u, v));
-				uv2s.Add(new Vector2(u2, v2));
-			}
+                if (i == 0) // bottom-left
+                {
+                    u = 0.0f;
+                    v = 1.0f;
+                    u2 = lon - halfLonRange;
+                    v2 = lat - halfLatRange;
+                }
+                else if (i == 1) // bottom-right
+                {
+                    u = 1.0f;
+                    v = 1.0f;
+                    u2 = lon + halfLonRange;
+                    v2 = lat - halfLatRange;
+                }
+                else if (i == 2) // top-right
+                {
+                    u = 1.0f;
+                    v = 0.0f;
+                    u2 = lon + halfLonRange;
+                    v2 = lat + halfLatRange;
+                }
+                else if (i == 3) // top-left
+                {
+                    u = 0.0f;
+                    v = 0.0f;
+                    u2 = lon - halfLonRange;
+                    v2 = lat + halfLatRange;
+                }
 
-			// Two triangles for the quad:
-			//  (0,1,2) and (0,2,3)
-			indices.Add(0);
-			indices.Add(1);
-			indices.Add(2);
+                uvs.Add(new Vector2(u, v));
+                uv2s.Add(new Vector2(u2, v2));
+            }
 
-			indices.Add(0);
-			indices.Add(2);
-			indices.Add(3);
-		}
+            // Two triangles for the quad:
+            //  (0,1,2) and (0,2,3)
+            indices.Add(0);
+            indices.Add(1);
+            indices.Add(2);
 
-		surfaceArray[(int)Mesh.ArrayType.Vertex] = vertices.ToArray();
-		surfaceArray[(int)Mesh.ArrayType.Normal] = normals.ToArray();
-		surfaceArray[(int)Mesh.ArrayType.TexUV] = uvs.ToArray();
-		surfaceArray[(int)Mesh.ArrayType.TexUV2] = uv2s.ToArray();
-		surfaceArray[(int)Mesh.ArrayType.Index] = indices.ToArray();
+            indices.Add(0);
+            indices.Add(2);
+            indices.Add(3);
+        }
 
-		var arrayMesh = new ArrayMesh();
-		arrayMesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, surfaceArray);
-		return arrayMesh;
-	}
+        surfaceArray[(int)Mesh.ArrayType.Vertex] = vertices.ToArray();
+        surfaceArray[(int)Mesh.ArrayType.Normal] = normals.ToArray();
+        surfaceArray[(int)Mesh.ArrayType.TexUV] = uvs.ToArray();
+        surfaceArray[(int)Mesh.ArrayType.TexUV2] = uv2s.ToArray();
+        surfaceArray[(int)Mesh.ArrayType.Index] = indices.ToArray();
 
-	public static ArrayMesh CreateFullEllipsoidMesh()
-	{
-		var surfaceArray = new Godot.Collections.Array();
-		surfaceArray.Resize((int)Mesh.ArrayType.Max);
+        var arrayMesh = new ArrayMesh();
+        arrayMesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, surfaceArray);
+        return arrayMesh;
+    }
 
-		var vertices = new List<Vector3>();
-		var normals = new List<Vector3>();
-		var uvs = new List<Vector2>();
-		var indices = new List<int>();
+    public static ArrayMesh CreateFullEllipsoidMesh()
+    {
+        var surfaceArray = new Godot.Collections.Array();
+        surfaceArray.Resize((int)Mesh.ArrayType.Max);
 
-		// Generate vertices for each point on our grid
-		for (int lat = 0; lat <= LATITUDE_SEGMENTS; lat++)
-		{
-			// Convert latitude segment to angle in radians
-			// Range from -π/2 to π/2 (South pole to North pole)
-			double phi = Math.PI * ((double)lat / LATITUDE_SEGMENTS - 0.5);
-			double sinPhi = Math.Sin(phi);
-			double cosPhi = Math.Cos(phi);
+        var vertices = new List<Vector3>();
+        var normals = new List<Vector3>();
+        var uvs = new List<Vector2>();
+        var indices = new List<int>();
 
-			for (int lon = 0; lon <= LONGITUDE_SEGMENTS; lon++)
-			{
-				// Convert longitude segment to angle in radians
-				// Range from 0 to 2π (complete circle)
-				double lambda = 2 * Math.PI * (double)lon / LONGITUDE_SEGMENTS;
-				double sinLambda = Math.Sin(lambda);
-				double cosLambda = Math.Cos(lambda);
+        // Generate vertices for each point on our grid
+        for (int lat = 0; lat <= LATITUDE_SEGMENTS; lat++)
+        {
+            // Convert latitude segment to angle in radians
+            // Range from -π/2 to π/2 (South pole to North pole)
+            double phi = Math.PI * ((double)lat / LATITUDE_SEGMENTS - 0.5);
+            double sinPhi = Math.Sin(phi);
+            double cosPhi = Math.Cos(phi);
 
-				// Calculate position on ellipsoid surface
-				double x = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * cosPhi * cosLambda;
-				double y = SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM * sinPhi;  // Using Y as up-axis in Godot
-				double z = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * cosPhi * sinLambda;
+            for (int lon = 0; lon <= LONGITUDE_SEGMENTS; lon++)
+            {
+                // Convert longitude segment to angle in radians
+                // Range from 0 to 2π (complete circle)
+                double lambda = 2 * Math.PI * (double)lon / LONGITUDE_SEGMENTS;
+                double sinLambda = Math.Sin(lambda);
+                double cosLambda = Math.Cos(lambda);
 
-				// Add vertex
-				vertices.Add(new Vector3((float)x, (float)y, (float)z));
+                // Calculate position on ellipsoid surface
+                double x = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * cosPhi * cosLambda;
+                double y = SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM * sinPhi; // Using Y as up-axis in Godot
+                double z = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * cosPhi * sinLambda;
 
-				// Calculate normal - for an ellipsoid, normals aren't simply normalized position vectors
-				// For an ellipsoid, we want normals pointing outward
-				// The normal at any point is proportional to the gradient of the ellipsoid equation
-				// (x²/a² + y²/b² + z²/a² = 1)
-				double nx = x / (SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM);
-				double ny = y / (SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM * SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM);
-				double nz = z / (SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM);
-				double length = Math.Sqrt(nx * nx + ny * ny + nz * nz);
+                // Add vertex
+                vertices.Add(new Vector3((float)x, (float)y, (float)z));
 
-				normals.Add(new Vector3(
-					(float)(nx / length),
-					(float)(ny / length),
-					(float)(nz / length)
-				));
+                // Calculate normal - for an ellipsoid, normals aren't simply normalized position vectors
+                // For an ellipsoid, we want normals pointing outward
+                // The normal at any point is proportional to the gradient of the ellipsoid equation
+                // (x²/a² + y²/b² + z²/a² = 1)
+                double nx = x / (SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM *
+                                 SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM);
+                double ny = y / (SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM *
+                                 SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM);
+                double nz = z / (SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM *
+                                 SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM);
+                double length = Math.Sqrt(nx * nx + ny * ny + nz * nz);
 
-				// Calculate UV coordinates
-				// U ranges from 0 to 1 (longitude)
-				// V ranges from 0 to 1 (latitude)
-				uvs.Add(new Vector2(
-					(float)lon / LONGITUDE_SEGMENTS,
-					(float)lat / LATITUDE_SEGMENTS
-				));
+                normals.Add(new Vector3(
+                    (float)(nx / length),
+                    (float)(ny / length),
+                    (float)(nz / length)
+                ));
 
-				// Generate indices for triangles
-				if (lat < LATITUDE_SEGMENTS && lon < LONGITUDE_SEGMENTS)
-				{
-					int current = lat * (LONGITUDE_SEGMENTS + 1) + lon;
-					int next = current + LONGITUDE_SEGMENTS + 1;
+                // Calculate UV coordinates
+                // U ranges from 0 to 1 (longitude)
+                // V ranges from 0 to 1 (latitude)
+                uvs.Add(new Vector2(
+                    (float)lon / LONGITUDE_SEGMENTS,
+                    (float)lat / LATITUDE_SEGMENTS
+                ));
 
-					// First triangle
-					indices.Add(current);
-					indices.Add(current + 1);
-					indices.Add(next);
+                // Generate indices for triangles
+                if (lat < LATITUDE_SEGMENTS && lon < LONGITUDE_SEGMENTS)
+                {
+                    int current = lat * (LONGITUDE_SEGMENTS + 1) + lon;
+                    int next = current + LONGITUDE_SEGMENTS + 1;
 
-					// Second triangle
-					indices.Add(current + 1);
-					indices.Add(next + 1);
-					indices.Add(next);
+                    // First triangle
+                    indices.Add(current);
+                    indices.Add(current + 1);
+                    indices.Add(next);
 
-				}
-			}
-		}
+                    // Second triangle
+                    indices.Add(current + 1);
+                    indices.Add(next + 1);
+                    indices.Add(next);
+                }
+            }
+        }
 
-		// Assign arrays
-		surfaceArray[(int)Mesh.ArrayType.Vertex] = vertices.ToArray();
-		surfaceArray[(int)Mesh.ArrayType.Normal] = normals.ToArray();
-		surfaceArray[(int)Mesh.ArrayType.TexUV] = uvs.ToArray();
-		surfaceArray[(int)Mesh.ArrayType.Index] = indices.ToArray();
+        // Assign arrays
+        surfaceArray[(int)Mesh.ArrayType.Vertex] = vertices.ToArray();
+        surfaceArray[(int)Mesh.ArrayType.Normal] = normals.ToArray();
+        surfaceArray[(int)Mesh.ArrayType.TexUV] = uvs.ToArray();
+        surfaceArray[(int)Mesh.ArrayType.Index] = indices.ToArray();
 
-		// Create the mesh
-		var arrayMesh = new ArrayMesh();
-		arrayMesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, surfaceArray);
-		return arrayMesh;
-	}
-
+        // Create the mesh
+        var arrayMesh = new ArrayMesh();
+        arrayMesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, surfaceArray);
+        return arrayMesh;
+    }
 }
