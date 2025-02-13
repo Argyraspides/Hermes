@@ -146,16 +146,7 @@ public partial class TerrainChunk : Node3D
         float latScale = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
         float lonScale = SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM;
 
-        // Terrainchunk should know its pos in ECEF space in the Godot world based on map tile lat/lon this works file
-        cartesianPos.X *= latScale;
-        cartesianPos.Y *= lonScale;
-        cartesianPos.Z *= latScale;
-
         GlobalPosition = cartesianPos;
-
-        // However when we try and also scale the mesh instances or even just the terrainchunk itself,
-        // everything goes haywire. If we only scale and dont set position, everything looks fine.
-        // TODO(Argyraspides, 2025-01-29): Handle east-west inversion in shader instead of mesh scale
-        Scale = new Vector3(-latScale, lonScale, latScale);
+        Transform = Transform.Scaled(new Vector3(-latScale, lonScale, latScale));
     }
 }
