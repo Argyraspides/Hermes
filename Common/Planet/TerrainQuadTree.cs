@@ -195,7 +195,7 @@ public partial class TerrainQuadTree : Node
         node.Chunk.Name = $"TerrainChunk_z{tile.ZoomLevel}_x{tile.LongitudeTileCoo}_y{tile.LatitudeTileCoo}";
         node.Chunk.Load();
         AddChild(node.Chunk);
-        node.Chunk.SetPosition();
+        node.Chunk.SetPositionAndSize();
     }
 
     // Determines if the input terrain quad tree node should be split or not based on the camera distance,
