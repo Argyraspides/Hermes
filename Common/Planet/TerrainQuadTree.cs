@@ -119,7 +119,6 @@ public partial class TerrainQuadTree : Node
 
         Queue<TerrainQuadTreeNode> q = new Queue<TerrainQuadTreeNode>();
         q.Enqueue(m_rootNode);
-        int ct = 0;
         for (int zLevel = 0; zLevel < zoomLevel; zLevel++)
         {
             // Number of nodes in a quadtree level = 4^z, or 2^z * 2^z
@@ -128,7 +127,6 @@ public partial class TerrainQuadTree : Node
             for (int n = 0; n < nodesInLevel; n++)
             {
                 TerrainQuadTreeNode parentNode = q.Dequeue();
-                ct++;
                 int parentLatTileCoo = parentNode.Chunk.MapTile.LatitudeTileCoo;
                 int parentLonTileCoo = parentNode.Chunk.MapTile.LongitudeTileCoo;
 
