@@ -30,9 +30,9 @@ public partial class Earth : Planet
 
     public override void _Ready()
     {
+        InitializeCamera();
         m_defaultZoomLevel = 6;
         base._Ready();
-        InitializeCamera();
     }
 
     protected override void InitializePlanetData()
@@ -48,13 +48,13 @@ public partial class Earth : Planet
         m_terrainQuadTree = new TerrainQuadTree(m_planetOrbitalCamera);
         AddChild(m_terrainQuadTree);
         m_terrainQuadTree.Name = "EarthTerrainQuadTree";
-        m_terrainQuadTree.InitializeQuadTree(6);
+        m_terrainQuadTree.InitializeQuadTree(2);
     }
 
     private void InitializeCamera()
     {
-        // m_planetOrbitalCamera = GetNode<PlanetOrbitalCamera>("EarthOrbitalCamera");
-        // m_planetOrbitalCamera.OrbitalCameraPosChanged += OnOrbitalCameraPosChangedSignal;
+        m_planetOrbitalCamera = GetNode<PlanetOrbitalCamera>("EarthOrbitalCamera");
+        m_planetOrbitalCamera.OrbitalCameraPosChanged += OnOrbitalCameraPosChangedSignal;
         //
         // var nullIslandNode = m_terrainQuadTree.GetCenter(m_defaultZoomLevel - 1);
         //
@@ -73,6 +73,8 @@ public partial class Earth : Planet
         // // directly
         // // Camera will be directly on null island. Push back 15,000km
         // m_planetOrbitalCamera.InitializeCameraPosition(-m_nullIsland + new Vector3(-15000, 0, 0));
+        Vector3 camPos = new Vector3(-SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * 10, 0, 0);
+        m_planetOrbitalCamera.InitializeCameraPosition(camPos);
     }
 
     // TODO: Bruh idek anymore just do this tomorrow im too tired

@@ -20,6 +20,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Godot;
 
 
@@ -70,7 +71,9 @@ public partial class TerrainQuadTree : Node
     private int m_maxDepth;
 
     // Altitude thresholds for when we should start merging/splitting tiles based on altitude (meters)
-    private float[] m_thresholds;
+    private double[] m_altitudeThresholds;
+
+    Thread m_updateQuadTreeThread;
 
     public TerrainQuadTree(Camera3D camera, int maxNodes = 10000, int maxDepth = 21)
     {
@@ -81,26 +84,68 @@ public partial class TerrainQuadTree : Node
 
         m_camera = camera;
         m_maxDepth = maxDepth;
-        m_thresholds = new float[maxDepth];
 
         // Change this to the desired latitude (in degrees)
         double latitude = 0.0;
         // Convert latitude to radians
         double latitudeRadians = latitude * Math.PI / 180;
         // Compute the altitude thresholds for zoom levels 0 to 23
-        double[] altitudeThresholds = new double[maxDepth + 1];
+        m_altitudeThresholds = new double[maxDepth + 1];
         for (int zoom = 0; zoom <= maxDepth; zoom++)
         {
             double threshold =
                 (SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * Math.Cos(latitudeRadians)) / Math.Pow(2, zoom);
-            altitudeThresholds[zoom] = threshold;
+            m_altitudeThresholds[zoom] = threshold * 7;
         }
+
+        // m_updateQuadTreeThread = new Thread(UpdateQuadTreeThreadFunction);
+        // m_updateQuadTreeThread.Start();
+    }
+
+    public override void _Process(double delta)
+    {
+        UpdateQuadTree(m_rootNode);
     }
 
     // Constantly performs BFS on the quadtree and splits/merge terrain quad tree nodes
     // based on the camera
-    private void UpdateQuadTree(Camera3D camera3D, TerrainQuadTreeNode node)
+    private void UpdateQuadTree(TerrainQuadTreeNode node)
     {
+        if (node == null)
+        {
+            return;
+        }
+
+        if (node.IsLoadedInScene && !ShouldSplit(node))
+        {
+            return;
+        }
+
+        if (node.IsLoadedInScene && ShouldSplit(node))
+        {
+            Split(node);
+            return;
+        }
+
+        if (!node.IsLoadedInScene)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                if (node.ChildNodes[i] != null)
+                {
+                    UpdateQuadTree(node.ChildNodes[i]);
+                }
+            }
+        }
+    }
+
+    private void UpdateQuadTreeThreadFunction()
+    {
+        while (true)
+        {
+            UpdateQuadTree(m_rootNode);
+            Thread.Sleep(1000);
+        }
     }
 
     // Initializes the quadtree to a particular zoom level.
@@ -122,7 +167,6 @@ public partial class TerrainQuadTree : Node
         for (int zLevel = 0; zLevel < zoomLevel; zLevel++)
         {
             // Number of nodes in a quadtree level = 4^z, or 2^z * 2^z
-
             int nodesInLevel = (1 << zLevel) * (1 << zLevel);
             for (int n = 0; n < nodesInLevel; n++)
             {
@@ -201,6 +245,7 @@ public partial class TerrainQuadTree : Node
         node.Chunk.MeshInstance = new MeshInstance3D { Mesh = meshSegment };
         node.Chunk.Name = $"TerrainChunk_z{tile.ZoomLevel}_x{tile.LongitudeTileCoo}_y{tile.LatitudeTileCoo}";
         node.Chunk.Load();
+        node.IsLoadedInScene = true;
         AddChild(node.Chunk);
         node.Chunk.SetPositionAndSize();
     }
@@ -209,9 +254,14 @@ public partial class TerrainQuadTree : Node
     // what it can see, etc.
     private bool ShouldSplit(TerrainQuadTreeNode node)
     {
-        float distThreshold = m_thresholds[node.Depth];
+        if (node.Depth >= m_maxDepth)
+        {
+            return false;
+        }
+
+        double distThreshold = m_altitudeThresholds[node.Depth];
         float distToCam = node.Chunk.Position.DistanceTo(m_camera.Position);
-        return distThreshold < distToCam;
+        return distThreshold > distToCam;
     }
 
     // Splits the terrain quad tree node into four children, and makes its parent invisible
@@ -219,6 +269,11 @@ public partial class TerrainQuadTree : Node
     {
         node.Chunk.Visible = false;
         GenerateChildren(node);
+
+        for (int i = 0; i < 4; i++)
+        {
+            InitializeTerrainQuadTreeNodeMesh(node.ChildNodes[i]);
+        }
     }
 
     // The input parameter is the parent quadtree whose children we wish to merge into it. Works by removing the children
