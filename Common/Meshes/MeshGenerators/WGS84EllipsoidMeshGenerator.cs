@@ -78,25 +78,31 @@ public static class WGS84EllipsoidMeshGenerator
         bool touchesNorthPole = (lat + halfLatRange) >= (Mathf.Pi / 2.0f);
         bool touchesSouthPole = (lat - halfLatRange) <= (-Mathf.Pi / 2.0f);
 
+        float semiMajorAxisUnit = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM /
+                                  SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM;
+
+        float semiMinorAxisUnit = 1;
+
         //=== CASE 1: North Pole segment (triangle)
         if (touchesNorthPole)
         {
             // 3 vertices: bottom-left, bottom-right, top (pole)
             float[] x =
             {
-                1 * Mathf.Cos(lat - halfLatRange) * Mathf.Cos(lon - halfLonRange),
-                1 * Mathf.Cos(lat - halfLatRange) * Mathf.Cos(lon + halfLonRange), 0 // Pole
+                semiMajorAxisUnit * Mathf.Cos(lat - halfLatRange) * Mathf.Cos(lon - halfLonRange),
+                semiMajorAxisUnit * Mathf.Cos(lat - halfLatRange) * Mathf.Cos(lon + halfLonRange), 0 // Pole
             };
 
             float[] y =
             {
-                1 * Mathf.Sin(lat - halfLatRange), 1 * Mathf.Sin(lat - halfLatRange), 1 // North pole is + (semi-minor)
+                semiMinorAxisUnit * Mathf.Sin(lat - halfLatRange), 1 * Mathf.Sin(lat - halfLatRange),
+                1 // North pole is + (semi-minor)
             };
 
             float[] z =
             {
-                1 * Mathf.Cos(lat - halfLatRange) * Mathf.Sin(lon - halfLonRange),
-                1 * Mathf.Cos(lat - halfLatRange) * Mathf.Sin(lon + halfLonRange), 0 // Pole
+                semiMajorAxisUnit * Mathf.Cos(lat - halfLatRange) * Mathf.Sin(lon - halfLonRange),
+                semiMajorAxisUnit * Mathf.Cos(lat - halfLatRange) * Mathf.Sin(lon + halfLonRange), 0 // Pole
             };
 
             for (int i = 0; i < 3; i++)
@@ -148,21 +154,21 @@ public static class WGS84EllipsoidMeshGenerator
             float[] x =
             {
                 0, // Pole
-                1 * Mathf.Cos(lat + halfLatRange) * Mathf.Cos(lon + halfLonRange),
-                1 * Mathf.Cos(lat + halfLatRange) * Mathf.Cos(lon - halfLonRange),
+                semiMajorAxisUnit * Mathf.Cos(lat + halfLatRange) * Mathf.Cos(lon + halfLonRange),
+                semiMajorAxisUnit * Mathf.Cos(lat + halfLatRange) * Mathf.Cos(lon - halfLonRange),
             };
 
             float[] y =
             {
-                -1, // South pole
-                1 * Mathf.Sin(lat + halfLatRange), 1 * Mathf.Sin(lat + halfLatRange),
+                -semiMinorAxisUnit, // South pole
+                semiMinorAxisUnit * Mathf.Sin(lat + halfLatRange), semiMinorAxisUnit * Mathf.Sin(lat + halfLatRange)
             };
 
             float[] z =
             {
                 0, // Pole
-                1 * Mathf.Cos(lat + halfLatRange) * Mathf.Sin(lon + halfLonRange),
-                1 * Mathf.Cos(lat + halfLatRange) * Mathf.Sin(lon - halfLonRange),
+                semiMajorAxisUnit * Mathf.Cos(lat + halfLatRange) * Mathf.Sin(lon + halfLonRange),
+                semiMajorAxisUnit * Mathf.Cos(lat + halfLatRange) * Mathf.Sin(lon - halfLonRange),
             };
 
             for (int i = 0; i < 3; i++)
@@ -211,24 +217,25 @@ public static class WGS84EllipsoidMeshGenerator
             // 4 corners: bottom-left, bottom-right, top-right, top-left
             float[] x =
             {
-                1 * Mathf.Cos(lat - halfLatRange) * Mathf.Cos(lon - halfLonRange),
-                1 * Mathf.Cos(lat - halfLatRange) * Mathf.Cos(lon + halfLonRange),
-                1 * Mathf.Cos(lat + halfLatRange) * Mathf.Cos(lon + halfLonRange),
-                1 * Mathf.Cos(lat + halfLatRange) * Mathf.Cos(lon - halfLonRange)
+                semiMajorAxisUnit * Mathf.Cos(lat - halfLatRange) * Mathf.Cos(lon - halfLonRange),
+                semiMajorAxisUnit * Mathf.Cos(lat - halfLatRange) * Mathf.Cos(lon + halfLonRange),
+                semiMajorAxisUnit * Mathf.Cos(lat + halfLatRange) * Mathf.Cos(lon + halfLonRange),
+                semiMajorAxisUnit * Mathf.Cos(lat + halfLatRange) * Mathf.Cos(lon - halfLonRange)
             };
 
             float[] y =
             {
-                1 * Mathf.Sin(lat - halfLatRange), 1 * Mathf.Sin(lat - halfLatRange),
-                1 * Mathf.Sin(lat + halfLatRange), 1 * Mathf.Sin(lat + halfLatRange)
+                semiMinorAxisUnit * Mathf.Sin(lat - halfLatRange),
+                semiMinorAxisUnit * Mathf.Sin(lat - halfLatRange),
+                semiMinorAxisUnit * Mathf.Sin(lat + halfLatRange), semiMinorAxisUnit * Mathf.Sin(lat + halfLatRange)
             };
 
             float[] z =
             {
-                1 * Mathf.Cos(lat - halfLatRange) * Mathf.Sin(lon - halfLonRange),
-                1 * Mathf.Cos(lat - halfLatRange) * Mathf.Sin(lon + halfLonRange),
-                1 * Mathf.Cos(lat + halfLatRange) * Mathf.Sin(lon + halfLonRange),
-                1 * Mathf.Cos(lat + halfLatRange) * Mathf.Sin(lon - halfLonRange)
+                semiMajorAxisUnit * Mathf.Cos(lat - halfLatRange) * Mathf.Sin(lon - halfLonRange),
+                semiMajorAxisUnit * Mathf.Cos(lat - halfLatRange) * Mathf.Sin(lon + halfLonRange),
+                semiMajorAxisUnit * Mathf.Cos(lat + halfLatRange) * Mathf.Sin(lon + halfLonRange),
+                semiMajorAxisUnit * Mathf.Cos(lat + halfLatRange) * Mathf.Sin(lon - halfLonRange)
             };
 
             // Add the four corners in CCW order

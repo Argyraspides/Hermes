@@ -7,13 +7,21 @@
 
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_enyp5"]
 panorama = ExtResource("1_nxqmc")
+energy_multiplier = 0.5
 
 [sub_resource type="Sky" id="Sky_t515d"]
 sky_material = SubResource("PanoramaSkyMaterial_enyp5")
 
 [sub_resource type="Environment" id="Environment_sabak"]
 background_mode = 2
+background_energy_multiplier = 0.25
 sky = SubResource("Sky_t515d")
+sky_rotation = Vector3(0, 0, 0.767945)
+fog_mode = 1
+fog_density = 1.0
+fog_sky_affect = 0.015
+adjustment_enabled = true
+adjustment_saturation = 2.0
 
 [node name="SolarSystem" type="Node3D"]
 script = ExtResource("1_ks12t")
@@ -30,9 +38,6 @@ fov = 60.0
 far = 100000.0
 script = ExtResource("3_jsn1l")
 
-[node name="OmniLight3D" type="OmniLight3D" parent="Earth/EarthOrbitalCamera"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17000, 12000, 10000)
-light_energy = 12.325
-light_indirect_energy = 1.03
-omni_range = 100000.0
-omni_attenuation = 3.06
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="Earth/EarthOrbitalCamera"]
+transform = Transform3D(0.766044, 0.321394, -0.55667, 0, 0.866025, 0.5, 0.642788, -0.383022, 0.663414, 0, 0, -8000)
+light_energy = 0.6
