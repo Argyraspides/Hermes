@@ -127,44 +127,9 @@ public partial class TerrainQuadTree : Node
             for (int n = 0; n < nodesInLevel; n++)
             {
                 TerrainQuadTreeNode parentNode = q.Dequeue();
-                int parentLatTileCoo = parentNode.Chunk.MapTile.LatitudeTileCoo;
-                int parentLonTileCoo = parentNode.Chunk.MapTile.LongitudeTileCoo;
-
-                // Generate all children
+                GenerateChildren(parentNode);
                 for (int i = 0; i < 4; i++)
                 {
-                    int childLatTileCoo = parentLatTileCoo * 2;
-                    int childLonTileCoo = parentLonTileCoo * 2;
-                    int childZoomLevel = zLevel + 1; // The children we are generating are one level down
-
-                    // (2 * row, 2 * col)         -- Top left child (i == 0)
-                    // (2 * row, 2 * col + 1)     -- Top right child (i == 1)
-                    // (2 * row + 1, 2 * col)     -- Bottom left child (i == 2)
-                    // (2 * row + 1, 2 * col + 1) -- Bottom right child (i == 3)
-                    childLatTileCoo += (i == 2 || i == 3) ? 1 : 0;
-                    childLonTileCoo += (i == 1 || i == 3) ? 1 : 0;
-
-                    // TODO(Argyraspides, 11/02/2025): Whether or not this is mercator should be abstracted away. Perhaps make
-                    // the MapTile have a constructor that can also take in lat/lon tile coordinates and then
-                    // automagically determine its fields. Then we can just pass in the lat/lon tile coordinates
-                    // and not worry about this conversion
-                    double childLat = MapUtils.MapTileToLatitude(childLatTileCoo, childZoomLevel);
-                    double childLon = MapUtils.MapTileToLongitude(childLonTileCoo, childZoomLevel);
-
-                    double childLatRange = MapUtils.TileToLatRange(childLatTileCoo, childZoomLevel);
-                    double childLonRange = MapUtils.TileToLonRange(childZoomLevel);
-
-                    double halfChildLatRange = childLatRange / 2;
-                    double halfChildLonRange = childLonRange / 2;
-
-                    double childCenterLat = childLat - halfChildLatRange;
-                    double childCenterLon = childLon + halfChildLonRange;
-
-                    parentNode.ChildNodes[i] = new TerrainQuadTreeNode(new TerrainChunk(new MapTile(
-                        (float)childCenterLat,
-                        (float)childCenterLon,
-                        childZoomLevel
-                    )), childZoomLevel);
                     q.Enqueue(parentNode.ChildNodes[i]);
                 }
             }
@@ -176,6 +141,50 @@ public partial class TerrainQuadTree : Node
             InitializeTerrainQuadTreeNodeMesh(node);
         }
     }
+
+    void GenerateChildren(TerrainQuadTreeNode parentNode)
+    {
+        int parentLatTileCoo = parentNode.Chunk.MapTile.LatitudeTileCoo;
+        int parentLonTileCoo = parentNode.Chunk.MapTile.LongitudeTileCoo;
+        int zLevel = parentNode.Chunk.MapTile.ZoomLevel;
+        // Generate all children
+        for (int i = 0; i < 4; i++)
+        {
+            int childLatTileCoo = parentLatTileCoo * 2;
+            int childLonTileCoo = parentLonTileCoo * 2;
+            int childZoomLevel = zLevel + 1; // The children we are generating are one level down
+
+            // (2 * row, 2 * col)         -- Top left child (i == 0)
+            // (2 * row, 2 * col + 1)     -- Top right child (i == 1)
+            // (2 * row + 1, 2 * col)     -- Bottom left child (i == 2)
+            // (2 * row + 1, 2 * col + 1) -- Bottom right child (i == 3)
+            childLatTileCoo += (i == 2 || i == 3) ? 1 : 0;
+            childLonTileCoo += (i == 1 || i == 3) ? 1 : 0;
+
+            // TODO(Argyraspides, 11/02/2025): Whether or not this is mercator should be abstracted away. Perhaps make
+            // the MapTile have a constructor that can also take in lat/lon tile coordinates and then
+            // automagically determine its fields. Then we can just pass in the lat/lon tile coordinates
+            // and not worry about this conversion
+            double childLat = MapUtils.MapTileToLatitude(childLatTileCoo, childZoomLevel);
+            double childLon = MapUtils.MapTileToLongitude(childLonTileCoo, childZoomLevel);
+
+            double childLatRange = MapUtils.TileToLatRange(childLatTileCoo, childZoomLevel);
+            double childLonRange = MapUtils.TileToLonRange(childZoomLevel);
+
+            double halfChildLatRange = childLatRange / 2;
+            double halfChildLonRange = childLonRange / 2;
+
+            double childCenterLat = childLat - halfChildLatRange;
+            double childCenterLon = childLon + halfChildLonRange;
+
+            parentNode.ChildNodes[i] = new TerrainQuadTreeNode(new TerrainChunk(new MapTile(
+                (float)childCenterLat,
+                (float)childCenterLon,
+                childZoomLevel
+            )), childZoomLevel);
+        }
+    }
+
 
     private void InitializeTerrainQuadTreeNodeMesh(TerrainQuadTreeNode node)
     {
@@ -208,6 +217,8 @@ public partial class TerrainQuadTree : Node
     // Splits the terrain quad tree node into four children, and makes its parent invisible
     private void Split(TerrainQuadTreeNode node)
     {
+        node.Chunk.Visible = false;
+        GenerateChildren(node);
     }
 
     // The input parameter is the parent quadtree whose children we wish to merge into it. Works by removing the children
