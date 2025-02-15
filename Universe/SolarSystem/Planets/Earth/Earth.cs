@@ -48,7 +48,7 @@ public partial class Earth : Planet
         m_terrainQuadTree = new TerrainQuadTree(m_planetOrbitalCamera);
         AddChild(m_terrainQuadTree);
         m_terrainQuadTree.Name = "EarthTerrainQuadTree";
-        m_terrainQuadTree.InitializeQuadTree(2);
+        m_terrainQuadTree.InitializeQuadTree(6);
     }
 
     private void InitializeCamera()

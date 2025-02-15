@@ -21,6 +21,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using Godot;
 
 
@@ -61,12 +62,14 @@ then we never needed any of the subtrees anyway. The garbage collector can then 
  */
 public partial class TerrainQuadTree : Node
 {
-    private Camera3D m_camera;
+    private PlanetOrbitalCamera m_camera;
     private TerrainQuadTreeNode m_rootNode;
 
     // Maximum amount of nodes allowed in our quadtree until
     // unused nodes are culled
     private long m_maxNodes;
+
+    private int m_minDepth;
 
     private int m_maxDepth;
 
@@ -75,11 +78,16 @@ public partial class TerrainQuadTree : Node
 
     Thread m_updateQuadTreeThread;
 
-    public TerrainQuadTree(Camera3D camera, int maxNodes = 10000, int maxDepth = 21)
+    public TerrainQuadTree(PlanetOrbitalCamera camera, int maxNodes = 10000, int minDepth = 6, int maxDepth = 21)
     {
         if (maxDepth > 23 || maxDepth < 1)
         {
             throw new ArgumentException("maxDepth must be greater than 1 and less than 23");
+        }
+
+        if (maxDepth < minDepth)
+        {
+            throw new ArgumentException("maxDepth must be greater than minDepth");
         }
 
         m_camera = camera;
@@ -89,52 +97,89 @@ public partial class TerrainQuadTree : Node
         double latitude = 0.0;
         // Convert latitude to radians
         double latitudeRadians = latitude * Math.PI / 180;
-        // Compute the altitude thresholds for zoom levels 0 to 23
+
+        // Compute the altitude thresholds for zoom levels 0 to maxDepth
         m_altitudeThresholds = new double[maxDepth + 1];
+        double baseRadius = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * Math.Cos(latitudeRadians);
+
+        // Use a non-linear scaling factor to allow for closer zooming
+        double scalingFactor = 4.0; // Reduced from 7 to allow closer zooming
+
         for (int zoom = 0; zoom <= maxDepth; zoom++)
         {
-            double threshold =
-                (SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * Math.Cos(latitudeRadians)) / Math.Pow(2, zoom);
-            m_altitudeThresholds[zoom] = threshold * 7;
+            // Modified threshold calculation with exponential falloff for higher zoom levels
+            double zoomScale =
+                zoom >= 15 ? Math.Pow(0.85, zoom - 15) : 1.0; // Gradually reduce threshold scaling at high zoom levels
+
+            double threshold = baseRadius / Math.Pow(2, zoom);
+            m_altitudeThresholds[zoom] = threshold * scalingFactor * zoomScale;
         }
 
-        // m_updateQuadTreeThread = new Thread(UpdateQuadTreeThreadFunction);
-        // m_updateQuadTreeThread.Start();
-    }
-
-    public override void _Process(double delta)
-    {
-        UpdateQuadTree(m_rootNode);
+        m_updateQuadTreeThread = new Thread(UpdateQuadTreeThreadFunction);
+        m_updateQuadTreeThread.Start();
     }
 
     // Constantly performs BFS on the quadtree and splits/merge terrain quad tree nodes
     // based on the camera
     private void UpdateQuadTree(TerrainQuadTreeNode node)
     {
-        if (node == null)
+        if (node == null) return;
+
+        float minLat = m_camera.CurrentLat - m_camera.ApproxVisibleLatRadius;
+        float maxLat = m_camera.CurrentLat + m_camera.ApproxVisibleLatRadius;
+
+        float minLon = m_camera.CurrentLon - m_camera.ApproxVisibleLonRadius;
+        float maxLon = m_camera.CurrentLon + m_camera.ApproxVisibleLonRadius;
+
+        // Don't bother checking if we are outside the visible lat/lon range of the camera
+        if (node.Chunk.MapTile.Latitude < minLat || node.Chunk.MapTile.Latitude > maxLat)
         {
             return;
         }
 
-        if (node.IsLoadedInScene && !ShouldSplit(node))
+        if (node.Chunk.MapTile.Longitude < minLon || node.Chunk.MapTile.Longitude > maxLon)
         {
             return;
         }
 
-        if (node.IsLoadedInScene && ShouldSplit(node))
+        CallDeferred("ShouldSplit", node);
+
+        // Early termination if node is at correct LOD
+        if (node.IsLoadedInScene && !node.ShouldSplit) return;
+
+        // Handle splitting
+        if (node.IsLoadedInScene && node.ShouldSplit)
         {
-            Split(node);
+            CallDeferred("Split", node);
             return;
         }
 
-        if (!node.IsLoadedInScene)
+        // Check for merging only if node is loaded
+        if (node.IsLoadedInScene)
         {
+            bool anyChildShouldMerge = false;
             for (int i = 0; i < 4; i++)
             {
                 if (node.ChildNodes[i] != null)
                 {
-                    UpdateQuadTree(node.ChildNodes[i]);
+                    CallDeferred("ShouldMerge", node.ChildNodes[i]);
+                    anyChildShouldMerge |= node.ChildNodes[i].ShouldMerge;
                 }
+            }
+
+            if (anyChildShouldMerge)
+            {
+                CallDeferred("Merge", node);
+                return;
+            }
+        }
+
+        // Continue DFS for unloaded nodes
+        if (!node.IsLoadedInScene)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                UpdateQuadTree(node.ChildNodes[i]);
             }
         }
     }
@@ -144,16 +189,16 @@ public partial class TerrainQuadTree : Node
         while (true)
         {
             UpdateQuadTree(m_rootNode);
-            Thread.Sleep(1000);
+            Thread.Sleep(5000);
         }
     }
 
     // Initializes the quadtree to a particular zoom level.
     public void InitializeQuadTree(int zoomLevel)
     {
-        if (zoomLevel > m_maxDepth)
+        if (zoomLevel > m_maxDepth || zoomLevel < m_minDepth)
         {
-            throw new ArgumentException("zoomLevel must be less than or equal to maxDepth");
+            throw new ArgumentException("zoomLevel must be between min and max depth");
         }
 
         m_rootNode = new TerrainQuadTreeNode(new TerrainChunk(new MapTile(
@@ -235,7 +280,7 @@ public partial class TerrainQuadTree : Node
         var tile = node.Chunk.MapTile;
         // TODO(Argyraspides, 11/02/2025): Again, please, PLEASE make this WGS84 thing abstracted away too. TerrainQuadTree
         // shouldn't need to worry about this. Just generate the mesh and be done with it. Interfaces, interfaces,
-        // interfaces!!!
+        // interfaces!
         ArrayMesh meshSegment = WGS84EllipsoidMeshGenerator.CreateEllipsoidMeshSegment(
             (float)tile.Latitude,
             (float)tile.Longitude,
@@ -254,14 +299,36 @@ public partial class TerrainQuadTree : Node
     // what it can see, etc.
     private bool ShouldSplit(TerrainQuadTreeNode node)
     {
+        if (node == null)
+        {
+            throw new ArgumentNullException("node cannot be null");
+        }
+
         if (node.Depth >= m_maxDepth)
         {
+            node.ShouldSplit = false;
             return false;
         }
 
         double distThreshold = m_altitudeThresholds[node.Depth];
-        float distToCam = node.Chunk.Position.DistanceTo(m_camera.Position);
-        return distThreshold > distToCam;
+        float distToCam = node.Chunk.Position.DistanceTo(m_camera.Position) - 3000;
+        // GD.Print("Current distance to camera: ", distToCam);
+        node.ShouldSplit = distThreshold > distToCam;
+        return node.ShouldSplit;
+    }
+
+    private bool ShouldMerge(TerrainQuadTreeNode node)
+    {
+        if (node == null)
+        {
+            throw new ArgumentNullException("node cannot be null");
+        }
+
+        double mergeThreshold = m_altitudeThresholds[node.Depth];
+        float distToCam = node.Chunk.Position.DistanceTo(m_camera.Position) - 3000;
+        bool shouldMerge = distToCam > mergeThreshold;
+        node.ShouldMerge = shouldMerge;
+        return shouldMerge;
     }
 
     // Splits the terrain quad tree node into four children, and makes its parent invisible
@@ -280,6 +347,11 @@ public partial class TerrainQuadTree : Node
     // from the scene tree/making them invisible, and then toggling itself to be visible or whatever
     private void Merge(TerrainQuadTreeNode parent)
     {
+        parent.Chunk.Visible = true;
+        for (int i = 0; i < 4; i++)
+        {
+            parent.ChildNodes[i].Chunk.Visible = false;
+        }
     }
 
     // Called whenever we exceed the max number of allowed nodes in our quadtree. Completely destroys a quadtree node
@@ -302,7 +374,7 @@ public partial class TerrainQuadTree : Node
         throw new NotImplementedException();
     }
 
-    private sealed class TerrainQuadTreeNode
+    private sealed partial class TerrainQuadTreeNode : Node
     {
         public TerrainChunk Chunk { get; set; }
         public TerrainQuadTreeNode[] ChildNodes { get; set; }
@@ -317,6 +389,8 @@ public partial class TerrainQuadTree : Node
         // Once we do encounter isLoadedInScene to be true, then we can also not add the children of this
         // node to our BFS, so we save on space as well
         public bool IsLoadedInScene { get; set; }
+        public bool ShouldSplit { get; set; }
+        public bool ShouldMerge { get; set; }
 
         public int Depth;
 
@@ -325,6 +399,8 @@ public partial class TerrainQuadTree : Node
             Chunk = chunk;
             ChildNodes = new TerrainQuadTreeNode[4] { null, null, null, null };
             IsLoadedInScene = false;
+            ShouldSplit = false;
+            ShouldMerge = false;
             Depth = depth;
         }
     }

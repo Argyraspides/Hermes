@@ -43,6 +43,12 @@ public static class MapUtils
 
     public const double MAX_LATITUDE_LEVEL_WEB_MERCATOR = 1.484422229745;
 
+    public const double MIN_LATITUDE = -Math.PI / 2.0;
+    public const double MAX_LATITUDE = Math.PI / 2.0;
+
+    public const double MIN_LONGITUDE = -Math.PI;
+    public const double MAX_LONGITUDE = Math.PI;
+
     public const double RADIANS_TO_DEGREES = 180.0 / PI;
     public const double DEGREES_TO_RADIANS = PI / 180.0;
 

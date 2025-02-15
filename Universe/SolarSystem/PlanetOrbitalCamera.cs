@@ -17,6 +17,8 @@
 
 */
 
+
+using System;
 using Godot;
 
 public partial class PlanetOrbitalCamera : Camera3D
@@ -34,7 +36,8 @@ public partial class PlanetOrbitalCamera : Camera3D
     [Export] private float m_maxCameraRadialDistance = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * 10;
     [Export] private float m_initialCameraRadialDistance = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * 5;
 
-    // The current (smoothed) distance and the target distance
+    // The current (smoothed) distance and the target distance. The current distance represents the distance from the
+    // center of the Earth
     [Export] private float m_currentDistance;
     private float m_targetDistance;
 
@@ -46,7 +49,10 @@ public partial class PlanetOrbitalCamera : Camera3D
     [Export] private float m_panSmoothing = 0.1f; // Lower = slower smoothing
 
     [Export] private float m_zoomSmoothing = 0.15f; // Lower = slower smoothing
-    [Export] private float m_zoomIncrement = 500.0f;
+    [Export] private float m_baseZoomIncrement = 500.0f;
+
+    [Export]
+    private float m_zoomSensitivityFactor = 0.15f; // Controls how quickly zoom sensitivity changes with distance
 
     #endregion
 
@@ -117,15 +123,16 @@ public partial class PlanetOrbitalCamera : Camera3D
 
     public override void _Process(double delta)
     {
-        float dt = (float)delta;
-
         // Smoothly update distance and angles
         m_currentDistance = Mathf.Lerp(m_currentDistance, m_targetDistance, m_zoomSmoothing);
         m_currentTheta = Mathf.LerpAngle(m_currentTheta, m_targetTheta, m_panSmoothing);
         m_currentPhi = Mathf.Lerp(m_currentPhi, m_targetPhi, m_panSmoothing);
 
-        CurrentLon = m_currentTheta + Mathf.Pi;
-        CurrentLat = m_currentPhi - (Mathf.Pi / 2.0f);
+        CurrentLon = m_currentTheta;
+        CurrentLat = m_currentPhi;
+
+        CurrentLon = -((CurrentLon % (2 * Mathf.Pi)) - Mathf.Pi);
+        CurrentLat = -((CurrentLat % (Mathf.Pi)) - (Mathf.Pi / 2.0f));
 
         // Convert spherical coordinates back to Cartesian coordinates.
         // Spherical to Cartesian conversion:
@@ -196,13 +203,22 @@ public partial class PlanetOrbitalCamera : Camera3D
 
     private void HandleZoomInput(InputEventMouseButton mouseButton)
     {
+        // Calculate dynamic zoom increment based on current distance from Earth's surface
+        float distanceFromSurface = m_currentDistance - SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
+        float dynamicZoomIncrement = m_baseZoomIncrement *
+                                     (distanceFromSurface / SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM) *
+                                     m_zoomSensitivityFactor;
+
+        // Ensure minimum zoom increment for very close distances
+        dynamicZoomIncrement = Mathf.Max(dynamicZoomIncrement, m_baseZoomIncrement * 0.01f);
+
         if (mouseButton.ButtonIndex == MouseButton.WheelUp)
         {
-            m_targetDistance = Mathf.Max(m_minCameraRadialDistance, m_targetDistance - m_zoomIncrement);
+            m_targetDistance = Mathf.Max(m_minCameraRadialDistance, m_targetDistance - dynamicZoomIncrement);
         }
         else if (mouseButton.ButtonIndex == MouseButton.WheelDown)
         {
-            m_targetDistance = Mathf.Min(m_maxCameraRadialDistance, m_targetDistance + m_zoomIncrement);
+            m_targetDistance = Mathf.Min(m_maxCameraRadialDistance, m_targetDistance + dynamicZoomIncrement);
         }
     }
 
