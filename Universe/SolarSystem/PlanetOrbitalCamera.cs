@@ -18,7 +18,6 @@
 */
 
 
-using System;
 using Godot;
 
 public partial class PlanetOrbitalCamera : Camera3D
@@ -32,27 +31,28 @@ public partial class PlanetOrbitalCamera : Camera3D
 
     #region Camera Distance Configuration
 
-    [Export] private float m_minCameraRadialDistance = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
-    [Export] private float m_maxCameraRadialDistance = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * 10;
-    [Export] private float m_initialCameraRadialDistance = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * 5;
+    [Export] private double m_minCameraRadialDistance = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
+    [Export] private double m_maxCameraRadialDistance = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * 10;
+    [Export] private double m_initialCameraRadialDistance = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * 5;
+    [Export] private double MIN_HEIGHT_ABOVE_ELLIPSOID = 0.03F; // kilometers
 
     // The current (smoothed) distance and the target distance. The current distance represents the distance from the
     // center of the Earth
-    [Export] private float m_currentDistance;
-    private float m_targetDistance;
+    [Export] private double m_currentDistance;
+    private double m_targetDistance;
 
     #endregion
 
     #region Camera Movement Configuration
 
-    [Export] private float m_panSpeedMultiplier = 0.005f;
-    [Export] private float m_panSmoothing = 0.1f; // Lower = slower smoothing
+    [Export] private double m_panSpeedMultiplier = 0.005f;
+    [Export] private double m_panSmoothing = 0.1f; // Lower = slower smoothing
 
-    [Export] private float m_zoomSmoothing = 0.15f; // Lower = slower smoothing
-    [Export] private float m_baseZoomIncrement = 500.0f;
+    [Export] private double m_zoomSmoothing = 0.15f; // Lower = slower smoothing
+    [Export] private double m_baseZoomIncrement = 500.0f;
 
     [Export]
-    private float m_zoomSensitivityFactor = 0.15f; // Controls how quickly zoom sensitivity changes with distance
+    private double m_zoomSensitivityFactor = 0.15f; // Controls how quickly zoom sensitivity changes with distance
 
     #endregion
 
@@ -61,12 +61,12 @@ public partial class PlanetOrbitalCamera : Camera3D
     // We represent the camera position in spherical coordinates.
     // theta: azimuth (radians) - horizontal angle around the origin (longitude equivalent)
     // phi: polar (radians) - angle from the Y axis (0 = top) (latitude equivalent)
-    private float m_currentTheta;
-    private float m_currentPhi;
+    private double m_currentTheta;
+    private double m_currentPhi;
 
     // Latitude and longitude that the center of the camera is looking at
-    [Export] public float CurrentLat { get; private set; }
-    [Export] public float CurrentLon { get; private set; }
+    [Export] public double CurrentLat { get; private set; }
+    [Export] public double CurrentLon { get; private set; }
 
     // Approximate lat/lon radius range that the camera is able to see of the Earth's surface.
     // Calculated by via a vision cone, where the circumference
@@ -76,11 +76,11 @@ public partial class PlanetOrbitalCamera : Camera3D
     // This will slightly overestimate the truly visible lat/lon range,
     // but simplifies calculation drastically and improves performance. Used
     // to determine where to split the quadtree for LoD.
-    [Export] public float ApproxVisibleLatRadius { get; private set; }
-    [Export] public float ApproxVisibleLonRadius { get; private set; }
+    [Export] public double ApproxVisibleLatRadius { get; private set; }
+    [Export] public double ApproxVisibleLonRadius { get; private set; }
 
-    private float m_targetTheta;
-    private float m_targetPhi;
+    private double m_targetTheta;
+    private double m_targetPhi;
 
     #endregion
 
@@ -123,7 +123,11 @@ public partial class PlanetOrbitalCamera : Camera3D
 
     public override void _Process(double delta)
     {
-        // Smoothly update distance and angles
+        // Ensure we maintain minimum distance even during smooth transitions
+        double currentMinDistance = GetMinimumAllowedDistance();
+        m_currentDistance = Mathf.Max(currentMinDistance, m_currentDistance);
+        m_targetDistance = Mathf.Max(currentMinDistance, m_targetDistance);
+
         m_currentDistance = Mathf.Lerp(m_currentDistance, m_targetDistance, m_zoomSmoothing);
         m_currentTheta = Mathf.LerpAngle(m_currentTheta, m_targetTheta, m_panSmoothing);
         m_currentPhi = Mathf.Lerp(m_currentPhi, m_targetPhi, m_panSmoothing);
@@ -140,9 +144,9 @@ public partial class PlanetOrbitalCamera : Camera3D
         // y = r * cos(phi)
         // z = r * sin(phi) * sin(theta)
         Vector3 newPos = new Vector3(
-            m_currentDistance * Mathf.Sin(m_currentPhi) * Mathf.Cos(m_currentTheta),
-            m_currentDistance * Mathf.Cos(m_currentPhi),
-            m_currentDistance * Mathf.Sin(m_currentPhi) * Mathf.Sin(m_currentTheta)
+            (float)m_currentDistance * Mathf.Sin((float)m_currentPhi) * Mathf.Cos((float)m_currentTheta),
+            (float)m_currentDistance * Mathf.Cos((float)m_currentPhi),
+            (float)m_currentDistance * Mathf.Sin((float)m_currentPhi) * Mathf.Sin((float)m_currentTheta)
         );
         Position = newPos;
         LookAt(Vector3.Zero, Vector3.Up);
@@ -175,14 +179,38 @@ public partial class PlanetOrbitalCamera : Camera3D
 
     void UpdateVisibleLatLonRange()
     {
-        float fovRad = Mathf.DegToRad(Fov);
-        float distanceFromEarthSurface = m_currentDistance - SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
+        double fovRad = Mathf.DegToRad(Fov);
+        double distanceFromEarthSurface = m_currentDistance - SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
 
-        float circleViewRadius = distanceFromEarthSurface * Mathf.Tan(fovRad / 2.0f);
+        double circleViewRadius = distanceFromEarthSurface * Mathf.Tan(fovRad / 2.0f);
         (double lat, double lon) =
             MapUtils.DistanceToLatLonRange(circleViewRadius, SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM);
-        ApproxVisibleLatRadius = Mathf.Clamp((float)lat, (float)MapUtils.MIN_LATITUDE, (float)MapUtils.MAX_LATITUDE);
-        ApproxVisibleLonRadius = Mathf.Clamp((float)lon, (float)MapUtils.MIN_LONGITUDE, (float)MapUtils.MAX_LONGITUDE);
+        ApproxVisibleLatRadius = Mathf.Clamp(lat, MapUtils.MIN_LATITUDE, MapUtils.MAX_LATITUDE);
+        ApproxVisibleLonRadius = Mathf.Clamp(lon, MapUtils.MIN_LONGITUDE, MapUtils.MAX_LONGITUDE);
+    }
+
+
+    private double GetWGS84RadiusAtLatitude(double latitude)
+    {
+        // WGS84 ellipsoid radius calculation at a given latitude
+        double a = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
+        double b = SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM;
+        double cos = Mathf.Cos(latitude);
+        double sin = Mathf.Sin(latitude);
+
+        double t1 = a * a * cos;
+        double t2 = b * b * sin;
+        double t3 = a * cos;
+        double t4 = b * sin;
+
+        return Mathf.Sqrt((t1 * t1 + t2 * t2) / (t3 * t3 + t4 * t4));
+    }
+
+    private double GetMinimumAllowedDistance()
+    {
+        // Convert the WGS84 radius to the same units as solar system
+        double radius = GetWGS84RadiusAtLatitude(CurrentLat);
+        return radius + MIN_HEIGHT_ABOVE_ELLIPSOID;
     }
 
     #endregion
@@ -192,16 +220,16 @@ public partial class PlanetOrbitalCamera : Camera3D
     private void HandlePanInput(InputEventMouseMotion mouseMotion)
     {
         // Calculate dynamic pan speed based on current distance from Earth's surface
-        float distanceFromSurface = m_currentDistance - SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
-        float dynamicPanMultiplier = m_panSpeedMultiplier *
-                                     (distanceFromSurface / SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM) *
-                                     m_zoomSensitivityFactor;
+        double distanceFromSurface = m_currentDistance - SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
+        double dynamicPanMultiplier = m_panSpeedMultiplier *
+                                      (distanceFromSurface / SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM) *
+                                      m_zoomSensitivityFactor;
 
         // Ensure minimum pan speed for very close distances
         dynamicPanMultiplier = Mathf.Max(dynamicPanMultiplier, m_panSpeedMultiplier * 0.01f);
 
-        float deltaX = -mouseMotion.Relative.X * dynamicPanMultiplier;
-        float deltaY = -mouseMotion.Relative.Y * dynamicPanMultiplier;
+        double deltaX = -mouseMotion.Relative.X * dynamicPanMultiplier;
+        double deltaY = -mouseMotion.Relative.Y * dynamicPanMultiplier;
 
         m_targetTheta -= deltaX;
         m_targetPhi += deltaY;
@@ -213,17 +241,18 @@ public partial class PlanetOrbitalCamera : Camera3D
     private void HandleZoomInput(InputEventMouseButton mouseButton)
     {
         // Calculate dynamic zoom increment based on current distance from Earth's surface
-        float distanceFromSurface = m_currentDistance - SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
-        float dynamicZoomIncrement = m_baseZoomIncrement *
-                                     (distanceFromSurface / SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM) *
-                                     m_zoomSensitivityFactor;
+        double currentMinDistance = GetMinimumAllowedDistance();
+        double distanceFromSurface = m_currentDistance - currentMinDistance;
+        double dynamicZoomIncrement = m_baseZoomIncrement *
+                                      (distanceFromSurface / SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM) *
+                                      m_zoomSensitivityFactor;
 
         // Ensure minimum zoom increment for very close distances
         dynamicZoomIncrement = Mathf.Max(dynamicZoomIncrement, m_baseZoomIncrement * 0.01f);
 
         if (mouseButton.ButtonIndex == MouseButton.WheelUp)
         {
-            m_targetDistance = Mathf.Max(m_minCameraRadialDistance, m_targetDistance - dynamicZoomIncrement);
+            m_targetDistance = Mathf.Max(currentMinDistance, m_targetDistance - dynamicZoomIncrement);
         }
         else if (mouseButton.ButtonIndex == MouseButton.WheelDown)
         {
