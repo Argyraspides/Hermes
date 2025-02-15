@@ -43,7 +43,6 @@ public partial class MapAPI : Node
         ImageType mapImageType
     )
     {
-
         BingMapTileQueryParameters bingQueryParameters = new BingMapTileQueryParameters(
             0,
             mapType,
@@ -68,7 +67,6 @@ public partial class MapAPI : Node
         ImageType mapImageType
     )
     {
-
         BingMapTileQueryParameters bingQueryParameters = new BingMapTileQueryParameters(
             0,
             mapType,
@@ -80,6 +78,4 @@ public partial class MapAPI : Node
 
         return await m_mapProvider.RequestRawMapTileAsync(bingQueryParameters);
     }
-
-
 }

@@ -107,12 +107,12 @@ public partial class TerrainQuadTree : Node
 
         for (int zoom = 0; zoom <= maxDepth; zoom++)
         {
-            // Modified threshold calculation with exponential falloff for higher zoom levels
+            // Threshold calculation with exponential falloff for higher zoom levels
             double zoomScale =
                 zoom >= 15 ? Math.Pow(0.85, zoom - 15) : 1.0; // Gradually reduce threshold scaling at high zoom levels
 
             double threshold = baseRadius / Math.Pow(2, zoom);
-            m_altitudeThresholds[zoom] = threshold * scalingFactor * zoomScale;
+            m_altitudeThresholds[zoom] = threshold * scalingFactor * zoomScale + 13;
         }
 
         m_updateQuadTreeThread = new Thread(UpdateQuadTreeThreadFunction);
@@ -124,23 +124,7 @@ public partial class TerrainQuadTree : Node
     private void UpdateQuadTree(TerrainQuadTreeNode node)
     {
         if (node == null) return;
-
-        float minLat = m_camera.CurrentLat - m_camera.ApproxVisibleLatRadius;
-        float maxLat = m_camera.CurrentLat + m_camera.ApproxVisibleLatRadius;
-
-        float minLon = m_camera.CurrentLon - m_camera.ApproxVisibleLonRadius;
-        float maxLon = m_camera.CurrentLon + m_camera.ApproxVisibleLonRadius;
-
-        // Don't bother checking if we are outside the visible lat/lon range of the camera
-        if (node.Chunk.MapTile.Latitude < minLat || node.Chunk.MapTile.Latitude > maxLat)
-        {
-            return;
-        }
-
-        if (node.Chunk.MapTile.Longitude < minLon || node.Chunk.MapTile.Longitude > maxLon)
-        {
-            return;
-        }
+        if (m_camera.IsDragging) return; // Only load when user stops
 
         CallDeferred("ShouldSplit", node);
 
@@ -189,7 +173,7 @@ public partial class TerrainQuadTree : Node
         while (true)
         {
             UpdateQuadTree(m_rootNode);
-            Thread.Sleep(5000);
+            Thread.Sleep(500);
         }
     }
 
@@ -310,8 +294,27 @@ public partial class TerrainQuadTree : Node
             return false;
         }
 
+        float minLat = m_camera.CurrentLat - m_camera.ApproxVisibleLatRadius;
+        float maxLat = m_camera.CurrentLat + m_camera.ApproxVisibleLatRadius;
+
+        float minLon = m_camera.CurrentLon - m_camera.ApproxVisibleLonRadius;
+        float maxLon = m_camera.CurrentLon + m_camera.ApproxVisibleLonRadius;
+
+        // We shouldn't split if we are outside the visible latitude range of the camera
+        if (node.Chunk.MapTile.Latitude < minLat || node.Chunk.MapTile.Latitude > maxLat)
+        {
+            node.ShouldSplit = false;
+            return false;
+        }
+
+        if (node.Chunk.MapTile.Longitude < minLon || node.Chunk.MapTile.Longitude > maxLon)
+        {
+            node.ShouldSplit = false;
+            return false;
+        }
+
         double distThreshold = m_altitudeThresholds[node.Depth];
-        float distToCam = node.Chunk.Position.DistanceTo(m_camera.Position) - 3000;
+        float distToCam = node.Chunk.Position.DistanceTo(m_camera.Position);
         // GD.Print("Current distance to camera: ", distToCam);
         node.ShouldSplit = distThreshold > distToCam;
         return node.ShouldSplit;
@@ -325,7 +328,7 @@ public partial class TerrainQuadTree : Node
         }
 
         double mergeThreshold = m_altitudeThresholds[node.Depth];
-        float distToCam = node.Chunk.Position.DistanceTo(m_camera.Position) - 3000;
+        float distToCam = node.Chunk.Position.DistanceTo(m_camera.Position);
         bool shouldMerge = distToCam > mergeThreshold;
         node.ShouldMerge = shouldMerge;
         return shouldMerge;
@@ -335,6 +338,8 @@ public partial class TerrainQuadTree : Node
     private void Split(TerrainQuadTreeNode node)
     {
         node.Chunk.Visible = false;
+        node.ShouldSplit = false;
+        node.IsLoadedInScene = false;
         GenerateChildren(node);
 
         for (int i = 0; i < 4; i++)

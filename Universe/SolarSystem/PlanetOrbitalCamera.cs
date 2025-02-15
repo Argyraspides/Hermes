@@ -86,7 +86,7 @@ public partial class PlanetOrbitalCamera : Camera3D
 
     #region Mouse Input State
 
-    private bool m_isDragging = false;
+    public bool IsDragging { get; set; } = false;
 
     #endregion
 
@@ -159,14 +159,14 @@ public partial class PlanetOrbitalCamera : Camera3D
         {
             if (mouseButton.ButtonIndex == MouseButton.Left)
             {
-                m_isDragging = mouseButton.Pressed;
+                IsDragging = mouseButton.Pressed;
             }
 
             HandleZoomInput(mouseButton);
         }
         else if (@event is InputEventMouseMotion mouseMotion)
         {
-            if (m_isDragging)
+            if (IsDragging)
             {
                 HandlePanInput(mouseMotion);
             }
@@ -181,8 +181,8 @@ public partial class PlanetOrbitalCamera : Camera3D
         float circleViewRadius = distanceFromEarthSurface * Mathf.Tan(fovRad / 2.0f);
         (double lat, double lon) =
             MapUtils.DistanceToLatLonRange(circleViewRadius, SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM);
-        ApproxVisibleLatRadius = (float)lat;
-        ApproxVisibleLonRadius = (float)lon;
+        ApproxVisibleLatRadius = Mathf.Clamp((float)lat, (float)MapUtils.MIN_LATITUDE, (float)MapUtils.MAX_LATITUDE);
+        ApproxVisibleLonRadius = Mathf.Clamp((float)lon, (float)MapUtils.MIN_LONGITUDE, (float)MapUtils.MAX_LONGITUDE);
     }
 
     #endregion
@@ -191,8 +191,17 @@ public partial class PlanetOrbitalCamera : Camera3D
 
     private void HandlePanInput(InputEventMouseMotion mouseMotion)
     {
-        float deltaX = -mouseMotion.Relative.X * m_panSpeedMultiplier;
-        float deltaY = -mouseMotion.Relative.Y * m_panSpeedMultiplier;
+        // Calculate dynamic pan speed based on current distance from Earth's surface
+        float distanceFromSurface = m_currentDistance - SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
+        float dynamicPanMultiplier = m_panSpeedMultiplier *
+                                     (distanceFromSurface / SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM) *
+                                     m_zoomSensitivityFactor;
+
+        // Ensure minimum pan speed for very close distances
+        dynamicPanMultiplier = Mathf.Max(dynamicPanMultiplier, m_panSpeedMultiplier * 0.01f);
+
+        float deltaX = -mouseMotion.Relative.X * dynamicPanMultiplier;
+        float deltaY = -mouseMotion.Relative.Y * dynamicPanMultiplier;
 
         m_targetTheta -= deltaX;
         m_targetPhi += deltaY;
