@@ -46,7 +46,7 @@ public partial class TerrainQuadTree : Node
     private volatile int m_currentNodeCount = 0;
     private volatile bool m_isRunning;
 
-    public TerrainQuadTree(PlanetOrbitalCamera camera, int maxNodes = 10000, int minDepth = 6, int maxDepth = 20)
+    public TerrainQuadTree(PlanetOrbitalCamera camera, int maxNodes = 15000, int minDepth = 6, int maxDepth = 20)
     {
         if (maxDepth > 23 || maxDepth < 1)
         {
@@ -141,13 +141,15 @@ public partial class TerrainQuadTree : Node
 
     private void UpdateQuadTree(TerrainQuadTreeNode node)
     {
-        if (node == null) return;
+        if (node == null || !IsInstanceValid(node) || node.IsQueuedForDeletion())
+        {
+            return;
+        }
 
         CallDeferred("ShouldSplit", node);
 
-        if (node.IsLoadedInScene && !node.ShouldSplit)
+        if (!HasVisibleAncestors(node))
         {
-            // Check if we need to cull nodes due to memory constraints
             if (m_currentNodeCount > m_maxNodes * m_maxNodesCleanupThreshold)
             {
                 CullUnusedNodes(node);
@@ -192,15 +194,15 @@ public partial class TerrainQuadTree : Node
     /// (it is loaded in the scene), then this means the parent node satisfies the LoD requirements and thus none of its
     /// ancestors must be visible.
     /// </summary>
-    /// <param name="node">The node where we attempt to cull all its ancestors. This node must currently be in use</param>
-    private void CullUnusedNodes(TerrainQuadTreeNode node)
+    /// <param name="parentNode">The node where we attempt to cull all its ancestors. This node must currently be in use</param>
+    private void CullUnusedNodes(TerrainQuadTreeNode parentNode)
     {
-        if (node == null) return;
+        if (parentNode == null) return;
 
         // If this node has no visible ancestors,
-        if (!HasVisibleAncestors(node))
+        if (!HasVisibleAncestors(parentNode))
         {
-            RemoveSubQuadTree(node);
+            RemoveSubQuadTreeThreadSafe(parentNode);
         }
     }
 
@@ -225,7 +227,7 @@ public partial class TerrainQuadTree : Node
             // Clean up existing tree if any
             if (m_rootNode != null)
             {
-                RemoveSubQuadTree(m_rootNode);
+                RemoveSubQuadTreeThreadSafe(m_rootNode);
             }
 
             m_rootNode = new TerrainQuadTreeNode(new TerrainChunk(new MapTile(
@@ -259,6 +261,9 @@ public partial class TerrainQuadTree : Node
                 InitializeTerrainQuadTreeNodeMesh(node);
             }
         }
+
+        m_currentNodeCount = GetTree().GetNodeCount();
+        GD.Print($"Initial node count: {m_currentNodeCount}");
     }
 
     private bool ShouldSplit(TerrainQuadTreeNode node)
@@ -364,28 +369,32 @@ public partial class TerrainQuadTree : Node
             throw new ArgumentNullException("Cannot initialize quad tree node mesh that is null");
         }
 
-        var tile = node.Chunk.MapTile;
-
-        if (tile == null)
+        if (node.Chunk == null)
         {
-            throw new ArgumentException("Cannot initialize quad tree node mesh containing a null map tile");
+            throw new ArgumentNullException("Cannot initialize quad tree node mesh containing a null chunk");
+        }
+
+        if (node.Chunk.MapTile == null)
+        {
+            throw new ArgumentNullException("Cannot initialize quad tree node mesh containing a null map tile");
         }
 
         // TODO(Argyraspides, 11/02/2025): Again, please, PLEASE make this WGS84 thing abstracted away too. TerrainQuadTree
         // shouldn't need to worry about this. Just generate the mesh and be done with it. Interfaces, interfaces,
         // interfaces!
         ArrayMesh meshSegment = WGS84EllipsoidMeshGenerator.CreateEllipsoidMeshSegment(
-            (float)tile.Latitude,
-            (float)tile.Longitude,
-            (float)tile.LatitudeRange,
-            (float)tile.LongitudeRange
+            (float)node.Chunk.MapTile.Latitude,
+            (float)node.Chunk.MapTile.Longitude,
+            (float)node.Chunk.MapTile.LatitudeRange,
+            (float)node.Chunk.MapTile.LongitudeRange
         );
-        AddChild(node.Chunk);
         node.Chunk.MeshInstance = new MeshInstance3D { Mesh = meshSegment };
         node.Chunk.Load();
+        AddChild(node);
         node.Chunk.SetPositionAndSize();
         node.IsLoadedInScene = true;
-        node.Chunk.Name = $"TerrainChunk_z{tile.ZoomLevel}_x{tile.LongitudeTileCoo}_y{tile.LatitudeTileCoo}";
+        node.Chunk.Name =
+            $"TerrainChunk_z{node.Chunk.MapTile.ZoomLevel}_x{node.Chunk.MapTile.LongitudeTileCoo}_y{node.Chunk.MapTile.LatitudeTileCoo}";
     }
 
     void GenerateChildren(TerrainQuadTreeNode parentNode)
@@ -433,37 +442,28 @@ public partial class TerrainQuadTree : Node
                 (float)childCenterLon,
                 childZoomLevel
             )), childZoomLevel);
-
-            m_currentNodeCount++;
         }
     }
 
-    private void RemoveQuadTreeNode(TerrainQuadTreeNode node)
+    private void RemoveQuadTreeNodeThreadSafe(TerrainQuadTreeNode node)
     {
         if (node == null) return;
-
-        // Remove from scene tree
-        if (node.Chunk != null)
+        lock (m_lock)
         {
-            RemoveChild(node.Chunk);
-            node.Chunk.QueueFree();
+            if (IsInstanceValid(node))
+            {
+                node.CallDeferred("queue_free");
+            }
         }
-
-        // Clear references
-        node.Chunk = null;
-        node.IsLoadedInScene = false;
-        node.ShouldSplit = false;
-        node.ShouldMerge = false;
-        m_currentNodeCount--;
     }
 
-    private void RemoveSubQuadTree(TerrainQuadTreeNode parent)
+    private void RemoveSubQuadTreeThreadSafe(TerrainQuadTreeNode parent)
     {
         if (parent == null) return;
         for (int i = 0; i < 4; i++)
         {
-            RemoveSubQuadTree(parent.ChildNodes[i]);
-            parent.ChildNodes[i] = null;
+            RemoveSubQuadTreeThreadSafe(parent.ChildNodes[i]);
+            RemoveQuadTreeNodeThreadSafe(parent.ChildNodes[i]);
         }
     }
 
@@ -496,6 +496,20 @@ public partial class TerrainQuadTree : Node
             ShouldSplit = false;
             ShouldMerge = false;
             Depth = depth;
+            AddChild(Chunk);
+        }
+    }
+
+    public override void _Notification(int what)
+    {
+        if (what == NotificationChildOrderChanged)
+        {
+            int currentCount = GetTree().GetNodeCount();
+            if (currentCount != m_currentNodeCount)
+            {
+                m_currentNodeCount = currentCount;
+                GD.Print($"Node count changed: {m_currentNodeCount}");
+            }
         }
     }
 }
