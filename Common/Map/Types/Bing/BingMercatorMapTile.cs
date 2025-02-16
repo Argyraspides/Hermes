@@ -20,7 +20,7 @@
 
 public class BingMercatorMapTile : MapTile
 {
-    public string m_quadKey { get; private set; }
+    public string QuadKey { get; private set; }
 
     /// <summary>
     /// This constructor can be used if one wants to provide the minimum amount of information necessary to uniquely identify a tile
@@ -42,7 +42,7 @@ public class BingMercatorMapTile : MapTile
         Language = language;
         MapImageType = (imageType == ImageType.UNKNOWN) ? MapUtils.GetImageFormat(imageData) : imageType;
 
-        m_quadKey = quadKey;
+        QuadKey = quadKey;
 
         // Extract zoom level from quadkey length
         ZoomLevel = quadKey.Length;
@@ -72,11 +72,13 @@ public class BingMercatorMapTile : MapTile
         // already finished. Do not assume a programmer will remember to GenerateHash() after deriving a class from Resource. This should
         // be completely automatic.
         GenerateHash();
+        ResourcePath = Hash;
     }
 
     public BingMercatorMapTile()
     {
         GenerateHash();
+        ResourcePath = Hash;
     }
 
     public override string GenerateHashCore()

@@ -31,8 +31,7 @@ public interface ICacheCapability<Resource>
     /// to uniquely identify the entire resource</param>
     /// <returns></returns>
     Resource RetrieveResourceFromCache(Resource partialResource);
+
     bool ResourceExists(string resourceHash);
     bool ResourceExists(Resource partialResource);
-    string GenerateResourcePath(Resource resource);
-
 }

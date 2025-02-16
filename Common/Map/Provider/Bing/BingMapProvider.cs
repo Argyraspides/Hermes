@@ -18,7 +18,6 @@
 */
 
 
-
 using System;
 using System.Threading.Tasks;
 
@@ -38,7 +37,6 @@ public class BingMapProvider : IMapProvider<BingMapTileQueryParameters>
 
     public async Task<MapTile> RequestMapTileAsync(BingMapTileQueryParameters queryParameters)
     {
-
         // Check if resource already exists and return the cached map tile if it does
         // This partialTile contains enough information to uniquely identify a map tile in the cache
         BingMercatorMapTile partialTile = new BingMercatorMapTile(
@@ -69,6 +67,8 @@ public class BingMapProvider : IMapProvider<BingMapTileQueryParameters>
             queryParameters.MapImageType,
             rawMapData
         );
+
+        m_bingMapTileCacher.CacheResource(bingMercatorMapTile);
 
         return bingMercatorMapTile;
     }

@@ -46,7 +46,7 @@ public partial class TerrainQuadTree : Node
     private volatile int m_currentNodeCount = 0;
     private volatile bool m_isRunning;
 
-    public TerrainQuadTree(PlanetOrbitalCamera camera, int maxNodes = 10000, int minDepth = 6, int maxDepth = 21)
+    public TerrainQuadTree(PlanetOrbitalCamera camera, int maxNodes = 10000, int minDepth = 6, int maxDepth = 20)
     {
         if (maxDepth > 23 || maxDepth < 1)
         {
@@ -75,23 +75,35 @@ public partial class TerrainQuadTree : Node
 
     private void InitializeAltitudeThresholds()
     {
-        double latitude = 0.0;
-        double latitudeRadians = latitude * Math.PI / 180;
+        double[] baseThresholds = new double[]
+        {
+            156000.0f, // Level 0  - Full Earth view
+            78000.0f, // Level 1  - Continent level
+            39000.0f, // Level 2  - Large country
+            19500.0f, // Level 3  - Small country
+            9750.0f, // Level 4  - Large state/province
+            4875.0f, // Level 5  - Small state/province
+            2437.5f, // Level 6  - Large metropolitan area
+            1218.75f, // Level 7  - City level
+            609.375f, // Level 8  - District level
+            304.6875f, // Level 9  - Neighborhood
+            152.34f, // Level 10 - Street level
+            76.17f, // Level 11 - Building level
+            38.08f, // Level 12 - Building detail
+            19.04f, // Level 13 - Close building view
+            9.52f, // Level 14 - Very close building
+            4.76f, // Level 15 - Ground level
+            2.38f, // Level 16 - Detailed ground
+            1.2f, // Level 17 - High detail
+            0.6f, // Level 18 - Very high detail
+            0.35f // Level 19 - Maximum detail
+        };
         m_splitThresholds = new double[m_maxDepth + 1];
         m_mergeThresholds = new double[m_maxDepth + 1];
-        double baseRadius = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * Math.Cos(latitudeRadians);
-        double scalingFactor = 20.0;
-
-        for (int zoom = 0; zoom <= m_maxDepth; zoom++)
+        for (int zoom = 0; zoom < m_maxDepth; zoom++)
         {
-            double zoomScale = zoom >= 15 ? Math.Pow(0.85, zoom - 15) : 1.0;
-            double threshold = baseRadius / Math.Pow(2, zoom);
-            double baseThreshold = threshold * scalingFactor * zoomScale;
-
-            m_splitThresholds[zoom] = baseThreshold;
-            // TODO(Argyraspides, 15/02/2025) If not multiplied high enough, then we will oscillate between splitting/zooming all the time
-            // If not multiplied small enough, then never merges. Ffs. find a balance quick.
-            m_mergeThresholds[zoom] = baseThreshold * 3.5F;
+            m_splitThresholds[zoom] = baseThresholds[zoom];
+            m_mergeThresholds[zoom] = baseThresholds[zoom] * 7F;
         }
     }
 
@@ -140,14 +152,11 @@ public partial class TerrainQuadTree : Node
             {
                 CullUnusedNodes(node);
             }
-
-            return;
         }
 
         if (node.IsLoadedInScene && node.ShouldSplit)
         {
             CallDeferred("Split", node);
-            return;
         }
 
         if (!node.IsLoadedInScene)
@@ -165,7 +174,6 @@ public partial class TerrainQuadTree : Node
             if (anyChildShouldMerge)
             {
                 CallDeferred("Merge", node);
-                return;
             }
         }
 
@@ -271,14 +279,14 @@ public partial class TerrainQuadTree : Node
         return node.ShouldSplit;
     }
 
-
     private bool CameraInView(TerrainQuadTreeNode node)
     {
+        return true;
         double tileLatCoverage =
-            MapUtils.TileToLatRange(node.Chunk.MapTile.LatitudeTileCoo, node.Chunk.MapTile.ZoomLevel);
+            MapUtils.TileToLatRange(node.Chunk.MapTile.LatitudeTileCoo, node.Chunk.MapTile.ZoomLevel) * 5;
 
         double tileLonCoverage =
-            MapUtils.TileToLonRange(node.Chunk.MapTile.ZoomLevel);
+            MapUtils.TileToLonRange(node.Chunk.MapTile.ZoomLevel) * 5;
 
         double minLat = m_camera.CurrentLat - m_camera.ApproxVisibleLatRadius - tileLatCoverage;
         double maxLat = m_camera.CurrentLat + m_camera.ApproxVisibleLatRadius + tileLatCoverage;
@@ -318,7 +326,10 @@ public partial class TerrainQuadTree : Node
 
         for (int i = 0; i < 4; i++)
         {
-            InitializeTerrainQuadTreeNodeMesh(node.ChildNodes[i]);
+            if (node.ChildNodes[i] != null)
+            {
+                InitializeTerrainQuadTreeNodeMesh(node.ChildNodes[i]);
+            }
         }
 
         node.Chunk.Visible = false;
