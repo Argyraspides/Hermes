@@ -205,7 +205,7 @@ public partial class TerrainQuadTree : Node
         if (!node.IsLoadedInScene)
         {
             bool anyChildShouldMerge = false;
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < node.ChildNodes.Length; i++)
             {
                 if (node.ChildNodes[i] != null && node.ChildNodes[i].IsLoadedInScene)
                 {
@@ -224,7 +224,7 @@ public partial class TerrainQuadTree : Node
 
         if (!node.IsLoadedInScene)
         {
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < node.ChildNodes.Length; i++)
             {
                 UpdateQuadTree(node.ChildNodes[i]);
             }
@@ -291,7 +291,7 @@ public partial class TerrainQuadTree : Node
                 {
                     TerrainQuadTreeNode parentNode = q.Dequeue();
                     GenerateChildren(parentNode);
-                    for (int i = 0; i < 4; i++)
+                    for (int i = 0; i < parentNode.ChildNodes.Length; i++)
                     {
                         q.Enqueue(parentNode.ChildNodes[i]);
                     }
@@ -369,7 +369,7 @@ public partial class TerrainQuadTree : Node
     {
         GenerateChildren(node);
 
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < node.ChildNodes.Length; i++)
         {
             if (node.ChildNodes[i] != null)
             {
@@ -390,7 +390,7 @@ public partial class TerrainQuadTree : Node
         if (parent == null) return;
         parent.Chunk.Visible = true;
         parent.IsLoadedInScene = true;
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < parent.ChildNodes.Length; i++)
         {
             if (parent.ChildNodes[i] != null)
             {
@@ -499,7 +499,7 @@ public partial class TerrainQuadTree : Node
     private void RemoveSubQuadTreeThreadSafe(TerrainQuadTreeNode parent)
     {
         if (parent == null) return;
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < parent.ChildNodes.Length; i++)
         {
             RemoveSubQuadTreeThreadSafe(parent.ChildNodes[i]);
             RemoveQuadTreeNodeThreadSafe(parent.ChildNodes[i]);
