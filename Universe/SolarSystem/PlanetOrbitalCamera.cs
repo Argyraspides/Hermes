@@ -25,7 +25,7 @@ public partial class PlanetOrbitalCamera : Camera3D
     #region Camera Signals
 
     [Signal]
-    public delegate void OrbitalCameraPosChangedEventHandler(Vector3 position);
+    public delegate void OrbitalCameraPosChangedEventHandler(Vector3 position, float latitude, float longitude);
 
     #endregion
 
@@ -153,7 +153,7 @@ public partial class PlanetOrbitalCamera : Camera3D
 
         UpdateVisibleLatLonRange();
 
-        EmitSignal("OrbitalCameraPosChanged", Position);
+        EmitSignal("OrbitalCameraPosChanged", Position, CurrentLat, CurrentLon);
     }
 
     public override void _Input(InputEvent @event)

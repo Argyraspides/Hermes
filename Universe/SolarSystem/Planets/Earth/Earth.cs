@@ -54,7 +54,6 @@ public partial class Earth : Planet
     private void InitializeCamera()
     {
         m_planetOrbitalCamera = GetNode<PlanetOrbitalCamera>("EarthOrbitalCamera");
-        m_planetOrbitalCamera.OrbitalCameraPosChanged += OnOrbitalCameraPosChangedSignal;
         //
         // var nullIslandNode = m_terrainQuadTree.GetCenter(m_defaultZoomLevel - 1);
         //
@@ -75,10 +74,5 @@ public partial class Earth : Planet
         // m_planetOrbitalCamera.InitializeCameraPosition(-m_nullIsland + new Vector3(-15000, 0, 0));
         Vector3 camPos = new Vector3(-SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * 10, 0, 0);
         m_planetOrbitalCamera.InitializeCameraPosition(camPos);
-    }
-
-    // TODO: Bruh idek anymore just do this tomorrow im too tired
-    public void OnOrbitalCameraPosChangedSignal(Vector3 position)
-    {
     }
 }

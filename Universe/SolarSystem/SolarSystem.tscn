@@ -1,9 +1,10 @@
-[gd_scene load_steps=8 format=3 uid="uid://bnaccj7r33kqb"]
+[gd_scene load_steps=9 format=3 uid="uid://bnaccj7r33kqb"]
 
 [ext_resource type="Script" path="res://Universe/SolarSystem/SolarSystem.cs" id="1_ks12t"]
 [ext_resource type="Texture2D" uid="uid://dw16otbm13s3h" path="res://Universe/SolarSystem/Assets/ESO_-_Milky_Way.jpg" id="1_nxqmc"]
 [ext_resource type="PackedScene" uid="uid://u6dcfgabkcf3" path="res://Universe/SolarSystem/Planets/Earth/earth.tscn" id="3_bobqk"]
 [ext_resource type="Script" path="res://Universe/SolarSystem/PlanetOrbitalCamera.cs" id="3_jsn1l"]
+[ext_resource type="Script" path="res://Universe/UI/MainUI.cs" id="5_wcjie"]
 
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_enyp5"]
 panorama = ExtResource("1_nxqmc")
@@ -41,3 +42,29 @@ script = ExtResource("3_jsn1l")
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="Earth/EarthOrbitalCamera"]
 transform = Transform3D(0.766044, 0.321394, -0.55667, 0, 0.866025, 0.5, 0.642788, -0.383022, 0.663414, 0, 0, -8000)
 light_energy = 0.6
+
+[node name="Control" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_vertical = 4
+script = ExtResource("5_wcjie")
+
+[node name="CameraInfoBar" type="HBoxContainer" parent="Control"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -51.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="CameraDistanceLabel" type="RichTextLabel" parent="Control/CameraInfoBar"]
+custom_minimum_size = Vector2(175, 50)
+layout_mode = 2
+size_flags_horizontal = 3
+bbcode_enabled = true
