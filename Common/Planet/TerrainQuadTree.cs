@@ -98,12 +98,12 @@ public partial class TerrainQuadTree : Node
             0.6f, // Level 18 - Very high detail
             0.35f // Level 19 - Maximum detail
         };
-        m_splitThresholds = new double[m_maxDepth + 1];
-        m_mergeThresholds = new double[m_maxDepth + 1];
+        m_splitThresholds = new double[m_maxDepth];
+        m_mergeThresholds = new double[m_maxDepth];
         for (int zoom = 0; zoom < m_maxDepth; zoom++)
         {
             m_splitThresholds[zoom] = baseThresholds[zoom];
-            m_mergeThresholds[zoom] = baseThresholds[zoom] * 7F;
+            m_mergeThresholds[zoom] = baseThresholds[zoom] * 4F;
         }
     }
 
@@ -141,8 +141,14 @@ public partial class TerrainQuadTree : Node
 
     private void UpdateQuadTree(TerrainQuadTreeNode node)
     {
-        if (node == null || !IsInstanceValid(node) || node.IsQueuedForDeletion())
+        if (node == null || node.IsQueuedForDeletion())
         {
+            return;
+        }
+
+        if (!IsInstanceValid(node))
+        {
+            node = null;
             return;
         }
 
@@ -173,6 +179,8 @@ public partial class TerrainQuadTree : Node
                 }
             }
 
+            // TODO(Argyraspides, 16/02/2025) Race condition? We don't know when the ShouldMerge function is going to finish.
+            // so this might end up being false a lot of the time if the ShouldMerge function occurs after a while
             if (anyChildShouldMerge)
             {
                 CallDeferred("Merge", node);
@@ -261,9 +269,6 @@ public partial class TerrainQuadTree : Node
                 InitializeTerrainQuadTreeNodeMesh(node);
             }
         }
-
-        m_currentNodeCount = GetTree().GetNodeCount();
-        GD.Print($"Initial node count: {m_currentNodeCount}");
     }
 
     private bool ShouldSplit(TerrainQuadTreeNode node)
@@ -273,7 +278,7 @@ public partial class TerrainQuadTree : Node
             throw new ArgumentNullException("node cannot be null");
         }
 
-        if (node.Depth >= m_maxDepth || !CameraInView(node))
+        if (node.Depth >= m_maxDepth || !NodeInView(node))
         {
             node.ShouldSplit = false;
             return false;
@@ -284,26 +289,26 @@ public partial class TerrainQuadTree : Node
         return node.ShouldSplit;
     }
 
-    private bool CameraInView(TerrainQuadTreeNode node)
+    private bool NodeInView(TerrainQuadTreeNode node)
     {
         return true;
-        double tileLatCoverage =
-            MapUtils.TileToLatRange(node.Chunk.MapTile.LatitudeTileCoo, node.Chunk.MapTile.ZoomLevel) * 5;
-
-        double tileLonCoverage =
-            MapUtils.TileToLonRange(node.Chunk.MapTile.ZoomLevel) * 5;
-
-        double minLat = m_camera.CurrentLat - m_camera.ApproxVisibleLatRadius - tileLatCoverage;
-        double maxLat = m_camera.CurrentLat + m_camera.ApproxVisibleLatRadius + tileLatCoverage;
-
-        double minLon = m_camera.CurrentLon - m_camera.ApproxVisibleLonRadius - tileLonCoverage;
-        double maxLon = m_camera.CurrentLon + m_camera.ApproxVisibleLonRadius + tileLonCoverage;
-
-        return
-            node.Chunk.MapTile.Latitude > minLat &&
-            node.Chunk.MapTile.Latitude < maxLat &&
-            node.Chunk.MapTile.Longitude > minLon &&
-            node.Chunk.MapTile.Longitude < maxLon;
+        // double tileLatCoverage =
+        //     MapUtils.TileToLatRange(node.Chunk.MapTile.LatitudeTileCoo, node.Chunk.MapTile.ZoomLevel) * 5;
+        //
+        // double tileLonCoverage =
+        //     MapUtils.TileToLonRange(node.Chunk.MapTile.ZoomLevel) * 5;
+        //
+        // double minLat = m_camera.CurrentLat - m_camera.ApproxVisibleLatRadius - tileLatCoverage;
+        // double maxLat = m_camera.CurrentLat + m_camera.ApproxVisibleLatRadius + tileLatCoverage;
+        //
+        // double minLon = m_camera.CurrentLon - m_camera.ApproxVisibleLonRadius - tileLonCoverage;
+        // double maxLon = m_camera.CurrentLon + m_camera.ApproxVisibleLonRadius + tileLonCoverage;
+        //
+        // return
+        //     node.Chunk.MapTile.Latitude > minLat &&
+        //     node.Chunk.MapTile.Latitude < maxLat &&
+        //     node.Chunk.MapTile.Longitude > minLon &&
+        //     node.Chunk.MapTile.Longitude < maxLon;
     }
 
     private bool ShouldMerge(TerrainQuadTreeNode node)
@@ -313,7 +318,7 @@ public partial class TerrainQuadTree : Node
             throw new ArgumentNullException("node cannot be null");
         }
 
-        if (node.Depth <= m_minDepth + 1 || !CameraInView(node))
+        if (node.Depth <= m_minDepth + 1 || !NodeInView(node))
         {
             node.ShouldMerge = false;
             return false;
@@ -389,9 +394,9 @@ public partial class TerrainQuadTree : Node
             (float)node.Chunk.MapTile.LongitudeRange
         );
         node.Chunk.MeshInstance = new MeshInstance3D { Mesh = meshSegment };
-        node.Chunk.Load();
+        node.Chunk?.Load();
         AddChild(node);
-        node.Chunk.SetPositionAndSize();
+        node.Chunk?.SetPositionAndSize();
         node.IsLoadedInScene = true;
         node.Chunk.Name =
             $"TerrainChunk_z{node.Chunk.MapTile.ZoomLevel}_x{node.Chunk.MapTile.LongitudeTileCoo}_y{node.Chunk.MapTile.LatitudeTileCoo}";
@@ -448,12 +453,11 @@ public partial class TerrainQuadTree : Node
     private void RemoveQuadTreeNodeThreadSafe(TerrainQuadTreeNode node)
     {
         if (node == null) return;
-        lock (m_lock)
+        if (IsInstanceValid(node))
         {
-            if (IsInstanceValid(node))
-            {
-                node.CallDeferred("queue_free");
-            }
+            // We are telling Godot to queue the object for deletion from a different thread,
+            // so we must use CallDeferred
+            node.CallDeferred("queue_free");
         }
     }
 
@@ -466,6 +470,7 @@ public partial class TerrainQuadTree : Node
             RemoveQuadTreeNodeThreadSafe(parent.ChildNodes[i]);
         }
     }
+
 
     public override void _ExitTree()
     {
@@ -504,12 +509,7 @@ public partial class TerrainQuadTree : Node
     {
         if (what == NotificationChildOrderChanged)
         {
-            int currentCount = GetTree().GetNodeCount();
-            if (currentCount != m_currentNodeCount)
-            {
-                m_currentNodeCount = currentCount;
-                GD.Print($"Node count changed: {m_currentNodeCount}");
-            }
+            m_currentNodeCount = GetTree().GetNodeCount();
         }
     }
 }
