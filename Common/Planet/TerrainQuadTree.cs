@@ -23,6 +23,41 @@ using System.Collections.Generic;
 using System.Threading;
 using Godot;
 
+
+/**
+
+TODO(Argyraspides, 16/02/2025) There is a lot to do here ...
+
+Bug #1: It seems when you zoom in and things split properly, when you zoom out again, some parts merge while others do not.
+At some point, some quadtree levels (typically the deepest ones) just get "stuck" and will never merge. Whats interesting is
+the nodes around the stuck ones it sometimes merge, but there are many that are just stubborn and never merge back into the parent
+
+Bug #2: Even though the split/merge thresholds should theoretically work being the same (as we only ever split under
+a distance at zoom level Z, and only ever merge above that same distance -- the single source of truth of the distance
+coming from the camera), we need the merge threshold to be like 5x higher otherwise we start oscillating back and forth
+between splitting/merging at certain zoom levels. Just 10% more (or 1.1x higher) should be enough for all zoom levels
+but this doesn't seem to be the case
+
+Bug #3 (Unknown): I'm unsure whether the .NET garbage collector is actually doing anything, and running a memory profiler
+to check heap allocations on all three generational heaps (and total heap) doesn't show them changing. Calling "queue_free"
+only frees the C++ object in the Godot engine, but the actual TerrainQuadTreeNode reference remains in the C# world. I have
+tried explicitly setting any and all references to null for TerrainQuadTreeNode when I know for sure Godot has finally
+freed them (by using the IsInstanceValid() function), but I haven't actually observed the heap memory usage going down.
+Then again, I didn't really watch the profiler for more than a couple minutes.
+
+Bug #4: Happened only a couple times but sometimes I see a big black square as one of the map tiles. I think I caught one when
+the Godot debugger said something like "Object reference not set to instance of object" when referring to either a TerrainChunk
+or map tile, but I'm not sure
+
+Potential Bug #5: See race condition TODO in the UpdateQuadTree() function
+
+Bug #6: It seems we never cull nodes unless we start zooming out. This causes us to actually exceed our maximum node threshold
+sometimes. We should be culling regardless of what happens so long as we don't cull what the user is currently viewing.
+
+Bug #7: In the InitializeTerrainQuadTreeNodeMesh() function, sometimes the node chunk is null when we try and set the position and size,
+even though we literally did a null check before entering the function. Idk why.
+
+ */
 public partial class TerrainQuadTree : Node
 {
     private PlanetOrbitalCamera m_camera;
