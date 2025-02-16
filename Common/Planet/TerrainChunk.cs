@@ -27,6 +27,23 @@ using Godot;
 /// Handles loading and display of map tiles from a Web Mercator projection, reprojecting them
 /// onto an ellipsoidal surface. Each chunk knows its position (lat/lon in radians) and coverage area.
 /// </summary>
+/*
+
+ TODO(Argyraspides, 16/02/2025)
+
+ Seems like at very high zoom levels (>16 or so) the map tiles become quite distorted (to my surprise) with the
+ Web Mercator to spherical shader.
+
+ Map tiles at a high zoom level have an incredibly small latitude/longitude range, this may have something
+ to do with it. Check out the shader code to solve this issue.
+
+ I recall some random Reddit post saying something about this regarding how floating point values
+ simply aren't enough at these high zoom levels.
+
+ Might be worth to just fake it at high zoom levels so the Earth is basically flat, then smoothly
+ turn back into a sphere again as you zoom out. Not sure how this'd work.
+
+ */
 public partial class TerrainChunk : Node3D
 {
     private readonly string SHADER_PATH;
