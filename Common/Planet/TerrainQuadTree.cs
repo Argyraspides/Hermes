@@ -57,6 +57,9 @@ sometimes. We should be culling regardless of what happens so long as we don't c
 Bug #7: In the InitializeTerrainQuadTreeNodeMesh() function, sometimes the node chunk is null when we try and set the position and size,
 even though we literally did a null check before entering the function. Idk why.
 
+Bug #8: Tried zooming in way too far one time and it crashed. I don't know why. Error message involved trying to access an
+object that was already disposed of
+
  */
 public partial class TerrainQuadTree : Node
 {
