@@ -86,6 +86,9 @@ public partial class TerrainQuadTree : Node
 
     private volatile bool m_destructorActivated = false;
 
+    // Update the quadtree every X milliseconds
+    private int m_quadTreeUpdateInterval = 250;
+
     public TerrainQuadTree(PlanetOrbitalCamera camera, int maxNodes = 15000, int minDepth = 6, int maxDepth = 20)
     {
         if (maxDepth > 23 || maxDepth < 1)
@@ -170,7 +173,7 @@ public partial class TerrainQuadTree : Node
                     }
                 }
 
-                Thread.Sleep(250);
+                Thread.Sleep(m_quadTreeUpdateInterval);
             }
             catch (Exception ex)
             {
@@ -181,14 +184,14 @@ public partial class TerrainQuadTree : Node
 
     private void UpdateQuadTree(TerrainQuadTreeNode node)
     {
-        if (node == null || node.IsQueuedForDeletion())
-        {
-            return;
-        }
-
         if (!IsInstanceValid(node))
         {
             node = null;
+            return;
+        }
+
+        if (node == null || node.IsQueuedForDeletion())
+        {
             return;
         }
 
