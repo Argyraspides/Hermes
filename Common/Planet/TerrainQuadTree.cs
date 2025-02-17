@@ -84,6 +84,8 @@ public partial class TerrainQuadTree : Node
     private volatile int m_currentNodeCount = 0;
     private volatile bool m_isRunning;
 
+    private volatile bool m_destructorActivated = false;
+
     public TerrainQuadTree(PlanetOrbitalCamera camera, int maxNodes = 15000, int minDepth = 6, int maxDepth = 20)
     {
         if (maxDepth > 23 || maxDepth < 1)
@@ -136,8 +138,8 @@ public partial class TerrainQuadTree : Node
             0.6f, // Level 18 - Very high detail
             0.35f // Level 19 - Maximum detail
         };
-        m_splitThresholds = new double[m_maxDepth];
-        m_mergeThresholds = new double[m_maxDepth];
+        m_splitThresholds = new double[m_maxDepth + 1];
+        m_mergeThresholds = new double[m_maxDepth + 1];
         for (int zoom = 0; zoom < m_maxDepth; zoom++)
         {
             m_splitThresholds[zoom] = baseThresholds[zoom];
@@ -545,7 +547,12 @@ public partial class TerrainQuadTree : Node
 
     public override void _Notification(int what)
     {
-        if (what == NotificationChildOrderChanged)
+        if (what == NotificationPredelete)
+        {
+            m_destructorActivated = true;
+        }
+
+        if (!m_destructorActivated && what == NotificationChildOrderChanged)
         {
             m_currentNodeCount = GetTree().GetNodeCount();
         }
