@@ -196,6 +196,7 @@ public partial class TerrainQuadTree : Node
         }
 
         CallDeferred("ShouldSplit", node);
+        CallDeferred("ShouldChildrenMerge", node);
 
         if (!HasVisibleAncestors(node))
         {
@@ -210,24 +211,9 @@ public partial class TerrainQuadTree : Node
             CallDeferred("Split", node);
         }
 
-        if (!node.IsLoadedInScene)
+        if (!node.IsLoadedInScene && node.ShouldChildrenMerge)
         {
-            bool anyChildShouldMerge = false;
-            for (int i = 0; i < node.ChildNodes.Length; i++)
-            {
-                if (node.ChildNodes[i] != null && node.ChildNodes[i].IsLoadedInScene)
-                {
-                    CallDeferred("ShouldMerge", node.ChildNodes[i]);
-                    anyChildShouldMerge |= node.ChildNodes[i].ShouldMerge;
-                }
-            }
-
-            // TODO(Argyraspides, 16/02/2025) Race condition? We don't know when the ShouldMerge function is going to finish.
-            // so this might end up being false a lot of the time if the ShouldMerge function occurs after a while
-            if (anyChildShouldMerge)
-            {
-                CallDeferred("Merge", node);
-            }
+            CallDeferred("MergeChildren", node);
         }
 
         if (!node.IsLoadedInScene)
@@ -316,7 +302,7 @@ public partial class TerrainQuadTree : Node
 
     private bool ShouldSplit(TerrainQuadTreeNode node)
     {
-        if (node == null)
+        if (!IsInstanceValid(node))
         {
             throw new ArgumentNullException("node cannot be null");
         }
@@ -356,20 +342,34 @@ public partial class TerrainQuadTree : Node
 
     private bool ShouldMerge(TerrainQuadTreeNode node)
     {
+        if (!IsInstanceValid(node))
+        {
+            return false;
+        }
+
+        if (node.Depth <= m_minDepth + 1 || !NodeInView(node))
+        {
+            return false;
+        }
+
+        float distToCam = node.Chunk.Position.DistanceTo(m_camera.Position);
+        return m_mergeThresholds[node.Depth] < distToCam;
+    }
+
+    private void ShouldChildrenMerge(TerrainQuadTreeNode node)
+    {
         if (node == null)
         {
             throw new ArgumentNullException("node cannot be null");
         }
 
-        if (node.Depth <= m_minDepth + 1 || !NodeInView(node))
+        bool shouldAllChildrenMerge = false;
+        for (int i = 0; i < node.ChildNodes.Length; i++)
         {
-            node.ShouldMerge = false;
-            return false;
+            shouldAllChildrenMerge |= ShouldMerge(node.ChildNodes[i]);
         }
 
-        float distToCam = node.Chunk.Position.DistanceTo(m_camera.Position);
-        node.ShouldMerge = m_mergeThresholds[node.Depth] < distToCam;
-        return node.ShouldMerge;
+        node.ShouldChildrenMerge = shouldAllChildrenMerge;
     }
 
     // Splits the terrain quad tree node into four children, and makes its parent invisible
@@ -388,12 +388,12 @@ public partial class TerrainQuadTree : Node
         node.Chunk.Visible = false;
         node.IsLoadedInScene = false;
         node.ShouldSplit = false;
-        node.ShouldMerge = false;
+        node.ShouldChildrenMerge = false;
     }
 
     // The input parameter is the parent quadtree whose children we wish to merge into it. Works by removing the children
     // from the scene tree/making them invisible, and then toggling itself to be visible or whatever
-    private void Merge(TerrainQuadTreeNode parent)
+    private void MergeChildren(TerrainQuadTreeNode parent)
     {
         if (parent == null) return;
         parent.Chunk.Visible = true;
@@ -405,7 +405,7 @@ public partial class TerrainQuadTree : Node
                 parent.ChildNodes[i].Chunk.Visible = false;
                 parent.ChildNodes[i].IsLoadedInScene = false;
                 parent.ChildNodes[i].ShouldSplit = false;
-                parent.ChildNodes[i].ShouldMerge = false;
+                parent.ChildNodes[i].ShouldChildrenMerge = false;
             }
         }
     }
@@ -533,7 +533,7 @@ public partial class TerrainQuadTree : Node
         public TerrainQuadTreeNode[] ChildNodes { get; set; }
         public bool IsLoadedInScene { get; set; }
         public bool ShouldSplit { get; set; }
-        public bool ShouldMerge { get; set; }
+        public bool ShouldChildrenMerge { get; set; }
         public int Depth { get; }
 
         public TerrainQuadTreeNode(TerrainChunk chunk, int depth)
@@ -542,7 +542,7 @@ public partial class TerrainQuadTree : Node
             ChildNodes = new TerrainQuadTreeNode[4];
             IsLoadedInScene = false;
             ShouldSplit = false;
-            ShouldMerge = false;
+            ShouldChildrenMerge = false;
             Depth = depth;
             AddChild(Chunk);
         }
