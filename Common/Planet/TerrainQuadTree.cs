@@ -20,6 +20,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using Godot;
 
@@ -209,19 +210,26 @@ public partial class TerrainQuadTree : Node
         if (node.IsLoadedInScene && node.ShouldSplit)
         {
             CallDeferred("Split", node);
+            return;
         }
 
-        if (!node.IsLoadedInScene && node.ShouldChildrenMerge)
+        if (node.ShouldChildrenMerge)
         {
             CallDeferred("MergeChildren", node);
+            return;
         }
 
-        if (!node.IsLoadedInScene)
+        // if (!node.IsLoadedInScene)
+        // {
+        //     for (int i = 0; i < node.ChildNodes.Length; i++)
+        //     {
+        //         UpdateQuadTree(node.ChildNodes[i]);
+        //     }
+        // }
+
+        for (int i = 0; i < node.ChildNodes.Length; i++)
         {
-            for (int i = 0; i < node.ChildNodes.Length; i++)
-            {
-                UpdateQuadTree(node.ChildNodes[i]);
-            }
+            UpdateQuadTree(node.ChildNodes[i]);
         }
     }
 
@@ -395,19 +403,25 @@ public partial class TerrainQuadTree : Node
     // from the scene tree/making them invisible, and then toggling itself to be visible or whatever
     private void MergeChildren(TerrainQuadTreeNode parent)
     {
-        if (parent == null) return;
+        if (!IsInstanceValid(parent))
+        {
+            return;
+        }
+
         parent.Chunk.Visible = true;
         parent.IsLoadedInScene = true;
+
         for (int i = 0; i < parent.ChildNodes.Length; i++)
         {
-            if (parent.ChildNodes[i] != null)
+            if (IsInstanceValid(parent.ChildNodes[i]))
             {
                 parent.ChildNodes[i].Chunk.Visible = false;
                 parent.ChildNodes[i].IsLoadedInScene = false;
                 parent.ChildNodes[i].ShouldSplit = false;
-                parent.ChildNodes[i].ShouldChildrenMerge = false;
             }
         }
+
+        parent.ShouldChildrenMerge = false;
     }
 
     private void InitializeTerrainQuadTreeNodeMesh(TerrainQuadTreeNode node)
