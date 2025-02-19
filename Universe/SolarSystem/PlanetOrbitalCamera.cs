@@ -280,10 +280,11 @@ public partial class PlanetOrbitalCamera : Camera3D
 
     private double CalculateZoomIncrementForLevel(int zoomLevel, bool zoomIn, double currentDistanceAboveSurface)
     {
-        double currentThreshold =
-            (zoomLevel < m_baseAltitudeThresholds.Length) ? m_baseAltitudeThresholds[zoomLevel] : 0;
-        double nextThreshold = (zoomLevel + 1 < m_baseAltitudeThresholds.Length)
-            ? m_baseAltitudeThresholds[zoomLevel + 1]
+
+        int next = zoomIn ? 1 : -1;
+
+        double nextThreshold = (zoomLevel + next < m_baseAltitudeThresholds.Length && zoomLevel + next >= 0)
+            ? m_baseAltitudeThresholds[zoomLevel + next]
             : 0;
 
         double distanceToNextLevel;
@@ -300,8 +301,7 @@ public partial class PlanetOrbitalCamera : Camera3D
         else // Zoom out
         {
             distanceToNextLevel =
-                currentThreshold -
-                currentDistanceAboveSurface; // Distance to next *lower detail* level (higher altitude)
+                nextThreshold - currentDistanceAboveSurface; // Distance to next *lower detail* level (higher altitude)
             if (zoomLevel == 0) // Already at min zoom, limit zoom out.
             {
                 return m_baseZoomIncrement * m_zoomSensitivityFactor * 0.1f; // Very small increment at min zoom
