@@ -20,6 +20,7 @@
 
 using System.Linq;
 using Godot;
+using Hermes.Common.Planet.LoDSystem;
 
 public partial class Earth : Planet
 {

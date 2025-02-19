@@ -18,7 +18,6 @@
 */
 
 
-using System;
 using System.Threading.Tasks;
 
 public class BingMapProvider : IMapProvider<BingMapTileQueryParameters>

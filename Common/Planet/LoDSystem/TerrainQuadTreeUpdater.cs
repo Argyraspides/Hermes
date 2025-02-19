@@ -1,0 +1,233 @@
+using System;
+using System.Threading;
+using Godot;
+
+namespace Hermes.Common.Planet.LoDSystem;
+
+public partial class TerrainQuadTreeUpdater : Node
+{
+    #region Dependencies & State
+
+    private readonly TerrainQuadTree m_terrainQuadTree;
+    private readonly int m_quadTreeUpdateIntervalMs = 250;
+    private volatile bool m_isRunning = false;
+    private volatile bool m_canPerformSearch = true;
+
+    public Thread UpdateQuadTreeThread { get; private set; }
+    public Thread CullQuadTreeThread { get; private set; }
+
+    #endregion Dependencies & State
+
+    #region Signals
+
+    [Signal]
+    public delegate void QuadTreeUpdatesDeterminedEventHandler();
+
+    #endregion Signals
+
+    #region Constructor & Thread Management
+
+    public TerrainQuadTreeUpdater(TerrainQuadTree terrainQuadTree)
+    {
+        m_terrainQuadTree = terrainQuadTree ?? throw new ArgumentNullException(nameof(terrainQuadTree));
+        m_terrainQuadTree.QuadTreeUpdated += OnQuadTreeUpdated;
+        StartUpdateThread();
+    }
+
+    private void StartUpdateThread()
+    {
+        UpdateQuadTreeThread = new Thread(UpdateQuadTreeThreadFunction)
+        {
+            IsBackground = true, Name = "QuadTreeUpdateThread"
+        };
+
+        CullQuadTreeThread =
+            new Thread(StartCullingThreadFunction) { IsBackground = true, Name = "CullQuadTreeThread" };
+
+        UpdateQuadTreeThread.Start();
+        CullQuadTreeThread.Start();
+        m_isRunning = true;
+    }
+
+    private void StartCullingThreadFunction()
+    {
+        while (m_isRunning)
+        {
+            try
+            {
+                if (m_terrainQuadTree.RootNode != null && m_canPerformSearch)
+                {
+                    if (ExceedsMaxNodeThreshold())
+                    {
+                        CullUnusedNodes(m_terrainQuadTree.RootNode);
+                    }
+                }
+
+                Thread.Sleep(m_quadTreeUpdateIntervalMs);
+            }
+            catch (Exception ex)
+            {
+                GD.PrintErr($"Error in quadtree update thread: {ex}");
+            }
+        }
+    }
+
+    public void StopUpdateThread()
+    {
+        m_isRunning = false;
+        if (UpdateQuadTreeThread != null && UpdateQuadTreeThread.IsAlive)
+        {
+            UpdateQuadTreeThread.Join(1000);
+        }
+
+        if (CullQuadTreeThread != null && CullQuadTreeThread.IsAlive)
+        {
+            CullQuadTreeThread.Join(1000);
+        }
+    }
+
+    #endregion Constructor & Thread Management
+
+    #region Update Logic
+
+    private void UpdateQuadTreeThreadFunction()
+    {
+        while (m_isRunning)
+        {
+            try
+            {
+                if (m_terrainQuadTree.RootNode != null && m_canPerformSearch)
+                {
+                    UpdateTreeDFS(m_terrainQuadTree.RootNode);
+                }
+
+                if (m_canPerformSearch)
+                {
+                    EmitSignal(SignalName.QuadTreeUpdatesDetermined);
+                    m_canPerformSearch = false;
+                }
+
+                Thread.Sleep(m_quadTreeUpdateIntervalMs);
+            }
+            catch (Exception ex)
+            {
+                GD.PrintErr($"Error in quadtree update thread: {ex}");
+            }
+        }
+    }
+
+    private void UpdateTreeDFS(TerrainQuadTreeNode node)
+    {
+        if (!IsNodeValid(node)) { return; }
+
+        if (IsNodeQueuedForDeletion(node)) { return; }
+
+        if (node.IsLoadedInScene && ShouldSplit(node))
+        {
+            m_terrainQuadTree.SplitQueueNodes.Enqueue(node);
+            return;
+        }
+
+        if (ShouldMergeChildren(node))
+        {
+            m_terrainQuadTree.MergeQueueNodes.Enqueue(node);
+            return;
+        }
+
+        if (!node.IsLoadedInScene)
+        {
+            foreach (var childNode in node.ChildNodes)
+            {
+                UpdateTreeDFS(childNode);
+            }
+        }
+    }
+
+    private bool IsNodeValid(TerrainQuadTreeNode node) => IsInstanceValid(node);
+    private bool IsNodeQueuedForDeletion(TerrainQuadTreeNode node) => node.IsQueuedForDeletion();
+
+    private bool ExceedsMaxNodeThreshold() => m_terrainQuadTree.m_currentNodeCount >
+                                              m_terrainQuadTree.m_maxNodes *
+                                              m_terrainQuadTree.MaxNodesCleanupThresholdPercent;
+
+    private bool ShouldSplit(TerrainQuadTreeNode node)
+    {
+        if (!IsNodeValid(node)) throw new ArgumentNullException(nameof(node), "node cannot be null");
+        if (node.Depth >= m_terrainQuadTree.m_maxDepth) return false;
+
+        float distanceToCamera = node.Position.DistanceTo(m_terrainQuadTree.CameraPosition);
+        return m_terrainQuadTree.m_splitThresholds[node.Depth] > distanceToCamera;
+    }
+
+    private bool ShouldMerge(TerrainQuadTreeNode node)
+    {
+        if (!IsNodeValid(node)) return false;
+        if (node.Depth <= m_terrainQuadTree.m_minDepth + 1) return false;
+
+        float distanceToCamera = node.Position.DistanceTo(m_terrainQuadTree.CameraPosition);
+        return m_terrainQuadTree.m_mergeThresholds[node.Depth] < distanceToCamera;
+    }
+
+    private bool ShouldMergeChildren(TerrainQuadTreeNode node)
+    {
+        if (node == null) throw new ArgumentNullException(nameof(node), "node cannot be null");
+
+        bool shouldAllChildrenMerge = false;
+        foreach (var childNode in node.ChildNodes)
+        {
+            shouldAllChildrenMerge |= ShouldMerge(childNode);
+        }
+
+        return shouldAllChildrenMerge;
+    }
+
+    #endregion Update Logic
+
+    #region Node Management
+
+    private void RemoveQuadTreeNode(TerrainQuadTreeNode node)
+    {
+        if (node == null) return;
+        if (IsNodeValid(node))
+        {
+            node.CallDeferred("queue_free"); // Thread-safe deletion
+        }
+    }
+
+    private void RemoveSubQuadTreeThreadSafe(TerrainQuadTreeNode parent)
+    {
+        if (parent == null) return;
+
+        foreach (var childNode in parent.ChildNodes)
+        {
+            RemoveSubQuadTreeThreadSafe(childNode);
+            RemoveQuadTreeNode(childNode);
+        }
+    }
+
+    private void CullUnusedNodes(TerrainQuadTreeNode parentNode)
+    {
+        if (parentNode == null) return;
+
+        if (parentNode.IsLoadedInScene)
+        {
+            RemoveSubQuadTreeThreadSafe(parentNode);
+            return;
+        }
+
+        foreach (var terrainQuadTreeNode in parentNode.ChildNodes)
+        {
+            if (terrainQuadTreeNode != null)
+            {
+                CullUnusedNodes(terrainQuadTreeNode);
+            }
+        }
+    }
+
+    #endregion Node Management
+
+    private void OnQuadTreeUpdated()
+    {
+        m_canPerformSearch = true;
+    }
+}

@@ -21,74 +21,18 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Threading;
+using System.Threading.Tasks;
 using Godot;
 
-/**
-
-TODO(Argyraspides, 16/02/2025) There is a lot to do here ...
-
-
-Bug #3 (Unknown): I'm unsure whether the .NET garbage collector is actually doing anything, and running a memory profiler
-to check heap allocations on all three generational heaps (and total heap) doesn't show them changing. Calling "queuem_free"
-only frees the C++ object in the Godot engine, but the actual TerrainQuadTreeNode reference remains in the C# world. I have
-tried explicitly setting any and all references to null for TerrainQuadTreeNode when I know for sure Godot has finally
-freed them (by using the IsInstanceValid() function), but I haven't actually observed the heap memory usage going down.
-Then again, I didn't really watch the profiler for more than a couple minutes.
-
-Bug #4: Happened only a couple times but sometimes I see a big black square as one of the map tiles. I think I caught one when
-the Godot debugger said something like "Object reference not set to instance of object" when referring to either a TerrainChunk
-or map tile, but I'm not sure
-
-Potential Bug #5: See race condition TODO in the UpdateQuadTree() function
-
-Bug #6: It seems we never cull nodes unless we start zooming out. This causes us to actually exceed our maximum node threshold
-sometimes. We should be culling regardless of what happens so long as we don't cull what the user is currently viewing.
-
-Bug #7: In the InitializeTerrainQuadTreeNodeMesh() function, sometimes the node chunk is null when we try and set the position and size,
-even though we literally did a null check before entering the function. Idk why.
-
-Bug #8: Tried zooming in way too far one time and it crashed. I don't know why. Error message involved trying to access an
-object that was already disposed of
-*/
-
-#region TerrainQuadTreeNode
-
-public sealed partial class TerrainQuadTreeNode : Node
-{
-    public TerrainChunk Chunk { get; }
-    public TerrainQuadTreeNode[] ChildNodes { get; } = new TerrainQuadTreeNode[4];
-    public bool IsLoadedInScene { get; set; }
-    public int Depth { get; }
-
-    // We arent allowed to obtain the position property of nodes in the scene tree from other threads.
-    // Here we store a copy of the terrain quad tree node's position (derived from TerrainChunk).
-    public Vector3 Position { get; private set; }
-
-    public TerrainQuadTreeNode(TerrainChunk chunk, int depth)
-    {
-        Chunk = chunk ?? throw new ArgumentNullException(nameof(chunk));
-        Depth = depth;
-        AddChild(Chunk);
-    }
-
-    public void SetPosition(Vector3 position)
-    {
-        Position = position;
-    }
-}
-
-#endregion TerrainQuadTreeNode
-
-#region TerrainQuadTree
+namespace Hermes.Common.Planet.LoDSystem;
 
 public partial class TerrainQuadTree : Node
 {
     #region Constants & Configuration
 
-    public float MaxNodesCleanupThresholdPercent = 0.75F;
+    public float MaxNodesCleanupThresholdPercent = 0.90F;
     public const int MaxQueueUpdatesPerFrame = 25;
-    public const float MergeThresholdFactor = 2.15F;
+    public const float MergeThresholdFactor = 2.05F;
     public const int MaxDepthLimit = 23;
     public const int MinDepthLimit = 1;
 
@@ -120,6 +64,7 @@ public partial class TerrainQuadTree : Node
 
     public Vector3 CameraPosition { get; private set; }
     public ConcurrentQueue<TerrainQuadTreeNode> SplitQueueNodes { get; } = new ConcurrentQueue<TerrainQuadTreeNode>();
+    public ConcurrentQueue<ArrayMesh> SplitQueueMeshes { get; } = new ConcurrentQueue<ArrayMesh>();
     public ConcurrentQueue<TerrainQuadTreeNode> MergeQueueNodes { get; } = new ConcurrentQueue<TerrainQuadTreeNode>();
 
     #endregion Dependencies & State
@@ -133,7 +78,7 @@ public partial class TerrainQuadTree : Node
 
     #region Constructor & Initialization
 
-    public TerrainQuadTree(PlanetOrbitalCamera camera, int maxNodes = 15000, int minDepth = 6, int maxDepth = 20)
+    public TerrainQuadTree(PlanetOrbitalCamera camera, int maxNodes = 17500, int minDepth = 6, int maxDepth = 20)
     {
         ValidateConstructorArguments(maxDepth, minDepth, maxNodes);
 
@@ -326,18 +271,11 @@ public partial class TerrainQuadTree : Node
         }
     }
 
-    private void InitializeTerrainNodeMesh(TerrainQuadTreeNode node)
+    private async void InitializeTerrainNodeMesh(TerrainQuadTreeNode node)
     {
         ValidateTerrainNodeForMeshInitialization(node);
 
-        ArrayMesh meshSegment =
-            WGS84EllipsoidMeshGenerator
-                .CreateEllipsoidMeshSegment( // TODO(Argyraspides, 19/02/2025):Consider abstraction for mesh generation
-                    (float)node.Chunk.MapTile.Latitude,
-                    (float)node.Chunk.MapTile.Longitude,
-                    (float)node.Chunk.MapTile.LatitudeRange,
-                    (float)node.Chunk.MapTile.LongitudeRange
-                );
+        ArrayMesh meshSegment = await GenerateMeshForNode(node);
 
         node.Chunk.MeshInstance = new MeshInstance3D { Mesh = meshSegment };
         node.Chunk.Load();
@@ -346,6 +284,24 @@ public partial class TerrainQuadTree : Node
         node.SetPosition(node.Chunk.Position);
         node.IsLoadedInScene = true;
         node.Chunk.Name = GenerateChunkName(node);
+    }
+
+    private async Task<ArrayMesh> GenerateMeshForNode(TerrainQuadTreeNode node)
+    {
+        return await Task.Run(() =>
+        {
+            ArrayMesh meshSegment =
+                // TODO(Argyraspides, 19/02/2025): Please please please abstract this away. Do not hardcode the mesh type we are using.
+                // WGS84 only really applies to the Earth. This won't work for other planets.
+                WGS84EllipsoidMeshGenerator
+                    .CreateEllipsoidMeshSegment(
+                        (float)node.Chunk.MapTile.Latitude,
+                        (float)node.Chunk.MapTile.Longitude,
+                        (float)node.Chunk.MapTile.LatitudeRange,
+                        (float)node.Chunk.MapTile.LongitudeRange
+                    );
+            return meshSegment;
+        });
     }
 
     private string GenerateChunkName(TerrainQuadTreeNode node)
@@ -389,7 +345,7 @@ public partial class TerrainQuadTree : Node
 
     private TerrainQuadTreeNode CreateChildNode(int childLatTileCoo, int childLonTileCoo, int childZoomLevel)
     {
-        // TODO: Abstract away Mercator/WGS84 specifics from TerrainQuadTree
+        // TODO(Argyraspides, 19/02/2025): Abstract away Mercator/WGS84 specifics from TerrainQuadTree
         double childLat = MapUtils.MapTileToLatitude(childLatTileCoo, childZoomLevel);
         double childLon = MapUtils.MapTileToLongitude(childLonTileCoo, childZoomLevel);
         double childLatRange = MapUtils.TileToLatRange(childLatTileCoo, childZoomLevel);
@@ -411,203 +367,28 @@ public partial class TerrainQuadTree : Node
     #endregion QuadTree Initialization & Manipulation
 }
 
-#endregion TerrainQuadTree
+/**
 
-#region TerrainQuadTreeUpdater
+TODO(Argyraspides, 16/02/2025) There is a lot to do here ...
 
-public partial class TerrainQuadTreeUpdater : Node
-{
-    #region Dependencies & State
 
-    private readonly TerrainQuadTree m_terrainQuadTree;
-    private readonly int m_quadTreeUpdateIntervalMs = 250;
-    private volatile bool m_isRunning = false;
-    private volatile bool m_canPerformSearch = true;
+Bug #3 (Unknown): I'm unsure whether the .NET garbage collector is actually doing anything, and running a memory profiler
+to check heap allocations on all three generational heaps (and total heap) doesn't show them changing. Calling "queuem_free"
+only frees the C++ object in the Godot engine, but the actual TerrainQuadTreeNode reference remains in the C# world. I have
+tried explicitly setting any and all references to null for TerrainQuadTreeNode when I know for sure Godot has finally
+freed them (by using the IsInstanceValid() function), but I haven't actually observed the heap memory usage going down.
+Then again, I didn't really watch the profiler for more than a couple minutes.
 
-    public Thread UpdateQuadTreeThread { get; private set; }
+Bug #4: Happened only a couple times but sometimes I see a big black square as one of the map tiles. I think I caught one when
+the Godot debugger said something like "Object reference not set to instance of object" when referring to either a TerrainChunk
+or map tile, but I'm not sure
 
-    #endregion Dependencies & State
+Bug #6: It seems we never cull nodes unless we start zooming out. This causes us to actually exceed our maximum node threshold
+sometimes. We should be culling regardless of what happens so long as we don't cull what the user is currently viewing.
 
-    #region Signals
+Bug #7: In the InitializeTerrainQuadTreeNodeMesh() function, sometimes the node chunk is null when we try and set the position and size,
+even though we literally did a null check before entering the function. Idk why.
 
-    [Signal]
-    public delegate void QuadTreeUpdatesDeterminedEventHandler();
-
-    #endregion Signals
-
-    #region Constructor & Thread Management
-
-    public TerrainQuadTreeUpdater(TerrainQuadTree terrainQuadTree)
-    {
-        m_terrainQuadTree = terrainQuadTree ?? throw new ArgumentNullException(nameof(terrainQuadTree));
-        m_terrainQuadTree.QuadTreeUpdated += OnQuadTreeUpdated;
-        StartUpdateThread();
-    }
-
-    private void StartUpdateThread()
-    {
-        UpdateQuadTreeThread = new Thread(UpdateQuadTreeThreadFunction)
-        {
-            IsBackground = true, Name = "QuadTreeUpdateThread"
-        };
-        UpdateQuadTreeThread.Start();
-        m_isRunning = true;
-    }
-
-    public void StopUpdateThread()
-    {
-        m_isRunning = false;
-        if (UpdateQuadTreeThread != null && UpdateQuadTreeThread.IsAlive)
-        {
-            UpdateQuadTreeThread.Join(1000); // Give it a second to join
-        }
-    }
-
-    #endregion Constructor & Thread Management
-
-    #region Update Logic
-
-    private void UpdateQuadTreeThreadFunction()
-    {
-        while (m_isRunning)
-        {
-            try
-            {
-                if (m_terrainQuadTree.RootNode != null && m_canPerformSearch)
-                {
-                    UpdateNode(m_terrainQuadTree.RootNode);
-                }
-
-                if (m_canPerformSearch)
-                {
-                    EmitSignal(SignalName.QuadTreeUpdatesDetermined);
-                    m_canPerformSearch = false;
-                }
-
-                Thread.Sleep(m_quadTreeUpdateIntervalMs);
-            }
-            catch (Exception ex)
-            {
-                GD.PrintErr($"Error in quadtree update thread: {ex}");
-            }
-        }
-    }
-
-    private void UpdateNode(TerrainQuadTreeNode node)
-    {
-        if (!IsNodeValid(node)) return;
-        if (IsNodeQueuedForDeletion(node)) return;
-
-        if (node.IsLoadedInScene)
-        {
-            if (ExceedsMaxNodeThreshold())
-            {
-                CullUnusedNodes(node);
-            }
-        }
-
-        if (node.IsLoadedInScene && ShouldSplit(node))
-        {
-            m_terrainQuadTree.SplitQueueNodes.Enqueue(node);
-            return;
-        }
-
-        if (ShouldMergeChildren(node))
-        {
-            m_terrainQuadTree.MergeQueueNodes.Enqueue(node);
-            return;
-        }
-
-        if (!node.IsLoadedInScene)
-        {
-            foreach (var childNode in node.ChildNodes)
-            {
-                UpdateNode(childNode);
-            }
-        }
-    }
-
-    private bool IsNodeValid(TerrainQuadTreeNode node) => GodotObject.IsInstanceValid(node);
-    private bool IsNodeQueuedForDeletion(TerrainQuadTreeNode node) => node.IsQueuedForDeletion();
-
-    private bool ExceedsMaxNodeThreshold() => m_terrainQuadTree.m_currentNodeCount >
-                                              m_terrainQuadTree.m_maxNodes *
-                                              m_terrainQuadTree.MaxNodesCleanupThresholdPercent;
-
-    private bool ShouldSplit(TerrainQuadTreeNode node)
-    {
-        if (!IsNodeValid(node)) throw new ArgumentNullException(nameof(node), "node cannot be null");
-        if (node.Depth >= m_terrainQuadTree.m_maxDepth) return false;
-
-        float distanceToCamera = node.Position.DistanceTo(m_terrainQuadTree.CameraPosition); // Use Position property
-        return m_terrainQuadTree.m_splitThresholds[node.Depth] > distanceToCamera;
-    }
-
-    private bool ShouldMerge(TerrainQuadTreeNode node)
-    {
-        if (!IsNodeValid(node)) return false;
-        if (node.Depth <= m_terrainQuadTree.m_minDepth + 1) return false;
-
-        float distanceToCamera = node.Position.DistanceTo(m_terrainQuadTree.CameraPosition); // Use Position property
-        return m_terrainQuadTree.m_mergeThresholds[node.Depth] < distanceToCamera;
-    }
-
-    private bool ShouldMergeChildren(TerrainQuadTreeNode node)
-    {
-        if (node == null) throw new ArgumentNullException(nameof(node), "node cannot be null");
-
-        bool
-            shouldAllChildrenMerge =
-                false; // Corrected logic, was OR, should be AND for all children to merge. Actually OR makes more sense according to original code.
-        foreach (var childNode in node.ChildNodes)
-        {
-            shouldAllChildrenMerge |=
-                ShouldMerge(childNode); // Original code used OR. Preserving for now. Review merge logic if needed.
-        }
-
-        return shouldAllChildrenMerge;
-    }
-
-    #endregion Update Logic
-
-    #region Node Management
-
-    private void RemoveQuadTreeNode(TerrainQuadTreeNode node)
-    {
-        if (node == null) return;
-        if (IsNodeValid(node))
-        {
-            node.CallDeferred("queue_free"); // Thread-safe deletion
-        }
-    }
-
-    private void RemoveSubQuadTreeThreadSafe(TerrainQuadTreeNode parent)
-    {
-        if (parent == null) return;
-
-        foreach (var childNode in parent.ChildNodes)
-        {
-            RemoveSubQuadTreeThreadSafe(childNode);
-            RemoveQuadTreeNode(childNode);
-        }
-    }
-
-    private void CullUnusedNodes(TerrainQuadTreeNode parentNode)
-    {
-        if (parentNode == null) return;
-
-        if (parentNode.IsLoadedInScene) // If parent is loaded, cull its descendants. Logic review needed if this is correct.
-        {
-            RemoveSubQuadTreeThreadSafe(parentNode); // Original code culls descendants. Review logic.
-        }
-    }
-
-    #endregion Node Management
-
-    private void OnQuadTreeUpdated()
-    {
-        m_canPerformSearch = true;
-    }
-}
-
-#endregion TerrainQuadTreeUpdater
+Bug #8: Tried zooming in way too far one time and it crashed. I don't know why. Error message involved trying to access an
+object that was already disposed of
+*/

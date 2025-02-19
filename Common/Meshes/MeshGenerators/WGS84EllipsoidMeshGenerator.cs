@@ -57,7 +57,6 @@ public static class WGS84EllipsoidMeshGenerator
     // TODO: This function is very very long (not necessarily a bad thing). Can definitely be cleaned up other
     // wise if not in terms of length.
     // TODO(Argyraspides, 13/02/2025):
-    // You messed this up. Shouldn't be 1* or -1*, but rather the relative lengths of semi major and minor axis.
     public static ArrayMesh CreateEllipsoidMeshSegment(float lat, float lon, float latRange, float lonRange)
     {
         var surfaceArray = new Godot.Collections.Array();

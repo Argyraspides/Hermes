@@ -19,7 +19,7 @@
 
 
 using Godot;
-using System;
+using Hermes.Common.Planet.LoDSystem;
 
 public abstract partial class Planet : StaticBody3D
 {
