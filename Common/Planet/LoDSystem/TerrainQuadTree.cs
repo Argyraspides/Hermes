@@ -17,6 +17,7 @@
 
 */
 
+namespace Hermes.Common.Planet.LoDSystem;
 
 using System;
 using System.Collections.Concurrent;
@@ -24,16 +25,39 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Godot;
 
-namespace Hermes.Common.Planet.LoDSystem;
-
-public partial class TerrainQuadTree : Node
+/// <summary>
+/// The TerrainQuadTree class is a custom quadtree implementation meant for any generic LoD requirement, and
+/// is meant for use in 3D space.
+///
+/// It works by taking in a Camera3D instance, and based on the camera's FOV and distance from each
+/// TerrainChunk in the world, will determine whether or not chunks need to be split/merged. This is meant to be
+/// used within Planet objects, where the TerrainQuadTree will act as the central manager for the LoD system of
+/// the TerrainChunk's that represent the planet's surface.
+///
+/// TerrainQuadTree depends on the class TerrainQuadTreeUpdater, which performs a tree traversal on a separate thread
+/// in order to queue up TerrainQuadTreeNode's that should be split/merged. This TerrainQuadTreeUpdater also culls unused
+/// nodes on a different thread. Nodes that need to be split/merged are queued up in TerrainQuadTree and processed during
+/// the game loop over many frames to reduce in-game lag.
+/// </summary>
+public sealed partial class TerrainQuadTree : Node
 {
     #region Constants & Configuration
 
+    // If we hit x% of the maximum allowed amount of nodes, we will begin culling unused nodes in the quadtree
     public float MaxNodesCleanupThresholdPercent = 0.90F;
+
+    // Maximum amount of split and merge operations allowed per frame in the scene tree.
+    // This is to spread the workload of splitting/merging over multiple frames
     public const int MaxQueueUpdatesPerFrame = 2;
+
+    // To prevent hysterisis and oscillation between merging/splitting at fine boundaries, we multiply the merge
+    // thresholds to be greater than the split thresholds
     public const float MergeThresholdFactor = 1.5F;
+
+    // Hard limit of allowed depth of the quadtree
     public const int MaxDepthLimit = 23;
+
+    // Hard limit of minimum allowed depth of the quadtree
     public const int MinDepthLimit = 1;
 
     private readonly double[] m_baseAltitudeThresholds = new double[]
@@ -48,32 +72,56 @@ public partial class TerrainQuadTree : Node
 
     public readonly PlanetOrbitalCamera m_camera;
     public readonly TerrainQuadTreeUpdater m_quadTreeUpdater;
+
+    // Current minimum and maximum depths allowed
     public readonly int m_maxDepth;
     public readonly int m_minDepth;
 
+    // Maximum allowed nodes in the scene tree
     public long m_maxNodes;
+
+    // Thresholds below/above which we will split/merge nodes respectively. Each index represents a zoom level,
+    // the value at the index represents the threshold in kilometers
     public double[] m_splitThresholds;
     public double[] m_mergeThresholds;
 
+    // Current amount of nodes in the scene tree (in total -- not just the quadtree)
     public volatile int m_currentNodeCount = 0;
-    public volatile bool m_isRunning = false;
+
+    // True if the TerrainQuadTree is about to be destroyed. Used as we don't want to update our current node count
+    // when the game is closing and nodes in the scene tree may be invalid
     public volatile bool m_destructorActivated = false;
+
+    // We only process split/merge operations when the TerrainQuadTreeUpdater is finished determining
+    // which nodes should be split/merged at a particular point in time. This is set to true upon a signal
+    // emmitted by TerrainQuadTreeUpdater when it is done with a tree traversal iteration
     public bool m_canUpdateQuadTree = false;
+
     public int m_currentCameraZoomLevel;
 
+    // Mutex to access the root nodes
     public object rootNodeLock = new object();
 
+    // List of root nodes. We are allowed a minimum zoom level of above 1, thus all nodes at zoom level 'z',
+    // where 1 < z < m_maxDepth are unnecessary to keep in memory. This is a list of all the root nodes at the minimum
+    // depth where we can start a quadtree traversal
     public List<TerrainQuadTreeNode> RootNodes { get; private set; }
 
+    // Reading inherent properties of nodes is not thread-safe in Godot. Here we make a custom Vector3
+    // which is a copy of the camera's position updated from the TerrainQuadTree thread, so that it can
+    // be accessed by the TerrainQuadTreeUpdater thread safely
     public Vector3 CameraPosition { get; private set; }
+
+    // Queue of nodes that should be split/merged as determined by the TerrainQuadTreeUpdater
     public ConcurrentQueue<TerrainQuadTreeNode> SplitQueueNodes { get; } = new ConcurrentQueue<TerrainQuadTreeNode>();
-    public ConcurrentQueue<ArrayMesh> SplitQueueMeshes { get; } = new ConcurrentQueue<ArrayMesh>();
     public ConcurrentQueue<TerrainQuadTreeNode> MergeQueueNodes { get; } = new ConcurrentQueue<TerrainQuadTreeNode>();
 
     #endregion Dependencies & State
 
     #region Signals
 
+    // Signal emitted by TerrainQuadTree to the TerrainQuadTreeUpdater when we have finished splitting/merging
+    // all nodes in the queue, so that TerrainQuadTreeUpdater can safely run the next tree traversal
     [Signal]
     public delegate void QuadTreeUpdatedEventHandler();
 
@@ -89,7 +137,6 @@ public partial class TerrainQuadTree : Node
         m_maxNodes = maxNodes;
         m_minDepth = minDepth;
         m_maxDepth = maxDepth;
-        m_isRunning = true;
 
         InitializeAltitudeThresholds();
         m_quadTreeUpdater = new TerrainQuadTreeUpdater(this);
@@ -168,7 +215,6 @@ public partial class TerrainQuadTree : Node
 
     public override void _ExitTree()
     {
-        m_isRunning = false;
         m_quadTreeUpdater.StopUpdateThread();
         base._ExitTree();
     }
@@ -249,6 +295,13 @@ public partial class TerrainQuadTree : Node
         }
     }
 
+    /// <summary>
+    /// Splits the quad tree nodes by initializing its children. If its children already exists, simply
+    /// toggles their visibility on and itself off. This function is async as generating child nodes if they
+    /// do not exist require a backend API call to retrieve map tile information, or retrieving a map tile from cache
+    /// </summary>
+    /// <param name="node">Node to be split</param>
+    /// <exception cref="ArgumentNullException">Thrown if the TerrainQuadTreeNode is not valid</exception>
     private async void SplitNode(TerrainQuadTreeNode node)
     {
         if (!GodotUtils.IsValid(node))
