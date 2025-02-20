@@ -249,7 +249,7 @@ public partial class TerrainQuadTree : Node
         }
     }
 
-    private void SplitNode(TerrainQuadTreeNode node)
+    private async void SplitNode(TerrainQuadTreeNode node)
     {
         if (!GodotUtils.IsValid(node))
         {
@@ -261,7 +261,7 @@ public partial class TerrainQuadTree : Node
             GenerateChildNodes(node);
             foreach (var childNode in node.ChildNodes)
             {
-                InitializeTerrainNodeMesh(childNode);
+                await InitializeTerrainNodeMesh(childNode);
             }
         }
 
@@ -292,7 +292,7 @@ public partial class TerrainQuadTree : Node
         }
     }
 
-    private async void InitializeTerrainNodeMesh(TerrainQuadTreeNode node)
+    private async Task InitializeTerrainNodeMesh(TerrainQuadTreeNode node)
     {
         if (!GodotUtils.IsValid(node) || !GodotUtils.IsValid(node.Chunk))
         {
