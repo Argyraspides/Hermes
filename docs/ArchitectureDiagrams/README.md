@@ -42,14 +42,3 @@ All vehicles, being physical entities of the universe, must have a position, att
 A vehicle can also have a variety of capabilities, which can be added/removed at runtime. Capabilities can be literally anything, from physical things such as whether or not a vehicle has landing gear (``LandingGearCapability``), to behaviors such as whether or not a vehicle is capable of taking off vertically (``VerticalTakeoffCapability``).
 
 Each capability also has its own state. Since capabilities are abstracted in the concrete Vehicle class, a CapabilityType enum can be used to identify them and perform operations, e.g., starting a camera recording.
-
-## Map Tile API Architecture
-Below is a diagram detailing how Hermes obtains geospatial data (specifically map tiles)
-
-![Hermes_Map_API_Architecture](https://github.com/user-attachments/assets/72b2bf1d-c1e2-43b4-8508-e1afc03a4e80)
-
-The MapAPI is basically an interface to using the map providers to get tiles. There are example comments in the MapAPI.cs file on how to use it. You can simply use the RequestMapTile() function in the MapAPI to request a map tile at a particular longitude, latitude, and zoom level. The request is sent to an abstract MapProvider class which can be of type BingMapProvider, GoogleMapProvider, etc., to handle fetching map tiles from a particular provider. The flow from there on in is very simple: A map tile is requested by first constructing the necessary query parameters from the latitude, longitude, and desired zoom level, inserting these query parameters to the complete URL template to construct the final query string, then this is given to actually fetch the raw map tile data.
-
-Concurrent HTTP requests are supported. The FetchRawMapTileData function will try to get one of the HTTP requester objects. If one is available, it will fire an HTTP request using it with the query string. If an HTTP requester is unavailable, it will just queue it up in what is currently a ConcurrentQueue<HttpRequest> object. This queue is constantly processed in the _Process(). Similarly if an HTTP request fails, we queue up a call to FetchRawMapTileData again to try once more.
-
-If an HTTP request is successful, a signal will be emitted carrying the raw image data payload. This signal is already connected to MapAPI.cs, and will automatically convert this to a Texture2D and emit another signal of its own which can be connected to any custom handler function to then decide what to do with the Texture2D. Since multiple HTTP request objects may signal at the same time, we avoid the lost sigmal problem by queuing up the signals and then processing them every engine loop in the _Process() function.

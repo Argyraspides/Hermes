@@ -1,19 +1,28 @@
-[gd_scene load_steps=8 format=3 uid="uid://bnaccj7r33kqb"]
+[gd_scene load_steps=9 format=3 uid="uid://bnaccj7r33kqb"]
 
 [ext_resource type="Script" path="res://Universe/SolarSystem/SolarSystem.cs" id="1_ks12t"]
 [ext_resource type="Texture2D" uid="uid://dw16otbm13s3h" path="res://Universe/SolarSystem/Assets/ESO_-_Milky_Way.jpg" id="1_nxqmc"]
 [ext_resource type="PackedScene" uid="uid://u6dcfgabkcf3" path="res://Universe/SolarSystem/Planets/Earth/earth.tscn" id="3_bobqk"]
 [ext_resource type="Script" path="res://Universe/SolarSystem/PlanetOrbitalCamera.cs" id="3_jsn1l"]
+[ext_resource type="Script" path="res://Universe/UI/MainUI.cs" id="5_wcjie"]
 
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_enyp5"]
 panorama = ExtResource("1_nxqmc")
+energy_multiplier = 0.5
 
 [sub_resource type="Sky" id="Sky_t515d"]
 sky_material = SubResource("PanoramaSkyMaterial_enyp5")
 
 [sub_resource type="Environment" id="Environment_sabak"]
 background_mode = 2
+background_energy_multiplier = 0.25
 sky = SubResource("Sky_t515d")
+sky_rotation = Vector3(0, 0, 0.767945)
+fog_mode = 1
+fog_density = 1.0
+fog_sky_affect = 0.015
+adjustment_enabled = true
+adjustment_saturation = 2.0
 
 [node name="SolarSystem" type="Node3D"]
 script = ExtResource("1_ks12t")
@@ -30,8 +39,32 @@ fov = 60.0
 far = 100000.0
 script = ExtResource("3_jsn1l")
 
-[node name="OmniLight3D" type="OmniLight3D" parent="Earth/EarthOrbitalCamera"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17000, 12000, 10000)
-light_energy = 8.733
-omni_range = 100000.0
-omni_attenuation = 0.2
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="Earth/EarthOrbitalCamera"]
+transform = Transform3D(0.766044, 0.321394, -0.55667, 0, 0.866025, 0.5, 0.642788, -0.383022, 0.663414, 0, 0, -8000)
+light_energy = 0.6
+
+[node name="Control" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_vertical = 4
+script = ExtResource("5_wcjie")
+
+[node name="CameraInfoBar" type="HBoxContainer" parent="Control"]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -51.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="CameraDistanceLabel" type="RichTextLabel" parent="Control/CameraInfoBar"]
+custom_minimum_size = Vector2(175, 50)
+layout_mode = 2
+size_flags_horizontal = 3
+bbcode_enabled = true

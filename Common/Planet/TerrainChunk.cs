@@ -27,10 +27,26 @@ using Godot;
 /// Handles loading and display of map tiles from a Web Mercator projection, reprojecting them
 /// onto an ellipsoidal surface. Each chunk knows its position (lat/lon in radians) and coverage area.
 /// </summary>
-public partial class TerrainChunk : Node
+/*
+
+ TODO(Argyraspides, 16/02/2025)
+
+ Seems like at very high zoom levels (>16 or so) the map tiles become quite distorted (to my surprise) with the
+ Web Mercator to spherical shader.
+
+ Map tiles at a high zoom level have an incredibly small latitude/longitude range, this may have something
+ to do with it. Check out the shader code to solve this issue.
+
+ I recall some random Reddit post saying something about this regarding how floating point values
+ simply aren't enough at these high zoom levels.
+
+ Might be worth to just fake it at high zoom levels so the Earth is basically flat, then smoothly
+ turn back into a sphere again as you zoom out. Not sure how this'd work.
+
+ */
+public partial class TerrainChunk : Node3D
 {
     private readonly string SHADER_PATH;
-
     public MapTile MapTile { get; private set; }
 
     /// <summary>
@@ -71,11 +87,17 @@ public partial class TerrainChunk : Node
         ShaderMaterial shaderMaterial = null
     )
     {
+        if (mapTile == null)
+        {
+            throw new ArgumentNullException("Cannot create a TerrainChunk with a null map tile");
+        }
+
         MapTile = mapTile;
-        if(mapTile.m_mapTileType == MapTileType.WEB_MERCATOR)
+        if (mapTile.MapTileType == MapTileType.WEB_MERCATOR)
         {
             SHADER_PATH = "res://Common/Shaders/WebMercatorToWGS84Shader.gdshader";
         }
+
         // TODO(Argyraspides, 02/08/2025): Handle cases where the map tile is unknown
         MeshInstance3D = meshInstance3D;
         ShaderMaterial = shaderMaterial;
@@ -85,13 +107,25 @@ public partial class TerrainChunk : Node
     {
         try
         {
-            AddChild(MeshInstance3D);
-            await InitializeTerrainChunkAsync();
+            if (GodotUtils.IsValid(MeshInstance3D))
+            {
+                AddChild(MeshInstance3D);
+                await InitializeTerrainChunkAsync();
+            }
+            else
+            {
+                throw new Exception("MeshInstance3D is not a valid MeshInstance3D");
+            }
         }
         catch (Exception ex)
         {
             GD.PrintErr($"Failed to initialize terrain: {ex}");
         }
+    }
+
+    public void ToggleVisible(bool visible)
+    {
+        MeshInstance3D.Visible = visible;
     }
 
     /// <summary>
@@ -103,30 +137,54 @@ public partial class TerrainChunk : Node
     /// <param name="texture2D">The texture to apply to the terrain.</param>
     private void ApplyTexture(Texture2D texture2D)
     {
-        var shaderMat = new ShaderMaterial
-        {
-            Shader = ResourceLoader.Load<Shader>(SHADER_PATH)
-        };
+        var shaderMat = new ShaderMaterial { Shader = ResourceLoader.Load<Shader>(SHADER_PATH) };
         shaderMat.SetShaderParameter("map_tile", texture2D);
-        shaderMat.SetShaderParameter("zoom_level", MapTile.m_zoomLevel);
-        shaderMat.SetShaderParameter("tile_size", MapTile.m_size);
-        MeshInstance3D.MaterialOverride = shaderMat;
+        shaderMat.SetShaderParameter("zoom_level", MapTile.ZoomLevel);
+        shaderMat.SetShaderParameter("tile_size", MapTile.Size);
 
-        // TODO(Argyraspides, 2025-01-29): Handle east-west inversion in shader instead of mesh scale
-        MeshInstance3D.Scale = new Vector3(-1, 1, 1);
+        if (GodotUtils.IsValid(MeshInstance3D))
+        {
+            MeshInstance3D.MaterialOverride = shaderMat;
+        }
+        else
+        {
+            throw new ArgumentNullException("MeshInstance3D is not a valid MeshInstance3D");
+        }
     }
 
     private async Task InitializeTerrainChunkAsync()
     {
         var mapApi = new MapAPI();
         MapTile mapTile = await mapApi.RequestMapTileAsync(
-            (float)MapTile.m_latitude,
-            (float)MapTile.m_longitude,
-            MapTile.m_zoomLevel,
-            MapTile.m_mapType,
-            MapTile.m_mapImageType
+            (float)MapTile.Latitude,
+            (float)MapTile.Longitude,
+            MapTile.ZoomLevel,
+            MapTile.MapType,
+            MapTile.MapImageType
         );
 
-        ApplyTexture(mapTile.m_texture2D);
+        if (mapTile == null)
+        {
+            throw new Exception("Failed to initialize map tile");
+        }
+
+        ApplyTexture(mapTile.Texture2D);
+    }
+
+    public void SetPositionAndSize()
+    {
+        if (MapTile == null)
+        {
+            throw new ArgumentNullException("Cannot set position of a terrain chunk with a null map tile");
+        }
+
+        Vector3 cartesianPos = MapUtils.LatLonToCartesian(MapTile.Latitude, MapTile.Longitude);
+
+        float latScale = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
+        float lonScale = SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM;
+
+        GlobalPosition = cartesianPos;
+        // TODO(Argyraspides, 15/02/2025) East-west inversion probably should be handled in the shader projection code?
+        Transform = Transform.Scaled(new Vector3(-latScale, lonScale, latScale));
     }
 }

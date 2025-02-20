@@ -29,7 +29,6 @@
 /// </summary>
 public class BingMapTileURLBuilder : IUrlBuilder<BingMapTileQueryParameters>
 {
-
     public const string serverInstanceStr = "serverInstance";
     public const string mapTypeStr = "mapType";
     public const string quadKeyStr = "quadKey";
@@ -38,7 +37,7 @@ public class BingMapTileURLBuilder : IUrlBuilder<BingMapTileQueryParameters>
     public const string langStr = "lang";
 
     public readonly string URLTemplate =
-    $"https://ecn.t{serverInstanceStr}.tiles.virtualearth.net/tiles/{mapTypeStr}{quadKeyStr}.{mapImgTypeStr}?g={apiVersionStr}&mkt={langStr}";
+        $"https://ecn.t{{{serverInstanceStr}}}.tiles.virtualearth.net/tiles/{{{mapTypeStr}}}{{{quadKeyStr}}}.{{{mapImgTypeStr}}}?g={{{apiVersionStr}}}&mkt={{{langStr}}}";
 
     public string BuildUrl(BingMapTileQueryParameters parameters)
     {
@@ -49,7 +48,7 @@ public class BingMapTileURLBuilder : IUrlBuilder<BingMapTileQueryParameters>
         {
             finalURL = finalURL.Replace("{" + kvp.Key + "}", kvp.Value);
         }
+
         return finalURL;
     }
-
 }

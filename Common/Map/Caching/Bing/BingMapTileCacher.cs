@@ -18,33 +18,27 @@
 */
 
 
+using System;
 using System.IO;
 using Godot;
+using FileAccess = Godot.FileAccess;
 
 public class BingMapTileCacher : ICacheCapability<BingMercatorMapTile>
 {
-
     public BingMapTileCacher()
     {
-
         if (!Directory.Exists(USER_CACHE_FOLDER_PATH))
         {
             Directory.CreateDirectory(USER_CACHE_FOLDER_PATH);
             GD.Print("Cache directory created at: " + USER_CACHE_FOLDER_PATH);
         }
-
-        if (!File.Exists(USER_RESOURCE_MAP_PATH))
-        {
-            using (File.CreateText(USER_RESOURCE_MAP_PATH))
-            { }
-            GD.Print("Bing cache dictionary file created at: " + USER_RESOURCE_MAP_PATH);
-        }
     }
 
     /// <summary>
-    /// Bing map tile cache, located in the user:// directory
+    /// Bing map tile cache, located in the user:// directory. This is the path to cache all the map tiles that the
+    /// user has accumulated over the runtime of Hermes
     /// </summary>
-    private readonly string USER_CACHE_FOLDER_PATH = Path.Combine(OS.GetUserDataDir(), "BingMapProvider", "Cache/");
+    private readonly string USER_CACHE_FOLDER_PATH = Path.Combine(OS.GetUserDataDir(), "BingMapProvider", "Cache");
 
     /// <summary>
     /// Contains the default high-resolution Earth textures
@@ -52,21 +46,48 @@ public class BingMapTileCacher : ICacheCapability<BingMercatorMapTile>
     private readonly string DEFAULT_CACHE_FOLDER_PATH =
         "res://Universe/SolarSystem/Planets/Earth/Assets/MapTiles";
 
-    private readonly string USER_RESOURCE_MAP_PATH = Path.Combine(OS.GetUserDataDir(), "BingMapProvider", "Cache", "BingResourceCacheMap.csv");
 
     public void CacheResource(BingMercatorMapTile resource)
     {
-        throw new System.NotImplementedException();
+        string filePathOfMapTile = Path.Combine(USER_CACHE_FOLDER_PATH, resource.ResourcePath);
+        string directoryPathOfMapTile = Path.GetDirectoryName(filePathOfMapTile);
+        if (!Directory.Exists(directoryPathOfMapTile))
+        {
+            try
+            {
+                Directory.CreateDirectory(directoryPathOfMapTile);
+            }
+            catch (Exception e)
+            {
+                GD.PrintErr("Error creating directory: " + directoryPathOfMapTile + "\n" + e.Message);
+            }
+        }
+
+        using var file = FileAccess.Open(filePathOfMapTile, Godot.FileAccess.ModeFlags.Write);
+        if (file == null)
+        {
+            GD.PrintErr(
+                "Unable to cache bing mercator map tile. " +
+                "The file path may be invalid, you may have inappropriate permissions, " +
+                "or the file is currently being accessed by another resource");
+            return;
+        }
+
+        file.StoreBuffer(resource.ResourceData);
     }
 
     public BingMercatorMapTile RetrieveResourceFromCache(string resourceHash)
     {
-        throw new System.NotImplementedException();
+        throw new NotImplementedException();
     }
 
     public bool ResourceExists(string resourceHash)
     {
-        throw new System.NotImplementedException();
+        // Check both the user cache for map tiles cached during runtime, and default cache
+        // for pre-bundled textures
+        return
+            File.Exists(Path.Combine(USER_CACHE_FOLDER_PATH, resourceHash)) ||
+            File.Exists(Path.Combine(DEFAULT_CACHE_FOLDER_PATH, resourceHash));
     }
 
     public string GenerateResourcePath(BingMercatorMapTile resource)
@@ -76,46 +97,53 @@ public class BingMapTileCacher : ICacheCapability<BingMercatorMapTile>
 
     public BingMercatorMapTile RetrieveResourceFromCache(BingMercatorMapTile partialResource)
     {
+        if (!ResourceExists(partialResource))
+        {
+            throw new FileNotFoundException(
+                "Unable to retrieve bing mercator map tile from cache. Map tile doesn't exist");
+        }
+
         // Check the pre-bundled high-resolution texture path
-        string filePath = DEFAULT_CACHE_FOLDER_PATH + "/" + partialResource.Hash;
+        string filePath = Path.Combine(DEFAULT_CACHE_FOLDER_PATH, partialResource.ResourcePath);
         BingMercatorMapTile bingMercatorMapTile = new BingMercatorMapTile();
         if (Godot.FileAccess.FileExists(filePath))
         {
             using var file = Godot.FileAccess.Open(filePath, Godot.FileAccess.ModeFlags.Read);
             bingMercatorMapTile = new BingMercatorMapTile(
-                partialResource.m_quadKey,
-                partialResource.m_mapType,
-                partialResource.m_language,
-                partialResource.m_mapImageType,
+                partialResource.QuadKey,
+                partialResource.MapType,
+                partialResource.Language,
+                partialResource.MapImageType,
                 file.GetBuffer((long)file.GetLength())
             );
         }
 
         // Check user cache if the high resolution texture doesn't exist
-        filePath = USER_CACHE_FOLDER_PATH + "/" + partialResource.Hash;
+        filePath = Path.Combine(USER_CACHE_FOLDER_PATH, partialResource.Hash);
         if (Godot.FileAccess.FileExists(filePath))
         {
             using var file = Godot.FileAccess.Open(filePath, Godot.FileAccess.ModeFlags.Read);
             bingMercatorMapTile = new BingMercatorMapTile(
-                partialResource.m_quadKey,
-                partialResource.m_mapType,
-                partialResource.m_language,
-                partialResource.m_mapImageType,
+                partialResource.QuadKey,
+                partialResource.MapType,
+                partialResource.Language,
+                partialResource.MapImageType,
                 file.GetBuffer((long)file.GetLength())
             );
         }
+
         return bingMercatorMapTile;
     }
 
     public bool ResourceExists(BingMercatorMapTile partialResource)
     {
-        string filePath = DEFAULT_CACHE_FOLDER_PATH + "/" + partialResource.Hash;
+        string filePath = Path.Combine(DEFAULT_CACHE_FOLDER_PATH, partialResource.ResourcePath);
         if (Godot.FileAccess.FileExists(filePath))
         {
             return true;
         }
 
-        filePath = USER_CACHE_FOLDER_PATH + "/" + partialResource.Hash;
+        filePath = Path.Combine(USER_CACHE_FOLDER_PATH, partialResource.Hash);
         if (Godot.FileAccess.FileExists(filePath))
         {
             return true;

@@ -89,4 +89,15 @@ void fragment() {
     vec4 color = texture(map_tile, uv);
     ALBEDO = color.rgb;
     ALPHA = color.a;
+
+    // Controls how rough/smooth the surface appears
+    // 1.0 = completely rough (matte), 0.0 = completely smooth (glossy)
+    ROUGHNESS = 0.7;
+
+    // Controls how metallic the surface appears
+    // 0.0 = non-metallic (like plastic), 1.0 = metallic
+    METALLIC = 0.0;
+
+    // Some specularity for ocean highlights
+    SPECULAR = 0.5;
 }

@@ -19,17 +19,15 @@
 
 
 using Godot;
-using System;
+using Hermes.Common.Planet.LoDSystem;
 
 public abstract partial class Planet : StaticBody3D
 {
-
-
     /// <summary>
     /// For debugging purposes. Shows the wireframe of the planet's mesh
     /// </summary>
-    [Export]
-    private bool m_showWireframe = false;
+    [Export] private bool m_showWireframe = false;
+
     private bool m_previousWireframeState = false;
 
 
@@ -74,9 +72,8 @@ public abstract partial class Planet : StaticBody3D
     // Called when the node enters the scene tree for the first time.
     public override void _Ready()
     {
-        InitializePlanetDimensions();
+        InitializePlanetData();
         InitializePlanetSurface(m_defaultZoomLevel);
-        LoadPlanet();
     }
 
     public override void _Process(double delta)
@@ -87,19 +84,14 @@ public abstract partial class Planet : StaticBody3D
         }
     }
 
-    protected abstract void InitializePlanetDimensions();
-
+    protected abstract void InitializePlanetData();
     protected abstract void InitializePlanetSurface(int zoomLevel);
-
-    public abstract void LoadPlanet();
 
     protected void UpdateWireframeState()
     {
         RenderingServer.SetDebugGenerateWireframes(m_showWireframe);
-        GetViewport().SetDebugDraw(m_showWireframe ?
-            Viewport.DebugDrawEnum.Wireframe :
-            Viewport.DebugDrawEnum.Disabled);
+        GetViewport()
+            .SetDebugDraw(m_showWireframe ? Viewport.DebugDrawEnum.Wireframe : Viewport.DebugDrawEnum.Disabled);
         m_previousWireframeState = m_showWireframe;
     }
-
 }

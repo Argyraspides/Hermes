@@ -20,6 +20,7 @@
 
 using System.Linq;
 using Godot;
+using Hermes.Common.Planet.LoDSystem;
 
 public partial class Earth : Planet
 {
@@ -27,79 +28,52 @@ public partial class Earth : Planet
 
     [Export] private Vector3 m_nullIsland;
 
+
     public override void _Ready()
+    {
+        InitializeCamera();
+        m_defaultZoomLevel = 6;
+        base._Ready();
+    }
+
+    protected override void InitializePlanetData()
     {
         m_planetID = PlanetID.EARTH;
         m_planetShapeType = PlanetShapeType.WGS84_ELLIPSOID;
-        m_defaultZoomLevel = 6;
-        base._Ready();
-
-        InitializeCamera();
-    }
-
-    protected override void InitializePlanetDimensions()
-    {
         m_semiMajorAxisKm = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
         m_semiMinorAxisKm = SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM;
     }
 
     protected override void InitializePlanetSurface(int zoomLevel)
     {
-        m_terrainQuadTree = new TerrainQuadTree();
-        m_terrainQuadTree.InitializeQuadTree(zoomLevel);
-
-        var finalQuadTreeLevel = m_terrainQuadTree.GetLastQuadTreeLevel();
-
-        for (int i = 0; i < finalQuadTreeLevel.Count; i++)
-        {
-            var terrainQuadTreeNode = finalQuadTreeLevel[i];
-
-            ArrayMesh meshSegment = WGS84EllipsoidMeshGenerator.CreateEllipsoidMeshSegment(
-                (float)terrainQuadTreeNode.Chunk.MapTile.m_latitude,
-                (float)terrainQuadTreeNode.Chunk.MapTile.m_longitude,
-                (float)terrainQuadTreeNode.Chunk.MapTile.m_latitudeRange,
-                (float)terrainQuadTreeNode.Chunk.MapTile.m_longitudeRange
-            );
-
-            terrainQuadTreeNode.Chunk.MeshInstance = new MeshInstance3D { Mesh = meshSegment };
-            terrainQuadTreeNode.Chunk.Name = $"TerrainChunk_z{zoomLevel}_tn{i}";
-        }
+        m_terrainQuadTree = new TerrainQuadTree(m_planetOrbitalCamera);
+        AddChild(m_terrainQuadTree);
+        m_terrainQuadTree.Name = "EarthTerrainQuadTree";
+        m_terrainQuadTree.InitializeQuadTree(6);
     }
 
     private void InitializeCamera()
     {
         m_planetOrbitalCamera = GetNode<PlanetOrbitalCamera>("EarthOrbitalCamera");
-        m_planetOrbitalCamera.OrbitalCameraPosChanged += OnOrbitalCameraPosChangedSignal;
-
-        var nullIslandNode = m_terrainQuadTree.GetCenter(m_defaultZoomLevel - 1);
-
-        var surfaceArrays = nullIslandNode.Chunk.MeshInstance.Mesh.SurfaceGetArrays((int)Mesh.ArrayType.Vertex);
-
-        Vector3[] vertices = surfaceArrays[0].AsVector3Array();
-
-        m_nullIsland =
-            vertices.Aggregate(Vector3.Zero, (currTotalVec, currVec) => currTotalVec + currVec) / vertices.Length;
-
-        // TODO(Argyraspides, 08/02/2025): This is somewhat of a deep issue. I suspect that the mesh generator when using the trig functions
-        // is going counterclockwise/clockwise, while whatever direction is used to measure longitude is going in the oppostie direction. Meaning
-        // that our null island point (lat/lon of 0,0) is actually on the opposite side (0, 2pi), so we have to flip it here to actually face
-        // Africa off the coast of Guinea. Make sure to fix this. This may have implications as well with the map shader as
-        // that currently needs to be manually flipped inside of TerrainChunk rather than being taken care of in the shader
-        // directly
-        // Camera will be directly on null island. Push back 15,000km
-        m_planetOrbitalCamera.InitializeCameraPosition(-m_nullIsland + new Vector3(-15000, 0, 0));
-    }
-
-    public override void LoadPlanet()
-    {
-        foreach (var terrainQuadTreeNode in m_terrainQuadTree.GetLastQuadTreeLevel())
-        {
-            terrainQuadTreeNode.Chunk.Load();
-            AddChild(terrainQuadTreeNode.Chunk);
-        }
-    }
-
-    public void OnOrbitalCameraPosChangedSignal(Vector3 position)
-    {
+        //
+        // var nullIslandNode = m_terrainQuadTree.GetCenter(m_defaultZoomLevel - 1);
+        //
+        // var surfaceArrays = nullIslandNode.Chunk.MeshInstance.Mesh.SurfaceGetArrays((int)Mesh.ArrayType.Vertex);
+        //
+        // Vector3[] vertices = surfaceArrays[0].AsVector3Array();
+        //
+        // m_nullIsland =
+        //     vertices.Aggregate(Vector3.Zero, (currTotalVec, currVec) => currTotalVec + currVec) / vertices.Length;
+        //
+        // // TODO(Argyraspides, 08/02/2025): This is somewhat of a deep issue. I suspect that the mesh generator when using the trig functions
+        // // is going counterclockwise/clockwise, while whatever direction is used to measure longitude is going in the oppostie direction. Meaning
+        // // that our null island point (lat/lon of 0,0) is actually on the opposite side (0, 2pi), so we have to flip it here to actually face
+        // // Africa off the coast of Guinea. Make sure to fix this. This may have implications as well with the map shader as
+        // // that currently needs to be manually flipped inside of TerrainChunk rather than being taken care of in the shader
+        // // directly
+        // // Camera will be directly on null island. Push back 15,000km
+        // m_planetOrbitalCamera.InitializeCameraPosition(-m_nullIsland + new Vector3(-15000, 0, 0));
+        Vector3 camPos = new Vector3(-SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * 10, 0, 0);
+        m_planetOrbitalCamera.InitializeCameraPosition(camPos);
     }
 }
