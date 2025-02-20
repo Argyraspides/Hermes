@@ -107,8 +107,15 @@ public partial class TerrainChunk : Node3D
     {
         try
         {
-            AddChild(MeshInstance3D);
-            await InitializeTerrainChunkAsync();
+            if (GodotUtils.IsValid(MeshInstance3D))
+            {
+                AddChild(MeshInstance3D);
+                await InitializeTerrainChunkAsync();
+            }
+            else
+            {
+                throw new Exception("MeshInstance3D is not a valid MeshInstance3D");
+            }
         }
         catch (Exception ex)
         {
@@ -134,7 +141,15 @@ public partial class TerrainChunk : Node3D
         shaderMat.SetShaderParameter("map_tile", texture2D);
         shaderMat.SetShaderParameter("zoom_level", MapTile.ZoomLevel);
         shaderMat.SetShaderParameter("tile_size", MapTile.Size);
-        MeshInstance3D.MaterialOverride = shaderMat;
+
+        if (GodotUtils.IsValid(MeshInstance3D))
+        {
+            MeshInstance3D.MaterialOverride = shaderMat;
+        }
+        else
+        {
+            throw new ArgumentNullException("MeshInstance3D is not a valid MeshInstance3D");
+        }
     }
 
     private async Task InitializeTerrainChunkAsync()
@@ -147,6 +162,11 @@ public partial class TerrainChunk : Node3D
             MapTile.MapType,
             MapTile.MapImageType
         );
+
+        if (mapTile == null)
+        {
+            throw new Exception("Failed to initialize map tile");
+        }
 
         ApplyTexture(mapTile.Texture2D);
     }

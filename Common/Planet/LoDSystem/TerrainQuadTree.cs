@@ -31,7 +31,7 @@ public partial class TerrainQuadTree : Node
     #region Constants & Configuration
 
     public float MaxNodesCleanupThresholdPercent = 0.90F;
-    public const int MaxQueueUpdatesPerFrame = 10;
+    public const int MaxQueueUpdatesPerFrame = 5;
     public const float MergeThresholdFactor = 1.5F;
     public const int MaxDepthLimit = 23;
     public const int MinDepthLimit = 1;
@@ -251,13 +251,24 @@ public partial class TerrainQuadTree : Node
 
     private void SplitNode(TerrainQuadTreeNode node)
     {
-        GenerateChildNodes(node);
-        foreach (var childNode in node.ChildNodes)
+        if (!GodotUtils.IsValid(node))
         {
-            if (childNode != null)
+            throw new ArgumentNullException("Attempting to split an invalid terrain quad tree node");
+        }
+
+        if (!node.HasChildren())
+        {
+            GenerateChildNodes(node);
+            foreach (var childNode in node.ChildNodes)
             {
                 InitializeTerrainNodeMesh(childNode);
             }
+        }
+
+        foreach (var childNode in node.ChildNodes)
+        {
+            childNode.IsLoadedInScene = true;
+            childNode.Chunk.Visible = true;
         }
 
         node.Chunk.Visible = false;
@@ -266,14 +277,14 @@ public partial class TerrainQuadTree : Node
 
     private void MergeNodeChildren(TerrainQuadTreeNode parent)
     {
-        if (!IsInstanceValid(parent)) return;
+        if (!GodotUtils.IsValid(parent)) return;
 
         parent.Chunk.Visible = true;
         parent.IsLoadedInScene = true;
 
         foreach (var childNode in parent.ChildNodes)
         {
-            if (IsInstanceValid(childNode))
+            if (GodotUtils.IsValid(childNode))
             {
                 childNode.Chunk.Visible = false;
                 childNode.IsLoadedInScene = false;
@@ -283,16 +294,24 @@ public partial class TerrainQuadTree : Node
 
     private async void InitializeTerrainNodeMesh(TerrainQuadTreeNode node)
     {
+        if (!GodotUtils.IsValid(node))
+        {
+            throw new ArgumentNullException("Trying to initialize terrain node mesh that is null");
+        }
+
         ValidateTerrainNodeForMeshInitialization(node);
 
-        ArrayMesh meshSegment = await GenerateMeshForNode(node);
+        if (!GodotUtils.IsValid(node.Chunk.MeshInstance))
+        {
+            ArrayMesh meshSegment = await GenerateMeshForNode(node);
+            node.Chunk.MeshInstance = new MeshInstance3D { Mesh = meshSegment };
+        }
 
-        node.Chunk.MeshInstance = new MeshInstance3D { Mesh = meshSegment };
         node.Chunk.Load();
         AddChild(node);
+        node.IsLoadedInScene = true;
         node.Chunk.SetPositionAndSize();
         node.SetPosition(node.Chunk.Position);
-        node.IsLoadedInScene = true;
         node.Chunk.Name = GenerateChunkName(node);
     }
 
@@ -322,8 +341,10 @@ public partial class TerrainQuadTree : Node
 
     private void ValidateTerrainNodeForMeshInitialization(TerrainQuadTreeNode node)
     {
-        if (node == null) throw new ArgumentNullException(nameof(node), "Cannot initialize mesh for a null node.");
-        if (node.Chunk == null) throw new ArgumentNullException(nameof(node.Chunk), "Node's chunk is null.");
+        if (!GodotUtils.IsValid(node) || node == null)
+            throw new ArgumentNullException(nameof(node), "Cannot initialize mesh for a null node.");
+        if (!GodotUtils.IsValid(node.Chunk) || node.Chunk == null)
+            throw new ArgumentNullException(nameof(node.Chunk), "Node's chunk is null.");
         if (node.Chunk.MapTile == null)
             throw new ArgumentNullException(nameof(node.Chunk.MapTile), "Chunk's MapTile is null.");
     }
@@ -386,7 +407,7 @@ Bug #3 (Unknown): I'm unsure whether the .NET garbage collector is actually doin
 to check heap allocations on all three generational heaps (and total heap) doesn't show them changing. Calling "queuem_free"
 only frees the C++ object in the Godot engine, but the actual TerrainQuadTreeNode reference remains in the C# world. I have
 tried explicitly setting any and all references to null for TerrainQuadTreeNode when I know for sure Godot has finally
-freed them (by using the IsInstanceValid() function), but I haven't actually observed the heap memory usage going down.
+freed them (by using the GodotUtils.IsValid() function), but I haven't actually observed the heap memory usage going down.
 Then again, I didn't really watch the profiler for more than a couple minutes.
 
 Bug #4: Happened only a couple times but sometimes I see a big black square as one of the map tiles. I think I caught one when

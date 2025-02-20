@@ -61,7 +61,7 @@ public partial class TerrainQuadTreeUpdater : Node
                     {
                         foreach (var rootNode in m_terrainQuadTree.RootNodes)
                         {
-                            if (IsInstanceValid(rootNode) && ExceedsMaxNodeThreshold())
+                            if (GodotUtils.IsValid(rootNode) && ExceedsMaxNodeThreshold())
                             {
                                 CullUnusedNodes(rootNode);
                             }
@@ -108,7 +108,7 @@ public partial class TerrainQuadTreeUpdater : Node
                     {
                         foreach (var rootNode in m_terrainQuadTree.RootNodes)
                         {
-                            if (IsInstanceValid(rootNode))
+                            if (GodotUtils.IsValid(rootNode))
                             {
                                 UpdateTreeDFS(rootNode);
                             }
@@ -159,7 +159,7 @@ public partial class TerrainQuadTreeUpdater : Node
         }
     }
 
-    private bool IsNodeValid(TerrainQuadTreeNode node) => IsInstanceValid(node);
+    private bool IsNodeValid(TerrainQuadTreeNode node) => GodotUtils.IsValid(node);
     private bool IsNodeQueuedForDeletion(TerrainQuadTreeNode node) => node.IsQueuedForDeletion();
 
     private bool ExceedsMaxNodeThreshold() => m_terrainQuadTree.m_currentNodeCount >
@@ -238,6 +238,21 @@ public partial class TerrainQuadTreeUpdater : Node
                 CullUnusedNodes(terrainQuadTreeNode);
             }
         }
+    }
+
+    private ArrayMesh GenerateMeshForNode(TerrainQuadTreeNode node)
+    {
+        ArrayMesh meshSegment =
+            // TODO(Argyraspides, 19/02/2025): Please please please abstract this away. Do not hardcode the mesh type we are using.
+            // WGS84 only really applies to the Earth. This won't work for other planets.
+            WGS84EllipsoidMeshGenerator
+                .CreateEllipsoidMeshSegment(
+                    (float)node.Chunk.MapTile.Latitude,
+                    (float)node.Chunk.MapTile.Longitude,
+                    (float)node.Chunk.MapTile.LatitudeRange,
+                    (float)node.Chunk.MapTile.LongitudeRange
+                );
+        return meshSegment;
     }
 
     #endregion Node Management

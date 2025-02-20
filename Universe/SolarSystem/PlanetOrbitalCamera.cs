@@ -283,12 +283,12 @@ public partial class PlanetOrbitalCamera : Camera3D
     private double CalculateZoomIncrementForLevel(int zoomLevel, bool zoomIn)
     {
         int next = zoomIn ? 1 : -1;
-
-        double nextThreshold = (zoomLevel + next < m_baseAltitudeThresholds.Length && zoomLevel + next >= 0)
-            ? m_baseAltitudeThresholds[zoomLevel + next]
+        int zLevelIdx = zoomLevel - 1;
+        double nextThreshold = (zLevelIdx + next < m_baseAltitudeThresholds.Length && zLevelIdx + next >= 0)
+            ? m_baseAltitudeThresholds[zLevelIdx + next]
             : 0;
 
-        double currentThreshold = m_baseAltitudeThresholds[zoomLevel];
+        double currentThreshold = m_baseAltitudeThresholds[zLevelIdx];
 
         double distanceToNextLevel;
 
