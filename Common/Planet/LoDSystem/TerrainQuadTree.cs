@@ -468,6 +468,11 @@ public sealed partial class TerrainQuadTree : Node
         return new TerrainQuadTreeNode(childChunk, zoomLevel);
     }
 
+    /// <summary>
+    /// Called when the TerrainQuadTreeUpdater has finished a tree traversal iteration and has determined which
+    /// nodes should be split/merged. After this, we are allowed to actually merge/split the nodes in question
+    /// on the main thread in the scene tree.
+    /// </summary>
     private void OnQuadTreeUpdatesDetermined()
     {
         m_canUpdateQuadTree = true;
