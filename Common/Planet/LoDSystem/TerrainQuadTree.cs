@@ -32,7 +32,7 @@ public partial class TerrainQuadTree : Node
 
     public float MaxNodesCleanupThresholdPercent = 0.90F;
     public const int MaxQueueUpdatesPerFrame = 10;
-    public const float MergeThresholdFactor = 2.25F;
+    public const float MergeThresholdFactor = 1.5F;
     public const int MaxDepthLimit = 23;
     public const int MinDepthLimit = 1;
 
@@ -122,7 +122,7 @@ public partial class TerrainQuadTree : Node
         for (int zoom = 0; zoom < m_maxDepth; zoom++)
         {
             m_splitThresholds[zoom] = m_baseAltitudeThresholds[zoom];
-            m_mergeThresholds[zoom] = m_baseAltitudeThresholds[zoom];
+            m_mergeThresholds[zoom] = m_baseAltitudeThresholds[zoom] * MergeThresholdFactor;
         }
     }
 
@@ -222,12 +222,6 @@ public partial class TerrainQuadTree : Node
 
             InitializeMeshesInQueue(nodeQueue);
         }
-    }
-
-    private TerrainQuadTreeNode CreateRootNode()
-    {
-        var rootChunk = new TerrainChunk(new MapTile(0.0F, 0.0F, 0));
-        return new TerrainQuadTreeNode(rootChunk, 0);
     }
 
     private void EnqueueChildren(Queue<TerrainQuadTreeNode> queue, TerrainQuadTreeNode parentNode)
