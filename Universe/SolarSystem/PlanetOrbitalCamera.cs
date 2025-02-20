@@ -54,6 +54,8 @@ public partial class PlanetOrbitalCamera : Camera3D
 
     [Export] private double m_zoomSensitivityFactor = 0.15f; // Controls how quickly zoom sensitivity changes
 
+    public int CurrentZoomLevel;
+
     // TODO? These should match the altitude thresholds in the TerrainQuadTree
     private readonly double[] m_baseAltitudeThresholds = new double[]
     {
@@ -61,7 +63,7 @@ public partial class PlanetOrbitalCamera : Camera3D
         76.17f, 38.08f, 19.04f, 9.52f, 4.76f, 2.38f, 1.2f, 0.6f, 0.35f
     };
 
-    private const double ZoomIncrementFactor = 0.1f; // 1/10th of the distance difference as zoom increment
+    private const double ZoomIncrementFactor = 0.2f; // 2/10th of the distance difference as zoom increment
 
     #endregion
 
@@ -248,11 +250,11 @@ public partial class PlanetOrbitalCamera : Camera3D
         double currentDistanceAboveSurface = m_currentDistance - currentMinDistance;
 
         // Determine current zoom level based on altitude thresholds
-        int currentZoomLevel = GetZoomLevelForDistance(currentDistanceAboveSurface);
+        CurrentZoomLevel = GetZoomLevelForDistance(currentDistanceAboveSurface);
 
         // Calculate zoom increment based on distance to the next/previous zoom level
-        double dynamicZoomIncrement = CalculateZoomIncrementForLevel(currentZoomLevel,
-            mouseButton.ButtonIndex == MouseButton.WheelUp, currentDistanceAboveSurface);
+        double dynamicZoomIncrement = CalculateZoomIncrementForLevel(CurrentZoomLevel,
+            mouseButton.ButtonIndex == MouseButton.WheelUp);
 
 
         if (mouseButton.ButtonIndex == MouseButton.WheelUp) // Zoom In
@@ -278,21 +280,23 @@ public partial class PlanetOrbitalCamera : Camera3D
         return m_baseAltitudeThresholds.Length; // Closest zoom level if below all thresholds
     }
 
-    private double CalculateZoomIncrementForLevel(int zoomLevel, bool zoomIn, double currentDistanceAboveSurface)
+    private double CalculateZoomIncrementForLevel(int zoomLevel, bool zoomIn)
     {
-
         int next = zoomIn ? 1 : -1;
 
         double nextThreshold = (zoomLevel + next < m_baseAltitudeThresholds.Length && zoomLevel + next >= 0)
             ? m_baseAltitudeThresholds[zoomLevel + next]
             : 0;
 
+        double currentThreshold = m_baseAltitudeThresholds[zoomLevel];
+
         double distanceToNextLevel;
 
         if (zoomIn)
         {
             distanceToNextLevel =
-                currentDistanceAboveSurface - nextThreshold; // Distance to next *higher detail* level (lower altitude)
+                Math.Abs(currentThreshold -
+                         nextThreshold); // Distance to next *higher detail* level (lower altitude)
             if (zoomLevel + 1 >= m_baseAltitudeThresholds.Length) // Already at max zoom, just use a small increment
             {
                 return m_baseZoomIncrement * m_zoomSensitivityFactor * 0.1f; // Very small increment at max zoom
@@ -301,7 +305,8 @@ public partial class PlanetOrbitalCamera : Camera3D
         else // Zoom out
         {
             distanceToNextLevel =
-                nextThreshold - currentDistanceAboveSurface; // Distance to next *lower detail* level (higher altitude)
+                Math.Abs(nextThreshold -
+                         currentThreshold); // Distance to next *lower detail* level (higher altitude)
             if (zoomLevel == 0) // Already at min zoom, limit zoom out.
             {
                 return m_baseZoomIncrement * m_zoomSensitivityFactor * 0.1f; // Very small increment at min zoom
@@ -310,8 +315,8 @@ public partial class PlanetOrbitalCamera : Camera3D
 
         double final = distanceToNextLevel * ZoomIncrementFactor * m_zoomSensitivityFactor *
                        m_baseZoomIncrement;
-        final = Math.Clamp(final, m_baseAltitudeThresholds.Last(), double.MaxValue);
-        return final; // Zoom increment is fraction of distance
+        return Math.Clamp(final, m_baseAltitudeThresholds.Last(),
+            double.MaxValue); // Zoom increment is fraction of distance
     }
 
     #endregion

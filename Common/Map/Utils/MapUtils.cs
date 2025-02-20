@@ -132,7 +132,7 @@ public static class MapUtils
     /// <param name="tx">Tile x-coordinate</param>
     /// <param name="zoom">Zoom level (determines the total number of tiles at this zoom)</param>
     /// <returns>Longitude of the tile's western edge, in radians.</returns>
-    public static double MapTileToLongitude(int tx, int zoom)
+    public static double TileCoordinateToLongitude(int tx, int zoom)
     {
         return (double)tx / (1 << zoom) * TWO_PI - PI;
     }
@@ -148,7 +148,7 @@ public static class MapUtils
     /// <param name="ty">Tile y-coordinate</param>
     /// <param name="zoom">Zoom level (determines the total number of tiles at this zoom)</param>
     /// <returns>Latitude of the tile's northern edge, in radians.</returns>
-    public static double MapTileToLatitude(int ty, int zoom)
+    public static double TileCoordinateToLatitude(int ty, int zoom)
     {
         double n = PI - (2.0 * PI * (double)ty / (1 << zoom));
         return Math.Atan(0.5 * (Math.Exp(n) - Math.Exp(-n)));
@@ -176,10 +176,10 @@ public static class MapUtils
     public static (double latMin, double latMax, double lonMin, double lonMax) GetTileLatLonBounds(int tx, int ty,
         int zoom)
     {
-        double lonMin = MapTileToLongitude(tx, zoom);
-        double lonMax = MapTileToLongitude(tx + 1, zoom);
-        double latMin = MapTileToLatitude(ty + 1, zoom);
-        double latMax = MapTileToLatitude(ty, zoom);
+        double lonMin = TileCoordinateToLongitude(tx, zoom);
+        double lonMax = TileCoordinateToLongitude(tx + 1, zoom);
+        double latMin = TileCoordinateToLatitude(ty + 1, zoom);
+        double latMax = TileCoordinateToLatitude(ty, zoom);
         return (latMin, latMax, lonMin, lonMax);
     }
 
@@ -241,7 +241,7 @@ public static class MapUtils
     /// </summary>
     public static double ComputeCenterLatitude(int latTileCoo, int zoom)
     {
-        double northEdge = MapTileToLatitude(latTileCoo, zoom);
+        double northEdge = TileCoordinateToLatitude(latTileCoo, zoom);
         double latRange = TileToLatRange(latTileCoo, zoom);
         return northEdge - latRange / 2;
     }
@@ -251,7 +251,7 @@ public static class MapUtils
     /// </summary>
     public static double ComputeCenterLongitude(int lonTileCoo, int zoom)
     {
-        double westEdge = MapTileToLongitude(lonTileCoo, zoom);
+        double westEdge = TileCoordinateToLongitude(lonTileCoo, zoom);
         double lonRange = TileToLonRange(zoom);
         return westEdge + lonRange / 2;
     }
@@ -268,11 +268,11 @@ public static class MapUtils
         }
 
         // Compute the top (northern) latitude of the tile
-        double latTop = MapTileToLatitude(tileY, zoom);
+        double latTop = TileCoordinateToLatitude(tileY, zoom);
 
         // Compute the bottom (southern) latitude of the tile, which is just
         // the northern part of the tile below us
-        double latBottom = MapTileToLatitude(tileY + 1, zoom);
+        double latBottom = TileCoordinateToLatitude(tileY + 1, zoom);
 
         // The difference in latitude (in radians) is:
         return latTop - latBottom;

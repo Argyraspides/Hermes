@@ -59,8 +59,11 @@ public partial class TerrainQuadTree : Node
     public volatile bool m_isRunning = false;
     public volatile bool m_destructorActivated = false;
     public bool m_canUpdateQuadTree = false;
+    public int m_currentCameraZoomLevel;
 
-    public TerrainQuadTreeNode RootNode { get; private set; }
+    public object rootNodeLock = new object();
+
+    public List<TerrainQuadTreeNode> RootNodes { get; private set; }
 
     public Vector3 CameraPosition { get; private set; }
     public ConcurrentQueue<TerrainQuadTreeNode> SplitQueueNodes { get; } = new ConcurrentQueue<TerrainQuadTreeNode>();
@@ -119,7 +122,7 @@ public partial class TerrainQuadTree : Node
         for (int zoom = 0; zoom < m_maxDepth; zoom++)
         {
             m_splitThresholds[zoom] = m_baseAltitudeThresholds[zoom];
-            m_mergeThresholds[zoom] = m_baseAltitudeThresholds[zoom] * MergeThresholdFactor;
+            m_mergeThresholds[zoom] = m_baseAltitudeThresholds[zoom];
         }
     }
 
@@ -190,22 +193,35 @@ public partial class TerrainQuadTree : Node
     {
         ValidateZoomLevel(zoomLevel);
 
-        RootNode = CreateRootNode();
-        Queue<TerrainQuadTreeNode> nodeQueue = new Queue<TerrainQuadTreeNode>();
-        nodeQueue.Enqueue(RootNode);
-
-        for (int zLevel = 0; zLevel < zoomLevel; zLevel++)
+        lock (rootNodeLock)
         {
-            int nodesInLevel = 1 << (2 * zLevel); // 4^z
-            for (int n = 0; n < nodesInLevel; n++)
-            {
-                TerrainQuadTreeNode parentNode = nodeQueue.Dequeue();
-                GenerateChildNodes(parentNode);
-                EnqueueChildren(nodeQueue, parentNode);
-            }
-        }
+            Queue<TerrainQuadTreeNode> nodeQueue = new Queue<TerrainQuadTreeNode>();
+            RootNodes = new List<TerrainQuadTreeNode>();
 
-        InitializeMeshesInQueue(nodeQueue);
+            int nodesPerSide = (1 << m_minDepth); // 2^z
+            int nodesInLevel = nodesPerSide * nodesPerSide; // 4^z
+            for (int i = 0; i < nodesInLevel; i++)
+            {
+                int latTileCoo = i / nodesPerSide;
+                int lonTileCoo = i % nodesPerSide;
+                TerrainQuadTreeNode n = CreateNode(latTileCoo, lonTileCoo, m_minDepth);
+                RootNodes.Add(n);
+                nodeQueue.Enqueue(RootNodes[i]);
+            }
+
+            for (int zLevel = m_minDepth; zLevel < zoomLevel; zLevel++)
+            {
+                nodesInLevel = 1 << (2 * zLevel); // 4^z
+                for (int n = 0; n < nodesInLevel; n++)
+                {
+                    TerrainQuadTreeNode parentNode = nodeQueue.Dequeue();
+                    GenerateChildNodes(parentNode);
+                    EnqueueChildren(nodeQueue, parentNode);
+                }
+            }
+
+            InitializeMeshesInQueue(nodeQueue);
+        }
     }
 
     private TerrainQuadTreeNode CreateRootNode()
@@ -331,7 +347,7 @@ public partial class TerrainQuadTree : Node
         {
             (int childLatTileCoo, int childLonTileCoo) =
                 CalculateChildTileCoordinates(parentLatTileCoo, parentLonTileCoo, i);
-            parentNode.ChildNodes[i] = CreateChildNode(childLatTileCoo, childLonTileCoo, childZoomLevel);
+            parentNode.ChildNodes[i] = CreateNode(childLatTileCoo, childLonTileCoo, childZoomLevel);
         }
     }
 
@@ -343,20 +359,20 @@ public partial class TerrainQuadTree : Node
         return (childLatTileCoo, childLonTileCoo);
     }
 
-    private TerrainQuadTreeNode CreateChildNode(int childLatTileCoo, int childLonTileCoo, int childZoomLevel)
+    private TerrainQuadTreeNode CreateNode(int latTileCoo, int lonTileCoo, int zoomLevel)
     {
         // TODO(Argyraspides, 19/02/2025): Abstract away Mercator/WGS84 specifics from TerrainQuadTree
-        double childLat = MapUtils.MapTileToLatitude(childLatTileCoo, childZoomLevel);
-        double childLon = MapUtils.MapTileToLongitude(childLonTileCoo, childZoomLevel);
-        double childLatRange = MapUtils.TileToLatRange(childLatTileCoo, childZoomLevel);
-        double childLonRange = MapUtils.TileToLonRange(childZoomLevel);
+        double childLat = MapUtils.TileCoordinateToLatitude(latTileCoo, zoomLevel);
+        double childLon = MapUtils.TileCoordinateToLongitude(lonTileCoo, zoomLevel);
+        double childLatRange = MapUtils.TileToLatRange(latTileCoo, zoomLevel);
+        double childLonRange = MapUtils.TileToLonRange(zoomLevel);
         double halfChildLatRange = childLatRange / 2;
         double halfChildLonRange = childLonRange / 2;
         double childCenterLat = childLat - halfChildLatRange;
         double childCenterLon = childLon + halfChildLonRange;
 
-        var childChunk = new TerrainChunk(new MapTile((float)childCenterLat, (float)childCenterLon, childZoomLevel));
-        return new TerrainQuadTreeNode(childChunk, childZoomLevel);
+        var childChunk = new TerrainChunk(new MapTile((float)childCenterLat, (float)childCenterLon, zoomLevel));
+        return new TerrainQuadTreeNode(childChunk, zoomLevel);
     }
 
     private void OnQuadTreeUpdatesDetermined()

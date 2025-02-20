@@ -55,11 +55,17 @@ public partial class TerrainQuadTreeUpdater : Node
         {
             try
             {
-                if (m_terrainQuadTree.RootNode != null && m_canPerformSearch)
+                if (m_canPerformSearch && m_terrainQuadTree.RootNodes != null)
                 {
-                    if (ExceedsMaxNodeThreshold())
+                    lock (m_terrainQuadTree.rootNodeLock)
                     {
-                        CullUnusedNodes(m_terrainQuadTree.RootNode);
+                        foreach (var rootNode in m_terrainQuadTree.RootNodes)
+                        {
+                            if (IsInstanceValid(rootNode) && ExceedsMaxNodeThreshold())
+                            {
+                                CullUnusedNodes(rootNode);
+                            }
+                        }
                     }
                 }
 
@@ -96,9 +102,18 @@ public partial class TerrainQuadTreeUpdater : Node
         {
             try
             {
-                if (m_terrainQuadTree.RootNode != null && m_canPerformSearch)
+                if (m_canPerformSearch && m_terrainQuadTree.RootNodes != null)
                 {
-                    UpdateTreeDFS(m_terrainQuadTree.RootNode);
+                    lock (m_terrainQuadTree.rootNodeLock)
+                    {
+                        foreach (var rootNode in m_terrainQuadTree.RootNodes)
+                        {
+                            if (IsInstanceValid(rootNode))
+                            {
+                                UpdateTreeDFS(rootNode);
+                            }
+                        }
+                    }
                 }
 
                 if (m_canPerformSearch)
@@ -122,15 +137,10 @@ public partial class TerrainQuadTreeUpdater : Node
 
         if (IsNodeQueuedForDeletion(node)) { return; }
 
+        // Splitting happens top-down, so we do it first prior to recursing down further
         if (node.IsLoadedInScene && ShouldSplit(node))
         {
             m_terrainQuadTree.SplitQueueNodes.Enqueue(node);
-            return;
-        }
-
-        if (ShouldMergeChildren(node))
-        {
-            m_terrainQuadTree.MergeQueueNodes.Enqueue(node);
             return;
         }
 
@@ -140,6 +150,12 @@ public partial class TerrainQuadTreeUpdater : Node
             {
                 UpdateTreeDFS(childNode);
             }
+        }
+
+        // Merging happens bottom-up, so we do it after recursing down the tree
+        if (ShouldMergeChildren(node))
+        {
+            m_terrainQuadTree.MergeQueueNodes.Enqueue(node);
         }
     }
 
@@ -165,7 +181,7 @@ public partial class TerrainQuadTreeUpdater : Node
         if (node.Depth <= m_terrainQuadTree.m_minDepth + 1) return false;
 
         float distanceToCamera = node.Position.DistanceTo(m_terrainQuadTree.CameraPosition);
-        return m_terrainQuadTree.m_mergeThresholds[node.Depth] < distanceToCamera;
+        return m_terrainQuadTree.m_mergeThresholds[node.Depth - 1] < distanceToCamera;
     }
 
     private bool ShouldMergeChildren(TerrainQuadTreeNode node)
