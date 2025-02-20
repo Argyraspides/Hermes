@@ -225,6 +225,8 @@ public sealed partial class TerrainQuadTree : Node
         {
             m_destructorActivated = true;
         }
+        // We don't want to attempt to GetTree().GetNodeCount() when the scene tree (or at the very least,
+        // the TerrainQuadTree) is about to be deleted.
         else if (!m_destructorActivated && what == NotificationChildOrderChanged)
         {
             m_currentNodeCount = GetTree().GetNodeCount();
@@ -235,11 +237,16 @@ public sealed partial class TerrainQuadTree : Node
 
     #region QuadTree Initialization & Manipulation
 
+    /// <summary>
+    /// Initializes the quadtree at the specified zoom level. Note that if the current minimum zoom level
+    /// is greater than one, then all nodes below this zoom level will never exist in the scene tree
+    /// </summary>
+    /// <param name="zoomLevel"> Zoom level to initialize the quadtree to (zoom level means the same thing as depth in this case) </param>
     public void InitializeQuadTree(int zoomLevel)
     {
         ValidateZoomLevel(zoomLevel);
 
-        lock (rootNodeLock)
+        lock (rootNodeLock) // We must lock this as TerrainQuadTreeUpdater also has access to the array of root nodes
         {
             Queue<TerrainQuadTreeNode> nodeQueue = new Queue<TerrainQuadTreeNode>();
             RootNodes = new List<TerrainQuadTreeNode>();
@@ -450,21 +457,3 @@ public sealed partial class TerrainQuadTree : Node
 
     #endregion QuadTree Initialization & Manipulation
 }
-
-/**
-
-TODO(Argyraspides, 16/02/2025) There is a lot to do here ...
-
-Bug #3 (Unknown): I'm unsure whether the .NET garbage collector is actually doing anything, and running a memory profiler
-to check heap allocations on all three generational heaps (and total heap) doesn't show them changing. Calling "queuem_free"
-only frees the C++ object in the Godot engine, but the actual TerrainQuadTreeNode reference remains in the C# world. I have
-tried explicitly setting any and all references to null for TerrainQuadTreeNode when I know for sure Godot has finally
-freed them (by using the GodotUtils.IsValid() function), but I haven't actually observed the heap memory usage going down.
-Then again, I didn't really watch the profiler for more than a couple minutes.
-
-Bug #4: Happened only a couple times but sometimes I see a big black square as one of the map tiles.
-
-Bug #6: It seems we never cull nodes unless we start zooming out. This causes us to actually exceed our maximum node threshold
-sometimes. We should be culling regardless of what happens so long as we don't cull what the user is currently viewing.
-
-*/
