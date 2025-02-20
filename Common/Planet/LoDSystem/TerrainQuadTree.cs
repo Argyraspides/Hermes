@@ -31,7 +31,7 @@ public partial class TerrainQuadTree : Node
     #region Constants & Configuration
 
     public float MaxNodesCleanupThresholdPercent = 0.90F;
-    public const int MaxQueueUpdatesPerFrame = 5;
+    public const int MaxQueueUpdatesPerFrame = 2;
     public const float MergeThresholdFactor = 1.5F;
     public const int MaxDepthLimit = 23;
     public const int MinDepthLimit = 1;

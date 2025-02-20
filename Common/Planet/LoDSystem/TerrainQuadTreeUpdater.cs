@@ -133,14 +133,13 @@ public partial class TerrainQuadTreeUpdater : Node
 
     private void UpdateTreeDFS(TerrainQuadTreeNode node)
     {
-        if (!IsNodeValid(node)) { return; }
-
-        if (IsNodeQueuedForDeletion(node)) { return; }
+        if (!GodotUtils.IsValid(node)) { return; }
 
         // Splitting happens top-down, so we do it first prior to recursing down further
         if (node.IsLoadedInScene && ShouldSplit(node))
         {
             m_terrainQuadTree.SplitQueueNodes.Enqueue(node);
+            ArrayMesh m = GenerateMeshForNode(node);
             return;
         }
 
@@ -159,16 +158,13 @@ public partial class TerrainQuadTreeUpdater : Node
         }
     }
 
-    private bool IsNodeValid(TerrainQuadTreeNode node) => GodotUtils.IsValid(node);
-    private bool IsNodeQueuedForDeletion(TerrainQuadTreeNode node) => node.IsQueuedForDeletion();
-
     private bool ExceedsMaxNodeThreshold() => m_terrainQuadTree.m_currentNodeCount >
                                               m_terrainQuadTree.m_maxNodes *
                                               m_terrainQuadTree.MaxNodesCleanupThresholdPercent;
 
     private bool ShouldSplit(TerrainQuadTreeNode node)
     {
-        if (!IsNodeValid(node)) throw new ArgumentNullException(nameof(node), "node cannot be null");
+        if (!GodotUtils.IsValid(node)) throw new ArgumentNullException(nameof(node), "node cannot be null");
         if (node.Depth >= m_terrainQuadTree.m_maxDepth) return false;
 
         float distanceToCamera = node.Position.DistanceTo(m_terrainQuadTree.CameraPosition);
@@ -177,7 +173,7 @@ public partial class TerrainQuadTreeUpdater : Node
 
     private bool ShouldMerge(TerrainQuadTreeNode node)
     {
-        if (!IsNodeValid(node)) return false;
+        if (!GodotUtils.IsValid(node)) return false;
         if (node.Depth <= m_terrainQuadTree.m_minDepth + 1) return false;
 
         float distanceToCamera = node.Position.DistanceTo(m_terrainQuadTree.CameraPosition);
@@ -203,10 +199,9 @@ public partial class TerrainQuadTreeUpdater : Node
 
     private void RemoveQuadTreeNode(TerrainQuadTreeNode node)
     {
-        if (node == null) return;
-        if (IsNodeValid(node))
+        if (GodotUtils.IsValid(node))
         {
-            node.CallDeferred("queue_free"); // Thread-safe deletion
+            node.CallDeferred("queue_free");
         }
     }
 

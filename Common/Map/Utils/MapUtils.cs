@@ -150,7 +150,7 @@ public static class MapUtils
     /// <returns>Latitude of the tile's northern edge, in radians.</returns>
     public static double TileCoordinateToLatitude(int ty, int zoom)
     {
-        double n = PI - (2.0 * PI * (double)ty / (1 << zoom));
+        double n = PI - (2.0 * PI * ty / (1 << zoom));
         return Math.Atan(0.5 * (Math.Exp(n) - Math.Exp(-n)));
     }
 
