@@ -13,7 +13,8 @@ config_version=5
 config/name="Hermes"
 run/main_scene="res://Universe/SolarSystem/SolarSystem.tscn"
 config/features=PackedStringArray("4.3", "C#", "Mobile")
-config/icon="res://icon.svg"
+boot_splash/image="res://docs/Hermes.png"
+config/icon="res://docs/Hermes.png"
 
 [autoload]
 

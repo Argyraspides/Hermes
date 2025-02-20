@@ -27,7 +27,7 @@ adjustment_saturation = 2.0
 [node name="SolarSystem" type="Node3D"]
 script = ExtResource("1_ks12t")
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+[node name="Backdrop" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_sabak")
 
 [node name="Earth" parent="." instance=ExtResource("3_bobqk")]

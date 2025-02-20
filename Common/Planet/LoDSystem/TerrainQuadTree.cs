@@ -402,7 +402,6 @@ public partial class TerrainQuadTree : Node
 
 TODO(Argyraspides, 16/02/2025) There is a lot to do here ...
 
-
 Bug #3 (Unknown): I'm unsure whether the .NET garbage collector is actually doing anything, and running a memory profiler
 to check heap allocations on all three generational heaps (and total heap) doesn't show them changing. Calling "queuem_free"
 only frees the C++ object in the Godot engine, but the actual TerrainQuadTreeNode reference remains in the C# world. I have
@@ -410,16 +409,9 @@ tried explicitly setting any and all references to null for TerrainQuadTreeNode 
 freed them (by using the GodotUtils.IsValid() function), but I haven't actually observed the heap memory usage going down.
 Then again, I didn't really watch the profiler for more than a couple minutes.
 
-Bug #4: Happened only a couple times but sometimes I see a big black square as one of the map tiles. I think I caught one when
-the Godot debugger said something like "Object reference not set to instance of object" when referring to either a TerrainChunk
-or map tile, but I'm not sure
+Bug #4: Happened only a couple times but sometimes I see a big black square as one of the map tiles.
 
 Bug #6: It seems we never cull nodes unless we start zooming out. This causes us to actually exceed our maximum node threshold
 sometimes. We should be culling regardless of what happens so long as we don't cull what the user is currently viewing.
 
-Bug #7: In the InitializeTerrainQuadTreeNodeMesh() function, sometimes the node chunk is null when we try and set the position and size,
-even though we literally did a null check before entering the function. Idk why.
-
-Bug #8: Tried zooming in way too far one time and it crashed. I don't know why. Error message involved trying to access an
-object that was already disposed of
 */
