@@ -136,14 +136,14 @@ public partial class TerrainQuadTreeUpdater : Node
         if (!GodotUtils.IsValid(node)) { return; }
 
         // Splitting happens top-down, so we do it first prior to recursing down further
-        if (node.IsLoadedInScene && ShouldSplit(node))
+        if (node.IsVisible && ShouldSplit(node))
         {
             m_terrainQuadTree.SplitQueueNodes.Enqueue(node);
             ArrayMesh m = GenerateMeshForNode(node);
             return;
         }
 
-        if (!node.IsLoadedInScene)
+        if (!node.IsVisible)
         {
             foreach (var childNode in node.ChildNodes)
             {
@@ -220,7 +220,7 @@ public partial class TerrainQuadTreeUpdater : Node
     {
         if (parentNode == null) return;
 
-        if (parentNode.IsLoadedInScene)
+        if (parentNode.IsVisible)
         {
             RemoveSubQuadTreeThreadSafe(parentNode);
             return;

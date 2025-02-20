@@ -327,31 +327,42 @@ public sealed partial class TerrainQuadTree : Node
 
         foreach (var childNode in node.ChildNodes)
         {
-            childNode.IsLoadedInScene = true;
+            childNode.IsVisible = true;
             childNode.Chunk.Visible = true;
         }
 
         node.Chunk.Visible = false;
-        node.IsLoadedInScene = false;
+        node.IsVisible = false;
     }
 
+    /// <summary>
+    /// Merges a parent nodes' children into itself. This simply toggles the visibility of the parent to true,
+    /// and the visibility of the children to false.
+    /// </summary>
+    /// <param name="parent">The parent to merge its children into</param>
     private void MergeNodeChildren(TerrainQuadTreeNode parent)
     {
-        if (!GodotUtils.IsValid(parent)) return;
+        if (!GodotUtils.IsValid(parent)) { return; }
 
         parent.Chunk.Visible = true;
-        parent.IsLoadedInScene = true;
+        parent.IsVisible = true;
 
         foreach (var childNode in parent.ChildNodes)
         {
             if (GodotUtils.IsValid(childNode))
             {
                 childNode.Chunk.Visible = false;
-                childNode.IsLoadedInScene = false;
+                childNode.IsVisible = false;
             }
         }
     }
 
+    /// <summary>
+    /// Initializes the mesh of a TerrainQuadTreeNode. Does nothing if the mesh is already initialized,
+    /// otherwise creates a new one for it based on the internal TerrainChunks properties.
+    /// </summary>
+    /// <param name="node">The node to initialize the mesh of (for its TerrainChunk)</param>
+    /// <exception cref="ArgumentNullException"></exception>
     private async Task InitializeTerrainNodeMesh(TerrainQuadTreeNode node)
     {
         if (!GodotUtils.IsValid(node) || !GodotUtils.IsValid(node.Chunk))
@@ -361,18 +372,25 @@ public sealed partial class TerrainQuadTree : Node
 
         ValidateTerrainNodeForMeshInitialization(node);
 
+        // If the mesh is invalid this means this is the very first time we are loading up this node into the
+        // scene tree
         if (!GodotUtils.IsValid(node.Chunk.MeshInstance))
         {
             ArrayMesh meshSegment = await GenerateMeshForNode(node);
             node.Chunk.MeshInstance = new MeshInstance3D { Mesh = meshSegment };
+
+            AddChild(node);
+
+            node.Chunk.SetPositionAndSize(); // Set the position of the chunk itself
+            node.SetPosition(node.Chunk.Position); // Set the position of the node (copy chunk position)
+
+            node.Chunk.Name = GenerateChunkName(node);
+
+            node.Chunk.Load();
         }
 
-        node.Chunk.Load();
-        AddChild(node);
-        node.IsLoadedInScene = true;
-        node.Chunk.SetPositionAndSize();
-        node.SetPosition(node.Chunk.Position);
-        node.Chunk.Name = GenerateChunkName(node);
+        node.IsVisible = true;
+        node.Chunk.Visible = true;
     }
 
     private async Task<ArrayMesh> GenerateMeshForNode(TerrainQuadTreeNode node)
