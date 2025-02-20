@@ -294,7 +294,7 @@ public partial class TerrainQuadTree : Node
 
     private async void InitializeTerrainNodeMesh(TerrainQuadTreeNode node)
     {
-        if (!GodotUtils.IsValid(node))
+        if (!GodotUtils.IsValid(node) || !GodotUtils.IsValid(node.Chunk))
         {
             throw new ArgumentNullException("Trying to initialize terrain node mesh that is null");
         }
