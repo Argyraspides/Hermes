@@ -12,6 +12,7 @@ public partial class TerrainQuadTreeUpdater : Node
     private readonly int m_quadTreeUpdateIntervalMs = 250;
     private volatile bool m_isRunning = false;
     private volatile bool m_canPerformSearch = true;
+    private volatile bool m_canPerformCulling = false;
 
     public Thread UpdateQuadTreeThread { get; private set; }
     public Thread CullQuadTreeThread { get; private set; }
@@ -23,6 +24,9 @@ public partial class TerrainQuadTreeUpdater : Node
     [Signal]
     public delegate void QuadTreeUpdatesDeterminedEventHandler();
 
+    [Signal]
+    public delegate void CullQuadTreeFinishedEventHandler();
+
     #endregion Signals
 
     #region Constructor & Thread Management
@@ -30,7 +34,10 @@ public partial class TerrainQuadTreeUpdater : Node
     public TerrainQuadTreeUpdater(TerrainQuadTree terrainQuadTree)
     {
         m_terrainQuadTree = terrainQuadTree ?? throw new ArgumentNullException(nameof(terrainQuadTree));
+
         m_terrainQuadTree.QuadTreeUpdated += OnQuadTreeUpdated;
+        CullQuadTreeFinished += OnCullingFinished;
+
         StartUpdateThread();
     }
 
@@ -45,7 +52,7 @@ public partial class TerrainQuadTreeUpdater : Node
             new Thread(StartCullingThreadFunction) { IsBackground = true, Name = "CullQuadTreeThread" };
 
         UpdateQuadTreeThread.Start();
-        CullQuadTreeThread.Start();
+        //CullQuadTreeThread.Start();
         m_isRunning = true;
     }
 
@@ -55,7 +62,7 @@ public partial class TerrainQuadTreeUpdater : Node
         {
             try
             {
-                if (m_canPerformSearch && m_terrainQuadTree.RootNodes != null)
+                if (m_canPerformCulling && m_terrainQuadTree.RootNodes != null)
                 {
                     lock (m_terrainQuadTree.rootNodeLock)
                     {
@@ -67,6 +74,12 @@ public partial class TerrainQuadTreeUpdater : Node
                             }
                         }
                     }
+                }
+
+                if (m_canPerformCulling)
+                {
+                    EmitSignal(SignalName.CullQuadTreeFinished);
+                    m_canPerformCulling = false;
                 }
 
                 Thread.Sleep(m_quadTreeUpdateIntervalMs);
@@ -139,7 +152,6 @@ public partial class TerrainQuadTreeUpdater : Node
         if (node.IsVisible && ShouldSplit(node))
         {
             m_terrainQuadTree.SplitQueueNodes.Enqueue(node);
-            ArrayMesh m = GenerateMeshForNode(node);
             return;
         }
 
@@ -168,29 +180,40 @@ public partial class TerrainQuadTreeUpdater : Node
         if (node.Depth >= m_terrainQuadTree.m_maxDepth) return false;
 
         float distanceToCamera = node.Position.DistanceTo(m_terrainQuadTree.CameraPosition);
-        return m_terrainQuadTree.m_splitThresholds[node.Depth] > distanceToCamera;
+        bool shouldSplit = m_terrainQuadTree.m_splitThresholds[node.Depth] > distanceToCamera;
+
+        return shouldSplit;
     }
 
     private bool ShouldMerge(TerrainQuadTreeNode node)
     {
         if (!GodotUtils.IsValid(node)) return false;
-        if (node.Depth <= m_terrainQuadTree.m_minDepth + 1) return false;
+        if (node.Depth < m_terrainQuadTree.m_minDepth) return false;
 
         float distanceToCamera = node.Position.DistanceTo(m_terrainQuadTree.CameraPosition);
-        return m_terrainQuadTree.m_mergeThresholds[node.Depth - 1] < distanceToCamera;
+        bool shouldMerge = m_terrainQuadTree.m_mergeThresholds[node.Depth] < distanceToCamera;
+
+        return shouldMerge;
     }
 
     private bool ShouldMergeChildren(TerrainQuadTreeNode node)
     {
-        if (node == null) throw new ArgumentNullException(nameof(node), "node cannot be null");
+        if (!GodotUtils.IsValid(node)) { return false; }
 
-        bool shouldAllChildrenMerge = false;
         foreach (var childNode in node.ChildNodes)
         {
-            shouldAllChildrenMerge |= ShouldMerge(childNode);
+            if (!GodotUtils.IsValid(childNode) || !childNode.IsVisible) // Not a leaf
+            {
+                return false;
+            }
+
+            if (!ShouldMerge(childNode)) // Not far enough
+            {
+                return false;
+            }
         }
 
-        return shouldAllChildrenMerge;
+        return true;
     }
 
     #endregion Update Logic
@@ -218,7 +241,7 @@ public partial class TerrainQuadTreeUpdater : Node
 
     private void CullUnusedNodes(TerrainQuadTreeNode parentNode)
     {
-        if (parentNode == null) return;
+        if (!GodotUtils.IsValid(parentNode)) { return; }
 
         if (parentNode.IsVisible)
         {
@@ -252,7 +275,15 @@ public partial class TerrainQuadTreeUpdater : Node
 
     #endregion Node Management
 
+    // Called via signal when the TerrainQuadTree finishes splitting/merging all nodes in its queue
     private void OnQuadTreeUpdated()
+    {
+        // m_canPerformCulling = true;
+        m_canPerformSearch = true;
+    }
+
+    // Called via signal when the TerrainQuadTreeUpdater finishes culling all nodes in the scene tree (one iteration)
+    private void OnCullingFinished()
     {
         m_canPerformSearch = true;
     }

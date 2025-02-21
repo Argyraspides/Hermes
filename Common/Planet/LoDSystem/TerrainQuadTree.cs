@@ -52,7 +52,7 @@ public sealed partial class TerrainQuadTree : Node
 
     // To prevent hysterisis and oscillation between merging/splitting at fine boundaries, we multiply the merge
     // thresholds to be greater than the split thresholds
-    public const float MergeThresholdFactor = 1.5F;
+    public const float MergeThresholdFactor = 1.15F;
 
     // Hard limit of allowed depth of the quadtree
     public const int MaxDepthLimit = 23;
@@ -164,12 +164,18 @@ public sealed partial class TerrainQuadTree : Node
     private void InitializeAltitudeThresholds()
     {
         m_splitThresholds = new double[m_maxDepth + 1];
-        m_mergeThresholds = new double[m_maxDepth + 1];
+        m_mergeThresholds = new double[m_maxDepth + 2];
 
         for (int zoom = 0; zoom < m_maxDepth; zoom++)
         {
             m_splitThresholds[zoom] = m_baseAltitudeThresholds[zoom];
-            m_mergeThresholds[zoom] = m_baseAltitudeThresholds[zoom] * MergeThresholdFactor;
+        }
+
+        for (int zoom = 1; zoom < m_maxDepth; zoom++)
+        {
+            m_mergeThresholds[zoom] =
+                m_splitThresholds[zoom - 1] *
+                MergeThresholdFactor;
         }
     }
 
@@ -182,8 +188,11 @@ public sealed partial class TerrainQuadTree : Node
         CameraPosition = m_camera.Position;
         if (m_canUpdateQuadTree)
         {
-            ProcessSplitQueue();
-            ProcessMergeQueue();
+            lock (rootNodeLock)
+            {
+                ProcessSplitQueue();
+                ProcessMergeQueue();
+            }
 
             if (SplitQueueNodes.IsEmpty && MergeQueueNodes.IsEmpty)
             {
