@@ -52,7 +52,7 @@ public partial class TerrainQuadTreeUpdater : Node
             new Thread(StartCullingThreadFunction) { IsBackground = true, Name = "CullQuadTreeThread" };
 
         UpdateQuadTreeThread.Start();
-        //CullQuadTreeThread.Start();
+        CullQuadTreeThread.Start();
         m_isRunning = true;
     }
 
@@ -155,12 +155,9 @@ public partial class TerrainQuadTreeUpdater : Node
             return;
         }
 
-        if (!node.IsVisible)
+        foreach (var childNode in node.ChildNodes)
         {
-            foreach (var childNode in node.ChildNodes)
-            {
-                UpdateTreeDFS(childNode);
-            }
+            UpdateTreeDFS(childNode);
         }
 
         // Merging happens bottom-up, so we do it after recursing down the tree
@@ -278,8 +275,7 @@ public partial class TerrainQuadTreeUpdater : Node
     // Called via signal when the TerrainQuadTree finishes splitting/merging all nodes in its queue
     private void OnQuadTreeUpdated()
     {
-        // m_canPerformCulling = true;
-        m_canPerformSearch = true;
+        m_canPerformCulling = true;
     }
 
     // Called via signal when the TerrainQuadTreeUpdater finishes culling all nodes in the scene tree (one iteration)
