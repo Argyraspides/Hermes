@@ -25,7 +25,7 @@ using System.Text.Json;
 // so we are unable to pass in "JsonElement" in the MAVLinkJsonMessageReceivedEventHandler.
 // We make a wrapper class here that inherits from GodotObject so that it can handle it
 // properly.
-public partial class JsonWrapper : GodotObject
+public partial class JsonWrapper : RefCounted
 {
     public JsonElement Data { get; set; }
 }
