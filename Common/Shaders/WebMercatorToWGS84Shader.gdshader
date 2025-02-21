@@ -57,9 +57,7 @@ float lat_to_pixel(float lat) {
 // Converts longitude to pixel coordinate on the specific map tile
 // Reference: https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Web_Mercator
 float lon_to_pixel(float lon) {
-    float lon_deg = lon * RAD_TO_DEG_FRAC;
-    float x_mercator = lon_deg;
-    float x = 0.5 + x_mercator / 360.0;
+	float x = 0.5 + lon / TWO_PI;
 
     float n = float(1 << zoom_level);
     float x_tile = n * x;
