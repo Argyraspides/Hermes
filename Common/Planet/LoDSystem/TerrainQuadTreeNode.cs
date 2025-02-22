@@ -49,7 +49,7 @@ public sealed partial class TerrainQuadTreeNode : Node
         Position = position;
     }
 
-    public bool HasChildren()
+    public bool HasAllChildren()
     {
         if (ChildNodes.Length == 0) { return false; }
 

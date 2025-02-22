@@ -331,7 +331,7 @@ public sealed partial class TerrainQuadTree : Node
             throw new ArgumentNullException("Attempting to split an invalid terrain quad tree node");
         }
 
-        if (!node.HasChildren())
+        if (!node.HasAllChildren())
         {
             GenerateChildNodes(node);
             foreach (var childNode in node.ChildNodes)
