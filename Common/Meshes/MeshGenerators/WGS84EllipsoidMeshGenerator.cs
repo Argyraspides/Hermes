@@ -67,7 +67,7 @@ public static class WGS84EllipsoidMeshGenerator
         var vertices = new List<Vector3>();
         var normals = new List<Vector3>();
         var uvs = new List<Vector2>();
-        // UV2 stores lat/lon for your reprojection shader:
+        // UV2 stores lat/lon for the reprojection shader:
         var uv2s = new List<Vector2>();
         var indices = new List<int>();
 
