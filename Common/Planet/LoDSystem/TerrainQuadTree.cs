@@ -480,14 +480,8 @@ public sealed partial class TerrainQuadTree : Node
     private TerrainQuadTreeNode CreateNode(int latTileCoo, int lonTileCoo, int zoomLevel)
     {
         // TODO(Argyraspides, 19/02/2025): Abstract away Mercator/WGS84 specifics from TerrainQuadTree
-        double childLat = MapUtils.TileCoordinateToLatitude(latTileCoo, zoomLevel);
-        double childLon = MapUtils.TileCoordinateToLongitude(lonTileCoo, zoomLevel);
-        double childLatRange = MapUtils.TileToLatRange(latTileCoo, zoomLevel);
-        double childLonRange = MapUtils.TileToLonRange(zoomLevel);
-        double halfChildLatRange = childLatRange / 2;
-        double halfChildLonRange = childLonRange / 2;
-        double childCenterLat = childLat - halfChildLatRange;
-        double childCenterLon = childLon + halfChildLonRange;
+        double childCenterLat = MapUtils.ComputeCenterLatitude(latTileCoo, zoomLevel);
+        double childCenterLon = MapUtils.ComputeCenterLongitude(lonTileCoo, zoomLevel);
 
         var childChunk = new TerrainChunk(new MapTile((float)childCenterLat, (float)childCenterLon, zoomLevel));
         return new TerrainQuadTreeNode(childChunk, zoomLevel);
