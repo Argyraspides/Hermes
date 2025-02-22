@@ -31,7 +31,6 @@ script = ExtResource("1_ks12t")
 environment = SubResource("Environment_sabak")
 
 [node name="Earth" parent="." instance=ExtResource("3_bobqk")]
-m_showWireframe = true
 
 [node name="EarthOrbitalCamera" type="Camera3D" parent="Earth"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -154.961, 0, 0)
