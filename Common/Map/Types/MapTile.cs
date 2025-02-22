@@ -67,7 +67,7 @@ public class MapTile : HermesResource
         InitializeDefaultFields();
     }
 
-    public MapTile(float latitude, float longitude, int zoomLevel)
+    public MapTile(double latitude, double longitude, int zoomLevel)
     {
         Latitude = latitude;
         Longitude = longitude;

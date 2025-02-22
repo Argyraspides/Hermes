@@ -54,14 +54,6 @@ public static class MapUtils
 
     public const double TWO_PI = PI * 2.0;
 
-
-    public enum MapType
-    {
-        SATELLITE,
-        STREET,
-        HYBRID
-    }
-
     /// <summary>
     /// Converts line of latitude (radians) to a latitude tile coordinate (y axis) on the Mercator projection,
     /// using a quadtree to represent the map (each successive zoom level doubles the tiles on the X and Y axis).
