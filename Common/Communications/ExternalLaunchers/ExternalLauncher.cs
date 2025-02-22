@@ -17,6 +17,7 @@
 
 */
 
+namespace Hermes.Common.Communications.ExternalLaunchers;
 
 using Godot;
 using System;
@@ -31,13 +32,14 @@ using System.Threading;
 // is what invokes the Python script in the first place.
 public partial class ExternalLauncher : Node
 {
-
     //	>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> PYTHON INVOKERS <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
     //	  .--.      .-'.      .--.      .--.      .--.      .--.      .`-.      .--.
     //	:::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\
     //	'      `--'      `.-'      `--'      `--'      `--'      `-.'      `--'      `
 
-    private const string m_PYTHON_MAVLINK_LISTENER_LOCAL_SCRIPT_PATH = "res://Common/Communications/Protocols/MAVLink/pymavsdk.py";
+    private const string m_PYTHON_MAVLINK_LISTENER_LOCAL_SCRIPT_PATH =
+        "res://Common/Communications/Protocols/MAVLink/pymavsdk.py";
+
     private string m_pythonMAVLinkListenerAbsoluteScriptPath;
 
     private string m_pythonCommand = "python3";
@@ -88,7 +90,8 @@ public partial class ExternalLauncher : Node
 
     private void InitializePythonMAVLinkListener()
     {
-        m_pythonMAVLinkListenerAbsoluteScriptPath = ProjectSettings.GlobalizePath(m_PYTHON_MAVLINK_LISTENER_LOCAL_SCRIPT_PATH);
+        m_pythonMAVLinkListenerAbsoluteScriptPath =
+            ProjectSettings.GlobalizePath(m_PYTHON_MAVLINK_LISTENER_LOCAL_SCRIPT_PATH);
         m_pythonMAVLinkListenerThread = new Thread(RunPythonMavlinkListenerScript);
         m_pythonMAVLinkListenerThread.Start();
     }
@@ -107,11 +110,7 @@ public partial class ExternalLauncher : Node
                 CreateNoWindow = true
             };
 
-            m_pythonMAVLinkListenerProcess = new Process
-            {
-                StartInfo = startInfo,
-                EnableRaisingEvents = true
-            };
+            m_pythonMAVLinkListenerProcess = new Process { StartInfo = startInfo, EnableRaisingEvents = true };
 
             // Setup event handlers for output and error streams
             m_pythonMAVLinkListenerProcess.OutputDataReceived += (sender, e) =>
@@ -154,7 +153,7 @@ public partial class ExternalLauncher : Node
         {
             try
             {
-                m_pythonMAVLinkListenerProcess.Kill(true);      // true for entire process tree
+                m_pythonMAVLinkListenerProcess.Kill(true); // true for entire process tree
                 m_pythonMAVLinkListenerProcess.WaitForExit(1000);
                 m_pythonMAVLinkListenerProcess.Dispose();
                 m_isPythonMAVLinkListenerProcessRunning = false;
@@ -244,6 +243,4 @@ public partial class ExternalLauncher : Node
     //	:::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\
     //	'      `--'      `.-'      `--'      `--'      `--'      `-.'      `--'      `
     //	<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< GODOT >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
-
 }

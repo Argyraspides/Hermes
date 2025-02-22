@@ -17,10 +17,14 @@
 
 */
 
+using Hermes.Common.Wrappers;
+
+namespace Hermes.Common.Communications.Protocols.MAVLink;
 
 using Godot;
 using System.Text;
 using System.Text.Json;
+using Hermes.Common.Communications.WorldListener;
 
 // The job of the MAVLinkDeserializer is to take in any raw data in the form of a
 // UDP packet, TCP packet, WebSocket packet, etc., and convert it into an in-program
@@ -40,7 +44,6 @@ using System.Text.Json;
 // upon entering the app
 public partial class MAVLinkDeserializer : Node
 {
-
     // Ensure other C# scripts can access this singleton without requiring
     // "GetNode()".
     public static MAVLinkDeserializer Instance { get; private set; }
@@ -56,12 +59,14 @@ public partial class MAVLinkDeserializer : Node
         {
             return;
         }
+
         if (rawMAVLinkJsonPacket.Length == 0)
         {
             return;
         }
 
-        string deserializedMAVLinkJsonMessage = Encoding.UTF8.GetString(rawMAVLinkJsonPacket, 0, rawMAVLinkJsonPacket.Length);
+        string deserializedMAVLinkJsonMessage =
+            Encoding.UTF8.GetString(rawMAVLinkJsonPacket, 0, rawMAVLinkJsonPacket.Length);
 
         deserializedMAVLinkJsonMessage = deserializedMAVLinkJsonMessage.Replace("NaN", "null");
 
@@ -99,6 +104,4 @@ public partial class MAVLinkDeserializer : Node
 
         Instance = this;
     }
-
-
 }

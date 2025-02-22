@@ -1,6 +1,6 @@
 using Godot;
-using System;
-using System.Globalization;
+using Hermes.Universe.SolarSystem;
+using Hermes.Universe.SolarSystem.Planets.Earth;
 
 // TODO(Argyraspides, 16/02/2025): This is implemented absolutely horribly. Just for testing for now
 public partial class MainUI : Control

@@ -17,6 +17,7 @@
 
 */
 
+namespace Hermes.Common.Map.Types;
 
 public enum MapType
 {

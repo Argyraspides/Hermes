@@ -17,12 +17,16 @@
 
 */
 
+using Hermes.Common.Map.Types;
+using Hermes.Common.Networking.HTTP;
+using Hermes.Common.Types;
+
+namespace Hermes.Common.Map.Querying.Bing;
 
 using System.Collections.Generic;
 
 public class BingMapTileQueryParameters : IQueryParameters
 {
-
     public BingMapTileQueryParameters(
         int serverInstance,
         MapType mapType,
@@ -32,7 +36,6 @@ public class BingMapTileQueryParameters : IQueryParameters
         Language language
     )
     {
-
         if (serverInstance < 0 || serverInstance >= 4)
             throw new System.ArgumentOutOfRangeException(
                 nameof(serverInstance),

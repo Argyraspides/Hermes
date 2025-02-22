@@ -17,6 +17,8 @@
 
 */
 
+namespace Hermes.Common.Communications.WorldListener;
+
 // TODO: Add a description on what exactly this is
 public static class KnownWorlds
 {

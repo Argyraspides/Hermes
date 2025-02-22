@@ -21,6 +21,7 @@ namespace Hermes.Common.Planet.LoDSystem;
 
 using System;
 using Godot;
+using Hermes.Common.GodotUtils;
 
 /// <summary>
 /// An individual node in a quadtree structure meant to represent TerrainChunks.

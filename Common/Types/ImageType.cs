@@ -1,3 +1,5 @@
+namespace Hermes.Common.Types;
+
 public enum ImageType
 {
     BMP = 0,

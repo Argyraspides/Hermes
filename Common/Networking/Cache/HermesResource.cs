@@ -17,9 +17,9 @@
 
 */
 
+namespace Hermes.Common.Networking.Cache;
 
 using Godot;
-
 
 /// <summary>
 /// Represents an abstract base class for managing resources with unique hash identification.

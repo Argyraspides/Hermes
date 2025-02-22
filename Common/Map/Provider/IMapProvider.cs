@@ -17,6 +17,10 @@
 
 */
 
+using Hermes.Common.Map.Types;
+using Hermes.Common.Networking.HTTP;
+
+namespace Hermes.Common.Map.Provider;
 
 using System.Threading.Tasks;
 

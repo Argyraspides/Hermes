@@ -1,3 +1,5 @@
+namespace Hermes.Common.GodotUtils;
+
 /// <summary>
 /// Some useful utilities for Godot related stuff that isn't available in the native Godot engine, or would require lots of
 /// boilerplate to make.

@@ -17,6 +17,7 @@
 
 */
 
+namespace Hermes.Common.Networking.HTTP;
 
 /// <summary>
 /// This interface defines a contract for classes that build URLs. The TParameters

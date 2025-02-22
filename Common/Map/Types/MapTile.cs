@@ -17,6 +17,11 @@
 
 */
 
+using Hermes.Common.Map.Utils;
+using Hermes.Common.Networking.Cache;
+using Hermes.Common.Types;
+
+namespace Hermes.Common.Map.Types;
 
 using Godot;
 using System;

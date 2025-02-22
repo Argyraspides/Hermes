@@ -20,6 +20,8 @@
 
 using Godot;
 using System.Text.Json;
+using Hermes.Common.Communications.Protocols.MAVLink;
+using Hermes.Common.Wrappers;
 
 
 // This class' sole purpose is to take a MAVLink message and convert it into an in-program
@@ -82,71 +84,72 @@ using System.Text.Json;
 //
 public partial class MAVLinkStateConverter : Node
 {
-	// Signal equivalent in C#
-	[Signal]
-	public delegate void VehicleCoreStateReceivedEventHandler(CoreState coreState);
+    // Signal equivalent in C#
+    [Signal]
+    public delegate void VehicleCoreStateReceivedEventHandler(CoreState coreState);
 
 
-	// Converts a MAVLink JSON message into a core vehicle state.
-	// A core vehicle state is a state that applies to all vehicles regardless
-	// of what it does/doesn't have, e.g., a position, a velocity, an acceleration, etc.
-	public CoreState ConvertMavlinkJsonToCoreState(JsonWrapper wrapper)
-	{
-		var coreState = new CoreState();
-		JsonElement jsonMessage = wrapper.Data;
+    // Converts a MAVLink JSON message into a core vehicle state.
+    // A core vehicle state is a state that applies to all vehicles regardless
+    // of what it does/doesn't have, e.g., a position, a velocity, an acceleration, etc.
+    public CoreState ConvertMavlinkJsonToCoreState(JsonWrapper wrapper)
+    {
+        var coreState = new CoreState();
+        JsonElement jsonMessage = wrapper.Data;
 
-		int msgId = jsonMessage.GetProperty("msgid").GetInt32();
+        int msgId = jsonMessage.GetProperty("msgid").GetInt32();
 
-		switch (msgId)
-		{
-			case 0: // Heartbeat message
-				int vehicleType = jsonMessage.GetProperty("type").GetInt32();
+        switch (msgId)
+        {
+            case 0: // Heartbeat message
+                int vehicleType = jsonMessage.GetProperty("type").GetInt32();
 
-				switch (vehicleType)
-				{
-					case 2:
-						coreState.VehicleType = VehicleType.GenericQuadcopter;
-						break;
-				}
-				break;
+                switch (vehicleType)
+                {
+                    case 2:
+                        coreState.VehicleType = VehicleType.GenericQuadcopter;
+                        break;
+                }
 
-			case 33: // GLOBAL_POSITION_INT message
-					 // Earth Position
-				coreState.EarthPosition = new Vector3(
-					jsonMessage.GetProperty("lat").GetInt32() / 1e7f,  // Convert to degrees
-					jsonMessage.GetProperty("lon").GetInt32() / 1e7f,  // Convert to degrees
-					jsonMessage.GetProperty("alt").GetInt32() / 1e2f   // Convert to meters
-				);
+                break;
 
-				// Ground Velocity (convert from cm/s to m/s)
-				coreState.GroundVel = new Vector3(
-					jsonMessage.GetProperty("vx").GetInt32() / 1e2f,
-					jsonMessage.GetProperty("vy").GetInt32() / 1e2f,
-					jsonMessage.GetProperty("vz").GetInt32() / 1e2f
-				);
+            case 33: // GLOBAL_POSITION_INT message
+                // Earth Position
+                coreState.EarthPosition = new Vector3(
+                    jsonMessage.GetProperty("lat").GetInt32() / 1e7f, // Convert to degrees
+                    jsonMessage.GetProperty("lon").GetInt32() / 1e7f, // Convert to degrees
+                    jsonMessage.GetProperty("alt").GetInt32() / 1e2f // Convert to meters
+                );
 
-				// Earth Heading (convert from centidegrees to degrees)
-				coreState.EarthHeading = jsonMessage.GetProperty("hdg").GetInt32() / 1e2f;
-				break;
-		}
+                // Ground Velocity (convert from cm/s to m/s)
+                coreState.GroundVel = new Vector3(
+                    jsonMessage.GetProperty("vx").GetInt32() / 1e2f,
+                    jsonMessage.GetProperty("vy").GetInt32() / 1e2f,
+                    jsonMessage.GetProperty("vz").GetInt32() / 1e2f
+                );
 
-		return coreState;
-	}
+                // Earth Heading (convert from centidegrees to degrees)
+                coreState.EarthHeading = jsonMessage.GetProperty("hdg").GetInt32() / 1e2f;
+                break;
+        }
 
-
-	// JSON message has been received from the MAVLink deserializer.
-	// Here we convert the MAVLink message to a state and emit the appropriate signal
-	// that a state has been created.
-	private void OnMavLinkDeserializerMavlinkJsonMessageReceived(JsonWrapper mavlinkJsonPacket)
-	{
-		var coreState = ConvertMavlinkJsonToCoreState(mavlinkJsonPacket);
-		EmitSignal("VehicleCoreStateReceived", coreState);
-	}
+        return coreState;
+    }
 
 
-	public override void _Ready()
-	{
-		var mavlinkDeserializerNode = MAVLinkDeserializer.Instance;
-		mavlinkDeserializerNode.MAVLinkJsonMessageReceived += OnMavLinkDeserializerMavlinkJsonMessageReceived;
-	}
+    // JSON message has been received from the MAVLink deserializer.
+    // Here we convert the MAVLink message to a state and emit the appropriate signal
+    // that a state has been created.
+    private void OnMavLinkDeserializerMavlinkJsonMessageReceived(JsonWrapper mavlinkJsonPacket)
+    {
+        var coreState = ConvertMavlinkJsonToCoreState(mavlinkJsonPacket);
+        EmitSignal("VehicleCoreStateReceived", coreState);
+    }
+
+
+    public override void _Ready()
+    {
+        var mavlinkDeserializerNode = MAVLinkDeserializer.Instance;
+        mavlinkDeserializerNode.MAVLinkJsonMessageReceived += OnMavLinkDeserializerMavlinkJsonMessageReceived;
+    }
 }

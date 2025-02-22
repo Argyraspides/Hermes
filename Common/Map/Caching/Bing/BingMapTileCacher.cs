@@ -17,6 +17,9 @@
 
 */
 
+using Hermes.Common.Networking.Cache;
+
+namespace Hermes.Common.Map.Caching.Bing;
 
 using System;
 using System.IO;

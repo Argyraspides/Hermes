@@ -16,6 +16,8 @@ Y8,        88   d8""""""""8b    88    d8""""""""8b
 
 */
 
+namespace Hermes.Common.Planet;
+
 using Godot;
 using Hermes.Common.Planet.LoDSystem;
 

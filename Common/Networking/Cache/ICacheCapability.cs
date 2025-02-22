@@ -17,6 +17,7 @@
 
 */
 
+namespace Hermes.Common.Networking.Cache;
 
 public interface ICacheCapability<Resource>
 {

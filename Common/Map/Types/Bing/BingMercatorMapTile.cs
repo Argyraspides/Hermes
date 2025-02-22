@@ -17,6 +17,8 @@
 
 */
 
+using Hermes.Common.Types;
+
 namespace Hermes.Common.Map.Types.Bing;
 
 using Hermes.Common.Map.Utils;

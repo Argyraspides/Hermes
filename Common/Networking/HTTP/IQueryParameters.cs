@@ -1,4 +1,3 @@
-
 /*
 
 
@@ -18,9 +17,9 @@
 
 */
 
+namespace Hermes.Common.Networking.HTTP;
 
 using System.Collections.Generic;
-
 
 /// <summary>
 /// This interface defines the contract for any class that wants to represent query parameters
@@ -29,7 +28,6 @@ using System.Collections.Generic;
 /// </summary>
 public interface IQueryParameters
 {
-
     /// <summary>
     /// This method converts the implementing class's properties into a dictionary
     /// where both keys and values are strings. This is useful for URL construction
@@ -37,5 +35,4 @@ public interface IQueryParameters
     /// </summary>
     /// <returns></returns>
     IDictionary<string, string> ToQueryDictionary();
-
 }

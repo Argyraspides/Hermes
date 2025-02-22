@@ -17,6 +17,11 @@
 
 */
 
+using Hermes.Common.Map.Caching.Bing;
+using Hermes.Common.Map.Querying.Bing;
+using Hermes.Common.Map.Types;
+
+namespace Hermes.Common.Map.Provider.Bing;
 
 using System.Threading.Tasks;
 using Hermes.Common.Map.Types.Bing;

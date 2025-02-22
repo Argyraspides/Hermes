@@ -17,6 +17,7 @@
 
 */
 
+namespace Hermes.Common.Communications.WorldListener;
 
 using Godot;
 using System;
@@ -28,7 +29,6 @@ using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Text;
-
 
 // The WorldListener does nothing but listen to any data from the outside world
 // such as UDP packets, TCP packets, WebSocket packets, etc., and emits signals
@@ -50,261 +50,261 @@ using System.Text;
 // an Autoload (Singleton) in Hermes.
 public partial class WorldListener : Node
 {
+    // Ensure other C# scripts can access this singleton without requiring
+    // "GetNode()".
+    public static WorldListener Instance { get; private set; }
 
-	// Ensure other C# scripts can access this singleton without requiring
-	// "GetNode()".
-	public static WorldListener Instance { get; private set; }
+    //	>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> UDP <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    //	  .--.      .-'.      .--.      .--.      .--.      .--.      .`-.      .--.
+    //	:::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\
+    //	'      `--'      `.-'      `--'      `--'      `--'      `-.'      `--'      `
 
-	//	>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> UDP <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-	//	  .--.      .-'.      .--.      .--.      .--.      .--.      .`-.      .--.
-	//	:::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\
-	//	'      `--'      `.-'      `--'      `--'      `--'      `-.'      `--'      `
+    // Maps UDP Port #'s to UdpClient
+    private ConcurrentDictionary<UdpClient, IPEndPoint> m_udpClients;
+    private Thread m_udpThread;
+    private CancellationTokenSource m_udpCancelTokenSrc;
+    private int m_udpPollDelay;
 
-	// Maps UDP Port #'s to UdpClient
-	private ConcurrentDictionary<UdpClient, IPEndPoint> m_udpClients;
-	private Thread m_udpThread;
-	private CancellationTokenSource m_udpCancelTokenSrc;
-	private int m_udpPollDelay;
+    [Signal]
+    public delegate void UdpPacketReceivedEventHandler(byte[] udpPacket);
 
-	[Signal]
-	public delegate void UdpPacketReceivedEventHandler(byte[] udpPacket);
+    // Queue of function calls which invoke the UdpPacketReceivedEventHandler(byte[] packet) signal
+    private ConcurrentQueue<Action> udpPacketReceivedSignalQueue;
 
-	// Queue of function calls which invoke the UdpPacketReceivedEventHandler(byte[] packet) signal
-	private ConcurrentQueue<Action> udpPacketReceivedSignalQueue;
+    private void InitializeUdpServer()
+    {
+        m_udpClients = new ConcurrentDictionary<UdpClient, IPEndPoint>();
+        m_udpCancelTokenSrc = new CancellationTokenSource();
+        udpPacketReceivedSignalQueue = new ConcurrentQueue<Action>();
+        m_udpPollDelay = 100; // 100ms
 
-	private void InitializeUdpServer()
-	{
-		m_udpClients = new ConcurrentDictionary<UdpClient, IPEndPoint>();
-		m_udpCancelTokenSrc = new CancellationTokenSource();
-		udpPacketReceivedSignalQueue = new ConcurrentQueue<Action>();
-		m_udpPollDelay = 100; // 100ms
+        // // Listen in on UDP port 14550 on any address by default (standard MAVLink port)
+        // IPEndPoint defaultEndpoint = new IPEndPoint(IPAddress.Any, KnownWorlds.DEFAULT_MAVLINK_PORT);
+        // udpClients.TryAdd(new UdpClient(defaultEndpoint), defaultEndpoint);
 
-		// // Listen in on UDP port 14550 on any address by default (standard MAVLink port)
-		// IPEndPoint defaultEndpoint = new IPEndPoint(IPAddress.Any, KnownWorlds.DEFAULT_MAVLINK_PORT);
-		// udpClients.TryAdd(new UdpClient(defaultEndpoint), defaultEndpoint);
+        m_udpThread = new Thread(ListenToUdp);
+        m_udpThread.Start();
+    }
 
-		m_udpThread = new Thread(ListenToUdp);
-		m_udpThread.Start();
+    private void ListenToUdp()
+    {
+        while (!m_udpCancelTokenSrc.IsCancellationRequested)
+        {
+            foreach (KeyValuePair<UdpClient, IPEndPoint> kvp in m_udpClients)
+            {
+                UdpClient udpClient = kvp.Key;
+                IPEndPoint ipEndPoint = kvp.Value;
+                byte[] rawUdpData = udpClient.Receive(ref ipEndPoint);
+                if (rawUdpData.IsEmpty()) continue;
+                udpPacketReceivedSignalQueue.Enqueue(() => ReceivedUdpPacket(rawUdpData));
+            }
 
-	}
+            Thread.Sleep(m_udpPollDelay);
+        }
+    }
 
-	private void ListenToUdp()
-	{
-		while (!m_udpCancelTokenSrc.IsCancellationRequested)
-		{
-			foreach (KeyValuePair<UdpClient, IPEndPoint> kvp in m_udpClients)
-			{
-				UdpClient udpClient = kvp.Key;
-				IPEndPoint ipEndPoint = kvp.Value;
-				byte[] rawUdpData = udpClient.Receive(ref ipEndPoint);
-				if (rawUdpData.IsEmpty()) continue;
-				udpPacketReceivedSignalQueue.Enqueue(() => ReceivedUdpPacket(rawUdpData));
-			}
-			Thread.Sleep(m_udpPollDelay);
-		}
-	}
+    private void ReceivedUdpPacket(byte[] udpPacket)
+    {
+        EmitSignal("UdpPacketReceived", udpPacket);
+    }
 
-	private void ReceivedUdpPacket(byte[] udpPacket)
-	{
-		EmitSignal("UdpPacketReceived", udpPacket);
-	}
+    //	  .--.      .-'.      .--.      .--.      .--.      .--.      .`-.      .--.
+    //	:::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\
+    //	'      `--'      `.-'      `--'      `--'      `--'      `-.'      `--'      `
+    //	<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< UDP >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    //	>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> WEBSOCKET <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    //	  .--.      .-'.      .--.      .--.      .--.      .--.      .`-.      .--.
+    //	:::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\
+    //	'      `--'      `.-'      `--'      `--'      `--'      `-.'      `--'      `
+    private ConcurrentDictionary<ClientWebSocket, Uri> m_websocketClients;
+    private CancellationTokenSource m_websocketCancelTokenSrc;
+    private ConcurrentQueue<Action> m_websocketPacketReceivedSignalQueue;
 
-	//	  .--.      .-'.      .--.      .--.      .--.      .--.      .`-.      .--.
-	//	:::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\
-	//	'      `--'      `.-'      `--'      `--'      `--'      `-.'      `--'      `
-	//	<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< UDP >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-	//	>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> WEBSOCKET <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-	//	  .--.      .-'.      .--.      .--.      .--.      .--.      .`-.      .--.
-	//	:::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\
-	//	'      `--'      `.-'      `--'      `--'      `--'      `-.'      `--'      `
-	private ConcurrentDictionary<ClientWebSocket, Uri> m_websocketClients;
-	private CancellationTokenSource m_websocketCancelTokenSrc;
-	private ConcurrentQueue<Action> m_websocketPacketReceivedSignalQueue;
+    private Thread m_websocketThread;
+    private int m_websocketPollDelay;
 
-	private Thread m_websocketThread;
-	private int m_websocketPollDelay;
+    [Signal]
+    public delegate void WebSocketPacketReceivedEventHandler(byte[] websocketPacket);
 
-	[Signal]
-	public delegate void WebSocketPacketReceivedEventHandler(byte[] websocketPacket);
+    private async void InitializeWebSocketServer()
+    {
+        m_websocketClients = new ConcurrentDictionary<ClientWebSocket, Uri>();
+        m_websocketCancelTokenSrc = new CancellationTokenSource();
+        m_websocketPacketReceivedSignalQueue = new ConcurrentQueue<Action>();
+        m_websocketPollDelay = 100; // 100ms
 
-	private async void InitializeWebSocketServer()
-	{
-		m_websocketClients = new ConcurrentDictionary<ClientWebSocket, Uri>();
-		m_websocketCancelTokenSrc = new CancellationTokenSource();
-		m_websocketPacketReceivedSignalQueue = new ConcurrentQueue<Action>();
-		m_websocketPollDelay = 100; // 100ms
+        try
+        {
+            await AttemptConnectDefaultWebSocketWithRetries();
+        }
+        catch (Exception ex)
+        {
+            GD.PrintErr($"HERMES: Failed to connect to WebSocket after all retries: {ex.Message}");
+            return;
+        }
 
-		try
-		{
-			await AttemptConnectDefaultWebSocketWithRetries();
-		}
-		catch (Exception ex)
-		{
-			GD.PrintErr($"HERMES: Failed to connect to WebSocket after all retries: {ex.Message}");
-			return;
-		}
+        m_websocketThread = new Thread(ListenToWebSockets);
+        m_websocketThread.Start();
+    }
 
-		m_websocketThread = new Thread(ListenToWebSockets);
-		m_websocketThread.Start();
-	}
+    private async Task AttemptConnectDefaultWebSocketWithRetries()
+    {
+        int maxRetries = 4;
+        int currentRetry = 0;
+        int baseDelay = 1000; // 1000ms
 
-	private async Task AttemptConnectDefaultWebSocketWithRetries()
-	{
-		int maxRetries = 4;
-		int currentRetry = 0;
-		int baseDelay = 1000; // 1000ms
+        while (currentRetry < maxRetries)
+        {
+            ClientWebSocket client = new ClientWebSocket();
+            try
+            {
+                await AttemptConnectDefaultWebSocket(client);
+                m_websocketClients.TryAdd(client, new Uri(KnownWorlds.DEFAULT_WEBSOCKET_URL));
+                GD.Print(
+                    $"HERMES: Successfully connected to WebSocket on attempt {currentRetry + 1}, URL: {KnownWorlds.DEFAULT_WEBSOCKET_URL}");
+                return;
+            }
+            catch (Exception ex)
+            {
+                currentRetry++;
+                if (currentRetry >= maxRetries)
+                {
+                    throw;
+                }
 
-		while (currentRetry < maxRetries)
-		{
-			ClientWebSocket client = new ClientWebSocket();
-			try
-			{
-				await AttemptConnectDefaultWebSocket(client);
-				m_websocketClients.TryAdd(client, new Uri(KnownWorlds.DEFAULT_WEBSOCKET_URL));
-				GD.Print($"HERMES: Successfully connected to WebSocket on attempt {currentRetry + 1}, URL: {KnownWorlds.DEFAULT_WEBSOCKET_URL}");
-				return;
-			}
-			catch (Exception ex)
-			{
-				currentRetry++;
-				if (currentRetry >= maxRetries)
-				{
-					throw;
-				}
+                // Calculate delay with exponential backoff: 1s, 2s, 4s
+                int delayMs = baseDelay * (int)Math.Pow(2, currentRetry - 1);
+                GD.PrintErr(
+                    $"HERMES: Failed to connect to WebSocket (attempt {currentRetry}/{maxRetries}): {ex.Message}");
+                GD.PrintErr($"HERMES: Retrying in {delayMs / 1000} seconds...");
 
-				// Calculate delay with exponential backoff: 1s, 2s, 4s
-				int delayMs = baseDelay * (int)Math.Pow(2, currentRetry - 1);
-				GD.PrintErr($"HERMES: Failed to connect to WebSocket (attempt {currentRetry}/{maxRetries}): {ex.Message}");
-				GD.PrintErr($"HERMES: Retrying in {delayMs / 1000} seconds...");
+                await Task.Delay(delayMs);
+            }
+        }
+    }
 
-				await Task.Delay(delayMs);
-			}
-		}
-	}
+    private async Task AttemptConnectDefaultWebSocket(ClientWebSocket client)
+    {
+        await client.ConnectAsync(
+            new Uri(KnownWorlds.DEFAULT_WEBSOCKET_URL),
+            m_websocketCancelTokenSrc.Token
+        );
+    }
 
-	private async Task AttemptConnectDefaultWebSocket(ClientWebSocket client)
-	{
-		await client.ConnectAsync(
-			new Uri(KnownWorlds.DEFAULT_WEBSOCKET_URL),
-			m_websocketCancelTokenSrc.Token
-		);
-	}
+    private void ReceivedWebSocketPacket(byte[] websocketPacket)
+    {
+        EmitSignal("WebSocketPacketReceived", websocketPacket);
+    }
 
-	private void ReceivedWebSocketPacket(byte[] websocketPacket)
-	{
-		EmitSignal("WebSocketPacketReceived", websocketPacket);
-	}
+    private async void ListenToWebSockets()
+    {
+        while (!m_websocketCancelTokenSrc.IsCancellationRequested)
+        {
+            foreach (KeyValuePair<ClientWebSocket, Uri> clientPair in m_websocketClients)
+            {
+                ClientWebSocket client = clientPair.Key;
 
-	private async void ListenToWebSockets()
-	{
+                byte[] buffer = new byte[1024 * 4];
 
-		while (!m_websocketCancelTokenSrc.IsCancellationRequested)
-		{
-			foreach (KeyValuePair<ClientWebSocket, Uri> clientPair in m_websocketClients)
-			{
-				ClientWebSocket client = clientPair.Key;
+                try
+                {
+                    if (client.State == WebSocketState.Open)
+                    {
+                        using var timeoutToken = new CancellationTokenSource(5000);
 
-				byte[] buffer = new byte[1024 * 4];
+                        WebSocketReceiveResult result = await client.ReceiveAsync(
+                            new ArraySegment<byte>(buffer),
+                            CancellationToken.None
+                        );
 
-				try
-				{
-					if (client.State == WebSocketState.Open)
-					{
-						using var timeoutToken = new CancellationTokenSource(5000);
+                        var receivedMessage = Encoding.UTF8.GetString(buffer, 0, result.Count);
 
-						WebSocketReceiveResult result = await client.ReceiveAsync(
-							new ArraySegment<byte>(buffer),
-							CancellationToken.None
-						);
+                        if (result.Count > 0)
+                        {
+                            byte[] packet = new byte[result.Count];
+                            Array.Copy(buffer, packet, result.Count);
 
-						var receivedMessage = Encoding.UTF8.GetString(buffer, 0, result.Count);
+                            m_websocketPacketReceivedSignalQueue.Enqueue(() => { ReceivedWebSocketPacket(packet); });
+                        }
+                    }
 
-						if (result.Count > 0)
-						{
-							byte[] packet = new byte[result.Count];
-							Array.Copy(buffer, packet, result.Count);
+                    if (client.State == WebSocketState.CloseSent)
+                    {
+                    }
 
-							m_websocketPacketReceivedSignalQueue.Enqueue(() => { ReceivedWebSocketPacket(packet); });
-						}
-					}
-					if (client.State == WebSocketState.CloseSent)
-					{
-					}
-					if (client.State == WebSocketState.Closed || client.State == WebSocketState.CloseReceived)
-					{
-					}
-				}
-				catch (OperationCanceledException)
-				{
-					continue;
-				}
-				catch (WebSocketException ex)
-				{
-					GD.PrintErr($"WebSocket error: {ex.Message}");
-					m_websocketClients.TryRemove(clientPair);
-				}
-				catch (Exception ex)
-				{
-					GD.PrintErr($"Unexpected error: {ex.Message}");
-				}
-			}
+                    if (client.State == WebSocketState.Closed || client.State == WebSocketState.CloseReceived)
+                    {
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    continue;
+                }
+                catch (WebSocketException ex)
+                {
+                    GD.PrintErr($"WebSocket error: {ex.Message}");
+                    m_websocketClients.TryRemove(clientPair);
+                }
+                catch (Exception ex)
+                {
+                    GD.PrintErr($"Unexpected error: {ex.Message}");
+                }
+            }
 
-			Thread.Sleep(m_websocketPollDelay);
-		}
-	}
-
-
-
-	//	  .--.      .-'.      .--.      .--.      .--.      .--.      .`-.      .--.
-	//	:::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\
-	//	'      `--'      `.-'      `--'      `--'      `--'      `-.'      `--'      `
-	//	<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< WEBSOCKET >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-	//	>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> GODOT <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-	//	  .--.      .-'.      .--.      .--.      .--.      .--.      .`-.      .--.
-	//	:::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\
-	//	'      `--'      `.-'      `--'      `--'      `--'      `-.'      `--'      `
-
-	// Called when the node enters the scene tree for the first time.
-	public override void _Ready()
-	{
-		InitializeUdpServer();
-		InitializeWebSocketServer();
-
-		Instance = this;
-	}
-
-	// Called every frame. 'delta' is the elapsed time since the previous frame.
-	public override void _Process(double delta)
-	{
-		ProcessConcurrentQueue(udpPacketReceivedSignalQueue);
-		ProcessConcurrentQueue(m_websocketPacketReceivedSignalQueue);
-	}
-
-	public override void _ExitTree()
-	{
-		m_udpCancelTokenSrc.Cancel();
-		m_websocketCancelTokenSrc.Cancel();
-
-		m_udpThread.Join();
-		m_websocketThread.Join();
-
-		foreach (KeyValuePair<ClientWebSocket, Uri> kvp in m_websocketClients) kvp.Key.Dispose();
-		foreach (KeyValuePair<UdpClient, IPEndPoint> kvp in m_udpClients) kvp.Key.Dispose();
-	}
-
-	private void ProcessConcurrentQueue(ConcurrentQueue<Action> concurrentQueue)
-	{
-		if (concurrentQueue.IsEmpty) return;
-		while (concurrentQueue.TryDequeue(out Action action))
-		{
-			action?.Invoke();
-		}
-	}
+            Thread.Sleep(m_websocketPollDelay);
+        }
+    }
 
 
-	//	  .--.      .-'.      .--.      .--.      .--.      .--.      .`-.      .--.
-	//	:::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\
-	//	'      `--'      `.-'      `--'      `--'      `--'      `-.'      `--'      `
-	//	<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< GODOT >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    //	  .--.      .-'.      .--.      .--.      .--.      .--.      .`-.      .--.
+    //	:::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\
+    //	'      `--'      `.-'      `--'      `--'      `--'      `-.'      `--'      `
+    //	<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< WEBSOCKET >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    //	>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> GODOT <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    //	  .--.      .-'.      .--.      .--.      .--.      .--.      .`-.      .--.
+    //	:::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\
+    //	'      `--'      `.-'      `--'      `--'      `--'      `-.'      `--'      `
 
+    // Called when the node enters the scene tree for the first time.
+    public override void _Ready()
+    {
+        InitializeUdpServer();
+        InitializeWebSocketServer();
+
+        Instance = this;
+    }
+
+    // Called every frame. 'delta' is the elapsed time since the previous frame.
+    public override void _Process(double delta)
+    {
+        ProcessConcurrentQueue(udpPacketReceivedSignalQueue);
+        ProcessConcurrentQueue(m_websocketPacketReceivedSignalQueue);
+    }
+
+    public override void _ExitTree()
+    {
+        m_udpCancelTokenSrc.Cancel();
+        m_websocketCancelTokenSrc.Cancel();
+
+        m_udpThread.Join();
+        m_websocketThread.Join();
+
+        foreach (KeyValuePair<ClientWebSocket, Uri> kvp in m_websocketClients) kvp.Key.Dispose();
+        foreach (KeyValuePair<UdpClient, IPEndPoint> kvp in m_udpClients) kvp.Key.Dispose();
+    }
+
+    private void ProcessConcurrentQueue(ConcurrentQueue<Action> concurrentQueue)
+    {
+        if (concurrentQueue.IsEmpty) return;
+        while (concurrentQueue.TryDequeue(out Action action))
+        {
+            action?.Invoke();
+        }
+    }
+
+
+    //	  .--.      .-'.      .--.      .--.      .--.      .--.      .`-.      .--.
+    //	:::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\
+    //	'      `--'      `.-'      `--'      `--'      `--'      `-.'      `--'      `
+    //	<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< GODOT >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 }

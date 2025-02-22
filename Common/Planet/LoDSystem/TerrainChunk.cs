@@ -16,9 +16,16 @@ Y8,        88   d8""""""""8b    88    d8""""""""8b
 
 */
 
+using Hermes.Common.Map.Querying;
+using Hermes.Common.Map.Types;
+using Hermes.Common.Map.Utils;
+
+namespace Hermes.Common.Planet.LoDSystem;
+
 using System;
 using System.Threading.Tasks;
 using Godot;
+using Hermes.Common.GodotUtils;
 
 /// <summary>
 /// Represents a single chunk of planetary terrain in a quadtree structure.

@@ -17,6 +17,7 @@
 
 */
 
+namespace Hermes.Common.Wrappers;
 
 using Godot;
 using System.Text.Json;

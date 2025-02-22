@@ -20,6 +20,7 @@
 
 using System;
 using Godot;
+using Hermes.Common.Types;
 
 namespace Hermes.Common.Map.Utils;
 

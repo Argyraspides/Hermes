@@ -17,22 +17,22 @@
 
 */
 
+namespace Hermes.Universe.SolarSystem;
 
 using Godot;
 using System;
 
 public partial class SolarSystem : Node3D
 {
+    StaticBody3D earth;
 
-	StaticBody3D earth;
+    public override void _Ready()
+    {
+        earth = GetNode<StaticBody3D>("Earth");
+    }
 
-	public override void _Ready()
-	{
-		earth = GetNode<StaticBody3D>("Earth");
-	}
-
-	// Called every frame. 'delta' is the elapsed time since the previous frame.
-	public override void _Process(double delta)
-	{
-	}
+    // Called every frame. 'delta' is the elapsed time since the previous frame.
+    public override void _Process(double delta)
+    {
+    }
 }

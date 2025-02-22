@@ -17,9 +17,16 @@
 
 */
 
+using Hermes.Common.Map.Types;
+using Hermes.Common.Map.Utils;
+using Hermes.Common.Types;
+
+namespace Hermes.Common.Map.Querying;
 
 using Godot;
 using System.Threading.Tasks;
+using Hermes.Common.Map.Provider.Bing;
+using Hermes.Common.Map.Querying.Bing;
 
 public partial class MapAPI : Node
 {

@@ -1,4 +1,3 @@
-
 #
 #
 #
@@ -17,11 +16,6 @@
 #
 
 
-
-
-
-
-
 #     .--.      .-'.      .--.      .--.      .--.      .--.      .`-.      .--.      #
 #    :::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\    #
 #    '      `--'      `.-'      `--'      `--'      `--'      `-.'      `--'      `   #
@@ -30,21 +24,16 @@ import json
 import asyncio
 import websockets
 
-from websockets.server      import WebSocketServerProtocol
-from threading              import Thread
-from pymavlink              import mavutil
-from datetime               import datetime
-from collections            import deque
-from typing                 import Deque, Dict, List, Set, Any, Optional
+from websockets.server import WebSocketServerProtocol
+from threading import Thread
+from pymavlink import mavutil
+from datetime import datetime
+from collections import deque
+from typing import Deque, Dict, List, Set, Any, Optional
 
 #     .--.      .-'.      .--.      .--.      .--.      .--.      .`-.      .--.      #
 #    :::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\::::::::.\    #
 #    '      `--'      `.-'      `--'      `--'      `--'      `-.'      `--'      `   #
-
-
-
-
-
 
 
 deserializedMavlinkMessageBuffer: Deque[str] = deque(maxlen=1024)
@@ -53,7 +42,6 @@ mavlinkUdpUrls: List[str] = ["localhost:14550"]
 # Static typing ... no matter what
 ConnectedClients = Set[WebSocketServerProtocol]
 connectedClients: ConnectedClients = set()
-
 
 
 # MAVLink Listener uses MAVSDK to listen in on UDP ports for MAVLink messages.
@@ -72,7 +60,6 @@ class MAVLinkListener:
                 self.connections.append(connection)
             except Exception as e:
                 print(f"Failed to connect to {url}: {e}")
-
 
     def mavlinkMessageToDictionary(self, msg: Any) -> Dict[str, Any]:
 
@@ -131,6 +118,7 @@ class WebSocketServer:
     - Being able to send MAVLink messages to vehicles
     - Being able to add/remove UDP/TCP ports to listen to
     """
+
     async def handleClient(self, websocket: WebSocketServerProtocol):
         try:
             connectedClients.add(websocket)
@@ -147,6 +135,7 @@ class WebSocketServer:
     TODO: Ensure that this websocket server URL
     can somehow be known outside of this script during runtime
     """
+
     async def startWebsocketServer(self) -> None:
         self.server = await websockets.serve(
             self.handleClient,
@@ -171,16 +160,10 @@ class WebSocketServer:
                     for client in connectedClients
                 ]
                 await asyncio.gather(*broadcastTasks)
-            await asyncio.sleep(0.05)
-
-
-
-
+            await asyncio.sleep(0.05)  # TODO: Change to like some async handler thingy, dont just constantly poll
 
 
 if __name__ == "__main__":
-
-
     mavlinkListener: MAVLinkListener = MAVLinkListener()
     mavlinkListenerThread: Thread = Thread(target=mavlinkListener.listenForMavlinkMessages)
     mavlinkListenerThread.start()
@@ -189,5 +172,3 @@ if __name__ == "__main__":
     asyncio.run(webSocketServer.publishDeserializedMAVLinkMessages())
 
     mavlinkListenerThread.join()
-
-

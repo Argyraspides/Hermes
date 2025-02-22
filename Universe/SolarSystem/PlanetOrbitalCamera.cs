@@ -17,6 +17,10 @@
 
 */
 
+using Hermes.Common.Map.Utils;
+
+namespace Hermes.Universe.SolarSystem;
+
 using System;
 using System.Linq;
 using Godot;
