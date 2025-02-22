@@ -204,7 +204,12 @@ public partial class TerrainChunk : Node3D
         float lonScale = SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM;
 
         GlobalPosition = cartesianPos;
-        // TODO(Argyraspides, 15/02/2025) East-west inversion probably should be handled in the shader projection code?
-        Transform = Transform.Scaled(new Vector3(-latScale, lonScale, latScale));
+
+        Transform = Transform.Scaled(
+            new Vector3(
+                -latScale, // Negative as the shader outputs the image with east/west inverted
+                lonScale,
+                latScale
+            ));
     }
 }
