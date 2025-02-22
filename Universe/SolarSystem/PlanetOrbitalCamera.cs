@@ -56,7 +56,6 @@ public partial class PlanetOrbitalCamera : Camera3D
 
     public int CurrentZoomLevel;
 
-    // TODO? These should match the altitude thresholds in the TerrainQuadTree
     private readonly double[] m_baseAltitudeThresholds = new double[]
     {
         156000.0f, 78000.0f, 39000.0f, 19500.0f, 9750.0f, 4875.0f, 2437.5f, 1218.75f, 609.375f, 304.6875f, 152.34f,
