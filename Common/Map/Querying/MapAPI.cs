@@ -27,8 +27,6 @@ public partial class MapAPI : Node
 
     public MapAPI()
     {
-        // TODO(Argyraspides, 02/02/2025): Do not hardcode map provider. Make this configurable somehow
-        // through maybe injection idk
         m_mapProvider = new BingMapProvider();
     }
 
