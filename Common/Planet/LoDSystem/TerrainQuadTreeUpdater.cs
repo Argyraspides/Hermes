@@ -42,7 +42,7 @@ using Godot;
 /// m_canPerformSearch becomes true ->
 /// We traverse the tree to see which nodes should be split/merged, and add them to the TerrainQuadTree's queues ->
 /// We signal to the TerrainQuadTree that we have finished determining which ndoes should be split/merged ->
-/// TerrainQuadTree goes through its queue to split/mrge nodes ->
+/// TerrainQuadTree goes through its queue to split/merge nodes ->
 ///
 /// Repeat ...
 ///
@@ -254,22 +254,18 @@ public partial class TerrainQuadTreeUpdater : Node
     /// <summary>
     /// Checks if we should merge the children of the terrain quad tree node.
     /// In the LoD system, we only split as far as we need to, thus leaf nodes are
-    /// the ones visible in the scene tree.
+    /// the ones visible in the scene tree. We only merge the children back into the parent
+    /// if ALL children are too far from the camera.
     /// </summary>
-    /// <param name="node"></param>
-    /// <returns></returns>
-    private bool ShouldMergeChildren(TerrainQuadTreeNode node)
+    /// <param name="parentNode">Parent node whose children will be tested for merging</param>
+    /// <returns>True if the parents children should be merged, otherwise false</returns>
+    private bool ShouldMergeChildren(TerrainQuadTreeNode parentNode)
     {
-        if (!GodotUtils.IsValid(node)) { return false; }
+        if (!GodotUtils.IsValid(parentNode)) { return false; }
 
-        foreach (var childNode in node.ChildNodes)
+        foreach (var childNode in parentNode.ChildNodes)
         {
-            if (!GodotUtils.IsValid(childNode))
-            {
-                return false;
-            }
-
-            if (!ShouldMerge(childNode)) // Not far enough
+            if (!GodotUtils.IsValid(childNode) || !ShouldMerge(childNode))
             {
                 return false;
             }
