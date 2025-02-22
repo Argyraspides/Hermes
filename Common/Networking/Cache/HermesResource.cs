@@ -28,14 +28,12 @@ using Godot;
 /// </summary>
 public abstract class HermesResource
 {
-
     public HermesResource()
     {
     }
 
     // Tracks whether a valid hash has been generated for this resource
-    private bool m_hashGenerated = false;
-    private string m_hash;
+    private string m_hash = null;
 
 
     /// <summary>
@@ -55,10 +53,11 @@ public abstract class HermesResource
     {
         get
         {
-            if (!m_hashGenerated)
+            if (m_hash == null)
             {
-                GD.PushWarning("Resource: " + this + " cannot be uniquely identified as it doesn't contain the minimum amount of information for identification");
+                GenerateHash();
             }
+
             return m_hash;
         }
         private set => m_hash = value;
@@ -77,12 +76,12 @@ public abstract class HermesResource
         if (IsHashable())
         {
             Hash = GenerateHashCore();
-            m_hashGenerated = true;
         }
         else
         {
             Hash = string.Empty;
-            m_hashGenerated = false;
+            GD.PushError("Unable to generate hash of " + this +
+                         " as there is not enough information to uniquely identify it");
         }
     }
 

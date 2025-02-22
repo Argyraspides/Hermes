@@ -66,17 +66,11 @@ public class BingMercatorMapTile : MapTile
         }
 
         ResourceData = imageData;
-
-        // TODO(Argyraspides, 08/02/2025) Find a way to do this automatically in the Resource class after the most derived class' constructor is
-        // already finished. Do not assume a programmer will remember to GenerateHash() after deriving a class from Resource. This should
-        // be completely automatic.
-        GenerateHash();
         ResourcePath = Hash;
     }
 
     public BingMercatorMapTile()
     {
-        GenerateHash();
         ResourcePath = Hash;
     }
 
