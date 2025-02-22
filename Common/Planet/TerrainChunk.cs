@@ -139,7 +139,8 @@ public partial class TerrainChunk : Node3D
         var shaderMat = new ShaderMaterial { Shader = ResourceLoader.Load<Shader>(SHADER_PATH) };
         shaderMat.SetShaderParameter("map_tile", texture2D);
         shaderMat.SetShaderParameter("zoom_level", MapTile.ZoomLevel);
-        shaderMat.SetShaderParameter("tile_size", MapTile.Size);
+        shaderMat.SetShaderParameter("tile_width", MapTile.Width);
+        shaderMat.SetShaderParameter("tile_height", MapTile.Height);
 
         if (GodotUtils.IsValid(MeshInstance3D))
         {

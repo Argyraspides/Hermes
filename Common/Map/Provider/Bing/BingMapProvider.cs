@@ -19,6 +19,7 @@
 
 
 using System.Threading.Tasks;
+using Hermes.Common.Map.Types.Bing;
 
 public class BingMapProvider : IMapProvider<BingMapTileQueryParameters>
 {

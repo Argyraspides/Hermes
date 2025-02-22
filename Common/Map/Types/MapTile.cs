@@ -24,7 +24,8 @@ using System;
 public class MapTile : HermesResource
 {
     // Tile dimensions
-    public int Size { get; protected set; }
+    public int Width { get; protected set; }
+    public int Height { get; protected set; }
 
     // Geographic coordinates and ranges
     public double Latitude { get; protected set; }
@@ -86,7 +87,8 @@ public class MapTile : HermesResource
         MapTileType = MapTileType.WEB_MERCATOR;
 
         // Initialize with common web mercator tile dimensions
-        Size = 256;
+        Width = 256;
+        Height = 256;
     }
 
     private void AutoDetermineFields(double latitude, double longitude, int zoomLevel)

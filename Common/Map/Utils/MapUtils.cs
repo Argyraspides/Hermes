@@ -289,53 +289,6 @@ public static class MapUtils
 
 
     /// <summary>
-    /// Determines the type of image format based on raw image data
-    /// </summary>
-    /// <param name="imageData"></param>
-    /// <returns>A MapImageType enum containing the specific image type</returns>
-    public static ImageType GetImageFormat(byte[] imageData)
-    {
-        // Check if we have enough bytes to check the header
-        if (imageData == null || imageData.Length < 4)
-        {
-            return ImageType.UNKNOWN;
-        }
-
-        // JPEG starts with FF D8 FF
-        if (imageData[0] == 0xFF && imageData[1] == 0xD8 && imageData[2] == 0xFF)
-        {
-            return ImageType.JPEG;
-        }
-
-        // PNG starts with 89 50 4E 47 0D 0A 1A 0A
-        if (imageData[0] == 0x89 && imageData[1] == 0x50 && imageData[2] == 0x4E && imageData[3] == 0x47)
-        {
-            return ImageType.PNG;
-        }
-
-        // GIF starts with GIF87a or GIF89a
-        if (imageData[0] == 0x47 && imageData[1] == 0x49 && imageData[2] == 0x46 && imageData[3] == 0x38)
-        {
-            return ImageType.GIF;
-        }
-
-        // BMP starts with BM
-        if (imageData[0] == 0x42 && imageData[1] == 0x4D)
-        {
-            return ImageType.BMP;
-        }
-
-        // TIFF starts with II (little endian) or MM (big endian)
-        if ((imageData[0] == 0x49 && imageData[1] == 0x49) ||
-            (imageData[0] == 0x4D && imageData[1] == 0x4D))
-        {
-            return ImageType.TIFF;
-        }
-
-        return ImageType.UNKNOWN;
-    }
-
-    /// <summary>
     /// Converts latitude and longitude from radians to the Earth-Centered, Earth-Fixed (ECEF)
     /// coordinate system, which is a Cartesian system centered at the Earth's center of mass.
     /// Returns value as kilometers. Takes the Earth as a WGS84 ellipsoid.
@@ -365,37 +318,6 @@ public static class MapUtils
             (float)(z / SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM), // Y is up in Godot
             (float)(y / SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM) // Swap Y and Z for Godot's coordinate system
         );
-    }
-
-    /// <summary>
-    /// Converts a raw byte array to an image texture.
-    /// Detects whether the image is a JPEG, PNG, or BMP, and returns the
-    /// appropriate ImageTexture
-    /// </summary>
-    public static ImageTexture ByteArrayToImageTexture(byte[] rawMapData)
-    {
-        ImageType imageType = GetImageFormat(rawMapData);
-
-        Image image = new Image();
-
-        if (imageType == ImageType.JPEG)
-        {
-            image.LoadJpgFromBuffer(rawMapData);
-        }
-
-        if (imageType == ImageType.PNG)
-        {
-            image.LoadPngFromBuffer(rawMapData);
-        }
-
-        if (imageType == ImageType.BMP)
-        {
-            image.LoadBmpFromBuffer(rawMapData);
-        }
-
-        ImageTexture texture = new ImageTexture();
-        texture.SetImage(image);
-        return texture;
     }
 
 

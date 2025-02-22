@@ -21,6 +21,7 @@
 using System;
 using System.IO;
 using Godot;
+using Hermes.Common.Map.Types.Bing;
 using FileAccess = Godot.FileAccess;
 
 public class BingMapTileCacher : ICacheCapability<BingMercatorMapTile>

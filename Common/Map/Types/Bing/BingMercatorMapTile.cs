@@ -17,6 +17,9 @@
 
 */
 
+namespace Hermes.Common.Map.Types.Bing;
+
+using Hermes.Common.Map.Utils;
 
 public class BingMercatorMapTile : MapTile
 {
@@ -40,7 +43,7 @@ public class BingMercatorMapTile : MapTile
     {
         MapType = mapType;
         Language = language;
-        MapImageType = (imageType == ImageType.UNKNOWN) ? MapUtils.GetImageFormat(imageData) : imageType;
+        MapImageType = (imageType == ImageType.UNKNOWN) ? ImageUtils.GetImageFormat(imageData) : imageType;
 
         QuadKey = quadKey;
 
@@ -56,14 +59,10 @@ public class BingMercatorMapTile : MapTile
         LatitudeRange = MapUtils.TileToLatRange(LatitudeTileCoo, ZoomLevel);
         LongitudeRange = MapUtils.TileToLonRange(LongitudeTileCoo);
 
-        // Standard web mercator tile dimensions
-        // TODO(Argyraspides, 06/02/2025) Change this so that the image resolution is determined from the raw byte array
-        // at runtime instead of being hardcoded like this
-        Size = 256;
-
         if (imageData != null)
         {
-            Texture2D = MapUtils.ByteArrayToImageTexture(imageData);
+            (Width, Height) = ImageUtils.GetImageDimensions(imageData);
+            Texture2D = ImageUtils.ByteArrayToImageTexture(imageData);
         }
 
         ResourceData = imageData;
