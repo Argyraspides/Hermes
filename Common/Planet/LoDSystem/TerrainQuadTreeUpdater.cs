@@ -264,7 +264,7 @@ public partial class TerrainQuadTreeUpdater : Node
 
         foreach (var childNode in node.ChildNodes)
         {
-            if (!GodotUtils.IsValid(childNode) || !childNode.IsVisible) // child node is not a leaf
+            if (!GodotUtils.IsValid(childNode))
             {
                 return false;
             }
