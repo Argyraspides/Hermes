@@ -171,6 +171,12 @@ public partial class TerrainQuadTreeUpdater : Node
                                               m_terrainQuadTree.m_maxNodes *
                                               m_terrainQuadTree.MaxNodesCleanupThresholdPercent;
 
+    /// <summary>
+    /// Determines if the node should be split in the quadtree based on a distance threshold
+    /// </summary>
+    /// <param name="node">Node that will be tested for splitting</param>
+    /// <returns>True if the node should split, otherwise false</returns>
+    /// <exception cref="ArgumentNullException">Thrown if the node is invalid</exception>
     private bool ShouldSplit(TerrainQuadTreeNode node)
     {
         if (!GodotUtils.IsValid(node)) throw new ArgumentNullException(nameof(node), "node cannot be null");
@@ -193,13 +199,20 @@ public partial class TerrainQuadTreeUpdater : Node
         return shouldMerge;
     }
 
+    /// <summary>
+    /// Checks if we should merge the children of the terrain quad tree node.
+    /// In the LoD system, we only split as far as we need to, thus leaf nodes are
+    /// the ones visible in the scene tree.
+    /// </summary>
+    /// <param name="node"></param>
+    /// <returns></returns>
     private bool ShouldMergeChildren(TerrainQuadTreeNode node)
     {
         if (!GodotUtils.IsValid(node)) { return false; }
 
         foreach (var childNode in node.ChildNodes)
         {
-            if (!GodotUtils.IsValid(childNode) || !childNode.IsVisible) // Not a leaf
+            if (!GodotUtils.IsValid(childNode) || !childNode.IsVisible) // child node is not a leaf
             {
                 return false;
             }
@@ -217,6 +230,11 @@ public partial class TerrainQuadTreeUpdater : Node
 
     #region Node Management
 
+    /// <summary>
+    /// Removes a quadtree node from the scene tree itself. The object will be deleted in the Godot world,
+    /// but not in the C# world
+    /// </summary>
+    /// <param name="node"></param>
     private void RemoveQuadTreeNode(TerrainQuadTreeNode node)
     {
         if (GodotUtils.IsValid(node))
@@ -225,9 +243,13 @@ public partial class TerrainQuadTreeUpdater : Node
         }
     }
 
+    /// <summary>
+    /// Completely removes the entire subtree of the parent node
+    /// </summary>
+    /// <param name="parent"></param>
     private void RemoveSubQuadTreeThreadSafe(TerrainQuadTreeNode parent)
     {
-        if (parent == null) return;
+        if (!GodotUtils.IsValid(parent)) return;
 
         foreach (var childNode in parent.ChildNodes)
         {
@@ -236,25 +258,39 @@ public partial class TerrainQuadTreeUpdater : Node
         }
     }
 
+    /// <summary>
+    /// Culls any unused nodes in the scene tree. An unused node is any node which is not visible (hence not
+    /// useful to the player) AND has no visible ancestors.
+    /// </summary>
+    /// <param name="parentNode">The parent node whose entire subtree will be culled</param>
     private void CullUnusedNodes(TerrainQuadTreeNode parentNode)
     {
         if (!GodotUtils.IsValid(parentNode)) { return; }
 
+        // We only want to cull nodes BELOW the ones that are currently visible in the scene
         if (parentNode.IsVisible)
         {
+            // Cull all sub-trees below the parent
             RemoveSubQuadTreeThreadSafe(parentNode);
             return;
         }
 
+        // Recursively destroy all nodes
         foreach (var terrainQuadTreeNode in parentNode.ChildNodes)
         {
-            if (terrainQuadTreeNode != null)
+            if (GodotUtils.IsValid(terrainQuadTreeNode))
             {
                 CullUnusedNodes(terrainQuadTreeNode);
             }
         }
     }
 
+    /// <summary>
+    /// Generates a mesh for the TerrainChunk of the corresponding quadtree node. This is used for spherical
+    /// planets whose surface is represented with meshes.
+    /// </summary>
+    /// <param name="node"> Node for which we want to generate a mesh for its terrain chunk </param>
+    /// <returns>Returns an ArrayMesh representing the mesh of the TerrainChunk</returns>
     private ArrayMesh GenerateMeshForNode(TerrainQuadTreeNode node)
     {
         ArrayMesh meshSegment =
@@ -272,13 +308,17 @@ public partial class TerrainQuadTreeUpdater : Node
 
     #endregion Node Management
 
-    // Called via signal when the TerrainQuadTree finishes splitting/merging all nodes in its queue
+    /// <summary>
+    /// Called via signal when the TerrainQuadTree finishes splitting/merging all nodes in its queue
+    /// </summary>
     private void OnQuadTreeUpdated()
     {
         m_canPerformCulling = true;
     }
 
-    // Called via signal when the TerrainQuadTreeUpdater finishes culling all nodes in the scene tree (one iteration)
+    /// <summary>
+    ///  Called via signal when the TerrainQuadTreeUpdater finishes culling all nodes in the scene tree (one iteration)
+    /// </summary>
     private void OnCullingFinished()
     {
         m_canPerformSearch = true;

@@ -30,7 +30,7 @@ using Godot;
 /// is meant for use in 3D space.
 ///
 /// It works by taking in a Camera3D instance, and based on the camera's FOV and distance from each
-/// TerrainChunk in the world, will determine whether or not chunks need to be split/merged. This is meant to be
+/// TerrainChunk in the world, will determine whether chunks need to be split/merged. This is meant to be
 /// used within Planet objects, where the TerrainQuadTree will act as the central manager for the LoD system of
 /// the TerrainChunk's that represent the planet's surface.
 ///
@@ -38,6 +38,12 @@ using Godot;
 /// in order to queue up TerrainQuadTreeNode's that should be split/merged. This TerrainQuadTreeUpdater also culls unused
 /// nodes on a different thread. Nodes that need to be split/merged are queued up in TerrainQuadTree and processed during
 /// the game loop over many frames to reduce in-game lag.
+///
+/// When the TerrainQuadTree is finished merging/splitting, it will signal to the TerrainQuadTreeUpdater that it has completed
+/// this work. The TerrainQuadTreeUpdater will then attempt to cull any unused nodes. When it is finished doing so, it will
+/// again traverse the quadtree to determine which nodes should be split/merged, signal to the TerrainQuadTree when it is finished,
+/// and the cycle repeats.
+///
 /// </summary>
 public sealed partial class TerrainQuadTree : Node
 {
@@ -129,7 +135,7 @@ public sealed partial class TerrainQuadTree : Node
 
     #region Constructor & Initialization
 
-    public TerrainQuadTree(PlanetOrbitalCamera camera, int maxNodes = 17500, int minDepth = 6, int maxDepth = 20)
+    public TerrainQuadTree(PlanetOrbitalCamera camera, int maxNodes = 7500, int minDepth = 6, int maxDepth = 20)
     {
         ValidateConstructorArguments(maxDepth, minDepth, maxNodes);
 
@@ -330,7 +336,7 @@ public sealed partial class TerrainQuadTree : Node
             GenerateChildNodes(node);
             foreach (var childNode in node.ChildNodes)
             {
-                await InitializeTerrainNodeMesh(childNode);
+                InitializeTerrainNodeMesh(childNode);
             }
         }
 
@@ -372,7 +378,7 @@ public sealed partial class TerrainQuadTree : Node
     /// </summary>
     /// <param name="node">The node to initialize the mesh of (for its TerrainChunk)</param>
     /// <exception cref="ArgumentNullException"></exception>
-    private async Task InitializeTerrainNodeMesh(TerrainQuadTreeNode node)
+    private void InitializeTerrainNodeMesh(TerrainQuadTreeNode node)
     {
         if (!GodotUtils.IsValid(node) || !GodotUtils.IsValid(node.Chunk))
         {
@@ -385,7 +391,7 @@ public sealed partial class TerrainQuadTree : Node
         // scene tree
         if (!GodotUtils.IsValid(node.Chunk.MeshInstance))
         {
-            ArrayMesh meshSegment = await GenerateMeshForNode(node);
+            ArrayMesh meshSegment = GenerateMeshForNode(node);
             node.Chunk.MeshInstance = new MeshInstance3D { Mesh = meshSegment };
 
             AddChild(node);
@@ -402,22 +408,19 @@ public sealed partial class TerrainQuadTree : Node
         node.Chunk.Visible = true;
     }
 
-    private async Task<ArrayMesh> GenerateMeshForNode(TerrainQuadTreeNode node)
+    private ArrayMesh GenerateMeshForNode(TerrainQuadTreeNode node)
     {
-        return await Task.Run(() =>
-        {
-            ArrayMesh meshSegment =
-                // TODO(Argyraspides, 19/02/2025): Please please please abstract this away. Do not hardcode the mesh type we are using.
-                // WGS84 only really applies to the Earth. This won't work for other planets.
-                WGS84EllipsoidMeshGenerator
-                    .CreateEllipsoidMeshSegment(
-                        (float)node.Chunk.MapTile.Latitude,
-                        (float)node.Chunk.MapTile.Longitude,
-                        (float)node.Chunk.MapTile.LatitudeRange,
-                        (float)node.Chunk.MapTile.LongitudeRange
-                    );
-            return meshSegment;
-        });
+        ArrayMesh meshSegment =
+            // TODO(Argyraspides, 19/02/2025): Please please please abstract this away. Do not hardcode the mesh type we are using.
+            // WGS84 only really applies to the Earth. This won't work for other planets.
+            WGS84EllipsoidMeshGenerator
+                .CreateEllipsoidMeshSegment(
+                    (float)node.Chunk.MapTile.Latitude,
+                    (float)node.Chunk.MapTile.Longitude,
+                    (float)node.Chunk.MapTile.LatitudeRange,
+                    (float)node.Chunk.MapTile.LongitudeRange
+                );
+        return meshSegment;
     }
 
     private string GenerateChunkName(TerrainQuadTreeNode node)
@@ -436,6 +439,13 @@ public sealed partial class TerrainQuadTree : Node
             throw new ArgumentNullException(nameof(node.Chunk.MapTile), "Chunk's MapTile is null.");
     }
 
+    /// <summary>
+    /// Generates child nodes for the input TerrainQuadTreeNode. Initializes both the inner TerrainChunk
+    /// and MapTile based on the information inside the given TerrainQuadTreeNode
+    /// </summary>
+    /// <param name="parentNode">Parent node to generate children for</param>
+    /// <exception cref="ArgumentNullException"></exception>
+    /// TODO: If the fields of the parentnode are unknown, we should generate "unknown" children or throw an error
     private void GenerateChildNodes(TerrainQuadTreeNode parentNode)
     {
         if (parentNode == null)
@@ -461,6 +471,13 @@ public sealed partial class TerrainQuadTree : Node
         return (childLatTileCoo, childLonTileCoo);
     }
 
+    /// <summary>
+    /// Creates a TerrainQuadTree node and initializes the TerrainChunk with a corresponding MapTile
+    /// </summary>
+    /// <param name="latTileCoo">The latitude tile coordinate of the MapTile</param>
+    /// <param name="lonTileCoo">The longitude tile coordinate of the MapTile</param>
+    /// <param name="zoomLevel">The zoom level of the MapTile/TerrainChunk/TerrainQuadTreeNode</param>
+    /// <returns></returns>
     private TerrainQuadTreeNode CreateNode(int latTileCoo, int lonTileCoo, int zoomLevel)
     {
         // TODO(Argyraspides, 19/02/2025): Abstract away Mercator/WGS84 specifics from TerrainQuadTree
