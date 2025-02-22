@@ -26,10 +26,10 @@ using Godot;
 /// This class provides core functionality for resource handling, including hash generation
 /// and resource data management.
 /// </summary>
-public abstract class Resource
+public abstract class HermesResource
 {
 
-    public Resource()
+    public HermesResource()
     {
     }
 

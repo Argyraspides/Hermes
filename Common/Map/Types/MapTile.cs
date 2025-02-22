@@ -21,7 +21,7 @@
 using Godot;
 using System;
 
-public class MapTile : Resource
+public class MapTile : HermesResource
 {
     // Tile dimensions
     public int Size { get; protected set; }
