@@ -23,7 +23,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-// TODO: Add documentation on what this is
+/// <summary>
+/// This is a mesh generator that contains function which generate meshes specifically for the WGS84 ellipsoid standard. Used for
+/// constructing the surface of the Earth as a series of meshes
+///
+/// To learn more about what WGS84 means, see below:
+///
+/// https://en.wikipedia.org/wiki/World_Geodetic_System
+/// </summary>
 public static class WGS84EllipsoidMeshGenerator
 {
     private const int LATITUDE_SEGMENTS = 32;
