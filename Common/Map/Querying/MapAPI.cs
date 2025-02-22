@@ -46,11 +46,7 @@ public partial class MapAPI : Node
             mapType,
             MapUtils.LatLonAndZoomToQuadKey(latitude, longitude, zoom),
             mapImageType,
-            // TODO(Argyraspides, 08/02/2025) Don't hardcode API version. I don't really know  how to make this like parametrized though.
-            // Learn the differences between versions and come up with a design decision on how to parametrize this accordingly
             "523",
-            // TODO(Argyraspides, 08/02/2025) I suppose this would just depend on the language setting of Hermes, so this should easily
-            // be parametrized in the future. Maybe a singleton variable injected into here based on the application's language setting
             Language.en
         );
 
