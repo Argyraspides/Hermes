@@ -4,6 +4,32 @@ using Godot;
 
 namespace Hermes.Common.Planet.LoDSystem;
 
+/// <summary>
+/// The TerrainQuadTreeUpdater is meant to perform the following tasks:
+///
+/// - Determining which nodes in the TerrainQuadTree need to be split/merged (job 1)
+/// - Determining which nodes in the TerrainQuadTree need to be culled if we exceed the maximum node count (job 2)
+///
+/// Both these tasks run on separate threads, also separate from the TerrainQuadTree which runs on the main thread
+///
+/// The flow is as follows:
+///
+/// TerrainQuadTree goes through its queue to split/merge nodes ->
+/// TerrainQuadTree signals to TerrainQuadTreeUpdater that it has finished splitting/merging nodes ->
+/// m_canPerformCulling becomes true ->
+/// We traverse the tree to cull all unused nodes ->
+/// TerrainQuadTreeUpdater signals to itself that it has finished culling all nodes ->
+/// m_canPerformSearch becomes true ->
+/// We traverse the tree to see which nodes should be split/merged, and add them to the TerrainQuadTree's queues ->
+/// We signal to the TerrainQuadTree that we have finished determining which ndoes should be split/merged ->
+/// TerrainQuadTree goes through its queue to split/mrge nodes ->
+///
+/// Repeat ...
+///
+/// TerrainQuadTreeUpdater and TerrainQuadTree are tightly coupled by design. Traversing the quadtree is an expensive
+/// procedure and shouldn't be done on the main thread
+///
+/// </summary>
 public partial class TerrainQuadTreeUpdater : Node
 {
     #region Dependencies & State
@@ -11,7 +37,11 @@ public partial class TerrainQuadTreeUpdater : Node
     private readonly TerrainQuadTree m_terrainQuadTree;
     private readonly int m_quadTreeUpdateIntervalMs = 250;
     private volatile bool m_isRunning = false;
+
+    // True if we can perform the DFS search to determine which nodes should be split/merged
     private volatile bool m_canPerformSearch = true;
+
+    // True if we can perform the DFS search to determine which nodes should be culled, and cull them
     private volatile bool m_canPerformCulling = false;
 
     public Thread UpdateQuadTreeThread { get; private set; }
@@ -21,9 +51,11 @@ public partial class TerrainQuadTreeUpdater : Node
 
     #region Signals
 
+    // Signal emitted when we are done determining which nodes should be split/merged
     [Signal]
     public delegate void QuadTreeUpdatesDeterminedEventHandler();
 
+    // Signal emitted when we are done culling all unused nodes
     [Signal]
     public delegate void CullQuadTreeFinishedEventHandler();
 
