@@ -341,8 +341,6 @@ public partial class TerrainQuadTreeUpdater : Node
     private ArrayMesh GenerateMeshForNode(TerrainQuadTreeNode node)
     {
         ArrayMesh meshSegment =
-            // TODO(Argyraspides, 19/02/2025): Please please please abstract this away. Do not hardcode the mesh type we are using.
-            // WGS84 only really applies to the Earth. This won't work for other planets.
             WGS84EllipsoidMeshGenerator
                 .CreateEllipsoidMeshSegment(
                     (float)node.Chunk.MapTile.Latitude,

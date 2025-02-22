@@ -410,8 +410,6 @@ public sealed partial class TerrainQuadTree : Node
     private ArrayMesh GenerateMeshForNode(TerrainQuadTreeNode node)
     {
         ArrayMesh meshSegment =
-            // TODO(Argyraspides, 19/02/2025): Please please please abstract this away. Do not hardcode the mesh type we are using.
-            // WGS84 only really applies to the Earth. This won't work for other planets.
             WGS84EllipsoidMeshGenerator
                 .CreateEllipsoidMeshSegment(
                     (float)node.Chunk.MapTile.Latitude,
@@ -444,11 +442,24 @@ public sealed partial class TerrainQuadTree : Node
     /// </summary>
     /// <param name="parentNode">Parent node to generate children for</param>
     /// <exception cref="ArgumentNullException"></exception>
-    /// TODO: If the fields of the parentnode are unknown, we should generate "unknown" children or throw an error
     private void GenerateChildNodes(TerrainQuadTreeNode parentNode)
     {
-        if (parentNode == null)
+        if (!GodotUtils.IsValid(parentNode))
+        {
             throw new ArgumentNullException(nameof(parentNode), "Cannot generate children for a null node.");
+        }
+
+        if (!GodotUtils.IsValid(parentNode.Chunk))
+        {
+            throw new ArgumentNullException(nameof(parentNode),
+                "Cannot generate children for a node with a null terrain chunk.");
+        }
+
+        if (parentNode.Chunk.MapTile == null)
+        {
+            throw new ArgumentNullException(nameof(parentNode),
+                "Cannot generate children for a node with a null map tile in its terrain chunk.");
+        }
 
         int parentLatTileCoo = parentNode.Chunk.MapTile.LatitudeTileCoo;
         int parentLonTileCoo = parentNode.Chunk.MapTile.LongitudeTileCoo;
@@ -479,7 +490,6 @@ public sealed partial class TerrainQuadTree : Node
     /// <returns></returns>
     private TerrainQuadTreeNode CreateNode(int latTileCoo, int lonTileCoo, int zoomLevel)
     {
-        // TODO(Argyraspides, 19/02/2025): Abstract away Mercator/WGS84 specifics from TerrainQuadTree
         double childCenterLat = MapUtils.ComputeCenterLatitude(latTileCoo, zoomLevel);
         double childCenterLon = MapUtils.ComputeCenterLongitude(lonTileCoo, zoomLevel);
 
