@@ -96,8 +96,12 @@ public partial class TerrainChunk : Node3D
         {
             SHADER_PATH = "res://Common/Shaders/WebMercatorToWGS84Shader.gdshader";
         }
+        else if (mapTile.MapTileType == MapTileType.UNKNOWN)
+        {
+            SHADER_PATH = null;
+            throw new Exception("Cannot create a TerrainChunk as the map tile type is unknown");
+        }
 
-        // TODO(Argyraspides, 02/08/2025): Handle cases where the map tile is unknown
         MeshInstance3D = meshInstance3D;
         ShaderMaterial = shaderMaterial;
     }
@@ -136,19 +140,35 @@ public partial class TerrainChunk : Node3D
     /// <param name="texture2D">The texture to apply to the terrain.</param>
     private void ApplyTexture(Texture2D texture2D)
     {
-        var shaderMat = new ShaderMaterial { Shader = ResourceLoader.Load<Shader>(SHADER_PATH) };
-        shaderMat.SetShaderParameter("map_tile", texture2D);
-        shaderMat.SetShaderParameter("zoom_level", MapTile.ZoomLevel);
-        shaderMat.SetShaderParameter("tile_width", MapTile.Width);
-        shaderMat.SetShaderParameter("tile_height", MapTile.Height);
-
-        if (GodotUtils.IsValid(MeshInstance3D))
+        if (!string.IsNullOrEmpty(SHADER_PATH))
         {
-            MeshInstance3D.MaterialOverride = shaderMat;
+            var shaderMat = new ShaderMaterial { Shader = ResourceLoader.Load<Shader>(SHADER_PATH) };
+            shaderMat.SetShaderParameter("map_tile", texture2D);
+            shaderMat.SetShaderParameter("zoom_level", MapTile.ZoomLevel);
+            shaderMat.SetShaderParameter("tile_width", MapTile.Width);
+            shaderMat.SetShaderParameter("tile_height", MapTile.Height);
+
+            if (GodotUtils.IsValid(MeshInstance3D))
+            {
+                MeshInstance3D.MaterialOverride = shaderMat;
+            }
+            else
+            {
+                throw new ArgumentNullException("MeshInstance3D is not a valid MeshInstance3D");
+            }
         }
         else
         {
-            throw new ArgumentNullException("MeshInstance3D is not a valid MeshInstance3D");
+            GD.PrintErr("Shader material path is null or empty! Using default shader.");
+            var standardShader = new StandardMaterial3D();
+            if (GodotUtils.IsValid(MeshInstance3D))
+            {
+                MeshInstance3D.MaterialOverride = standardShader;
+            }
+            else
+            {
+                throw new ArgumentNullException("MeshInstance3D is not a valid MeshInstance3D");
+            }
         }
     }
 
