@@ -17,11 +17,10 @@
 
 */
 
-using Hermes.Common.Map.Utils;
-using Hermes.Universe.Autoloads;
-
 namespace Hermes.Universe.SolarSystem;
 
+using Hermes.Common.Map.Utils;
+using Hermes.Universe.Autoloads;
 using System;
 using System.Linq;
 using Godot;
@@ -176,12 +175,12 @@ public partial class PlanetOrbitalCamera : Camera3D
 
         UpdateVisibleLatLonRange();
 
-        if (oldAlt != CurrentAltitude)
+        if (!oldAlt.Equals(CurrentAltitude))
         {
             EmitSignal(SignalName.OrbitalCameraAltChanged, CurrentAltitude);
         }
 
-        if (oldLat != CurrentLat || oldLon != CurrentLon)
+        if (!oldLat.Equals(CurrentLat) || !oldLon.Equals(CurrentLon))
         {
             EmitSignal(SignalName.OrbitalCameraLatLonChanged, CurrentLat, CurrentLon);
         }
