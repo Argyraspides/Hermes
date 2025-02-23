@@ -1,0 +1,34 @@
+[remap]
+
+importer="font_data_dynamic"
+type="FontFile"
+uid="uid://c1hhaaiuwms3e"
+path="res://.godot/imported/Equinox Regular.otf-4fae5f35c638866269ca8998f38f1418.fontdata"
+
+[deps]
+
+source_file="res://Universe/UI/Fonts/Equinox/Equinox Regular.otf"
+dest_files=["res://.godot/imported/Equinox Regular.otf-4fae5f35c638866269ca8998f38f1418.fontdata"]
+
+[params]
+
+Rendering=null
+antialiasing=1
+generate_mipmaps=false
+disable_embedded_bitmaps=true
+multichannel_signed_distance_field=false
+msdf_pixel_range=8
+msdf_size=48
+allow_system_fallback=true
+force_autohinter=false
+hinting=1
+subpixel_positioning=1
+oversampling=0.0
+Fallbacks=null
+fallbacks=[]
+Compress=null
+compress=true
+preload=[]
+language_support={}
+script_support={}
+opentype_features={}

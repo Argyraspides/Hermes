@@ -1,10 +1,12 @@
-[gd_scene load_steps=9 format=3 uid="uid://bnaccj7r33kqb"]
+[gd_scene load_steps=13 format=3 uid="uid://bnaccj7r33kqb"]
 
 [ext_resource type="Script" path="res://Universe/SolarSystem/SolarSystem.cs" id="1_ks12t"]
 [ext_resource type="Texture2D" uid="uid://dw16otbm13s3h" path="res://Universe/SolarSystem/Assets/ESO_-_Milky_Way.jpg" id="1_nxqmc"]
 [ext_resource type="PackedScene" uid="uid://u6dcfgabkcf3" path="res://Universe/SolarSystem/Planets/Earth/earth.tscn" id="3_bobqk"]
 [ext_resource type="Script" path="res://Universe/SolarSystem/PlanetOrbitalCamera.cs" id="3_jsn1l"]
-[ext_resource type="Script" path="res://Universe/UI/MainUI.cs" id="5_wcjie"]
+[ext_resource type="Theme" uid="uid://dll7gj5amwt4g" path="res://Universe/UI/Themes/DefaultHermesTheme.tres" id="5_dxgph"]
+[ext_resource type="Script" path="res://Universe/UI/UIComponents/CameraDistanceLabel.cs" id="6_xdu25"]
+[ext_resource type="Script" path="res://Universe/UI/UIComponents/CameraLatLonLabel.cs" id="7_61pj5"]
 
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_enyp5"]
 panorama = ExtResource("1_nxqmc")
@@ -23,6 +25,11 @@ fog_density = 1.0
 fog_sky_affect = 0.015
 adjustment_enabled = true
 adjustment_saturation = 2.0
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_5q0bj"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ftcah"]
+bg_color = Color(0.0705882, 0.0705882, 0.0705882, 1)
 
 [node name="SolarSystem" type="Node3D"]
 script = ExtResource("1_ks12t")
@@ -43,7 +50,9 @@ script = ExtResource("3_jsn1l")
 transform = Transform3D(0.766044, 0.321394, -0.55667, 0, 0.866025, 0.5, 0.642788, -0.383022, 0.663414, 0, 0, -8000)
 light_energy = 0.6
 
-[node name="Control" type="Control" parent="."]
+[node name="UILayer" type="CanvasLayer" parent="."]
+
+[node name="MainUI" type="Control" parent="UILayer"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -51,20 +60,69 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 size_flags_vertical = 4
-script = ExtResource("5_wcjie")
+theme = ExtResource("5_dxgph")
 
-[node name="CameraInfoBar" type="HBoxContainer" parent="Control"]
+[node name="VBoxContainer" type="VBoxContainer" parent="UILayer/MainUI"]
 layout_mode = 1
-anchors_preset = 12
-anchor_top = 1.0
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = -51.0
 grow_horizontal = 2
-grow_vertical = 0
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+alignment = 2
 
-[node name="CameraDistanceLabel" type="RichTextLabel" parent="Control/CameraInfoBar"]
-custom_minimum_size = Vector2(175, 50)
+[node name="ZoomButtons" type="VBoxContainer" parent="UILayer/MainUI/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 8
+
+[node name="ZoomInButton" type="Button" parent="UILayer/MainUI/VBoxContainer/ZoomButtons"]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+theme_override_styles/focus = SubResource("StyleBoxEmpty_5q0bj")
+theme_override_styles/normal = SubResource("StyleBoxFlat_ftcah")
+text = "+"
+
+[node name="ZoomOutButton" type="Button" parent="UILayer/MainUI/VBoxContainer/ZoomButtons"]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 24
+theme_override_styles/focus = SubResource("StyleBoxEmpty_5q0bj")
+theme_override_styles/normal = SubResource("StyleBoxFlat_ftcah")
+text = "-"
+
+[node name="BottomPanel" type="PanelContainer" parent="UILayer/MainUI/VBoxContainer"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+
+[node name="CameraInfoBar" type="HBoxContainer" parent="UILayer/MainUI/VBoxContainer/BottomPanel"]
+custom_minimum_size = Vector2(650, 0)
+layout_direction = 3
+layout_mode = 2
+size_flags_horizontal = 8
+
+[node name="CameraLatLonLabel" type="RichTextLabel" parent="UILayer/MainUI/VBoxContainer/BottomPanel/CameraInfoBar"]
+layout_direction = 3
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_override_font_sizes/normal_font_size = 25
 bbcode_enabled = true
+text = "[center]11.234568°S, 89.167689°E  [/center]"
+fit_content = true
+script = ExtResource("7_61pj5")
+
+[node name="CameraDistanceLabel" type="RichTextLabel" parent="UILayer/MainUI/VBoxContainer/BottomPanel/CameraInfoBar"]
+layout_direction = 3
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_override_font_sizes/normal_font_size = 25
+bbcode_enabled = true
+text = "[center]Camera: 50,000 km[/center]"
+fit_content = true
+script = ExtResource("6_xdu25")

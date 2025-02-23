@@ -18,6 +18,7 @@
 */
 
 using Hermes.Common.Map.Utils;
+using Hermes.Universe.Autoloads;
 
 namespace Hermes.Universe.SolarSystem;
 
@@ -30,7 +31,10 @@ public partial class PlanetOrbitalCamera : Camera3D
     #region Camera Signals
 
     [Signal]
-    public delegate void OrbitalCameraPosChangedEventHandler(Vector3 position, float latitude, float longitude);
+    public delegate void OrbitalCameraLatLonChangedEventHandler(double latitude, double longitude);
+
+    [Signal]
+    public delegate void OrbitalCameraAltChangedEventHandler(double altitude);
 
     #endregion
 
@@ -82,6 +86,8 @@ public partial class PlanetOrbitalCamera : Camera3D
     [Export] public double CurrentLat { get; private set; }
     [Export] public double CurrentLon { get; private set; }
 
+    [Export] public double CurrentAltitude { get; private set; }
+
     // Approximate lat/lon radius range that the camera is able to see of the Earth's surface.
     [Export] public double ApproxVisibleLatRadius { get; private set; }
     [Export] public double ApproxVisibleLonRadius { get; private set; }
@@ -127,6 +133,10 @@ public partial class PlanetOrbitalCamera : Camera3D
 
     public override void _Process(double delta)
     {
+        double oldLat = CurrentLat;
+        double oldLon = CurrentLon;
+        double oldAlt = CurrentAltitude;
+
         // Ensure minimum distance
         double currentMinDistance = GetMinimumAllowedDistance();
         m_currentDistance = Mathf.Max(currentMinDistance, m_currentDistance);
@@ -149,12 +159,32 @@ public partial class PlanetOrbitalCamera : Camera3D
             (float)m_currentDistance * Mathf.Cos((float)m_currentPhi),
             (float)m_currentDistance * Mathf.Sin((float)m_currentPhi) * Mathf.Sin((float)m_currentTheta)
         );
+
+        // ECEF of the lat/lon the camera is above on the Earth's surface
+        Vector3 earthSurfacePos = new Vector3(
+            SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * Mathf.Sin((float)m_currentPhi) *
+            Mathf.Cos((float)m_currentTheta),
+            SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM * Mathf.Cos((float)m_currentPhi),
+            SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * Mathf.Sin((float)m_currentPhi) *
+            Mathf.Sin((float)m_currentTheta)
+        );
+
         Position = newPos;
+        CurrentAltitude = newPos.DistanceTo(earthSurfacePos);
+
         LookAt(Vector3.Zero, Vector3.Up);
 
         UpdateVisibleLatLonRange();
 
-        EmitSignal("OrbitalCameraPosChanged", Position, CurrentLat, CurrentLon);
+        if (oldAlt != CurrentAltitude)
+        {
+            EmitSignal(SignalName.OrbitalCameraAltChanged, CurrentAltitude);
+        }
+
+        if (oldLat != CurrentLat || oldLon != CurrentLon)
+        {
+            EmitSignal(SignalName.OrbitalCameraLatLonChanged, CurrentLat, CurrentLon);
+        }
     }
 
     public override void _Input(InputEvent @event)

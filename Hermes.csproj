@@ -11,4 +11,7 @@
         <Content Include="Common\Communications\Protocols\MAVLink\pymavsdk.py"/>
         <Content Include="Common\Shaders\WebMercatorToWGS84Shader.gdshader"/>
     </ItemGroup>
+    <ItemGroup>
+        <Folder Include="Universe\UI\"/>
+    </ItemGroup>
 </Project>
