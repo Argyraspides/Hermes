@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://dw16otbm13s3h"
 path.s3tc="res://.godot/imported/ESO_-_Milky_Way.jpg-9883cbf233795c455d3733929165d7dd.s3tc.ctex"
+path.etc2="res://.godot/imported/ESO_-_Milky_Way.jpg-9883cbf233795c455d3733929165d7dd.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://Universe/SolarSystem/Assets/ESO_-_Milky_Way.jpg"
-dest_files=["res://.godot/imported/ESO_-_Milky_Way.jpg-9883cbf233795c455d3733929165d7dd.s3tc.ctex"]
+dest_files=["res://.godot/imported/ESO_-_Milky_Way.jpg-9883cbf233795c455d3733929165d7dd.s3tc.ctex", "res://.godot/imported/ESO_-_Milky_Way.jpg-9883cbf233795c455d3733929165d7dd.etc2.ctex"]
 
 [params]
 
