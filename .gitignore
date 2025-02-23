@@ -15,6 +15,8 @@ Common/Communications/Protocols/MAVLink/MAVLinkDefinitionGeneration/MAVLinkDefin
 Universe/SolarSystem/Assets
 Universe/SolarSystem/Planets/Earth/Assets
 
+Universe/UI/Fonts
+
 # Build folder for releases
 Build/
 export_presets.cfg
