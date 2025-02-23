@@ -12,7 +12,7 @@
    88           88        88  88  88      .a8P   88   d8'        `8b  Y8a     a8P
    88           88        88  88  88888888Y"'    88  d8'          `8b  "Y88888P"
 
-                                SCULPTOR OF THE STARS
+                                PAINTER OF PARADISE
 
 */
 
