@@ -3,6 +3,16 @@ namespace Hermes.Universe.Autoloads;
 using Hermes.Universe.SolarSystem;
 using Godot;
 
+/// <summary>
+/// The event bus is mainly used to inform UI components about changes that have occurred in Hermes' backend.
+/// The reason for this is that the UI layer's subtree is very distant from the rest of Hermes', making communication
+/// between these distant components and the UI a bit awkward to do in a clean way.
+///
+/// See: https://www.gdquest.com/tutorial/godot/design-patterns/event-bus-singleton/
+///
+/// It is important that any signals that *are* routed through the event bus are kept to a minimum as to avoid
+/// a barrage of signal calls being routed through one place.
+/// </summary>
 public partial class EventBus : Node
 {
     public static EventBus Instance { get; set; }
