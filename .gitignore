@@ -20,3 +20,6 @@ Universe/UI/Fonts
 # Build folder for releases
 Build/
 export_presets.cfg
+
+# Python VENV
+PythonVenv/.venv
