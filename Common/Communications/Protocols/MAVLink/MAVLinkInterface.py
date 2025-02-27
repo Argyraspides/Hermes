@@ -26,24 +26,49 @@ from datetime import datetime
 from collections import deque
 from typing import Deque, Dict, List, Set, Any, Optional
 
-# Python class, "MAVLinkListener" that will:
-# - Listen for MAVLink messages on a list of UDP/TCP/Serial ports. These lists should be a global variable
-# - Should be event-driven, so no polling
-# - Packages the MAVLink message into a dictionary with all message fields and values filled out (string to Any)
-# - Adds the dictionary to a global dictionary queue
+# Queue of MAVLink messages received from the outside world
+MAVLinkMessageQueue = deque()
+WebSocketURLs = []
 
-# Python class, "MAVLinkSerializer" that has the following functions:
-# - Function to take a MAVLink dictionary message and convert it to a JSON format
-# - Function to take a MAVLink JSON message, and serialize it back into a bytestream (in a way that is suitable to be sent
-# over UDP/TCP/Serial)
-# - Function to take a Hermes state message, and then serialize it into a bytestream (in a way that is suitable to be sent
-# # over UDP/TCP/Serial)
+
+class MAVLinkListener:
+    def __init__(self):
+        pass
+
+    # - Listen for MAVLink messages on a list of UDP/TCP/Serial ports. These lists should be a global variable
+    # - Should be event-driven, so no polling
+    def StartListenMAVLink(self):
+        pass
+
+    # - Packages the MAVLink message recieved from the StartListenMAVLink function
+    #   into a dictionary with all message fields and values filled out (string to Any)
+    # - Adds the dictionary to a global dictionary queue
+    def PackageMAVLinkMessage(self):
+        pass
+
+
+class MAVLinkSerializer:
+
+    def __init__(self):
+        pass
+
+    # - Function to take a MAVLink dictionary message and convert it to a JSON format
+    def MAVLinkDictMessageToJSON(self, mavlinkDictMessage):
+        pass
+
+    # - Function to take a MAVLink JSON message, and serialize it back into a bytestream (in a way that is suitable to be sent
+    # over UDP/TCP/Serial)
+    def MAVLinkJSONToByteStream(self, mavlinkJsonMessage):
+        pass
+
+    # - Function to take a Hermes state message, and then serialize it into a bytestream (in a way that is suitable to be sent
+    # # over UDP/TCP/Serial)
+    def HermesJSONToByteStream(self, hermesJSONMessage):
+        pass
+
 
 # Python class, "MAVLinkWebSocket" that will
-# - Initialize a WebSocket immediately. The URL should be a global variable
-# - Take the next MAVLink dictionary message from the queue
-# - Convert this to a JSON string representation using the MAVLinkSerializer class functions
-# - Send the JSON string over the WebSocket
+
 # - Listen for Hermes' requesting to send MAVLink messages to the drones. Any message Hermes sends can be assumed to be a
 # message that it wants to send out to a drone
 # - Right now it is unclear what format this message will be in. Remember that Hermes is protocol-agnostic. Thus in the interest
@@ -52,6 +77,23 @@ from typing import Deque, Dict, List, Set, Any, Optional
 # module where it can convert a State object to a JSON string, and just hand it over to the Python script like that. This makes
 # sense since Hermes knows its own format best, so its better to convert to a JSON over that and then send it here for conversion back
 # to MAVLink and deserialization
+
+class MAVLinkWebSocket:
+
+    def __init__(self):
+        pass
+
+    def InitializeWebSocket(self):
+        pass
+
+    def AddWebSocket(self, websocketURL):
+        pass
+
+    # - Take the next MAVLink dictionary message from the queue
+    # - Convert this to a JSON string representation using the MAVLinkSerializer class functions
+    # - Send the JSON string over the WebSocket
+    def SendMAVLinkJSONToHermes(self):
+        pass
 
 # Other things to keep in mind:
 # The user will want to configure UDP/TCP/Serial ports they wanna listen in on. The only real way to do this is to either have this Python script

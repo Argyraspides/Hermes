@@ -8,7 +8,7 @@
     <ItemGroup>
         <Content Include="Common\Communications\Protocols\MAVLink\MAVLinkDefinitionGeneration\generate_mavlink.py"/>
         <Content Include="Common\Communications\Protocols\MAVLink\MAVLinkDefinitionGeneration\mavlink_common.xml"/>
-        <Content Include="Common\Communications\Protocols\MAVLink\pymavsdk.py"/>
+        <Content Include="Common\Communications\Protocols\MAVLink\MAVLinkInterface.py"/>
         <Content Include="Common\Shaders\WebMercatorToWGS84Shader.gdshader"/>
     </ItemGroup>
     <ItemGroup>
