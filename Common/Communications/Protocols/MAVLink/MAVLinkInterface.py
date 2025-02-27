@@ -14,7 +14,6 @@
 #
 #                              MESSENGER OF THE MACHINES
 #
-
 import json
 import asyncio
 import websockets
@@ -30,6 +29,11 @@ from typing import Deque, Dict, List, Set, Any, Optional
 MAVLinkMessageQueue = deque()
 WebSocketURLs = []
 
+# List of UDP, TCP, and serial ports that MAVLinkInterface will listen in on for MAVLink messages
+UDPListeningAddresses: [str] = ["localhost:14550"]
+TCPListeningAddresses = [str]
+SerialListeningAddresses = [str]
+
 
 class MAVLinkListener:
     def __init__(self):
@@ -37,7 +41,17 @@ class MAVLinkListener:
 
     # - Listen for MAVLink messages on a list of UDP/TCP/Serial ports. These lists should be a global variable
     # - Should be event-driven, so no polling
-    def StartListenMAVLink(self):
+    def StartListenMAVLinkUDP(self):
+        pass
+
+    # - Listen for MAVLink messages on a list of UDP/TCP/Serial ports. These lists should be a global variable
+    # - Should be event-driven, so no polling
+    def StartListenMAVLinkTCP(self):
+        pass
+
+    # - Listen for MAVLink messages on a list of UDP/TCP/Serial ports. These lists should be a global variable
+    # - Should be event-driven, so no polling
+    def StartListenMAVLinkSerial(self):
         pass
 
     # - Packages the MAVLink message recieved from the StartListenMAVLink function
@@ -62,8 +76,22 @@ class MAVLinkSerializer:
         pass
 
     # - Function to take a Hermes state message, and then serialize it into a bytestream (in a way that is suitable to be sent
-    # # over UDP/TCP/Serial)
+    # over UDP/TCP/Serial)
     def HermesJSONToByteStream(self, hermesJSONMessage):
+        pass
+
+    # These are functions to add and remove TCP/UDP addresses that we want to listen on/no longer want to listen on
+
+    def AddUDPListenAddress(self, udpListenAddress):
+        pass
+
+    def AddTCPListenAddress(self, tcpListenAddress):
+        pass
+
+    def RemoveUDPListenAddress(self, udpListenAddress):
+        pass
+
+    def RemoveTCPListenAddress(self, tcpListenAddress):
         pass
 
 
@@ -83,10 +111,16 @@ class MAVLinkWebSocket:
     def __init__(self):
         pass
 
-    def InitializeWebSocket(self):
+    def InitializeWebSocket(self, websocketURL):
+        pass
+
+    def CloseWebSocket(self, websocketURL):
         pass
 
     def AddWebSocket(self, websocketURL):
+        pass
+
+    def RemoveWebSocket(self, websocketURL):
         pass
 
     # - Take the next MAVLink dictionary message from the queue
@@ -96,7 +130,6 @@ class MAVLinkWebSocket:
         pass
 
 # Other things to keep in mind:
-# The user will want to configure UDP/TCP/Serial ports they wanna listen in on. The only real way to do this is to either have this Python script
-# load up some config file on startup that reads the different UDP/TCP/Serial ports and loads them in, where this config file will be edited by
-# the user, requiring an application restart, OR Hermes can utilize the WebSocket to send messages that it wants to add/remove UDP/TCP/Serial
-# ports and whatnot to listen in on.
+# The user will want to configure UDP/TCP/Serial ports they wanna listen in on. The only real way to do this is to have this Python script
+# load up a configuration file on startup that reads the different UDP/TCP/Serial ports and loads them in, where this config file will be edited by
+# the user, and then Python can pick up on this using a watchdog and update/remove the ports accordingly.
