@@ -1,0 +1,10 @@
+{
+    "udp_addresses": [
+        "localhost:14550"
+    ],
+    "tcp_addresses": [],
+    "serial_addresses": [],
+    "websocket_urls": [
+        "localhost:8765"
+    ]
+}
