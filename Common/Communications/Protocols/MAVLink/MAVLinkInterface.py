@@ -161,7 +161,6 @@ class MAVLinkListener:
         # Convert message to dictionary
         msg_dict = {
             "msgid": msg.get_msgId(),
-            "msgname": msg.get_type(),
             "sysid": msg.get_srcSystem(),
             "compid": msg.get_srcComponent(),
             "sequence": msg.get_seq(),
@@ -777,6 +776,7 @@ async def config_watcher(config_manager, listener, speaker, websocket):
             await websocket.start()
 
         # Check every 5 seconds
+        # TODO(Argyraspides, 02/03/2025): Ideally this should be event based
         await asyncio.sleep(5)
 
 
