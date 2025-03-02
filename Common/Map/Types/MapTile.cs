@@ -48,7 +48,7 @@ public class MapTile : HermesResource
 
     // If the map tile is a street view map tile/hybrid, the names of various places
     // will show up, hence a map tile must have a language field
-    public Language Language { get; protected set; }
+    public HumanLanguage Language { get; protected set; }
 
     public MapTileType MapTileType { get; protected set; }
 
@@ -88,7 +88,7 @@ public class MapTile : HermesResource
         MapType = MapType.SATELLITE;
         MapImageType = ImageType.PNG;
         Texture2D = null;
-        Language = Language.en;
+        Language = HumanLanguage.en;
         MapTileType = MapTileType.WEB_MERCATOR;
 
         // Initialize with common web mercator tile dimensions

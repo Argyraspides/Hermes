@@ -8,14 +8,14 @@
     <ItemGroup>
         <Content Include="Common\Communications\Protocols\MAVLink\MAVLinkInterface.py"/>
         <Content Include="Common\Shaders\WebMercatorToWGS84Shader.gdshader"/>
-        <Content Include="Language\DialectConversions\common_to_hellenic.xml"/>
-        <Content Include="Language\Dialects\common.xml"/>
-        <Content Include="Language\Dialects\hellenic.xml"/>
-        <Content Include="Language\Dialects\minimal.xml"/>
-        <Content Include="Language\Dialects\standard.xml"/>
-        <Content Include="Language\Generators\DialectConverterGenerator.py"/>
-        <Content Include="Language\Generators\DialectGenerator.py"/>
-        <Content Include="Language\README.md"/>
+        <Content Include="Languages\DialectConversions\common_to_hellenic.xml"/>
+        <Content Include="Languages\Dialects\common.xml"/>
+        <Content Include="Languages\Dialects\hellenic.xml"/>
+        <Content Include="Languages\Dialects\minimal.xml"/>
+        <Content Include="Languages\Dialects\standard.xml"/>
+        <Content Include="Languages\Generators\DialectConverterGenerator.py"/>
+        <Content Include="Languages\Generators\DialectGenerator.py"/>
+        <Content Include="Languages\README.md"/>
         <Content Include="State\Dialects\common.xml"/>
         <Content Include="State\Dialects\hellenic.xml"/>
         <Content Include="State\Dialects\minimal.xml"/>
@@ -23,7 +23,7 @@
     </ItemGroup>
     <ItemGroup>
         <Folder Include="Common\Communications\Protocols\MAVLink\MAVLinkDefinitionGeneration\"/>
-        <Folder Include="Language\ConcreteDialects\Hellenic\"/>
+        <Folder Include="Languages\ConcreteDialects\Hellenic\"/>
         <Folder Include="Universe\UI\"/>
     </ItemGroup>
     <ItemGroup>

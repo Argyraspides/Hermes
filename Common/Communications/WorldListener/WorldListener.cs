@@ -219,6 +219,7 @@ public partial class WorldListener : Node
 
                         var receivedMessage = Encoding.UTF8.GetString(buffer, 0, result.Count);
 
+
                         if (result.Count > 0)
                         {
                             byte[] packet = new byte[result.Count];

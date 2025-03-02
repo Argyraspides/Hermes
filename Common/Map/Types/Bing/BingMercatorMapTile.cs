@@ -38,7 +38,7 @@ public class BingMercatorMapTile : MapTile
     public BingMercatorMapTile(
         string quadKey,
         MapType mapType = MapType.UNKNOWN,
-        Language language = Language.UNKNOWN,
+        HumanLanguage language = HumanLanguage.UNKNOWN,
         ImageType imageType = ImageType.UNKNOWN,
         byte[] imageData = null
     )
@@ -93,7 +93,7 @@ public class BingMercatorMapTile : MapTile
     {
         return MapType != MapType.UNKNOWN
                && MapImageType != ImageType.UNKNOWN
-               && Language != Language.UNKNOWN
+               && Language != HumanLanguage.UNKNOWN
                && ZoomLevel > 0
                && LongitudeTileCoo >= 0
                && LongitudeTileCoo < int.MaxValue

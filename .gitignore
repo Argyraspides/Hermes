@@ -25,5 +25,5 @@ export_presets.cfg
 PythonVenv/.venv
 
 # Auto-generated code folders
-Language/DialectConverters
-Language/ConcreteDialects
+Languages/DialectConverters
+Languages/ConcreteDialects
