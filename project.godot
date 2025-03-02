@@ -22,7 +22,7 @@ config/icon="res://docs/Hermes.png"
 ExternalLauncher="*res://Common/Communications/ExternalLaunchers/ExternalLauncher.cs"
 WorldListener="*res://Common/Communications/WorldListener/WorldListener.cs"
 MavLinkDeserializer="*res://Common/Communications/Protocols/MAVLink/MAVLinkDeserializer.cs"
-MavLinkStateConverter="*res://State/StateConverters/MAVLinkStateConverter/MAVLinkStateConverter.cs"
+MavLinkStateConverter="*res://Language/StateConverters/MAVLinkStateConverter/MAVLinkStateConverter.cs"
 EventBus="*res://Universe/Autoloads/EventBus.cs"
 
 [debug]

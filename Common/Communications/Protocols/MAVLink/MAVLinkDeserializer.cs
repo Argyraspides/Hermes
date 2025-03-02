@@ -42,6 +42,16 @@ using Hermes.Common.Communications.WorldListener;
 // In the context of Hermes, it is important you ensure MAVLinkDeserializer is loaded *after*
 // the WorldListener, as this is where MAVLinkDeserializer gets all of its information from
 // upon entering the app
+
+enum MAVLinkDialect
+{
+    COMMON_XML = 0,
+    STANDARD_XML = 1,
+    MINIMAL_XML = 2,
+    DEVELOPMENT_XML = 3,
+    ARDUPILOT_MEGA_XML = 4
+}
+
 public partial class MAVLinkDeserializer : Node
 {
     // Ensure other C# scripts can access this singleton without requiring
@@ -50,7 +60,7 @@ public partial class MAVLinkDeserializer : Node
 
 
     [Signal]
-    public delegate void MAVLinkJsonMessageReceivedEventHandler(JsonWrapper mavlinkJsonMessage);
+    public delegate void MAVLinkCommonXMLJsonMessageReceivedEventHandler(JsonWrapper mavlinkJsonMessage);
 
 
     private void DeserializeMAVLinkJsonPacket(byte[] rawMAVLinkJsonPacket)
@@ -76,7 +86,7 @@ public partial class MAVLinkDeserializer : Node
             JsonWrapper jsonWrapper = new JsonWrapper();
             jsonWrapper.Data = jsonObject;
 
-            EmitSignal("MAVLinkJsonMessageReceived", jsonWrapper);
+            EmitSignal(SignalName.MAVLinkCommonXMLJsonMessageReceived, jsonWrapper);
         }
         catch (JsonException ex)
         {

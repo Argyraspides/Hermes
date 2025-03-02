@@ -6,12 +6,19 @@
         <EnableDynamicLoading>true</EnableDynamicLoading>
     </PropertyGroup>
     <ItemGroup>
-        <Content Include="Common\Communications\Protocols\MAVLink\MAVLinkDefinitionGeneration\generate_mavlink.py"/>
-        <Content Include="Common\Communications\Protocols\MAVLink\MAVLinkDefinitionGeneration\mavlink_common.xml"/>
         <Content Include="Common\Communications\Protocols\MAVLink\MAVLinkInterface.py"/>
         <Content Include="Common\Shaders\WebMercatorToWGS84Shader.gdshader"/>
+        <Content Include="Language\Dialects\common.xml" />
+        <Content Include="Language\Dialects\hellenic.xml" />
+        <Content Include="Language\Dialects\minimal.xml" />
+        <Content Include="Language\Dialects\standard.xml" />
+        <Content Include="State\Dialects\common.xml"/>
+        <Content Include="State\Dialects\hellenic.xml"/>
+        <Content Include="State\Dialects\minimal.xml"/>
+        <Content Include="State\Dialects\standard.xml"/>
     </ItemGroup>
     <ItemGroup>
+        <Folder Include="Common\Communications\Protocols\MAVLink\MAVLinkDefinitionGeneration\"/>
         <Folder Include="Universe\UI\"/>
     </ItemGroup>
 </Project>

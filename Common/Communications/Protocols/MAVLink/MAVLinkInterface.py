@@ -160,19 +160,14 @@ class MAVLinkListener:
 
         # Convert message to dictionary
         msg_dict = {
-            'type': msg.get_type(),
-            'timestamp': datetime.now().isoformat(),
-            'source_system': getattr(msg, 'sysid', 0),
-            'source_component': getattr(msg, 'compid', 0),
-            'fields': {}
+            "msgid": msg.get_msgId(),
+            "msgname": msg.get_type(),
+            "sysid": msg.get_srcSystem(),
+            "compid": msg.get_srcComponent(),
+            "sequence": msg.get_seq(),
+            "payload": msg.to_dict(),
         }
 
-        # Add message fields
-        for field in msg.get_fieldnames():
-            if field not in ['mavpackettype', '_timestamp', 'sysid', 'compid']:
-                msg_dict['fields'][field] = getattr(msg, field)
-
-        # Add to queue
         MAVLinkMessageQueue.append(msg_dict)
 
     def start(self):
