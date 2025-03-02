@@ -10,9 +10,6 @@ namespace Hermes.Language.HellenicGateway;
 // also remove this as a singleton
 public partial class HellenicGateway : Node
 {
-    [Signal]
-    public delegate void HellenicMessagesReceivedEventHandler(List<IHellenicMessage> messages);
-
     MAVLinkConverterFactory m_mavLinkConverterFactory;
 
     public override void _Ready()
