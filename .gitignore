@@ -23,3 +23,7 @@ export_presets.cfg
 
 # Python VENV
 PythonVenv/.venv
+
+# Auto-generated code folders
+Language/DialectConverters
+Language/ConcreteDialects
