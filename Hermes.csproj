@@ -24,6 +24,7 @@
     <ItemGroup>
         <Folder Include="Common\Communications\Protocols\MAVLink\MAVLinkDefinitionGeneration\"/>
         <Folder Include="Languages\ConcreteDialects\Hellenic\"/>
+        <Folder Include="Languages\DialectConverters\Conversion\"/>
         <Folder Include="Universe\UI\"/>
     </ItemGroup>
     <ItemGroup>

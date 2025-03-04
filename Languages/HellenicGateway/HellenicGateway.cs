@@ -1,8 +1,4 @@
-using System.Collections.Generic;
 using Godot;
-using Hermes.Conversion;
-using Hermes.Dialect.Hellenic;
-using Newtonsoft.Json.Linq;
 
 namespace Hermes.Language.HellenicGateway;
 
@@ -10,26 +6,11 @@ namespace Hermes.Language.HellenicGateway;
 // also remove this as a singleton
 public partial class HellenicGateway : Node
 {
-    MAVLinkConverterFactory m_mavLinkConverterFactory;
-
     public override void _Ready()
     {
-        m_mavLinkConverterFactory = new MAVLinkConverterFactory();
-
-        var WorldListener = Common.Communications.WorldListener.WorldListener.Instance;
-        // TODO(Argyraspides, 2/03/2025) You should check first that we indeed have a MAVLink message before doing this
-        WorldListener.WebSocketPacketReceived += OnMAVLinkJSONMessageReceived;
     }
 
     void OnMAVLinkJSONMessageReceived(byte[] rawData)
     {
-        if (rawData == null || rawData.Length == 0)
-        {
-            return;
-        }
-
-        string jsonString = System.Text.Encoding.UTF8.GetString(rawData);
-        JObject j = JObject.Parse(jsonString);
-        List<IHellenicMessage> messages = m_mavLinkConverterFactory.Convert(j);
     }
 }
