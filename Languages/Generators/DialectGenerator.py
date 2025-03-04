@@ -56,6 +56,26 @@ import xml.etree.ElementTree as ET
 
 '''
 
+# The script assumes the XML is formatted as follows:
+
+'''
+<hellenic>
+    <version>2</version>
+    <dialect>1</dialect>
+    <messages>
+        <message id="2" name="GROUND_VELOCITY">
+            <description>
+                The velocity components of the object
+            </description>
+            <fields>
+                <field type="float64" name="vx" units="m/s">
+                    <description>Velocity X (Latitude direction, positive north)</description>
+                </field>
+        </message>
+    </messages>
+</hellenic>
+'''
+
 # Map from the XML type definitions to a C# equivalent
 g_type_map = {
     "uint8_t": "byte",
