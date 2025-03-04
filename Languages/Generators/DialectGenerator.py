@@ -21,7 +21,7 @@ import xml.etree.ElementTree as ET
 
 # Check the __main__ to see arguments
 
-# The output class definitions will look like the following ():
+# The output class definitions will look like the following:
 
 '''C#
     public class LatitudeLongitude : IHellenicMessage
