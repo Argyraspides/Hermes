@@ -189,6 +189,8 @@ def generate_dialect_class(class_info_dict):
     # }
     fields = class_info_dict["fields"]
     class_unique_fields = ""
+    class_constructor_params = ""
+    class_constructor_body = ""
     for field_name in fields:
         field_type = fields[field_name][g_message_field_type_attr_string_name]
         field_c_sharp_type = g_type_map[field_type]
@@ -200,16 +202,19 @@ def generate_dialect_class(class_info_dict):
         formatted_comment = "".join(f"\t{line.strip()}\n" for line in field_description_comment.splitlines())
 
         member_field_line = f"{formatted_comment}\tpublic {field_c_sharp_type} {snake_to_pascal_case(field_name)} {{ get; set; }}\n\n"
+        class_constructor_params += f"{field_c_sharp_type} p{snake_to_pascal_case(field_name)}, "
+        class_constructor_body += f"\t\t{snake_to_pascal_case(field_name)} = p{snake_to_pascal_case(field_name)};\n"
 
         class_unique_fields += member_field_line
 
-    class_constructor_line = f"\tpublic {snake_to_pascal_case(class_info_dict[g_message_name_attr_string_name])}() {{ }}\n"
+    class_constructor_line = f"\tpublic {snake_to_pascal_case(class_info_dict[g_message_name_attr_string_name])}({class_constructor_params[:-2]})\n\t{{\n{class_constructor_body}\t}}\n"
+    class_constructor_default_line = f"\tpublic {snake_to_pascal_case(class_info_dict[g_message_name_attr_string_name])}() {{}}\n"
 
     # LOL
     class_ending_brace = "}"
 
     # Final file :DD
-    class_file = class_heading + class_hellenic_interface_fields + class_unique_fields + class_constructor_line + class_ending_brace
+    class_file = class_heading + class_hellenic_interface_fields + class_unique_fields + class_constructor_line + class_constructor_default_line + class_ending_brace
 
     return class_file
 
