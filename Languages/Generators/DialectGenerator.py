@@ -23,8 +23,8 @@ import xml.etree.ElementTree as ET
 
 # The output class definitions will look like the following:
 
-'''C#Here is how my custom dialect is being 
-    public class LatitudeLongitude : IHellenicMessage
+'''C#
+    public class LatitudeLongitude : HellenicMessage
     {
 
         public uint ID => 0;
@@ -46,12 +46,16 @@ import xml.etree.ElementTree as ET
 
 '''C#
 
-    public interface IHellenicMessage
+    public partial interface IHellenicMessage
     {
+        uint ID { get; }
+        string MessageName { get; }
+    }
 
-        public uint ID { get; }
-        public string MessageName { get; }
-
+    public partial class HellenicMessage : RefCounted, IHellenicMessage
+    {
+        public uint ID { get; private set; }
+        public string MessageName { get; private set; }
     }
 
 '''
@@ -113,8 +117,6 @@ g_field_description_tag_string_name = "description"
 
 # The actual string name of the <fields> tag inside each message tag
 g_message_fields_tag_string_name = "fields"
-# The actual string name of the interface that all of our messages will implement
-g_hellenic_interface_string_name = "IHellenicMessage"
 
 
 def snake_to_pascal_case(snake_case_string: str) -> str:
@@ -140,20 +142,22 @@ def generate_description_comment(description: str):
 
 
 def generate_dialect_class_heading(class_name, class_description):
-    header = f'''{class_description}\nclass {snake_to_pascal_case(class_name)} : {g_hellenic_interface_string_name}\n''' + "{\n"
+    header = f'''{class_description}\npartial class {snake_to_pascal_case(class_name)} : HellenicMessage\n''' + "{\n"
     return header
 
 
 def generate_hellenic_interface_file(output_dir):
-    interface_content = f"""
-public interface {g_hellenic_interface_string_name}
-{{
-    uint ID {{ get; }}
-    string MessageName {{ get; }}
-}}
+    interface_content = """
+using Godot;
+
+public abstract partial class HellenicMessage : RefCounted
+{
+    public static uint ID { get; protected set; }
+    public static string MessageName { get; protected set; }
+}
 """.strip()
 
-    output_path = os.path.join(output_dir, f"{g_hellenic_interface_string_name}.cs")
+    output_path = os.path.join(output_dir, "IHellenicMessage.cs")
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, "w") as f:
         f.write(interface_content)
@@ -162,12 +166,6 @@ public interface {g_hellenic_interface_string_name}
 def generate_dialect_class(class_info_dict):
     class_description = generate_description_comment(class_info_dict[g_message_description_tag_string_name])
     class_heading = generate_dialect_class_heading(class_info_dict[g_message_name_attr_string_name], class_description)
-
-    class_id = class_info_dict[g_message_id_attr_string_name]
-
-    class_hellenic_interface_fields = f'''\tpublic uint ID => {class_id};
-    public string MessageName => nameof({snake_to_pascal_case(class_info_dict[g_message_name_attr_string_name])});\n
-'''
 
     # Dictionary for message will look like the following.
     # Contains all necessary information to generate a class definition
@@ -208,13 +206,17 @@ def generate_dialect_class(class_info_dict):
         class_unique_fields += member_field_line
 
     class_constructor_line = f"\tpublic {snake_to_pascal_case(class_info_dict[g_message_name_attr_string_name])}({class_constructor_params[:-2]})\n\t{{\n{class_constructor_body}\t}}\n"
+
+    class_id = class_info_dict[g_message_id_attr_string_name]
     class_constructor_default_line = f"\tpublic {snake_to_pascal_case(class_info_dict[g_message_name_attr_string_name])}() {{}}\n"
+    static_class_constructor = f"\tstatic {snake_to_pascal_case(class_info_dict[g_message_name_attr_string_name])}()\n\t{{\n\t\tID = {class_id};\n\t\tMessageName = nameof({snake_to_pascal_case(class_info_dict[g_message_name_attr_string_name])});\n\t}}"
 
     # LOL
-    class_ending_brace = "}"
+    class_ending_brace = "\n}"
 
     # Final file :DD
-    class_file = class_heading + class_hellenic_interface_fields + class_unique_fields + class_constructor_line + class_constructor_default_line + class_ending_brace
+
+    class_file = class_heading + class_unique_fields + class_constructor_line + class_constructor_default_line + static_class_constructor + class_ending_brace
 
     return class_file
 

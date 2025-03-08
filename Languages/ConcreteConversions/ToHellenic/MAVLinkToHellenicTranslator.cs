@@ -9,11 +9,11 @@ It works with the C# MAVLink parser in MAVLink.dll to process binary MAVLink dat
 
 Example usage:
 MAVLink.MAVLinkMessage mavlinkMsg = new MAVLink.MAVLinkMessage(rawBytes);
-List<IHellenicMessage> hellenicMessages = MAVLinkToHellenicTranslator.TranslateMAVLinkMessage(mavlinkMsg);
+List<HellenicMessage> hellenicMessages = MAVLinkToHellenicTranslator.TranslateMAVLinkMessage(mavlinkMsg);
 */
 class MAVLinkToHellenicTranslator
 {
-    public static List<IHellenicMessage> TranslateMAVLinkMessage(MAVLink.MAVLinkMessage mavlinkMessage)
+    public static List<HellenicMessage> TranslateMAVLinkMessage(MAVLink.MAVLinkMessage mavlinkMessage)
     {
         // Extract the message ID
         uint msgId = mavlinkMessage.msgid;
@@ -25,11 +25,11 @@ class MAVLinkToHellenicTranslator
         }
 
         // No suitable translation function found
-        throw new InvalidDataException(
-            "Unable to translate MAVLink message! No suitable translation function found for msgid: " + msgId);
+        Console.WriteLine("Unknown MAV link message: " + mavlinkMessage.msgid);
+        return new List<HellenicMessage>();
     }
 
-    public static List<IHellenicMessage> GlobalPositionIntToHellenic(MAVLink.MAVLinkMessage mavlinkMessage)
+    public static List<HellenicMessage> GlobalPositionIntToHellenic(MAVLink.MAVLinkMessage mavlinkMessage)
     {
         // Extract the MAVLink struct from the message object
         var mavlinkData = mavlinkMessage.ToStructure<MAVLink.mavlink_global_position_int_t>();
@@ -60,7 +60,7 @@ class MAVLinkToHellenicTranslator
             pReferenceFrame: 2
         );
 
-        return new List<IHellenicMessage>
+        return new List<HellenicMessage>
         {
             LatitudeLongitudeHellenicMessage,
             AltitudeHellenicMessage,
@@ -69,10 +69,10 @@ class MAVLinkToHellenicTranslator
         };
     }
 
-    public static Dictionary<uint, Func<MAVLink.MAVLinkMessage, List<IHellenicMessage>>>
+    public static Dictionary<uint, Func<MAVLink.MAVLinkMessage, List<HellenicMessage>>>
         MAVLinkIdToConversionFunctionDict
             =
-            new Dictionary<uint, Func<MAVLink.MAVLinkMessage, List<IHellenicMessage>>>()
+            new Dictionary<uint, Func<MAVLink.MAVLinkMessage, List<HellenicMessage>>>()
             {
                 { 33, GlobalPositionIntToHellenic }
             };

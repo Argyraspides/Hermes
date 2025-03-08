@@ -11,6 +11,9 @@ public partial class ProtocolManager : Node
     {
     }
 
+    [Signal]
+    public delegate void HellenicMessagesReceivedEventHandler(HellenicMessage[] messages);
+
     List<IProtocolAdapter> m_protocolAdapters = new List<IProtocolAdapter>() { new MAVLinkAdapter() };
     ICommandDispatcher m_commandDispatcher;
 
@@ -27,7 +30,8 @@ public partial class ProtocolManager : Node
         {
             if (m_protocolAdapters[i].IsOfProtocolType(websocketMessage))
             {
-                m_protocolAdapters[i].HandleMessage(websocketMessage);
+                EmitSignal(SignalName.HellenicMessagesReceived,
+                    m_protocolAdapters[i].HandleMessage(websocketMessage).ToArray());
                 return;
             }
         }

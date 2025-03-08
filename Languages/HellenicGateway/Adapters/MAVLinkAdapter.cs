@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using Hermes.Languages.HellenicGateway.StateMachines;
 
@@ -29,10 +30,8 @@ We assume incoming MAVLink JSON messages come in like this:
 
 public class MAVLinkAdapter : IProtocolAdapter
 {
-    private MAVLinkToHellenicTranslator m_mavlinkToHellenicTranslator;
-    private MAVLinkStateMachine m_mavlinkStateMachine;
-    private MAVLink.MavlinkParse m_parser;
-
+    private MAVLinkStateMachine m_mavlinkStateMachine = new MAVLinkStateMachine();
+    private MAVLink.MavlinkParse m_parser = new MAVLink.MavlinkParse();
 
     public bool IsOfProtocolType(byte[] rawPacket)
     {
@@ -41,15 +40,18 @@ public class MAVLinkAdapter : IProtocolAdapter
         return rawPacket[0] == MAVLink.MAVLINK_STX || rawPacket[0] == MAVLink.MAVLINK_STX_MAVLINK1;
     }
 
-    public void HandleMessage(byte[] rawPacket)
+    public List<HellenicMessage> HandleMessage(byte[] rawPacket)
     {
+        List<HellenicMessage> hellenicMessages = null;
         using (MemoryStream memStream = new MemoryStream(rawPacket))
         {
             MAVLink.MAVLinkMessage fullMAVLinkMessage = m_parser.ReadPacket(memStream);
             if (fullMAVLinkMessage == null)
             {
-                return;
+                return hellenicMessages;
             }
+
+            hellenicMessages = MAVLinkToHellenicTranslator.TranslateMAVLinkMessage(fullMAVLinkMessage);
 
             switch (fullMAVLinkMessage.msgid)
             {
@@ -58,7 +60,14 @@ public class MAVLinkAdapter : IProtocolAdapter
                         MavlinkUtil.ByteArrayToStructure<MAVLink.mavlink_heartbeat_t>(rawPacket);
                     m_mavlinkStateMachine.HandleHeartBeatMessage(fullMAVLinkMessage, heartbeatMessage);
                     break;
+                case (uint)MAVLink.MAVLINK_MSG_ID.GLOBAL_POSITION_INT:
+                    MAVLink.mavlink_global_position_int_t globalPositionIntMsg =
+                        MavlinkUtil.ByteArrayToStructure<MAVLink.mavlink_global_position_int_t>(rawPacket);
+                    m_mavlinkStateMachine.HandleGlobalPositionIntMessage(fullMAVLinkMessage, globalPositionIntMsg);
+                    break;
             }
         }
+
+        return hellenicMessages;
     }
 }

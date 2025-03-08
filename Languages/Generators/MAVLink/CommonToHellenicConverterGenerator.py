@@ -31,13 +31,13 @@ It works with the C# MAVLink parser in MAVLink.dll to process binary MAVLink dat
 
 Example usage:
 MAVLink.MAVLinkMessage mavlinkMsg = new MAVLink.MAVLinkMessage(rawBytes);
-List<IHellenicMessage> hellenicMessages = MAVLinkToHellenicTranslator.TranslateMAVLinkMessage(mavlinkMsg);
+List<HellenicMessage> hellenicMessages = MAVLinkToHellenicTranslator.TranslateMAVLinkMessage(mavlinkMsg);
 */
 class MAVLinkToHellenicTranslator
 {'''
 
 g_translate_message_function = '''
-    public static List<IHellenicMessage> TranslateMAVLinkMessage(MAVLink.MAVLinkMessage mavlinkMessage)
+    public static List<HellenicMessage> TranslateMAVLinkMessage(MAVLink.MAVLinkMessage mavlinkMessage)
     {
         // Extract the message ID
         uint msgId = mavlinkMessage.msgid;
@@ -96,7 +96,7 @@ g_message_name_attr_string_name = "name"
 g_message_description_tag_string_name = "description"
 g_field_description_tag_string_name = "description"
 g_message_fields_tag_string_name = "fields"
-g_hellenic_interface_string_name = "IHellenicMessage"
+g_hellenic_interface_string_name = "HellenicMessage"
 
 
 def snake_to_pascal_case(snake_case_string: str) -> str:
@@ -138,7 +138,7 @@ def generate_translation_functions(other_language_file_path, hellenic_language_f
 
         # Start building the function
         function_lines = [
-            f"    public static List<IHellenicMessage> {function_name}(MAVLink.MAVLinkMessage mavlinkMessage)",
+            f"    public static List<HellenicMessage> {function_name}(MAVLink.MAVLinkMessage mavlinkMessage)",
             "    {",
             "        // Extract the MAVLink struct from the message object",
             f"        var mavlinkData = mavlinkMessage.ToStructure<MAVLink.mavlink_{mavlink_message_name.lower()}_t>();"
@@ -233,7 +233,7 @@ def generate_translation_functions(other_language_file_path, hellenic_language_f
             function_lines.append("")
 
         # Add return statement with all Hellenic messages
-        function_lines.append("        return new List<IHellenicMessage> {")
+        function_lines.append("        return new List<HellenicMessage> {")
         for _, message_info in sorted(hellenic_message_data.items()):
             function_lines.append(f"            {message_info['var_name']},")
 
@@ -258,9 +258,9 @@ def generate_function_dictionary():
     """
     # Map to hold the message IDs to function dictionary
     lines = [
-        "    public static Dictionary<uint, Func<MAVLink.MAVLinkMessage, List<IHellenicMessage>>> MAVLinkIdToConversionFunctionDict",
+        "    public static Dictionary<uint, Func<MAVLink.MAVLinkMessage, List<HellenicMessage>>> MAVLinkIdToConversionFunctionDict",
         "    =",
-        "    new Dictionary<uint, Func<MAVLink.MAVLinkMessage, List<IHellenicMessage>>>()",
+        "    new Dictionary<uint, Func<MAVLink.MAVLinkMessage, List<HellenicMessage>>>()",
         "    {"
     ]
 
@@ -287,14 +287,8 @@ def main():
     parser.add_argument("--output_dir", required=True, help="Output directory for the generated C# translator module")
 
     '''
-
     E.g.,
-
-    python3 CommonToHellenicConverterGenerator.py
-        --input_translation_XML ../../DialectConversions/common_to_hellenic.xml
-        --input_original_XML ../../DialectDefinitions/common.xml
-        --input_hellenic_XML ../../DialectDefinitions/hellenic.xml
-        --output_dir ../../ConcreteConversions/ToHellenic
+    python3 CommonToHellenicConverterGenerator.py --input_translation_XML ../../DialectConversionDefinitions/common_to_hellenic.xml --input_original_XML ../../DialectDefinitions/common.xml --input_hellenic_XML ../../DialectDefinitions/hellenic.xml --output_dir ../../ConcreteConversions/ToHellenic
     '''
 
     args = parser.parse_args()

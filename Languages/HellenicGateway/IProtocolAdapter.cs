@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Godot;
 
 namespace Hermes.Languages.HellenicGateway;
 
@@ -22,5 +23,5 @@ public interface IProtocolAdapter
     /// <returns>True if the packet is of this protocol type, false otherwise</returns>
     bool IsOfProtocolType(byte[] rawPacket);
 
-    void HandleMessage(byte[] rawPacket);
+    List<HellenicMessage> HandleMessage(byte[] rawPacket);
 }
