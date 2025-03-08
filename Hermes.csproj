@@ -4,6 +4,7 @@
         <TargetFramework Condition=" '$(GodotTargetPlatform)' == 'android' ">net7.0</TargetFramework>
         <TargetFramework Condition=" '$(GodotTargetPlatform)' == 'ios' ">net8.0</TargetFramework>
         <EnableDynamicLoading>true</EnableDynamicLoading>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
     <ItemGroup>
         <Content Include="Common\Communications\Protocols\MAVLink\MAVLinkInterface.py"/>
@@ -14,7 +15,7 @@
         <Content Include="Languages\DialectDefinitions\minimal.xml"/>
         <Content Include="Languages\DialectDefinitions\standard.xml"/>
         <Content Include="Languages\Generators\DialectGenerator.py"/>
-        <Content Include="Languages\Generators\MAVLink\CommonToHellenicConverterGenerator.py"/>
+        <Content Include="Languages\Generators\MAVLink\CommonToHellenicConverterGenerator2.py"/>
         <Content Include="Languages\README.md"/>
         <Content Include="State\Dialects\common.xml"/>
         <Content Include="State\Dialects\hellenic.xml"/>
@@ -22,9 +23,13 @@
         <Content Include="State\Dialects\standard.xml"/>
     </ItemGroup>
     <ItemGroup>
+        <Compile Remove="**/submodules/**/*.cs"/>
+    </ItemGroup>
+    <ItemGroup>
         <Folder Include="Common\Communications\Protocols\MAVLink\MAVLinkDefinitionGeneration\"/>
         <Folder Include="Languages\ConcreteConversions\"/>
         <Folder Include="Languages\ConcreteDialects\Hellenic\"/>
+        <Folder Include="Languages\ConcreteDialects\MAVLinkCommon\"/>
         <Folder Include="Universe\UI\"/>
     </ItemGroup>
     <ItemGroup>

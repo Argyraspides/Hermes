@@ -1,6 +1,4 @@
-using System;
-using System.Text.Json.Nodes;
-using Godot;
+using System.IO;
 using Hermes.Languages.HellenicGateway.StateMachines;
 
 namespace Hermes.Languages.HellenicGateway.Adapters;
@@ -33,27 +31,34 @@ public class MAVLinkAdapter : IProtocolAdapter
 {
     private MAVLinkToHellenicTranslator m_mavlinkToHellenicTranslator;
     private MAVLinkStateMachine m_mavlinkStateMachine;
+    private MAVLink.MavlinkParse m_parser;
+
 
     public bool IsOfProtocolType(byte[] rawPacket)
     {
-        if (rawPacket == null || rawPacket.Length == 0) return false;
-
-        // TODO::ARGYRASPIDES() { Don't do this here. Replacing "NaN" should be done at source (MAVLinkInterface.py) }
-        string packetAsString = System.Text.Encoding.UTF8.GetString(rawPacket).Replace("NaN", "\"NaN\"");
-        try
-        {
-            JsonNode node = JsonNode.Parse(packetAsString);
-            return node["payload"]?["mavpackettype"] != null;
-        }
-        catch (Exception e)
-        {
-            GD.PrintErr(e.Message);
-        }
-
-        return false;
+        if (rawPacket == null || rawPacket.Length < 1)
+            return false;
+        return rawPacket[0] == MAVLink.MAVLINK_STX || rawPacket[0] == MAVLink.MAVLINK_STX_MAVLINK1;
     }
 
     public void HandleMessage(byte[] rawPacket)
     {
+        using (MemoryStream memStream = new MemoryStream(rawPacket))
+        {
+            MAVLink.MAVLinkMessage fullMAVLinkMessage = m_parser.ReadPacket(memStream);
+            if (fullMAVLinkMessage == null)
+            {
+                return;
+            }
+
+            switch (fullMAVLinkMessage.msgid)
+            {
+                case (uint)MAVLink.MAVLINK_MSG_ID.HEARTBEAT:
+                    MAVLink.mavlink_heartbeat_t heartbeatMessage =
+                        MavlinkUtil.ByteArrayToStructure<MAVLink.mavlink_heartbeat_t>(rawPacket);
+                    m_mavlinkStateMachine.HandleHeartBeatMessage(fullMAVLinkMessage, heartbeatMessage);
+                    break;
+            }
+        }
     }
 }

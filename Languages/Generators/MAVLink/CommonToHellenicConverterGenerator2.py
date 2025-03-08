@@ -11,111 +11,45 @@
 #
 #
 
-# Note: This script technically works for translating from any message set to hellenic, so long as the other message sets XML file
-# is structured in the same way as the MAVLink project's common.xml, minimal.xml, etc.
+# Note: This script translates from MAVLink to Hellenic dialect using auto-generated C# MAVLink message structs
 
 import argparse
 import os
 import xml.etree.ElementTree as ET
 
 # This script takes in an XML file that defines mappings from MAVLink messages to Hellenic messages
-# The XML structure for mappings is assumed to be as follows (note how one MAVLink message may map to multiple Hellenic messages,
-# and that some fields in Hellenic messages don't have a MAVLink equivalent, and thus are given a default value):
-
-'''xml
-<?xml version="1.0" encoding="utf-8"?>
-<common_to_hellenic>
-    <conversions>
-        <message common_id="33" common_name="GLOBAL_POSITION_INT">
-            <!-- LATITUDE_LONGITUDE Message (id=0) Mappings -->
-            <mapping
-                    common_name="lat"
-                    common_type="int32_t"
-                    common_units="degE7"
-                    hellenic_id="0"
-                    hellenic_name="lat"
-                    hellenic_type="float64"
-                    hellenic_units="degrees"
-                    conversion="value / 10000000.0">
-            </mapping>
-
-                .
-                .
-                .
-
-            <default_value
-                    hellenic_id="0"
-                    hellenic_name="reference_frame"
-                    hellenic_type="uint8_t"
-                    value="2"><!-- 2 = Earth in your enum -->
-            </default_value>
-
-                .
-                .
-                .
-
-            <mapping
-                    common_name="time_boot_ms"
-                    common_type="uint32_t"
-                    common_units="ms"
-                    hellenic_id="2"
-                    hellenic_name="time_usec"
-                    hellenic_type="uint64_t"
-                    hellenic_units="μs"
-                    conversion="ConvertBootMsToEpochUs(value)">
-            </mapping>
-        </message>
-    </conversions>
-</common_to_hellenic>
-'''
 
 # Constants for C# code generation
 g_class_header = '''using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text.Json.Nodes;
 
 
 /*
-We assume incoming MAVLink JSON messages come in like this:
+This translator converts MAVLink message objects directly to Hellenic message objects.
+It works with the C# MAVLink parser in MAVLink.dll to process binary MAVLink data.
 
-{
-    "msgid" : 33,
-    "sysid" : 1,
-    "compid" : 1,
-    "sequence" : 224,
-    "payload" : {
-        "mavpackettype" : "GLOBAL_POSITION_INT",
-        "time_boot_ms" : 22299760,
-        "lat" : 473979704,
-        "lon" : 85461630,
-        "alt" : -573,
-        "relative_alt" : 319,
-        "vx" : -4,
-        "vy" : 0,
-        "vz" : 25,
-        "hdg" : 8282
-    }
-}
-
+Example usage:
+MAVLink.MAVLinkMessage mavlinkMsg = new MAVLink.MAVLinkMessage(rawBytes);
+List<IHellenicMessage> hellenicMessages = MAVLinkToHellenicTranslator.TranslateMAVLinkMessage(mavlinkMsg);
 */
 class MAVLinkToHellenicTranslator
 {'''
 
 g_translate_message_function = '''
-    public static List<IHellenicMessage> TranslateMAVLinkMessage(JsonNode jsonDocument)
+    public static List<IHellenicMessage> TranslateMAVLinkMessage(MAVLink.MAVLinkMessage mavlinkMessage)
     {
         // Extract the message ID
-        int msgId = jsonDocument["msgid"].GetValue<int>();
+        uint msgId = mavlinkMessage.msgid;
 
         // Look up the appropriate conversion function
         if (MAVLinkIdToConversionFunctionDict.TryGetValue(msgId, out var conversionFunc))
         {
-            return conversionFunc(jsonDocument);
+            return conversionFunc(mavlinkMessage);
         }
 
-        // Certified bruh moment
-        throw new InvalidDataException("Unable to translate MAVLink message! No suitable translation function found ... the MAVLink message might have herpes!");
+        // No suitable translation function found
+        throw new InvalidDataException("Unable to translate MAVLink message! No suitable translation function found for msgid: " + msgId);
     }
 '''
 
@@ -204,9 +138,10 @@ def generate_translation_functions(other_language_file_path, hellenic_language_f
 
         # Start building the function
         function_lines = [
-            f"    public static List<IHellenicMessage> {function_name}(JsonNode jsonDocument)",
+            f"    public static List<IHellenicMessage> {function_name}(MAVLink.MAVLinkMessage mavlinkMessage)",
             "    {",
-            "        var payload = jsonDocument[\"payload\"];"
+            "        // Extract the MAVLink struct from the message object",
+            f"        var mavlinkData = mavlinkMessage.ToStructure<MAVLink.mavlink_{mavlink_message_name.lower()}_t>();"
         ]
 
         # Collect all the Hellenic messages that this MAVLink message maps to
@@ -283,7 +218,7 @@ def generate_translation_functions(other_language_file_path, hellenic_language_f
                     value = field["value"]
                 else:
                     # Value from MAVLink with conversion
-                    value_expr = f"payload[\"{field['mavlink_field_name']}\"].GetValue<{field['mavlink_field_type']}>()"
+                    value_expr = f"mavlinkData.{field['mavlink_field_name']}"
                     if field["conversion"] == "value":
                         value = value_expr
                     else:
@@ -323,15 +258,15 @@ def generate_function_dictionary():
     """
     # Map to hold the message IDs to function dictionary
     lines = [
-        "    public static Dictionary<int, Func<JsonNode, List<IHellenicMessage>>> MAVLinkIdToConversionFunctionDict",
+        "    public static Dictionary<uint, Func<MAVLink.MAVLinkMessage, List<IHellenicMessage>>> MAVLinkIdToConversionFunctionDict",
         "    =",
-        "    new Dictionary<int, Func<JsonNode, List<IHellenicMessage>>>()",
+        "    new Dictionary<uint, Func<MAVLink.MAVLinkMessage, List<IHellenicMessage>>>()",
         "    {"
     ]
 
     # Add each mapping
     for id, function_name in sorted(g_function_map.items()):
-        lines.append(f"        {{{id}, {function_name}}},")
+        lines.append(f"        {{ {id}, {function_name} }},")
 
     # Remove trailing comma from the last line
     if lines[-1].endswith(","):
@@ -374,7 +309,7 @@ def main():
 
     final_file = g_class_header + "\n" + g_translate_message_function + "\n" + functions_string + "\n\n" + function_dictionary_string + "\n}"
 
-    output_file_path = os.path.join(args.output_dir, "MAVLinkToHellenicTranslator.cs")
+    output_file_path = os.path.join(args.output_dir, "MAVLinkToHellenicTranslator2.cs")
     os.makedirs(args.output_dir, exist_ok=True)
 
     with open(output_file_path, "w") as f:

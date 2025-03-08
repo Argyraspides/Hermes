@@ -1,0 +1,3 @@
+[submodule "Languages/submodules/mavlink"]
+	path = Languages/submodules/mavlink
+	url = https://github.com/mavlink/mavlink.git

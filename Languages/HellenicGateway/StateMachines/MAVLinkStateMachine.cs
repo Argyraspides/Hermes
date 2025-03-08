@@ -9,7 +9,7 @@ enum MAVLinkState
     DisconnectedIdle
 };
 
-public class MAVLinkStateMachine : IStateMachine
+public class MAVLinkStateMachine
 {
     // Currently connected drones identified by their MAVLink system ID
     private HashSet<int> m_connectedDrones = new HashSet<int>();
@@ -20,18 +20,8 @@ public class MAVLinkStateMachine : IStateMachine
     // Current state of each drone in terms of their MAVLink connection to Hermes
     private Dictionary<int, MAVLinkState> m_states = new Dictionary<int, MAVLinkState>();
 
-    public void Start()
+    public void HandleHeartBeatMessage(MAVLink.MAVLinkMessage fullMsg, MAVLink.mavlink_heartbeat_t heartBeatMsg)
     {
-        throw new System.NotImplementedException();
-    }
-
-    public void Stop()
-    {
-        throw new System.NotImplementedException();
-    }
-
-    public void HandleMessage(byte[] message)
-    {
-        throw new System.NotImplementedException();
+        int x = 5;
     }
 }

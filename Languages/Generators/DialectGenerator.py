@@ -23,7 +23,7 @@ import xml.etree.ElementTree as ET
 
 # The output class definitions will look like the following:
 
-'''C#
+'''C#Here is how my custom dialect is being 
     public class LatitudeLongitude : IHellenicMessage
     {
 

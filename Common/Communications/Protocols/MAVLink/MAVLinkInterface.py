@@ -15,22 +15,23 @@
 #                              MESSENGER OF THE MACHINES
 #
 
+import asyncio
 import json
 import math
-import asyncio
-import websockets
 import os
 import time
-from threading import Thread
-from pymavlink import mavutil
-from datetime import datetime
 from collections import deque
+from datetime import datetime
+from threading import Thread
 from typing import Deque, Dict, List, Set, Any, Optional
+
+import websockets
+from pymavlink import mavutil
 from websockets.server import WebSocketServerProtocol
 
 # TODO(Argyraspides, 01/03/2025): This should undergo strict and robust testing.
 
-# Queue of MAVLink messages received from the outside world
+# Queue of MAVLink message bytes received from the outside world
 MAVLinkMessageQueue = deque()
 
 # Queue of MAVLink commands given to us by Hermes
@@ -105,8 +106,8 @@ class MAVLinkListener:
             # Listen for messages in a loop
             while self.running:
                 msg = connection.recv_match(blocking=True, timeout=1.0)
-                if msg:
-                    self.PackageMAVLinkMessage(msg)
+                if msg and not msg.get_type == 'BAD_DATA':
+                    MAVLinkMessageQueue.append(msg.get_msgbuf())
         except Exception as e:
             print(f"Error in UDP listener for {address}: {e}")
 
@@ -127,7 +128,7 @@ class MAVLinkListener:
             while self.running:
                 msg = connection.recv_match(blocking=True, timeout=1.0)
                 if msg:
-                    self.PackageMAVLinkMessage(msg)
+                    self.PackageMAVLinkMessage(msg, connection)
         except Exception as e:
             print(f"Error in TCP listener for {address}: {e}")
 
@@ -144,31 +145,9 @@ class MAVLinkListener:
             while self.running:
                 msg = connection.recv_match(blocking=True, timeout=1.0)
                 if msg:
-                    self.PackageMAVLinkMessage(msg)
+                    self.PackageMAVLinkMessage(msg, connection)
         except Exception as e:
             print(f"Error in Serial listener for {address}: {e}")
-
-    def PackageMAVLinkMessage(self, msg):
-        """
-        Packages a MAVLink message into a dictionary and adds it to the global message queue.
-
-        Args:
-            msg: A MAVLink message object from pymavlink
-        """
-        # Skip 'bad data' messages
-        if msg.get_type() == 'BAD_DATA':
-            return
-
-        # Convert message to dictionary
-        msg_dict = {
-            "msgid": msg.get_msgId(),
-            "sysid": msg.get_srcSystem(),
-            "compid": msg.get_srcComponent(),
-            "sequence": msg.get_seq(),
-            "payload": msg.to_dict(),
-        }
-
-        MAVLinkMessageQueue.append(msg_dict)
 
     def start(self):
         """
@@ -337,23 +316,15 @@ class MAVLinkSpeaker:
 
 
 class MAVLinkSerializer:
+    """
+    Helper class for MAVLink message serialization and deserialization.
+    Most functions are now unused as we're sending raw bytes directly.
+    """
 
     def __init__(self):
         pass
 
-    # def MAVLinkDictMessageToJSON(self, mavlink_dict_message):
-    #     """
-    #     Function to take a MAVLink dictionary message and convert it to a JSON format.
-
-    #     Args:
-    #         mavlink_dict_message: Dictionary containing MAVLink message data
-
-    #     Returns:
-    #         JSON string representation of the message
-    #     """
-    #     jsonDump = json.dumps(mavlink_dict_message)
-    #     return jsonDump
-
+    # This is now unused but kept for compatibility
     def MAVLinkDictMessageToJSON(self, mavlink_dict_message):
         """
         Function to take a MAVLink dictionary message and convert it to a JSON format.
@@ -375,45 +346,8 @@ class MAVLinkSerializer:
                 except TypeError:
                     problematic_fields[key] = f"{type(value).__name__}: {str(value)[:50]}"
 
-        print(f"JSON serialization error: {e}")
-        print(f"Problematic fields: {problematic_fields}")
-
-    def MAVLinkJSONToByteStream(self, mavlink_json_message):
-        """
-        Function to take a MAVLink JSON message, and serialize it back into a bytestream
-        (in a way that is suitable to be sent over UDP/TCP/Serial).
-
-        Args:
-            mavlink_json_message: JSON string containing MAVLink message data
-
-        Returns:
-            Bytes to be sent over a MAVLink connection
-        """
-        try:
-            # Parse JSON
-            msg_dict = json.loads(mavlink_json_message)
-
-            # Extract message type and fields
-            msg_type = msg_dict.get('type')
-            fields = msg_dict.get('fields', {})
-
-            # This would require detailed handling for each message type
-            # In a real implementation, this would map JSON fields to MAVLink message fields
-            # For example:
-            # if msg_type == 'HEARTBEAT':
-            #     return mav.heartbeat_send(
-            #         fields.get('type', 0),
-            #         fields.get('autopilot', 0),
-            #         fields.get('base_mode', 0),
-            #         fields.get('custom_mode', 0),
-            #         fields.get('system_status', 0)
-            #     ).pack()
-
-            print(f"MAVLinkJSONToByteStream: message type {msg_type} not yet implemented")
-            return None
-        except Exception as e:
-            print(f"Error converting JSON to bytestream: {e}")
-            return None
+            print(f"JSON serialization error: {e}")
+            print(f"Problematic fields: {problematic_fields}")
 
     def HermesJSONToByteStream(self, hermes_json_message):
         """
@@ -426,8 +360,17 @@ class MAVLinkSerializer:
         Returns:
             Bytes to be sent over a MAVLink connection
         """
-        # Similar to MAVLinkJSONToByteStream but might have Hermes-specific handling
-        return self.MAVLinkJSONToByteStream(hermes_json_message)
+        # This function might need to be updated based on how Hermes sends commands now
+        try:
+            # Parse JSON
+            msg_dict = json.loads(hermes_json_message)
+
+            # In the future, this could be modified to convert directly to MAVLink binary format
+            # For now, we keep the existing approach for commands
+            return None
+        except Exception as e:
+            print(f"Error converting JSON to bytestream: {e}")
+            return None
 
     def AddUDPListenAddress(self, udp_listen_address):
         """
@@ -558,7 +501,6 @@ class MAVLinkWebSocket:
 
         Args:
             websocket: WebSocket connection object
-            path: URL path
         """
         # Add to active clients
         self.active_clients.add(websocket)
@@ -567,12 +509,17 @@ class MAVLinkWebSocket:
             # Handle incoming messages
             async for message in websocket:
                 try:
-                    # Parse message as JSON
-                    command = json.loads(message)
+                    # Check if message is binary or text
+                    if isinstance(message, bytes):
+                        # Handle binary message (future implementation)
+                        print("Received binary command")
+                    else:
+                        # Parse message as JSON
+                        command = json.loads(message)
 
-                    # Add to command queue
-                    MAVLinkCommandQueue.append(command)
-                    print(f"Received command: {command.get('type', 'unknown')}")
+                        # Add to command queue
+                        MAVLinkCommandQueue.append(command)
+                        print(f"Received command: {command.get('type', 'unknown')}")
                 except json.JSONDecodeError:
                     print(f"Received invalid JSON: {message}")
         except websockets.exceptions.ConnectionClosed:
@@ -581,32 +528,29 @@ class MAVLinkWebSocket:
             # Remove from active clients
             self.active_clients.remove(websocket)
 
-    async def SendMAVLinkJSONToHermes(self):
+    async def SendMAVLinkBytesToHermes(self):
         """
-        Take the next MAVLink dictionary message from the queue,
-        convert it to JSON, and send it over the WebSocket.
+        Take the next MAVLink raw bytes message from the queue
+        and send it over the WebSocket in binary mode.
 
         Returns True if a message was sent, False otherwise.
         """
         if not MAVLinkMessageQueue:
             return False
 
-        # Get next message
-        msg_dict = MAVLinkMessageQueue.popleft()
+        # Get next message bytes
+        msg_bytes = MAVLinkMessageQueue.popleft()
 
-        # Convert to JSON
-        json_msg = self.serializer.MAVLinkDictMessageToJSON(msg_dict)
-
-        # Send to all connected clients
-        await self._send_to_all_clients(json_msg)
+        # Send to all connected clients in binary mode
+        await self._send_to_all_clients_binary(msg_bytes)
         return True
 
-    async def _send_to_all_clients(self, message):
+    async def _send_to_all_clients_binary(self, message_bytes):
         """
-        Send a message to all connected WebSocket clients.
+        Send a binary message to all connected WebSocket clients.
 
         Args:
-            message: Message to send
+            message_bytes: Binary message to send
         """
         if not self.active_clients:
             return
@@ -615,7 +559,7 @@ class MAVLinkWebSocket:
         disconnected = set()
         for websocket in self.active_clients:
             try:
-                await websocket.send(message)
+                await websocket.send(message_bytes)
             except websockets.exceptions.ConnectionClosed:
                 disconnected.add(websocket)
 
@@ -630,7 +574,7 @@ class MAVLinkWebSocket:
         while self.running:
             try:
                 # Send next message if available
-                if not await self.SendMAVLinkJSONToHermes():
+                if not await self.SendMAVLinkBytesToHermes():
                     # Sleep briefly if no messages to process
                     await asyncio.sleep(0.01)
             except Exception as e:

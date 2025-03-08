@@ -1,78 +1,62 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text.Json.Nodes;
 
 
 /*
-We assume incoming MAVLink JSON messages come in like this:
+This translator converts MAVLink message objects directly to Hellenic message objects.
+It works with the C# MAVLink parser in MAVLink.dll to process binary MAVLink data.
 
-{
-    "msgid" : 33,
-    "sysid" : 1,
-    "compid" : 1,
-    "sequence" : 224,
-    "payload" : {
-        "mavpackettype" : "GLOBAL_POSITION_INT",
-        "time_boot_ms" : 22299760,
-        "lat" : 473979704,
-        "lon" : 85461630,
-        "alt" : -573,
-        "relative_alt" : 319,
-        "vx" : -4,
-        "vy" : 0,
-        "vz" : 25,
-        "hdg" : 8282
-    }
-}
-
+Example usage:
+MAVLink.MAVLinkMessage mavlinkMsg = new MAVLink.MAVLinkMessage(rawBytes);
+List<IHellenicMessage> hellenicMessages = MAVLinkToHellenicTranslator.TranslateMAVLinkMessage(mavlinkMsg);
 */
 class MAVLinkToHellenicTranslator
 {
-    public static List<IHellenicMessage> TranslateMAVLinkMessage(JsonNode jsonDocument)
+    public static List<IHellenicMessage> TranslateMAVLinkMessage(MAVLink.MAVLinkMessage mavlinkMessage)
     {
         // Extract the message ID
-        int msgId = jsonDocument["msgid"].GetValue<int>();
+        uint msgId = mavlinkMessage.msgid;
 
         // Look up the appropriate conversion function
         if (MAVLinkIdToConversionFunctionDict.TryGetValue(msgId, out var conversionFunc))
         {
-            return conversionFunc(jsonDocument);
+            return conversionFunc(mavlinkMessage);
         }
 
-        // Certified bruh moment
+        // No suitable translation function found
         throw new InvalidDataException(
-            "Unable to translate MAVLink message! No suitable translation function found ... the MAVLink message might have herpes!");
+            "Unable to translate MAVLink message! No suitable translation function found for msgid: " + msgId);
     }
 
-    public static List<IHellenicMessage> GlobalPositionIntToHellenic(JsonNode jsonDocument)
+    public static List<IHellenicMessage> GlobalPositionIntToHellenic(MAVLink.MAVLinkMessage mavlinkMessage)
     {
-        var payload = jsonDocument["payload"];
+        // Extract the MAVLink struct from the message object
+        var mavlinkData = mavlinkMessage.ToStructure<MAVLink.mavlink_global_position_int_t>();
 
-        // Apply conversions from the XML mapping and use constructors for each message type
         var LatitudeLongitudeHellenicMessage = new LatitudeLongitude(
-            pLat: payload["lat"].GetValue<int>() / 10000000.0,
-            pLon: payload["lon"].GetValue<int>() / 10000000.0,
-            pTimeUsec: payload["time_boot_ms"].GetValue<uint>(),
+            pLat: mavlinkData.lat / 10000000.0,
+            pLon: mavlinkData.lon / 10000000.0,
+            pTimeUsec: mavlinkData.time_boot_ms,
             pReferenceFrame: 2
         );
 
         var AltitudeHellenicMessage = new Altitude(
-            pAlt: payload["alt"].GetValue<int>() / 1000.0,
-            pRelativeAlt: payload["relative_alt"].GetValue<int>() / 1000.0,
-            pTimeUsec: payload["time_boot_ms"].GetValue<uint>()
+            pAlt: mavlinkData.alt / 1000.0,
+            pRelativeAlt: mavlinkData.relative_alt / 1000.0,
+            pTimeUsec: mavlinkData.time_boot_ms
         );
 
         var GroundVelocityHellenicMessage = new GroundVelocity(
-            pVx: payload["vx"].GetValue<short>() / 100.0,
-            pVy: payload["vy"].GetValue<short>() / 100.0,
-            pVz: payload["vz"].GetValue<short>() / -100.0,
-            pTimeUsec: payload["time_boot_ms"].GetValue<uint>()
+            pVx: mavlinkData.vx / 100.0,
+            pVy: mavlinkData.vy / 100.0,
+            pVz: mavlinkData.vz / -100.0,
+            pTimeUsec: mavlinkData.time_boot_ms
         );
 
         var HeadingHellenicMessage = new Heading(
-            pHdg: payload["hdg"].GetValue<ushort>() / 100.0,
-            pTimeUsec: payload["time_boot_ms"].GetValue<uint>(),
+            pHdg: mavlinkData.hdg / 100.0,
+            pTimeUsec: mavlinkData.time_boot_ms,
             pReferenceFrame: 2
         );
 
@@ -85,7 +69,11 @@ class MAVLinkToHellenicTranslator
         };
     }
 
-    public static Dictionary<int, Func<JsonNode, List<IHellenicMessage>>> MAVLinkIdToConversionFunctionDict
-        =
-        new Dictionary<int, Func<JsonNode, List<IHellenicMessage>>>() { { 33, GlobalPositionIntToHellenic } };
+    public static Dictionary<uint, Func<MAVLink.MAVLinkMessage, List<IHellenicMessage>>>
+        MAVLinkIdToConversionFunctionDict
+            =
+            new Dictionary<uint, Func<MAVLink.MAVLinkMessage, List<IHellenicMessage>>>()
+            {
+                { 33, GlobalPositionIntToHellenic }
+            };
 }
