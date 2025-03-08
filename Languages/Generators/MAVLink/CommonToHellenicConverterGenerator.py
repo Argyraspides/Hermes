@@ -49,7 +49,8 @@ g_translate_message_function = '''
         }
 
         // No suitable translation function found
-        throw new InvalidDataException("Unable to translate MAVLink message! No suitable translation function found for msgid: " + msgId);
+        Console.WriteLine("Unable to translate MAVLink message! No suitable translation function found for msgid: " + msgId);
+        return new List<HellenicMessage>();
     }
 '''
 

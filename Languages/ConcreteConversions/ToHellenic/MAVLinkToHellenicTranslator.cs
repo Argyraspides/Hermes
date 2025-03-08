@@ -13,6 +13,7 @@ List<HellenicMessage> hellenicMessages = MAVLinkToHellenicTranslator.TranslateMA
 */
 class MAVLinkToHellenicTranslator
 {
+
     public static List<HellenicMessage> TranslateMAVLinkMessage(MAVLink.MAVLinkMessage mavlinkMessage)
     {
         // Extract the message ID
@@ -25,7 +26,7 @@ class MAVLinkToHellenicTranslator
         }
 
         // No suitable translation function found
-        Console.WriteLine("Unknown MAV link message: " + mavlinkMessage.msgid);
+        Console.WriteLine("Unable to translate MAVLink message! No suitable translation function found for msgid: " + msgId);
         return new List<HellenicMessage>();
     }
 
@@ -60,8 +61,7 @@ class MAVLinkToHellenicTranslator
             pReferenceFrame: 2
         );
 
-        return new List<HellenicMessage>
-        {
+        return new List<HellenicMessage> {
             LatitudeLongitudeHellenicMessage,
             AltitudeHellenicMessage,
             GroundVelocityHellenicMessage,
@@ -69,11 +69,10 @@ class MAVLinkToHellenicTranslator
         };
     }
 
-    public static Dictionary<uint, Func<MAVLink.MAVLinkMessage, List<HellenicMessage>>>
-        MAVLinkIdToConversionFunctionDict
-            =
-            new Dictionary<uint, Func<MAVLink.MAVLinkMessage, List<HellenicMessage>>>()
-            {
-                { 33, GlobalPositionIntToHellenic }
-            };
+    public static Dictionary<uint, Func<MAVLink.MAVLinkMessage, List<HellenicMessage>>> MAVLinkIdToConversionFunctionDict
+    =
+    new Dictionary<uint, Func<MAVLink.MAVLinkMessage, List<HellenicMessage>>>()
+    {
+        { 33, GlobalPositionIntToHellenic }
+    };
 }
