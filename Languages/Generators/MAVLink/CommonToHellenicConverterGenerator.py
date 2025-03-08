@@ -11,6 +11,8 @@
 #
 #
 
+# Note: This script technically works for translating from any message set to hellenic, so long as the other message sets XML file
+# is structured in the same way as the MAVLink project's common.xml, minimal.xml, etc.
 
 import argparse
 import os
@@ -36,26 +38,11 @@ import xml.etree.ElementTree as ET
                     hellenic_units="degrees"
                     conversion="value / 10000000.0">
             </mapping>
-            <mapping
-                    common_name="lon"
-                    common_type="int32_t"
-                    common_units="degE7"
-                    hellenic_id="0"
-                    hellenic_name="lon"
-                    hellenic_type="float64"
-                    hellenic_units="degrees"
-                    conversion="value / 10000000.0">
-            </mapping>
-            <mapping
-                    common_name="time_boot_ms"
-                    common_type="uint32_t"
-                    common_units="ms"
-                    hellenic_id="0"
-                    hellenic_name="time_usec"
-                    hellenic_type="uint64_t"
-                    hellenic_units="μs"
-                    conversion="ConvertBootMsToEpochUs(value)">
-            </mapping>
+
+                .
+                .
+                .
+
             <default_value
                     hellenic_id="0"
                     hellenic_name="reference_frame"
@@ -63,69 +50,10 @@ import xml.etree.ElementTree as ET
                     value="2"><!-- 2 = Earth in your enum -->
             </default_value>
 
-            <!-- ALTITUDE Message (id=1) Mappings -->
-            <mapping
-                    common_name="alt"
-                    common_type="int32_t"
-                    common_units="mm"
-                    hellenic_id="1"
-                    hellenic_name="alt"
-                    hellenic_type="float64"
-                    hellenic_units="m"
-                    conversion="value / 1000.0">
-            </mapping>
-            <mapping
-                    common_name="relative_alt"
-                    common_type="int32_t"
-                    common_units="mm"
-                    hellenic_id="1"
-                    hellenic_name="relative_alt"
-                    hellenic_type="float64"
-                    hellenic_units="m"
-                    conversion="value / 1000.0">
-            </mapping>
-            <mapping
-                    common_name="time_boot_ms"
-                    common_type="uint32_t"
-                    common_units="ms"
-                    hellenic_id="1"
-                    hellenic_name="time_usec"
-                    hellenic_type="uint64_t"
-                    hellenic_units="μs"
-                    conversion="ConvertBootMsToEpochUs(value)">
-            </mapping>
+                .
+                .
+                .
 
-            <!-- GROUND_VELOCITY Message (id=2) Mappings -->
-            <mapping
-                    common_name="vx"
-                    common_type="int16_t"
-                    common_units="cm/s"
-                    hellenic_id="2"
-                    hellenic_name="vx"
-                    hellenic_type="float64"
-                    hellenic_units="m/s"
-                    conversion="value / 100.0">
-            </mapping>
-            <mapping
-                    common_name="vy"
-                    common_type="int16_t"
-                    common_units="cm/s"
-                    hellenic_id="2"
-                    hellenic_name="vy"
-                    hellenic_type="float64"
-                    hellenic_units="m/s"
-                    conversion="value / 100.0">
-            </mapping>
-            <mapping
-                    common_name="vz"
-                    common_type="int16_t"
-                    common_units="cm/s"
-                    hellenic_id="2"
-                    hellenic_name="vz"
-                    hellenic_type="float64"
-                    hellenic_units="m/s"
-                    conversion="value / -100.0"><!-- Note: Inversion because MAVLink has positive down, Hellenic has positive up -->
-            </mapping>
             <mapping
                     common_name="time_boot_ms"
                     common_type="uint32_t"
@@ -136,43 +64,13 @@ import xml.etree.ElementTree as ET
                     hellenic_units="μs"
                     conversion="ConvertBootMsToEpochUs(value)">
             </mapping>
-
         </message>
     </conversions>
 </common_to_hellenic>
 '''
 
-# The incoming JSON messages are assumed to be structured in the following way, and comes from the Python script over a WebSocket:
-
-'''json
-{
-    "msgid" : 33,
-    "sysid" : 1,
-    "compid" : 1,
-    "sequence" : 224,
-    "payload" : {
-        "mavpackettype" : "GLOBAL_POSITION_INT",
-        "time_boot_ms" : 22299760,
-        "lat" : 473979704,
-        "lon" : 85461630,
-        "alt" : -573,
-        "relative_alt" : 319,
-        "vx" : -4,
-        "vy" : 0,
-        "vz" : 25,
-        "hdg" : 8282
-    }
-}
-'''
-
-
-def generate_conversion_function():
-    pass
-
-
-def generate_conversion_class():
-    class_header = '''
-using System.Text.Json.Nodes;
+# Constants for C# code generation
+g_class_header = '''using System.Text.Json.Nodes;
 
 /*
 We assume incoming MAVLink JSON messages come in like this:
@@ -198,18 +96,281 @@ We assume incoming MAVLink JSON messages come in like this:
 
 */
 class MAVLinkToHellenicTranslator
-{
-    // Maps MAVLink message ID's to the respective functions that will translate them
-    Dictionary<int, Func<JsonNode, List<IHellenicMessage>>> MAVLinkIdToConversionFunctionDict;
-    '''
+{'''
+
+g_translate_message_function = '''
+    public static List<IHellenicMessage> TranslateMAVLinkMessage(JsonNode jsonDocument)
+    {
+        // Extract the message ID
+        int msgId = jsonDocument["msgid"].GetValue<int>();
+
+        // Look up the appropriate conversion function
+        if (MAVLinkIdToConversionFunctionDict.TryGetValue(msgId, out var conversionFunc))
+        {
+            return conversionFunc(jsonDocument);
+        }
+
+        // Certified bruh moment
+        throw new InvalidDataException("Unable to translate MAVLink message! No suitable translation function found ... the MAVLink message might have herpes!");
+    }
+'''
+
+# Map from the XML type definitions to a C# equivalent
+g_type_map = {
+    "uint8_t": "byte",
+    "uint16_t": "ushort",
+    "uint32_t": "uint",
+    "uint64_t": "ulong",
+    "int8_t": "sbyte",
+    "int16_t": "short",
+    "int32_t": "int",
+    "int64_t": "long",
+    "float": "float",
+    "float32": "float",
+    "float64": "double",
+    "char": "char",
+    "string": "string"
+}
+
+# Dictionary to store MAVLink IDs to function name mappings
+g_function_map = {}
+
+# XML tag and attribute names
+g_common_to_hellenic_tag_string_name = "common_to_hellenic"
+g_conversions_tag_string_name = "conversions"
+g_message_tag_string_name = "message"
+g_mapping_tag_string_name = "mapping"
+g_common_id_attribute_string_name = "common_id"
+g_common_field_name_attribute_string_name = "common_field_name"
+g_common_field_tag_string_name = "field"
+g_hellenic_id_attribute_string_name = "hellenic_id"
+g_hellenic_field_name_attribute_string_name = "hellenic_field_name"
+g_hellenic_field_type_attribute_string_name = "hellenic_field_type"
+g_hellenic_field_units_attribute_string_name = "hellenic_field_units"
+g_hellenic_default_value_tag_string_name = "default_value"
+g_conversion_attribute_string_name = "conversion"
+g_messages_tag_string_name = "messages"
+g_message_field_type_attr_string_name = "type"
+g_message_field_name_attr_string_name = "name"
+g_message_field_units_attr_string_name = "units"
+g_message_id_attr_string_name = "id"
+g_message_name_attr_string_name = "name"
+g_message_description_tag_string_name = "description"
+g_field_description_tag_string_name = "description"
+g_message_fields_tag_string_name = "fields"
+g_hellenic_interface_string_name = "IHellenicMessage"
+
+
+def snake_to_pascal_case(snake_case_string: str) -> str:
+    """Convert snake_case to PascalCase."""
+    return ''.join(word.capitalize() for word in snake_case_string.split("_"))
+
+
+def generate_translation_functions(other_language_file_path, hellenic_language_file_path, translation_file_path):
+    """
+    Generate C# translation functions from MAVLink to Hellenic based on XML definitions.
+
+    Args:
+        other_language_file_path: Path to the MAVLink XML definition file
+        hellenic_language_file_path: Path to the Hellenic XML definition file
+        translation_file_path: Path to the translation mapping XML file
+
+    Returns:
+        str: C# code containing all the translation functions
+    """
+    mavlink_language_xml = ET.parse(other_language_file_path)
+    hellenic_language_xml = ET.parse(hellenic_language_file_path)
+    translation_xml = ET.parse(translation_file_path)
+
+    hellenic_messages = hellenic_language_xml.getroot().find(g_messages_tag_string_name)
+    mavlink_messages = mavlink_language_xml.getroot().find(g_messages_tag_string_name)
+    translation_definitions = translation_xml.getroot().find(g_conversions_tag_string_name)
+
+    all_functions = []
+
+    for translation_definition in translation_definitions:
+        mavlink_id = translation_definition.get(g_common_id_attribute_string_name)
+        mavlink_message_definition = mavlink_messages.find(f"./{g_message_tag_string_name}[@id='{mavlink_id}']")
+
+        mavlink_message_name = mavlink_message_definition.get(g_message_name_attr_string_name)
+        function_name = f"{snake_to_pascal_case(mavlink_message_name)}ToHellenic"
+
+        # Store the function name in the global map for later use
+        g_function_map[mavlink_id] = function_name
+
+        # Start building the function
+        function_lines = [
+            f"    public static List<IHellenicMessage> {function_name}(JsonNode jsonDocument)",
+            "    {",
+            "        // Get the payload node for convenience",
+            "        var payload = jsonDocument[\"payload\"];"
+        ]
+
+        # Collect all the Hellenic messages that this MAVLink message maps to
+        hellenic_message_data = {}
+
+        # First pass: identify all unique Hellenic messages
+        for mapping in translation_definition:
+            if mapping.tag in [g_mapping_tag_string_name, g_hellenic_default_value_tag_string_name]:
+                hellenic_id = mapping.get(g_hellenic_id_attribute_string_name)
+
+                if hellenic_id not in hellenic_message_data:
+                    hellenic_message_def = hellenic_messages.find(f"./{g_message_tag_string_name}[@id='{hellenic_id}']")
+                    hellenic_message_name = hellenic_message_def.get(g_message_name_attr_string_name)
+                    pascal_name = snake_to_pascal_case(hellenic_message_name)
+
+                    hellenic_message_data[hellenic_id] = {
+                        "name": pascal_name,
+                        "var_name": f"{pascal_name}HellenicMessage",
+                        "fields": []
+                    }
+
+        # Now process all mappings and default values
+        for mapping in translation_definition:
+            hellenic_id = mapping.get(g_hellenic_id_attribute_string_name)
+
+            if mapping.tag == g_hellenic_default_value_tag_string_name:
+                # Handle default values
+                hellenic_field_name = mapping.get(g_hellenic_field_name_attribute_string_name)
+                value = mapping.get("value")
+
+                hellenic_message_data[hellenic_id]["fields"].append({
+                    "name": hellenic_field_name,
+                    "value": value,
+                    "is_default": True
+                })
+
+            elif mapping.tag == g_mapping_tag_string_name:
+                # Handle field mappings
+                mavlink_field_name = mapping.get(g_common_field_name_attribute_string_name)
+                hellenic_field_name = mapping.get(g_hellenic_field_name_attribute_string_name)
+                conversion = mapping.get(g_conversion_attribute_string_name)
+
+                # Find the MAVLink field type
+                mavlink_field = mavlink_message_definition.find(f"./field[@name='{mavlink_field_name}']")
+                if mavlink_field is None:
+                    mavlink_field = mavlink_message_definition.find(f".//field[@name='{mavlink_field_name}']")
+
+                if mavlink_field is not None:
+                    mavlink_field_type = mavlink_field.get(g_message_field_type_attr_string_name)
+                    mavlink_c_sharp_field_type = g_type_map.get(mavlink_field_type, "object")
+                else:
+                    # Default to object if field type can't be determined
+                    mavlink_c_sharp_field_type = "object"
+
+                hellenic_message_data[hellenic_id]["fields"].append({
+                    "name": hellenic_field_name,
+                    "mavlink_field_name": mavlink_field_name,
+                    "mavlink_field_type": mavlink_c_sharp_field_type,
+                    "conversion": conversion,
+                    "is_default": False
+                })
+
+        function_lines.append("")
+        function_lines.append(
+            "        // Apply conversions from the XML mapping and use constructors for each message type")
+
+        # Generate constructor calls for each Hellenic message
+        for hellenic_id, message_info in sorted(hellenic_message_data.items()):
+            constructor_lines = [f"        var {message_info['var_name']} = new {message_info['name']}("]
+
+            field_params = []
+            for field in message_info["fields"]:
+                param_name = f"p{snake_to_pascal_case(field['name'])}"
+
+                if field["is_default"]:
+                    value = field["value"]
+                else:
+                    # Value from MAVLink with conversion
+                    value_expr = f"payload[\"{field['mavlink_field_name']}\"].GetValue<{field['mavlink_field_type']}>()"
+                    if field["conversion"] == "value":
+                        value = value_expr
+                    else:
+                        value = field["conversion"].replace("value", value_expr)
+
+                field_params.append(f"            {param_name}: {value}")
+
+            constructor_lines.append(",\n".join(field_params))
+            constructor_lines.append("        );")
+
+            function_lines.extend(constructor_lines)
+            function_lines.append("")
+
+        # Add return statement with all Hellenic messages
+        function_lines.append("        return new List<IHellenicMessage> {")
+        for _, message_info in sorted(hellenic_message_data.items()):
+            function_lines.append(f"            {message_info['var_name']},")
+
+        # Remove trailing comma from the last line
+        if function_lines[-1].endswith(","):
+            function_lines[-1] = function_lines[-1][:-1]
+
+        function_lines.append("        };")
+        function_lines.append("    }")
+
+        all_functions.append("\n".join(function_lines))
+
+    return "\n\n".join(all_functions)
+
+
+def generate_function_dictionary():
+    """
+    Generate C# code for the dictionary mapping MAVLink message IDs to conversion functions.
+
+    Returns:
+        str: C# code for the function dictionary
+    """
+    # Map to hold the message IDs to function dictionary
+    lines = [
+        "    public static Dictionary<int, Func<JsonNode, List<IHellenicMessage>>> MAVLinkIdToConversionFunctionDict",
+        "    =",
+        "    new Dictionary<int, Func<JsonNode, List<IHellenicMessage>>>()",
+        "    {"
+    ]
+
+    # Add each mapping
+    for id, function_name in sorted(g_function_map.items()):
+        lines.append(f"        {{{id}, {function_name}}},")
+
+    # Remove trailing comma from the last line
+    if lines[-1].endswith(","):
+        lines[-1] = lines[-1][:-1]
+
+    lines.append("    };")
+
+    return "\n".join(lines)
+
+
+def main():
+    """Main function to parse arguments and generate the C# code."""
+    parser = argparse.ArgumentParser(description="Generate C# message dialect translator from XML files")
+
+    parser.add_argument("--input_translation_XML", required=True, help="File path of the translation XML")
+    parser.add_argument("--input_original_XML", required=True,
+                        help="File path of the original dialect XML to generate translation functions to Hellenic for")
+    parser.add_argument("--input_hellenic_XML", required=True, help="File path of the Hellenic dialect XML definitions")
+    parser.add_argument("--output_dir", required=True, help="Output directory for the generated C# translator module")
+
+    args = parser.parse_args()
+
+    functions_string = generate_translation_functions(
+        args.input_original_XML,
+        args.input_hellenic_XML,
+        args.input_translation_XML
+    )
+
+    function_dictionary_string = generate_function_dictionary()
+
+    final_file = g_class_header + "\n" + g_translate_message_function + "\n" + functions_string + "\n\n" + function_dictionary_string + "\n}"
+
+    output_file_path = os.path.join(args.output_dir, "MAVLinkToHellenicTranslator.cs")
+    os.makedirs(args.output_dir, exist_ok=True)
+
+    with open(output_file_path, "w") as f:
+        f.write(final_file)
+
+    print(f"Successfully generated C# translator at: {output_file_path}")
 
 
 if __name__ == "__main__":
-
-    if __name__ == "__main__":
-        parser = argparse.ArgumentParser(description="Generate C# message dialect from an XML file")
-
-    parser.add_argument("--input_XML", required=True, help="File path to XML to turn into C# messages")
-    parser.add_argument("--output_dir", required=True, help="Output directory for the generated C# messages")
-
-    args = parser.parse_args()
+    main()
