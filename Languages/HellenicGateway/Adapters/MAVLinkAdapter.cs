@@ -1,32 +1,8 @@
+namespace Hermes.Languages.HellenicGateway.Adapters;
+
 using System.Collections.Generic;
 using System.IO;
 using Hermes.Languages.HellenicGateway.StateMachines;
-
-namespace Hermes.Languages.HellenicGateway.Adapters;
-
-/*
-We assume incoming MAVLink JSON messages come in like this:
-
-{
-    "msgid" : 33,
-    "sysid" : 1,
-    "compid" : 1,
-    "sequence" : 224,
-    "payload" : {
-        "mavpackettype" : "GLOBAL_POSITION_INT",
-        "time_boot_ms" : 22299760,
-        "lat" : 473979704,
-        "lon" : 85461630,
-        "alt" : -573,
-        "relative_alt" : 319,
-        "vx" : -4,
-        "vy" : 0,
-        "vz" : 25,
-        "hdg" : 8282
-    }
-}
-
-*/
 
 public class MAVLinkAdapter : IProtocolAdapter
 {
