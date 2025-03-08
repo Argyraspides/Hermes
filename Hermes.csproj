@@ -26,7 +26,6 @@
         <Compile Remove="**/submodules/**/*.cs"/>
     </ItemGroup>
     <ItemGroup>
-        <Folder Include="Common\Communications\Protocols\MAVLink\MAVLinkDefinitionGeneration\"/>
         <Folder Include="Languages\ConcreteConversions\"/>
         <Folder Include="Languages\ConcreteDialects\Hellenic\"/>
         <Folder Include="Languages\ConcreteDialects\MAVLinkCommon\"/>
