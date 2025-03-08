@@ -15,7 +15,7 @@
         <Content Include="Languages\DialectDefinitions\minimal.xml"/>
         <Content Include="Languages\DialectDefinitions\standard.xml"/>
         <Content Include="Languages\Generators\DialectGenerator.py"/>
-        <Content Include="Languages\Generators\MAVLink\CommonToHellenicConverterGenerator2.py"/>
+        <Content Include="Languages\Generators\MAVLink\CommonToHellenicConverterGenerator.py"/>
         <Content Include="Languages\README.md"/>
         <Content Include="State\Dialects\common.xml"/>
         <Content Include="State\Dialects\hellenic.xml"/>

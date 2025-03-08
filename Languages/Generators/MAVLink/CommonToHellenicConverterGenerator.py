@@ -309,7 +309,7 @@ def main():
 
     final_file = g_class_header + "\n" + g_translate_message_function + "\n" + functions_string + "\n\n" + function_dictionary_string + "\n}"
 
-    output_file_path = os.path.join(args.output_dir, "MAVLinkToHellenicTranslator2.cs")
+    output_file_path = os.path.join(args.output_dir, "MAVLinkToHellenicTranslator.cs")
     os.makedirs(args.output_dir, exist_ok=True)
 
     with open(output_file_path, "w") as f:
