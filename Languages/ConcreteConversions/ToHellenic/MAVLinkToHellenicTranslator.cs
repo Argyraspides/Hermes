@@ -29,7 +29,6 @@ We assume incoming MAVLink JSON messages come in like this:
 */
 class MAVLinkToHellenicTranslator
 {
-
     public static List<IHellenicMessage> TranslateMAVLinkMessage(JsonNode jsonDocument)
     {
         // Extract the message ID
@@ -42,7 +41,8 @@ class MAVLinkToHellenicTranslator
         }
 
         // Certified bruh moment
-        throw new InvalidDataException("Unable to translate MAVLink message! No suitable translation function found ... the MAVLink message might have herpes!");
+        throw new InvalidDataException(
+            "Unable to translate MAVLink message! No suitable translation function found ... the MAVLink message might have herpes!");
     }
 
     public static List<IHellenicMessage> GlobalPositionIntToHellenic(JsonNode jsonDocument)
@@ -76,7 +76,8 @@ class MAVLinkToHellenicTranslator
             pReferenceFrame: 2
         );
 
-        return new List<IHellenicMessage> {
+        return new List<IHellenicMessage>
+        {
             LatitudeLongitudeHellenicMessage,
             AltitudeHellenicMessage,
             GroundVelocityHellenicMessage,
@@ -85,9 +86,6 @@ class MAVLinkToHellenicTranslator
     }
 
     public static Dictionary<int, Func<JsonNode, List<IHellenicMessage>>> MAVLinkIdToConversionFunctionDict
-    =
-    new Dictionary<int, Func<JsonNode, List<IHellenicMessage>>>()
-    {
-        {33, GlobalPositionIntToHellenic}
-    };
+        =
+        new Dictionary<int, Func<JsonNode, List<IHellenicMessage>>>() { { 33, GlobalPositionIntToHellenic } };
 }

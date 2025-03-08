@@ -270,7 +270,7 @@ def generate_translation_functions(other_language_file_path, hellenic_language_f
                 })
 
         function_lines.append("")
-        
+
         # Generate constructor calls for each Hellenic message
         for hellenic_id, message_info in sorted(hellenic_message_data.items()):
             constructor_lines = [f"        var {message_info['var_name']} = new {message_info['name']}("]
