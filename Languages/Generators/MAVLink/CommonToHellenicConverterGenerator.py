@@ -70,7 +70,11 @@ import xml.etree.ElementTree as ET
 '''
 
 # Constants for C# code generation
-g_class_header = '''using System.Text.Json.Nodes;
+g_class_header = '''using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text.Json.Nodes;
+
 
 /*
 We assume incoming MAVLink JSON messages come in like this:
@@ -202,7 +206,6 @@ def generate_translation_functions(other_language_file_path, hellenic_language_f
         function_lines = [
             f"    public static List<IHellenicMessage> {function_name}(JsonNode jsonDocument)",
             "    {",
-            "        // Get the payload node for convenience",
             "        var payload = jsonDocument[\"payload\"];"
         ]
 
@@ -267,9 +270,7 @@ def generate_translation_functions(other_language_file_path, hellenic_language_f
                 })
 
         function_lines.append("")
-        function_lines.append(
-            "        // Apply conversions from the XML mapping and use constructors for each message type")
-
+        
         # Generate constructor calls for each Hellenic message
         for hellenic_id, message_info in sorted(hellenic_message_data.items()):
             constructor_lines = [f"        var {message_info['var_name']} = new {message_info['name']}("]
@@ -342,7 +343,6 @@ def generate_function_dictionary():
 
 
 def main():
-    """Main function to parse arguments and generate the C# code."""
     parser = argparse.ArgumentParser(description="Generate C# message dialect translator from XML files")
 
     parser.add_argument("--input_translation_XML", required=True, help="File path of the translation XML")
@@ -350,6 +350,17 @@ def main():
                         help="File path of the original dialect XML to generate translation functions to Hellenic for")
     parser.add_argument("--input_hellenic_XML", required=True, help="File path of the Hellenic dialect XML definitions")
     parser.add_argument("--output_dir", required=True, help="Output directory for the generated C# translator module")
+
+    '''
+
+    E.g.,
+
+    python3 CommonToHellenicConverterGenerator.py
+        --input_translation_XML ../../DialectConversions/common_to_hellenic.xml
+        --input_original_XML ../../DialectDefinitions/common.xml
+        --input_hellenic_XML ../../DialectDefinitions/hellenic.xml
+        --output_dir ../../ConcreteConversions/ToHellenic
+    '''
 
     args = parser.parse_args()
 

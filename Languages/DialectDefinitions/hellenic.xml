@@ -14,17 +14,20 @@
                 <field type="float64" name="lon" units="degrees">
                     <description>Longitude (WGS84 or planetary model)</description>
                 </field>
+                <field type="uint8_t" name="reference_frame">
+                    <description>Reference frame (0 = Mercury, 1 = Venus, 2 = Earth, 3 = Moon, 4 =
+                        Mars ...)
+                    </description>
+                </field>
                 <field type="uint64_t" name="time_usec" units="μs">
                     <description>Timestamp (microseconds since epoch)</description>
-                </field>
-                <field type="uint8_t" name="reference_frame">
-                    <description>Reference frame (0 = Mercury, 1 = Venus, 2 = Earth, 3 = Moon, 4 = Mars ...)</description>
                 </field>
             </fields>
         </message>
 
         <message id="1" name="ALTITUDE">
-            <description>The altitude of the object with high precision, applicable to both planetary
+            <description>The altitude of the object with high precision, applicable to both
+                planetary
                 and deep-space operations.
             </description>
             <fields>
@@ -35,7 +38,7 @@
                     <description>Altitude relative to home/base</description>
                 </field>
                 <field type="uint64_t" name="time_usec" units="μs">
-                    <description>Timestamp (microseconds since epoch)</description>
+                    <description>Timestamp (since system boot)</description>
                 </field>
             </fields>
         </message>
@@ -55,9 +58,29 @@
                     <description>Velocity Z (Altitude direction, positive up)</description>
                 </field>
                 <field type="uint64_t" name="time_usec" units="μs">
-                    <description>Timestamp (microseconds since epoch)</description>
+                    <description>Timestamp (since system boot)</description>
                 </field>
             </fields>
         </message>
+
+        <message id="3" name="HEADING">
+            <description>
+                The velocity components of the object
+            </description>
+            <fields>
+                <field type="float64" name="hdg" units="deg">
+                    <description>Heading in degrees</description>
+                </field>
+                <field type="uint8_t" name="reference_frame">
+                    <description>Reference frame (0 = Mercury, 1 = Venus, 2 = Earth, 3 = Moon, 4 =
+                        Mars ...)
+                    </description>
+                </field>
+                <field type="uint64_t" name="time_usec" units="μs">
+                    <description>Timestamp (since system boot)</description>
+                </field>
+            </fields>
+        </message>
+
     </messages>
 </hellenic>
