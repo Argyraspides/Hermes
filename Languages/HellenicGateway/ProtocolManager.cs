@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Godot;
 using Hermes.Common.Communications.WorldListener;
@@ -9,31 +10,39 @@ public partial class ProtocolManager : Node
 {
     public ProtocolManager()
     {
+        m_protocolAdapters = new List<IProtocolAdapter>() { new MAVLinkAdapter() };
     }
 
     [Signal]
-    public delegate void HellenicMessagesReceivedEventHandler(HellenicMessage[] messages);
+    public delegate void HellenicMessageReceivedEventHandler(HellenicMessage message);
 
-    List<IProtocolAdapter> m_protocolAdapters = new List<IProtocolAdapter>() { new MAVLinkAdapter() };
+    private List<IProtocolAdapter> m_protocolAdapters;
     ICommandDispatcher m_commandDispatcher;
+
+    public override void _Process(double delta)
+    {
+        foreach (IProtocolAdapter protocolAdapter in m_protocolAdapters)
+        {
+            if (protocolAdapter.GetNextHellenicMessage() is HellenicMessage nextMessage)
+            {
+                EmitSignal(SignalName.HellenicMessageReceived, nextMessage);
+            }
+        }
+    }
 
     public override void _Ready()
     {
-        var worldListener = WorldListener.Instance;
-        worldListener.WebSocketPacketReceived += OnWorldListenerWebSocketPacketReceived;
+        foreach (IProtocolAdapter protocolAdapter in m_protocolAdapters)
+        {
+            protocolAdapter.Start();
+        }
     }
 
-
-    void OnWorldListenerWebSocketPacketReceived(byte[] websocketMessage)
+    public override void _ExitTree()
     {
-        for (int i = 0; i < m_protocolAdapters.Count; i++)
+        foreach (IProtocolAdapter protocolAdapter in m_protocolAdapters)
         {
-            if (m_protocolAdapters[i].IsOfProtocolType(websocketMessage))
-            {
-                EmitSignal(SignalName.HellenicMessagesReceived,
-                    m_protocolAdapters[i].HandleMessage(websocketMessage).ToArray());
-                return;
-            }
+            protocolAdapter.Stop();
         }
     }
 }

@@ -5,23 +5,20 @@ using Godot;
 
 namespace Hermes.Languages.HellenicGateway;
 
-public struct ConnectionParameters
-{
-};
-
-public struct CommandResult
-{
-};
-
+/// <summary>
+/// A protocol adapters job is to listen for messages of a specific protocol, convert them into Hellenic,
+/// and buffer them internally such that they can be accessed at any time. In addition to this, a protocol adapter
+/// must handle any protocol behaviors (e.g., via a state machine) such as acknowledgements, timeouts, etc.
+/// </summary>
 public interface IProtocolAdapter
 {
-    /// <summary>
-    /// Determines whether or not the packet is of this type of protocol.
-    /// E.g., "Is this raw packet encoded using the MAVLink protocol?"
-    /// </summary>
-    /// <param name="rawPacket">The raw packet data</param>
-    /// <returns>True if the packet is of this protocol type, false otherwise</returns>
-    bool IsOfProtocolType(byte[] rawPacket);
+    // Starts the protocol adapter by initializing & starting all of its listeners
+    void Start();
 
-    List<HellenicMessage> HandleMessage(byte[] rawPacket);
+    // Stops the protocol adapters by properly freeing all listening resources (e.g., UDP clients) and
+    // cleaning up any threads
+    void Stop();
+
+    // Gets the next Hellenic message in the adapters buffer
+    HellenicMessage GetNextHellenicMessage();
 }

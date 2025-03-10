@@ -20,7 +20,6 @@ config/icon="res://docs/Hermes.png"
 [autoload]
 
 ExternalLauncher="*res://Common/Communications/ExternalLaunchers/ExternalLauncher.cs"
-WorldListener="*res://Common/Communications/WorldListener/WorldListener.cs"
 EventBus="*res://Universe/Autoloads/EventBus.cs"
 ProtocolManager="*res://Languages/HellenicGateway/ProtocolManager.cs"
 
