@@ -6,7 +6,6 @@ using Hermes.Common.Communications.WorldListener.MAVLink;
 namespace Hermes.Languages.HellenicGateway.Adapters;
 
 using System.Collections.Generic;
-using System.IO;
 using Hermes.Languages.HellenicGateway.StateMachines;
 
 public class MAVLinkAdapter : IProtocolAdapter
@@ -19,6 +18,8 @@ public class MAVLinkAdapter : IProtocolAdapter
 
 
     private Thread m_hellenicProcessorThread;
+
+    // Basically a circular buffer/deque
     private LinkedList<HellenicMessage> m_messageQueue;
     private object m_messageQueueLock = new object();
     private int m_maxMessageQueueSize = 4096;
@@ -73,6 +74,7 @@ public class MAVLinkAdapter : IProtocolAdapter
 
     private void StartMessageProcessor()
     {
+        // TODO::ARGYRASPIDES(10/03/2025) { Don't do a busy wait like this. Make it event based. Probably a callback for when a UDP message is ready }
         while (true)
         {
             if (m_udpListener.GetNextMessage() is MAVLink.MAVLinkMessage msg)
