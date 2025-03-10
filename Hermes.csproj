@@ -7,7 +7,6 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
     <ItemGroup>
-        <Content Include="Common\Communications\Protocols\MAVLink\MAVLinkInterface.py"/>
         <Content Include="Common\Shaders\WebMercatorToWGS84Shader.gdshader"/>
         <Content Include="Languages\DialectConversionDefinitions\common_to_hellenic.xml"/>
         <Content Include="Languages\DialectDefinitions\common.xml"/>
