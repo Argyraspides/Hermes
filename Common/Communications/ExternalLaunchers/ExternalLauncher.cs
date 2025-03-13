@@ -38,7 +38,7 @@ public partial class ExternalLauncher : Node
     //	'      `--'      `.-'      `--'      `--'      `--'      `-.'      `--'      `
 
     private const string m_PYTHON_MAVLINK_LISTENER_LOCAL_SCRIPT_PATH =
-        "res://Common/Communications/Protocols/MAVLink/pymavsdk.py";
+        "res://Common/Communications/Protocols/MAVLink/MAVLinkInterface.py";
 
     private string m_pythonMAVLinkListenerAbsoluteScriptPath;
 

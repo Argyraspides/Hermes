@@ -1,0 +1,86 @@
+<?xml version="1.0"?>
+<hellenic>
+    <version>2</version>
+    <dialect>1</dialect>
+    <messages>
+        <message id="0" name="LATITUDE_LONGITUDE">
+            <description>The position of the object expressed in latitude, longitude, and altitude,
+                supporting high-precision planetary and space navigation.
+            </description>
+            <fields>
+                <field type="float64" name="lat" units="degrees">
+                    <description>Latitude (WGS84 or planetary model)</description>
+                </field>
+                <field type="float64" name="lon" units="degrees">
+                    <description>Longitude (WGS84 or planetary model)</description>
+                </field>
+                <field type="uint8_t" name="reference_frame">
+                    <description>Reference frame (0 = Mercury, 1 = Venus, 2 = Earth, 3 = Moon, 4 =
+                        Mars ...)
+                    </description>
+                </field>
+                <field type="uint64_t" name="time_usec" units="μs">
+                    <description>Timestamp (microseconds since epoch)</description>
+                </field>
+            </fields>
+        </message>
+
+        <message id="1" name="ALTITUDE">
+            <description>The altitude of the object with high precision, applicable to both
+                planetary
+                and deep-space operations.
+            </description>
+            <fields>
+                <field type="float64" name="alt" units="m">
+                    <description>Altitude (Mean Sea Level or reference frame)</description>
+                </field>
+                <field type="float64" name="relative_alt" units="m">
+                    <description>Altitude relative to home/base</description>
+                </field>
+                <field type="uint64_t" name="time_usec" units="μs">
+                    <description>Timestamp (since system boot)</description>
+                </field>
+            </fields>
+        </message>
+
+        <message id="2" name="GROUND_VELOCITY">
+            <description>
+                The velocity components of the object
+            </description>
+            <fields>
+                <field type="float64" name="vx" units="m/s">
+                    <description>Velocity X (Latitude direction, positive north)</description>
+                </field>
+                <field type="float64" name="vy" units="m/s">
+                    <description>Velocity Y (Longitude direction, positive east)</description>
+                </field>
+                <field type="float64" name="vz" units="m/s">
+                    <description>Velocity Z (Altitude direction, positive up)</description>
+                </field>
+                <field type="uint64_t" name="time_usec" units="μs">
+                    <description>Timestamp (since system boot)</description>
+                </field>
+            </fields>
+        </message>
+
+        <message id="3" name="HEADING">
+            <description>
+                The velocity components of the object
+            </description>
+            <fields>
+                <field type="float64" name="hdg" units="deg">
+                    <description>Heading in degrees</description>
+                </field>
+                <field type="uint8_t" name="reference_frame">
+                    <description>Reference frame (0 = Mercury, 1 = Venus, 2 = Earth, 3 = Moon, 4 =
+                        Mars ...)
+                    </description>
+                </field>
+                <field type="uint64_t" name="time_usec" units="μs">
+                    <description>Timestamp (since system boot)</description>
+                </field>
+            </fields>
+        </message>
+
+    </messages>
+</hellenic>

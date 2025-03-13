@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<common_to_hellenic>
+    <conversions>
+        <message common_id="33">
+            <!-- LATITUDE_LONGITUDE Message (id=0) Mappings -->
+            <mapping
+                    common_field_name="lat"
+                    hellenic_id="0"
+                    hellenic_field_name="lat"
+                    conversion="value / 10000000.0">
+            </mapping>
+            <mapping
+                    common_field_name="lon"
+                    hellenic_id="0"
+                    hellenic_field_name="lon"
+                    conversion="value / 10000000.0">
+            </mapping>
+            <mapping
+                    common_field_name="time_boot_ms"
+                    hellenic_id="0"
+                    hellenic_field_name="time_usec"
+                    conversion="value">
+            </mapping>
+            <default_value
+                    hellenic_id="0"
+                    hellenic_field_name="reference_frame"
+                    value="2"><!-- 2 = Earth in your enum -->
+            </default_value>
+
+            <!-- ALTITUDE Message (id=1) Mappings -->
+            <mapping
+                    common_field_name="alt"
+                    hellenic_id="1"
+                    hellenic_field_name="alt"
+                    conversion="value / 1000.0">
+            </mapping>
+            <mapping
+                    common_field_name="relative_alt"
+                    hellenic_id="1"
+                    hellenic_field_name="relative_alt"
+                    conversion="value / 1000.0">
+            </mapping>
+            <mapping
+                    common_field_name="time_boot_ms"
+                    hellenic_id="1"
+                    hellenic_field_name="time_usec"
+                    conversion="value">
+            </mapping>
+
+            <!-- GROUND_VELOCITY Message (id=2) Mappings -->
+            <mapping
+                    common_field_name="vx"
+                    hellenic_id="2"
+                    hellenic_field_name="vx"
+                    conversion="value / 100.0">
+            </mapping>
+            <mapping
+                    common_field_name="vy"
+                    hellenic_id="2"
+                    hellenic_field_name="vy"
+                    conversion="value / 100.0">
+            </mapping>
+            <mapping
+                    common_field_name="vz"
+                    hellenic_id="2"
+                    hellenic_field_name="vz"
+                    conversion="value / -100.0"><!-- Note: Inversion because MAVLink has positive down, Hellenic has positive up -->
+            </mapping>
+            <mapping
+                    common_field_name="time_boot_ms"
+                    hellenic_id="2"
+                    hellenic_field_name="time_usec"
+                    conversion="value">
+            </mapping>
+
+            <!-- HEADING Message (id=3) Mappings -->
+            <mapping
+                    common_field_name="hdg"
+                    hellenic_id="3"
+                    hellenic_field_name="hdg"
+                    conversion="value / 100.0">
+            </mapping>
+            <mapping
+                    common_field_name="time_boot_ms"
+                    hellenic_id="3"
+                    hellenic_field_name="time_usec"
+                    conversion="value">
+            </mapping>
+            <default_value
+                    hellenic_id="3"
+                    hellenic_field_name="reference_frame"
+                    value="2"><!-- 2 = Earth -->
+            </default_value>
+        </message>
+    </conversions>
+</common_to_hellenic>

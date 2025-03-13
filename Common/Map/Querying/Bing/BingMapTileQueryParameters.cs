@@ -33,7 +33,7 @@ public class BingMapTileQueryParameters : IQueryParameters
         string quadKey,
         ImageType mapImgType,
         string apiVersion,
-        Language language
+        Common.Types.HumanLanguage humanLanguage
     )
     {
         if (serverInstance < 0 || serverInstance >= 4)
@@ -59,7 +59,7 @@ public class BingMapTileQueryParameters : IQueryParameters
         QuadKey = quadKey;
         MapImageType = mapImgType;
         APIVersion = apiVersion;
-        Language = language;
+        HumanLanguage = humanLanguage;
     }
 
     /*
@@ -73,7 +73,7 @@ public class BingMapTileQueryParameters : IQueryParameters
     public string QuadKey { get; private set; }
     public ImageType MapImageType { get; private set; }
     public string APIVersion { get; private set; }
-    public Language Language { get; private set; }
+    public Common.Types.HumanLanguage HumanLanguage { get; private set; }
 
     public IDictionary<string, string> ToQueryDictionary()
     {
@@ -84,7 +84,7 @@ public class BingMapTileQueryParameters : IQueryParameters
         queryParams[BingMapTileURLBuilder.quadKeyStr] = QuadKey;
         queryParams[BingMapTileURLBuilder.mapImgTypeStr] = MapImageType.ToString();
         queryParams[BingMapTileURLBuilder.apiVersionStr] = APIVersion;
-        queryParams[BingMapTileURLBuilder.langStr] = Language.ToString().ToLower();
+        queryParams[BingMapTileURLBuilder.langStr] = HumanLanguage.ToString().ToLower();
 
         return queryParams;
     }

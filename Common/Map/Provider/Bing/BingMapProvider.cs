@@ -47,7 +47,7 @@ public class BingMapProvider : IMapProvider<BingMapTileQueryParameters>
         BingMercatorMapTile partialTile = new BingMercatorMapTile(
             queryParameters.QuadKey,
             queryParameters.MapType,
-            queryParameters.Language,
+            queryParameters.HumanLanguage,
             queryParameters.MapImageType,
             null
         );
@@ -68,7 +68,7 @@ public class BingMapProvider : IMapProvider<BingMapTileQueryParameters>
         BingMercatorMapTile bingMercatorMapTile = new BingMercatorMapTile(
             queryParameters.QuadKey,
             queryParameters.MapType,
-            queryParameters.Language,
+            queryParameters.HumanLanguage,
             queryParameters.MapImageType,
             rawMapData
         );

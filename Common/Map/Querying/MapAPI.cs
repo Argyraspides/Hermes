@@ -54,7 +54,7 @@ public partial class MapAPI : Node
             MapUtils.LatLonAndZoomToQuadKey(latitude, longitude, zoom),
             mapImageType,
             "523",
-            Language.en
+            HumanLanguage.en
         );
 
         return await m_mapProvider.RequestMapTileAsync(bingQueryParameters);
@@ -74,7 +74,7 @@ public partial class MapAPI : Node
             MapUtils.LatLonAndZoomToQuadKey(latitude, longitude, zoom),
             mapImageType,
             "523",
-            Language.en
+            HumanLanguage.en
         );
 
         return await m_mapProvider.RequestRawMapTileAsync(bingQueryParameters);

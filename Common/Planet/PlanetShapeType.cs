@@ -15,6 +15,7 @@
                      WEAVER OF WORLDS
 
 */
+
 namespace Hermes.Common.Planet;
 
 public enum PlanetShapeType
