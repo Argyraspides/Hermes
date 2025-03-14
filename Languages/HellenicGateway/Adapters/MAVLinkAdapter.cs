@@ -8,6 +8,18 @@ namespace Hermes.Languages.HellenicGateway.Adapters;
 using System.Collections.Generic;
 using Hermes.Languages.HellenicGateway.StateMachines;
 
+/// <summary>
+/// The MAVLinkAdapter has the single purpose of listening to MAVLink messages over
+/// certain "data links" (such as UDP, TCP, or serial -- currently only UDP is supported)
+/// and convert them to Hellenic messages. These Hellenic messages are stored in a buffer
+/// which can be retrieved by anything that wishes to use the MAVLinkAdapter. The adapter
+/// also has a MAVLinkStateMachine that handles behavioral aspects of MAVLink, such as
+/// periodically sending heartbeats.
+///
+/// The buffer is implemented as a circular queue. When the max queue size is reached,
+/// the oldest messages received are removed before adding new ones.
+///
+/// </summary>
 public class MAVLinkAdapter : IProtocolAdapter
 {
     private MAVLinkStateMachine m_mavlinkStateMachine = new MAVLinkStateMachine();

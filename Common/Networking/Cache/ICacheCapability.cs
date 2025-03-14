@@ -19,10 +19,10 @@
 
 namespace Hermes.Common.Networking.Cache;
 
-public interface ICacheCapability<Resource>
+public interface ICacheCapability<HermesResource>
 {
-    void CacheResource(Resource resource);
-    Resource RetrieveResourceFromCache(string resourceHash);
+    void CacheResource(HermesResource resource);
+    HermesResource RetrieveResourceFromCache(string resourceHash);
 
     /// <summary>
     /// Can be used to retrieve a resource from cache if the provided resource argument contains enough
@@ -31,8 +31,8 @@ public interface ICacheCapability<Resource>
     /// <param name="partialResource"> The resource with parts of its fields filled out which contains the necessary information
     /// to uniquely identify the entire resource</param>
     /// <returns></returns>
-    Resource RetrieveResourceFromCache(Resource partialResource);
+    HermesResource RetrieveResourceFromCache(HermesResource partialResource);
 
     bool ResourceExists(string resourceHash);
-    bool ResourceExists(Resource partialResource);
+    bool ResourceExists(HermesResource partialResource);
 }
