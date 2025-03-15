@@ -53,8 +53,6 @@ using Hermes.Common.GodotUtils;
 /// </summary>
 public partial class TerrainQuadTreeUpdater : Node
 {
-    #region Dependencies & State
-
     private readonly TerrainQuadTree m_terrainQuadTree;
     private readonly int m_quadTreeUpdateIntervalMs = 250;
     private volatile bool m_isRunning = false;
@@ -68,10 +66,6 @@ public partial class TerrainQuadTreeUpdater : Node
     public Thread UpdateQuadTreeThread { get; private set; }
     public Thread CullQuadTreeThread { get; private set; }
 
-    #endregion Dependencies & State
-
-    #region Signals
-
     // Signal emitted when we are done determining which nodes should be split/merged
     [Signal]
     public delegate void QuadTreeUpdatesDeterminedEventHandler();
@@ -79,10 +73,6 @@ public partial class TerrainQuadTreeUpdater : Node
     // Signal emitted when we are done culling all unused nodes
     [Signal]
     public delegate void CullQuadTreeFinishedEventHandler();
-
-    #endregion Signals
-
-    #region Constructor & Thread Management
 
     public TerrainQuadTreeUpdater(TerrainQuadTree terrainQuadTree)
     {
@@ -101,8 +91,10 @@ public partial class TerrainQuadTreeUpdater : Node
             IsBackground = true, Name = "QuadTreeUpdateThread"
         };
 
-        CullQuadTreeThread =
-            new Thread(StartCullingThreadFunction) { IsBackground = true, Name = "CullQuadTreeThread" };
+        CullQuadTreeThread = new Thread(StartCullingThreadFunction)
+        {
+            IsBackground = true, Name = "CullQuadTreeThread"
+        };
 
         UpdateQuadTreeThread.Start();
         CullQuadTreeThread.Start();
@@ -157,10 +149,6 @@ public partial class TerrainQuadTreeUpdater : Node
             CullQuadTreeThread.Join(1000);
         }
     }
-
-    #endregion Constructor & Thread Management
-
-    #region Update Logic
 
     private void UpdateQuadTreeThreadFunction()
     {
@@ -275,10 +263,6 @@ public partial class TerrainQuadTreeUpdater : Node
         return true;
     }
 
-    #endregion Update Logic
-
-    #region Node Management
-
     /// <summary>
     /// Removes a quadtree node from the scene tree itself. The object will be deleted in the Godot world,
     /// but not in the C# world
@@ -352,8 +336,6 @@ public partial class TerrainQuadTreeUpdater : Node
                 );
         return meshSegment;
     }
-
-    #endregion Node Management
 
     /// <summary>
     /// Called via signal when the TerrainQuadTree finishes splitting/merging all nodes in its queue
