@@ -1,22 +1,25 @@
+using System;
+
 namespace Hermes.Core.Vehicle;
 
 public abstract class Component
 {
-    ComponentType m_ComponentType;
-    private bool m_IsEnabled;
+    private ComponentType m_ComponentType = ComponentType.NULL;
 
-    public void enable()
+    public ComponentType ComponentType
     {
-        m_IsEnabled = true;
+        get { return m_ComponentType; }
+        private set
+        {
+            if (m_ComponentType != ComponentType.NULL)
+            {
+                throw new ArgumentException(
+                    "A component type cannot change after it has been set. Have you ever seen a GPS module turn into a rocket engine?");
+            }
+
+            m_ComponentType = value;
+        }
     }
 
-    public void disable()
-    {
-        m_IsEnabled = false;
-    }
-
-    public bool IsEnabled()
-    {
-        return m_IsEnabled;
-    }
+    public bool Enabled { get; private set; }
 }
