@@ -171,24 +171,26 @@ def generate_dialect_class(class_info_dict):
     class_description = generate_description_comment(class_info_dict[g_message_description_tag_string_name])
     class_heading = generate_dialect_class_heading(class_info_dict[g_message_name_attr_string_name], class_description)
 
-    # Dictionary for message will look like the following.
-    # Contains all necessary information to generate a class definition
-    # {
-    #     "id": 0,
-    #     "name": "LATITUDE_LONGITUDE",
-    #     "description": "blah"
-    #     "fields": {
-    #
-    #         "lat": {
-    #             "type" : "float64"
-    #             "description": "blah"
-    #         },
-    #         "lon": {
-    #             "type" : "float64"
-    #             "description": "blah"
-    #         }
-    #     }
-    # }
+    '''
+     Dictionary for message will look like the following.
+     Contains all necessary information to generate a class definition
+     {
+         "id": 0,
+         "name": "LATITUDE_LONGITUDE",
+         "description": "blah"
+         "fields": {
+
+             "lat": {
+                 "type" : "float64"
+                 "description": "blah"
+             },
+             "lon": {
+                 "type" : "float64"
+                 "description": "blah"
+             }
+         }
+     }
+    '''
     fields = class_info_dict["fields"]
     class_unique_fields = ""
     class_constructor_params = ""
@@ -209,20 +211,30 @@ def generate_dialect_class(class_info_dict):
 
         class_unique_fields += member_field_line
 
+    # TODO::ARGYRASPIDES() { This new vehicle id field should be in the xml somehow. I shouldn't constantly be changing the generator script for this BS }
+    class_constructor_params += "uint pVehicleId, "
+
     class_id = class_info_dict[g_message_id_attr_string_name]
     class_constructor_line = (f""
-                              f"\tpublic {snake_to_pascal_case(class_info_dict[g_message_name_attr_string_name])}({class_constructor_params[:-2]})\n\t{{"
-                              f"\n\t\tID = {class_id};"
-                              f"\n\t\tMessageName = nameof({snake_to_pascal_case(class_info_dict[g_message_name_attr_string_name])});"
-                              f"\n{class_constructor_body}\t}}\n")
-    static_class_constructor = f"\tpublic {snake_to_pascal_case(class_info_dict[g_message_name_attr_string_name])}()\n\t{{\n\t\tID = {class_id};\n\t\tMessageName = nameof({snake_to_pascal_case(class_info_dict[g_message_name_attr_string_name])});\n\t}}"
+                              f"\tpublic {snake_to_pascal_case(class_info_dict[g_message_name_attr_string_name])}({class_constructor_params[:-2]})\n"
+                              f"\t{{\n"
+                              f"\t\tID = {class_id};\n"
+                              f"\t\tMessageName = nameof({snake_to_pascal_case(class_info_dict[g_message_name_attr_string_name])});\n"
+                              f"{class_constructor_body}"
+                              f"\t}}\n")
 
+    default_class_constructor = (f""
+                                 f"\tpublic {snake_to_pascal_case(class_info_dict[g_message_name_attr_string_name])}()\n"
+                                 f"\t{{\n"
+                                 f"\t\tID = {class_id};\n"
+                                 f"\t\tMessageName = nameof({snake_to_pascal_case(class_info_dict[g_message_name_attr_string_name])});\n"
+                                 f"\t}}")
     # LOL
     class_ending_brace = "\n}"
 
     # Final file :DD
 
-    class_file = class_heading + class_unique_fields + class_constructor_line + static_class_constructor + class_ending_brace
+    class_file = class_heading + class_unique_fields + class_constructor_line + default_class_constructor + class_ending_brace
 
     return class_file
 
