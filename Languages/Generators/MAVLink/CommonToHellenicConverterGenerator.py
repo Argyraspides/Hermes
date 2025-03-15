@@ -122,7 +122,9 @@ def generate_function(common_xml_message, hellenic_xml_root, translation_xml):
 
         if hellenic_message_name_pascal_case not in msg_param_dict:
             # All messages must include a vehicle/system id
-            msg_param_dict[hellenic_message_name_pascal_case] = {"vehicle_id": "mavlinkMessage.sysid"}
+            # TODO::ARGYRASPIDES() { Again with this derived message stuff... we shouldnt have to do this bruh }
+            # should all be defined in the XML with zero hardcoding in the generator script
+            msg_param_dict[hellenic_message_name_pascal_case] = {"entity_id": "mavlinkMessage.sysid"}
 
         if mapping.tag == "default_value":
             hellenic_message_field_name = mapping.get("hellenic_field_name")

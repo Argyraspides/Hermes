@@ -17,7 +17,6 @@ class MAVLinkToHellenicTranslator
     {
         // Extract the message ID
         uint msgId = mavlinkMessage.msgid;
-
         // Look up the appropriate conversion function
         if (MAVLinkIdToConversionFunctionDict.TryGetValue(msgId, out var conversionFunc))
         {
@@ -36,21 +35,22 @@ class MAVLinkToHellenicTranslator
         var mavlinkData = mavlinkMessage.ToStructure<MAVLink.mavlink_global_position_int_t>();
 
         var LatitudeLongitudeHellenicMessage = new LatitudeLongitude(
+            pEntityId: (uint)mavlinkMessage.sysid,
             pLat: mavlinkData.lat / 10000000.0,
             pLon: mavlinkData.lon / 10000000.0,
             pTimeUsec: mavlinkData.time_boot_ms,
-            pReferenceFrame: 2,
-            pVehicleId: mavlinkMessage.sysid
+            pReferenceFrame: 2
         );
 
         var AltitudeHellenicMessage = new Altitude(
+            pEntityId: mavlinkMessage.sysid,
             pAlt: mavlinkData.alt / 1000.0,
             pRelativeAlt: mavlinkData.relative_alt / 1000.0,
-            pTimeUsec: mavlinkData.time_boot_ms,
-            pVehicleId: mavlinkMessage.sysid
+            pTimeUsec: mavlinkData.time_boot_ms
         );
 
         var GroundVelocityHellenicMessage = new GroundVelocity(
+            pEntityId: mavlinkMessage.sysid,
             pVx: mavlinkData.vx / 100.0,
             pVy: mavlinkData.vy / 100.0,
             pVz: mavlinkData.vz / -100.0,
@@ -58,6 +58,7 @@ class MAVLinkToHellenicTranslator
         );
 
         var HeadingHellenicMessage = new Heading(
+            pEntityId: mavlinkMessage.sysid,
             pHdg: mavlinkData.hdg / 100.0,
             pTimeUsec: mavlinkData.time_boot_ms,
             pReferenceFrame: 2

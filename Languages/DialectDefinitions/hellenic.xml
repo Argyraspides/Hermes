@@ -1,13 +1,14 @@
 <?xml version="1.0"?>
 <hellenic>
-    <version>2</version>
-    <dialect>1</dialect>
     <messages>
         <message id="0" name="LATITUDE_LONGITUDE">
             <description>The position of the object expressed in latitude, longitude, and altitude,
                 supporting high-precision planetary and space navigation.
             </description>
             <fields>
+                <field type="uint32_t" name="entity_id">
+                    <description>ID of the entity that sent this message</description>
+                </field>
                 <field type="float64" name="lat" units="degrees">
                     <description>Latitude (WGS84 or planetary model)</description>
                 </field>
@@ -31,6 +32,9 @@
                 and deep-space operations.
             </description>
             <fields>
+                <field type="uint32_t" name="entity_id">
+                    <description>ID of the entity that sent this message</description>
+                </field>
                 <field type="float64" name="alt" units="m">
                     <description>Altitude (Mean Sea Level or reference frame)</description>
                 </field>
@@ -48,6 +52,9 @@
                 The velocity components of the object
             </description>
             <fields>
+                <field type="uint32_t" name="entity_id">
+                    <description>ID of the entity that sent this message</description>
+                </field>
                 <field type="float64" name="vx" units="m/s">
                     <description>Velocity X (Latitude direction, positive north)</description>
                 </field>
@@ -68,6 +75,9 @@
                 The velocity components of the object
             </description>
             <fields>
+                <field type="uint32_t" name="entity_id">
+                    <description>ID of the entity that sent this message</description>
+                </field>
                 <field type="float64" name="hdg" units="deg">
                     <description>Heading in degrees</description>
                 </field>
@@ -81,6 +91,5 @@
                 </field>
             </fields>
         </message>
-
     </messages>
 </hellenic>

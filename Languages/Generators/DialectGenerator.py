@@ -152,8 +152,8 @@ using Godot;
 
 public abstract partial class HellenicMessage : RefCounted
 {
-    // The ID of the vehicle this message was sent from
-    public uint VehicleID { get; protected set; } = uint.MaxValue;
+    // The ID of the entity this message was sent from
+    public uint EntityID { get; protected set; } = uint.MaxValue;
     // The ID of the Hellenic message itself. E.g., An ID of 0 corresponds to "LatitudeLongitude"
     public uint ID { get; protected set; } = uint.MaxValue;
     // The name of this Hellenic message, e.g., "LatitudeLongitude"
@@ -211,8 +211,18 @@ def generate_dialect_class(class_info_dict):
 
         class_unique_fields += member_field_line
 
-    # TODO::ARGYRASPIDES() { This new vehicle id field should be in the xml somehow. I shouldn't constantly be changing the generator script for this BS }
-    class_constructor_params += "uint pVehicleId, "
+    '''
+        TODO::ARGYRASPIDES()
+        {
+
+            I sort of have to synchronize state between the derived messages and their base class for this. In this case,
+            each message derives from HellenicMessage which has an EntityID, thus the constructor should be able
+            to take in the a parameter to set the EntityID but it shouldn't be a field in the derived class. I need a way in the XML
+            for the messages to be aware of what message they derive from so that I can specially look for those or something
+            and put them in the constructor specifically (and not as a field in the class itself).
+
+        }
+    '''
 
     class_id = class_info_dict[g_message_id_attr_string_name]
     class_constructor_line = (f""
