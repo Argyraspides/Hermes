@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Godot;
+using Hermes.Core.Vehicle.Components;
 using Hermes.Languages.HellenicGateway;
 
 namespace Hermes.Core.Vehicle;
@@ -19,5 +20,12 @@ public partial class VehicleManager : Node
         {
             m_Vehicles.Add(message.ID, new Vehicle());
         }
+
+        if (message.MessageName == nameof(LatitudeLongitude))
+        {
+            m_Vehicles[message.ID].Components.Add(ComponentType.GPS, new GPSComponent());
+        }
+
+        int x = 5;
     }
 }

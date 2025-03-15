@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b42ypy1pprv7p"
-path="res://.godot/imported/JetIcon.png-bfdfc2fb424a73693dc58d9081105cfa.ctex"
+path="res://.godot/imported/JetIcon.png-3f189c11aec97752f070fbc24d598d41.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Vehicle/Assets/Images/JetIcon.png"
-dest_files=["res://.godot/imported/JetIcon.png-bfdfc2fb424a73693dc58d9081105cfa.ctex"]
+source_file="res://Core/Vehicle/Assets/Images/JetIcon.png"
+dest_files=["res://.godot/imported/JetIcon.png-3f189c11aec97752f070fbc24d598d41.ctex"]
 
 [params]
 

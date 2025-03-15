@@ -2,14 +2,14 @@ using System;
 
 namespace Hermes.Core.Vehicle;
 
-public abstract class Component
+public class Component
 {
     private ComponentType m_ComponentType = ComponentType.NULL;
 
     public ComponentType ComponentType
     {
         get { return m_ComponentType; }
-        private set
+        protected set
         {
             if (m_ComponentType != ComponentType.NULL)
             {
@@ -21,5 +21,5 @@ public abstract class Component
         }
     }
 
-    public bool Enabled { get; private set; }
+    public bool Enabled { get; private set; } = true;
 }

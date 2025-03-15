@@ -1,26 +1,22 @@
+using System;
+
 namespace Hermes.Core.Vehicle.Components;
 
-public struct GPSComponent
+public class GPSComponent : Component
 {
     // Supported by pretty much all GPS components out there
-    public double Latitude;
-    public double Longitude;
-    public double Altitude;
+    public double Latitude = double.NaN;
+    public double Longitude = double.NaN;
+    public double Altitude = double.NaN;
 
     // Supported by most GPS components out there
-    public double Heading;
-    public double GroundSpeedX;
-    public double GroundSpeedY;
-    public double GroundSpeedZ;
+    public double Heading = double.NaN;
+    public double GroundSpeedX = double.NaN;
+    public double GroundSpeedY = double.NaN;
+    public double GroundSpeedZ = double.NaN;
 
     public GPSComponent()
     {
-        Latitude = double.NaN;
-        Longitude = double.NaN;
-        Altitude = double.NaN;
-        Heading = double.NaN;
-        GroundSpeedX = double.NaN;
-        GroundSpeedY = double.NaN;
-        GroundSpeedZ = double.NaN;
+        ComponentType = ComponentType.GPS;
     }
 }
