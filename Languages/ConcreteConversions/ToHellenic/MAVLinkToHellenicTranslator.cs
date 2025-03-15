@@ -13,7 +13,6 @@ List<HellenicMessage> hellenicMessages = MAVLinkToHellenicTranslator.TranslateMA
 */
 class MAVLinkToHellenicTranslator
 {
-
     public static List<HellenicMessage> TranslateMAVLinkMessage(MAVLink.MAVLinkMessage mavlinkMessage)
     {
         // Extract the message ID
@@ -26,7 +25,8 @@ class MAVLinkToHellenicTranslator
         }
 
         // No suitable translation function found
-        Console.WriteLine("Unable to translate MAVLink message! No suitable translation function found for msgid: " + msgId);
+        Console.WriteLine("Unable to translate MAVLink message! No suitable translation function found for msgid: " +
+                          msgId);
         return new List<HellenicMessage>();
     }
 
@@ -39,13 +39,15 @@ class MAVLinkToHellenicTranslator
             pLat: mavlinkData.lat / 10000000.0,
             pLon: mavlinkData.lon / 10000000.0,
             pTimeUsec: mavlinkData.time_boot_ms,
-            pReferenceFrame: 2
+            pReferenceFrame: 2,
+            pVehicleId: mavlinkMessage.sysid
         );
 
         var AltitudeHellenicMessage = new Altitude(
             pAlt: mavlinkData.alt / 1000.0,
             pRelativeAlt: mavlinkData.relative_alt / 1000.0,
-            pTimeUsec: mavlinkData.time_boot_ms
+            pTimeUsec: mavlinkData.time_boot_ms,
+            pVehicleId: mavlinkMessage.sysid
         );
 
         var GroundVelocityHellenicMessage = new GroundVelocity(
@@ -61,7 +63,8 @@ class MAVLinkToHellenicTranslator
             pReferenceFrame: 2
         );
 
-        return new List<HellenicMessage> {
+        return new List<HellenicMessage>
+        {
             LatitudeLongitudeHellenicMessage,
             AltitudeHellenicMessage,
             GroundVelocityHellenicMessage,
@@ -69,10 +72,11 @@ class MAVLinkToHellenicTranslator
         };
     }
 
-    public static Dictionary<uint, Func<MAVLink.MAVLinkMessage, List<HellenicMessage>>> MAVLinkIdToConversionFunctionDict
-    =
-    new Dictionary<uint, Func<MAVLink.MAVLinkMessage, List<HellenicMessage>>>()
-    {
-        { 33, GlobalPositionIntToHellenic }
-    };
+    public static Dictionary<uint, Func<MAVLink.MAVLinkMessage, List<HellenicMessage>>>
+        MAVLinkIdToConversionFunctionDict
+            =
+            new Dictionary<uint, Func<MAVLink.MAVLinkMessage, List<HellenicMessage>>>()
+            {
+                { 33, GlobalPositionIntToHellenic }
+            };
 }

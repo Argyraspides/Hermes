@@ -152,7 +152,11 @@ using Godot;
 
 public abstract partial class HellenicMessage : RefCounted
 {
+    // The ID of the vehicle this message was sent from
+    public uint VehicleID { get; protected set; } = uint.MaxValue;
+    // The ID of the Hellenic message itself. E.g., An ID of 0 corresponds to "LatitudeLongitude"
     public uint ID { get; protected set; } = uint.MaxValue;
+    // The name of this Hellenic message, e.g., "LatitudeLongitude"
     public string MessageName { get; protected set; } = string.Empty;
 }
 """.strip()

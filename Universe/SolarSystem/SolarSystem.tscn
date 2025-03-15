@@ -7,7 +7,7 @@
 [ext_resource type="Theme" uid="uid://dll7gj5amwt4g" path="res://Universe/UI/Themes/DefaultHermesTheme.tres" id="5_dxgph"]
 [ext_resource type="Script" path="res://Universe/UI/UIComponents/CameraDistanceLabel.cs" id="6_xdu25"]
 [ext_resource type="Script" path="res://Universe/UI/UIComponents/CameraLatLonLabel.cs" id="7_61pj5"]
-[ext_resource type="Script" path="res://Core/Vehicle/VehicleManager.cs" id="8_smcmn"]
+[ext_resource type="Script" path="res://Core/Vehicle/VehicleManager.cs" id="8_poxgf"]
 
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_enyp5"]
 panorama = ExtResource("1_nxqmc")
@@ -128,5 +128,5 @@ text = "[center]Camera: 50,000 km[/center]"
 fit_content = true
 script = ExtResource("6_xdu25")
 
-[node name="VehicleManager" type="Node" parent="."]
-script = ExtResource("8_smcmn")
+[node name="Node" type="Node" parent="."]
+script = ExtResource("8_poxgf")

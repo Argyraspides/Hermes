@@ -1,4 +1,4 @@
-namespace Hermes.Core.Vehicle;
+namespace Hermes.Core.Vehicle.Components;
 
 public enum ComponentType
 {
