@@ -152,8 +152,8 @@ using Godot;
 
 public abstract partial class HellenicMessage : RefCounted
 {
-    public static uint ID { get; protected set; }
-    public static string MessageName { get; protected set; }
+    public uint ID { get; protected set; } = uint.MaxValue;
+    public string MessageName { get; protected set; } = string.Empty;
 }
 """.strip()
 
@@ -205,18 +205,20 @@ def generate_dialect_class(class_info_dict):
 
         class_unique_fields += member_field_line
 
-    class_constructor_line = f"\tpublic {snake_to_pascal_case(class_info_dict[g_message_name_attr_string_name])}({class_constructor_params[:-2]})\n\t{{\n{class_constructor_body}\t}}\n"
-
     class_id = class_info_dict[g_message_id_attr_string_name]
-    class_constructor_default_line = f"\tpublic {snake_to_pascal_case(class_info_dict[g_message_name_attr_string_name])}() {{}}\n"
-    static_class_constructor = f"\tstatic {snake_to_pascal_case(class_info_dict[g_message_name_attr_string_name])}()\n\t{{\n\t\tID = {class_id};\n\t\tMessageName = nameof({snake_to_pascal_case(class_info_dict[g_message_name_attr_string_name])});\n\t}}"
+    class_constructor_line = (f""
+                              f"\tpublic {snake_to_pascal_case(class_info_dict[g_message_name_attr_string_name])}({class_constructor_params[:-2]})\n\t{{"
+                              f"\n\t\tID = {class_id};"
+                              f"\n\t\tMessageName = nameof({snake_to_pascal_case(class_info_dict[g_message_name_attr_string_name])});"
+                              f"\n{class_constructor_body}\t}}\n")
+    static_class_constructor = f"\tpublic {snake_to_pascal_case(class_info_dict[g_message_name_attr_string_name])}()\n\t{{\n\t\tID = {class_id};\n\t\tMessageName = nameof({snake_to_pascal_case(class_info_dict[g_message_name_attr_string_name])});\n\t}}"
 
     # LOL
     class_ending_brace = "\n}"
 
     # Final file :DD
 
-    class_file = class_heading + class_unique_fields + class_constructor_line + class_constructor_default_line + static_class_constructor + class_ending_brace
+    class_file = class_heading + class_unique_fields + class_constructor_line + static_class_constructor + class_ending_brace
 
     return class_file
 

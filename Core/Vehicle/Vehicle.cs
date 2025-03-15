@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Godot;
+using Hermes.Languages.HellenicGateway;
 
 namespace Hermes.Core.Vehicle;
 

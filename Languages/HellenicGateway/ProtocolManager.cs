@@ -8,9 +8,12 @@ namespace Hermes.Languages.HellenicGateway;
 
 public partial class ProtocolManager : Node
 {
+    public static ProtocolManager Instance;
+
     public ProtocolManager()
     {
         m_protocolAdapters = new List<IProtocolAdapter>() { new MAVLinkAdapter() };
+        Instance = this;
     }
 
     [Signal]
