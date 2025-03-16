@@ -12,6 +12,7 @@ public class GPSComponentState : ComponentState
     public double GroundSpeedX;
     public double GroundSpeedY;
     public double GroundSpeedZ;
+    public double TimeUsec;
 
     // Reference frame (0 = Mercury, 1 = Venus, 2 = Earth, 3 = Mars ...)
     // Earth by default
