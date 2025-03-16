@@ -26,7 +26,6 @@
     </ItemGroup>
     <ItemGroup>
         <Folder Include="Languages\ConcreteConversions\"/>
-        <Folder Include="Languages\ConcreteDialects\Hellenic\"/>
         <Folder Include="Languages\ConcreteDialects\MAVLinkCommon\"/>
         <Folder Include="Universe\UI\"/>
     </ItemGroup>

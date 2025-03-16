@@ -245,6 +245,34 @@ def snake_to_pascal_case(snake_case_string):
     return ''.join(word.capitalize() for word in snake_case_string.split("_"))
 
 
+def generate_enum_file(hellenic_xml_file_path, output_dir_path):
+    hellenic_xml_root = ET.parse(hellenic_xml_file_path)
+
+    hellenic_xml_messages = hellenic_xml_root.find("messages")
+
+    enum_header = (f""
+                   f"public enum HellenicMessageType\n"
+                   f"{{\n"
+                   )
+    enum_body = ""
+    for message in hellenic_xml_messages:
+        message_id = message.get("id")
+        message_name = message.get("name")
+        message_name_pascal_case = snake_to_pascal_case(message_name)
+
+        enum_body += f"\t{message_name_pascal_case} = {message_id},\n"
+
+    # Remove trailing comma but keep the \n
+    enum_body = enum_body[:-2] + enum_body[-1]
+
+    final_enum_file = enum_header + enum_body + "}"
+
+    output_file_path = os.path.join(output_dir_path, "HellenicMessageType.cs")
+    os.makedirs(os.path.dirname(output_file_path), exist_ok=True)
+    with open(output_file_path, "w") as f:
+        f.write(final_enum_file)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate C# message dialect from an XML file")
 
@@ -255,3 +283,4 @@ if __name__ == "__main__":
 
     generate_hellenic_interface_file(args.output_dir)
     generate_dialect_classes(args.input_XML, args.output_dir)
+    generate_enum_file(args.input_XML, args.output_dir)
