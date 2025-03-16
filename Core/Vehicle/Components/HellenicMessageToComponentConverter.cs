@@ -13,29 +13,12 @@ TODO::ARGYRASPIDES() {
 */
 public static class HellenicMessageToComponentConverter
 {
-    public static void UpdateComponent(HellenicMessage message, Component component)
-    {
-        switch (message.EntityId)
-        {
-            // TODO::ARGYRASPIDES() { The message IDs should have corresponding enums }
-            // for now 0 maps to latitudelongitude
-            case 0:
-                GPSComponent gpsComponent = component as GPSComponent;
-                LatitudeLongitude location = message as LatitudeLongitude;
-                gpsComponent.Latitude = location.Lat;
-                gpsComponent.Longitude = location.Lon;
-                break;
-        }
-    }
-
     // TODO::ARGYRASPIDES() { The two functions below are kinda mirrors of each other ... i dont like it. Find a better way }
-    public static ComponentType GetComponentType(HellenicMessage message)
+    public static ComponentType GetComponentTypeByMessage(HellenicMessage message)
     {
-        switch (message.EntityId)
+        switch (message.Id)
         {
-            // TODO::ARGYRASPIDES() { The message IDs should have corresponding enums }
-            // for now 0 maps to latitudelongitude
-            case 0:
+            case (uint)HellenicMessageType.LatitudeLongitude:
                 return ComponentType.GPS;
             default:
                 break;

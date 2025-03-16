@@ -1,10 +1,12 @@
 using System;
+using Hermes.Core.Vehicle.Components.ComponentStates;
 
 namespace Hermes.Core.Vehicle.Components;
 
-public class Component
+public abstract class Component
 {
     private ComponentType m_ComponentType = ComponentType.NULL;
+    private ComponentState m_ComponentState;
 
     public ComponentType ComponentType
     {
@@ -21,5 +23,6 @@ public class Component
         }
     }
 
-    public bool Enabled { get; private set; } = true;
+    public abstract void UpdateComponentState(HellenicMessage message);
+    public bool Enabled { get; protected set; } = true;
 }

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Godot;
 using Hermes.Common.Map.Utils;
 using Hermes.Core.Vehicle.Components;
+using Hermes.Core.Vehicle.Components.ComponentStates;
 using Hermes.Languages.HellenicGateway;
 
 namespace Hermes.Core.Vehicle;
@@ -22,39 +23,20 @@ public partial class VehicleManager : Node
         ProtocolManager.Instance.HellenicMessageReceived += OnHellenicMessageReceived;
     }
 
-    // Add vehicle to dict if its new
-    void TryAddVehicle(HellenicMessage message)
-    {
-        if (m_Vehicles.ContainsKey(message.VehicleId))
-        {
-            return;
-        }
-
-        m_Vehicles.Add(message.VehicleId, new Vehicle());
-    }
-
     // Update the vehicles components with the message
     void UpdateVehicle(HellenicMessage message)
     {
-        if (!m_Vehicles.ContainsKey(message.VehicleId))
-        {
-            return;
-        }
+        m_Vehicles.TryAdd(message.EntityId, new Vehicle());
 
-        Vehicle vehicle = m_Vehicles[message.VehicleId];
-
-        ComponentType componentType = HellenicMessageToComponentConverter.GetComponentType(message);
-
-        if (!vehicle.Components.ContainsKey(componentType))
+        Vehicle vehicle = m_Vehicles[message.EntityId];
+        ComponentType componentType = HellenicMessageToComponentConverter.GetComponentTypeByMessage(message);
+        if (!vehicle.HasComponent(componentType))
         {
             Component newComponent = HellenicMessageToComponentConverter.GetComponentByType(componentType);
-            vehicle.Components.Add(componentType, newComponent);
+            vehicle.AddComponent(newComponent);
         }
 
-        HellenicMessageToComponentConverter.UpdateComponent(message,
-            vehicle.Components.GetValueOrDefault(componentType));
-
-        int x = 5;
+        vehicle.UpdateComponent(componentType, message);
     }
 
     // Clean up any stale vehicles
@@ -65,7 +47,6 @@ public partial class VehicleManager : Node
 
     void OnHellenicMessageReceived(HellenicMessage message)
     {
-        TryAddVehicle(message);
         UpdateVehicle(message);
         CleanupVehicles();
     }

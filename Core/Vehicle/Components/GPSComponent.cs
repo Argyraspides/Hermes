@@ -1,22 +1,27 @@
 using System;
+using Hermes.Core.Vehicle.Components.ComponentStates;
 
 namespace Hermes.Core.Vehicle.Components;
 
 public class GPSComponent : Component
 {
-    // Supported by pretty much all GPS components out there
-    public double Latitude = double.NaN;
-    public double Longitude = double.NaN;
-    public double Altitude = double.NaN;
-
-    // Supported by most GPS components out there
-    public double Heading = double.NaN;
-    public double GroundSpeedX = double.NaN;
-    public double GroundSpeedY = double.NaN;
-    public double GroundSpeedZ = double.NaN;
+    public GPSComponentState m_gpsState;
 
     public GPSComponent()
     {
         ComponentType = ComponentType.GPS;
+        m_gpsState = new GPSComponentState();
+    }
+
+    public override void UpdateComponentState(HellenicMessage message)
+    {
+        switch (message.Id)
+        {
+            case (uint)HellenicMessageType.LatitudeLongitude:
+                LatitudeLongitude latlon = message as LatitudeLongitude;
+                m_gpsState.Latitude = latlon.Lat;
+                m_gpsState.Longitude = latlon.Lon;
+                break;
+        }
     }
 }
