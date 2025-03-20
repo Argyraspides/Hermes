@@ -26,9 +26,6 @@ public partial class Earth : Planet
 {
     private PlanetOrbitalCamera m_planetOrbitalCamera;
 
-    [Export] private Vector3 m_nullIsland;
-
-
     public override void _Ready()
     {
         InitializeCamera();
@@ -55,7 +52,10 @@ public partial class Earth : Planet
     private void InitializeCamera()
     {
         m_planetOrbitalCamera = GetNode<PlanetOrbitalCamera>("EarthOrbitalCamera");
+
+        // Lat/lon of zero degrees corresponds to the negative X axis, so we position our camera there
         Vector3 camPos = new Vector3(-SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * 10, 0, 0);
+
         m_planetOrbitalCamera.InitializeCameraPosition(camPos);
     }
 }

@@ -34,7 +34,7 @@ public class MAVLinkUDPListener
 
     public void StartListeningThread()
     {
-        m_udpListenerThread = new Thread(StartListening);
+        m_udpListenerThread = new Thread(StartListening) { IsBackground = true };
         m_isListening = true;
         m_udpListenerThread.Start();
     }

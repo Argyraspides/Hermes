@@ -37,6 +37,84 @@ public static class SolarSystemConstants
          (EARTH_SEMI_MINOR_AXIS_LEN_KM * EARTH_SEMI_MINOR_AXIS_LEN_KM)) /
         (EARTH_SEMI_MAJOR_AXIS_LEN_KM * EARTH_SEMI_MAJOR_AXIS_LEN_KM);
 
+    // MERCURY
+    // Mercury is nearly spherical
+    public const float MERCURY_SEMI_MAJOR_AXIS_LEN_M = 2_440_500;
+    public const float MERCURY_SEMI_MAJOR_AXIS_LEN_KM = 2440.5f;
+    public const float MERCURY_SEMI_MINOR_AXIS_LEN_M = 2_438_300;
+    public const float MERCURY_SEMI_MINOR_AXIS_LEN_KM = 2438.3f;
+
+    public const double MERCURY_ECCENTRICITY_SQUARED =
+        ((MERCURY_SEMI_MAJOR_AXIS_LEN_KM * MERCURY_SEMI_MAJOR_AXIS_LEN_KM) -
+         (MERCURY_SEMI_MINOR_AXIS_LEN_KM * MERCURY_SEMI_MINOR_AXIS_LEN_KM)) /
+        (MERCURY_SEMI_MAJOR_AXIS_LEN_KM * MERCURY_SEMI_MAJOR_AXIS_LEN_KM);
+
+    // VENUS
+    // Venus is nearly spherical
+    public const float VENUS_SEMI_MAJOR_AXIS_LEN_M = 6_051_800;
+    public const float VENUS_SEMI_MAJOR_AXIS_LEN_KM = 6_051.8f;
+    public const float VENUS_SEMI_MINOR_AXIS_LEN_M = 6_051_800;
+    public const float VENUS_SEMI_MINOR_AXIS_LEN_KM = 6_051.8f;
+
+    public const double VENUS_ECCENTRICITY_SQUARED =
+        ((VENUS_SEMI_MAJOR_AXIS_LEN_KM * VENUS_SEMI_MAJOR_AXIS_LEN_KM) -
+         (VENUS_SEMI_MINOR_AXIS_LEN_KM * VENUS_SEMI_MINOR_AXIS_LEN_KM)) /
+        (VENUS_SEMI_MAJOR_AXIS_LEN_KM * VENUS_SEMI_MAJOR_AXIS_LEN_KM);
+
+    // MARS
+    public const float MARS_SEMI_MAJOR_AXIS_LEN_M = 3_396_200;
+    public const float MARS_SEMI_MAJOR_AXIS_LEN_KM = 3_396.2f;
+    public const float MARS_SEMI_MINOR_AXIS_LEN_M = 3_376_200;
+    public const float MARS_SEMI_MINOR_AXIS_LEN_KM = 3_376.2f;
+
+    public const double MARS_ECCENTRICITY_SQUARED =
+        ((MARS_SEMI_MAJOR_AXIS_LEN_KM * MARS_SEMI_MAJOR_AXIS_LEN_KM) -
+         (MARS_SEMI_MINOR_AXIS_LEN_KM * MARS_SEMI_MINOR_AXIS_LEN_KM)) /
+        (MARS_SEMI_MAJOR_AXIS_LEN_KM * MARS_SEMI_MAJOR_AXIS_LEN_KM);
+
+    // JUPITER
+    public const float JUPITER_SEMI_MAJOR_AXIS_LEN_M = 71_492_000;
+    public const float JUPITER_SEMI_MAJOR_AXIS_LEN_KM = 71_492.0f;
+    public const float JUPITER_SEMI_MINOR_AXIS_LEN_M = 66_854_000;
+    public const float JUPITER_SEMI_MINOR_AXIS_LEN_KM = 66_854.0f;
+
+    public const double JUPITER_ECCENTRICITY_SQUARED =
+        ((JUPITER_SEMI_MAJOR_AXIS_LEN_KM * JUPITER_SEMI_MAJOR_AXIS_LEN_KM) -
+         (JUPITER_SEMI_MINOR_AXIS_LEN_KM * JUPITER_SEMI_MINOR_AXIS_LEN_KM)) /
+        (JUPITER_SEMI_MAJOR_AXIS_LEN_KM * JUPITER_SEMI_MAJOR_AXIS_LEN_KM);
+
+    // SATURN
+    public const float SATURN_SEMI_MAJOR_AXIS_LEN_M = 60_268_000;
+    public const float SATURN_SEMI_MAJOR_AXIS_LEN_KM = 60_268.0f;
+    public const float SATURN_SEMI_MINOR_AXIS_LEN_M = 54_364_000;
+    public const float SATURN_SEMI_MINOR_AXIS_LEN_KM = 54_364.0f;
+
+    public const double SATURN_ECCENTRICITY_SQUARED =
+        ((SATURN_SEMI_MAJOR_AXIS_LEN_KM * SATURN_SEMI_MAJOR_AXIS_LEN_KM) -
+         (SATURN_SEMI_MINOR_AXIS_LEN_KM * SATURN_SEMI_MINOR_AXIS_LEN_KM)) /
+        (SATURN_SEMI_MAJOR_AXIS_LEN_KM * SATURN_SEMI_MAJOR_AXIS_LEN_KM);
+
+    // URANUS
+    public const float URANUS_SEMI_MAJOR_AXIS_LEN_M = 25_559_000;
+    public const float URANUS_SEMI_MAJOR_AXIS_LEN_KM = 25_559.0f;
+    public const float URANUS_SEMI_MINOR_AXIS_LEN_M = 24_973_000;
+    public const float URANUS_SEMI_MINOR_AXIS_LEN_KM = 24_973.0f;
+
+    public const double URANUS_ECCENTRICITY_SQUARED =
+        ((URANUS_SEMI_MAJOR_AXIS_LEN_KM * URANUS_SEMI_MAJOR_AXIS_LEN_KM) -
+         (URANUS_SEMI_MINOR_AXIS_LEN_KM * URANUS_SEMI_MINOR_AXIS_LEN_KM)) /
+        (URANUS_SEMI_MAJOR_AXIS_LEN_KM * URANUS_SEMI_MAJOR_AXIS_LEN_KM);
+
+    // NEPTUNE
+    public const float NEPTUNE_SEMI_MAJOR_AXIS_LEN_M = 25_559_000;
+    public const float NEPTUNE_SEMI_MAJOR_AXIS_LEN_KM = 25_559.0f;
+    public const float NEPTUNE_SEMI_MINOR_AXIS_LEN_M = 24_973_000;
+    public const float NEPTUNE_SEMI_MINOR_AXIS_LEN_KM = 24_973.0f;
+
+    public const double NEPTUNE_ECCENTRICITY_SQUARED =
+        ((NEPTUNE_SEMI_MAJOR_AXIS_LEN_KM * NEPTUNE_SEMI_MAJOR_AXIS_LEN_KM) -
+         (NEPTUNE_SEMI_MINOR_AXIS_LEN_KM * NEPTUNE_SEMI_MINOR_AXIS_LEN_KM)) /
+        (NEPTUNE_SEMI_MAJOR_AXIS_LEN_KM * NEPTUNE_SEMI_MAJOR_AXIS_LEN_KM);
 
     // Semi *major* axis length of the a "blank planet" in meters and kilometers
     // Can be used as a default value for debugging/test purposes. This is double
