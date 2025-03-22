@@ -53,7 +53,8 @@ public partial class PlanetOrbitalCamera : Camera3D
     [Export] private Vector2 m_cameraPanSpeedMultiplier = new Vector2(1,1);
     [Export] private Vector2 m_cameraPanSpeed = new Vector2(1,1);     // Speed of camera panning
 
-    [Export] private double m_cameraZoomSpeed = 1.0;   // Speed of camera zooming
+    [Export] private double m_cameraZoomSpeed = 1.0;            // Speed of camera zooming
+    [Export] private double m_cameraZoomSpeedMultiplier = 1.0;
     [Export] private double m_poleThreshold = 0.15d;   // Degrees of latitude from the poles (radians) to lock the camera
 
     // Latitude and longitude that the center of the camera is looking at (radians)
@@ -117,12 +118,16 @@ public partial class PlanetOrbitalCamera : Camera3D
         m_maxDistanceMultiplier = 10.0;
         m_initialDistanceMultiplier = 3.0;
 
-
         m_cameraPanSpeedMultiplier = new Vector2(
             0.0175f,
             0.0175f
         );
         DeterminePanSpeed();
+
+        m_cameraZoomSpeedMultiplier = new Vector2(
+            5000.0f,
+            5000.0f).Length();
+        DetermineZoomSpeed();
 
         m_poleThreshold = 0.15d;
         m_currentLat = 0.0d;
@@ -176,6 +181,7 @@ public partial class PlanetOrbitalCamera : Camera3D
         // TODO::ARGYRASPIDES() { Right now map utils assumes this function is talking about the earth }
         if (mouseEvent.ButtonIndex == MouseButton.WheelUp)
         {
+            DetermineZoomSpeed();
             m_currentDistance -= m_cameraZoomSpeed;
             PositionCamera();
             EmitSignal(SignalName.OrbitalCameraAltChanged, CurrentAltitude);
@@ -183,6 +189,7 @@ public partial class PlanetOrbitalCamera : Camera3D
         }
         else if (mouseEvent.ButtonIndex == MouseButton.WheelDown)
         {
+            DetermineZoomSpeed();
             m_currentDistance += m_cameraZoomSpeed;
             PositionCamera();
             EmitSignal(SignalName.OrbitalCameraAltChanged, CurrentAltitude);
@@ -192,8 +199,26 @@ public partial class PlanetOrbitalCamera : Camera3D
 
     private void DetermineZoomSpeed()
     {
+        // TODO::ARGYRASPIDES() {  }
+        // Find a cleaner way to deal with this. The terrain quad tree is technically the sole arbiter of zoom levels.
+        // Perhaps the quadtree should own the camera? There can be no LoD if there is no observer for detail ...
+        if (CurrentZoomLevel == 0)
+        {
+            CurrentZoomLevel = 1;
+        }
 
+        int latTile = MapUtils.LatitudeToTileCoordinateMercator(DisplayLat, CurrentZoomLevel);
+        double latRange = MapUtils.TileToLatRange(latTile, CurrentZoomLevel);
+        double lonRange = MapUtils.TileToLonRange(CurrentZoomLevel);
 
+        m_cameraZoomSpeed = new Vector2(
+            Mathf.Log(CurrentZoomLevel) * // ln(ZoomLevel) Approximates the curve of map tile longitude range decreasing with increasing zoom level
+            (1.0f / CurrentZoomLevel) *   // Weighting bias for higher zoom levels -- the amount we zoom in by also decreases as we zoom in more
+            (float)lonRange,
+            Mathf.Log(CurrentZoomLevel) *
+            (1.0f / CurrentZoomLevel) *
+            (float)latRange
+        ).Length() * m_cameraZoomSpeedMultiplier;
     }
 
     private void DeterminePanSpeed()
