@@ -108,6 +108,9 @@ public partial class PlanetOrbitalCamera : Camera3D
         SetPlanetParameters(PlanetType);
         DetermineCameraAltitude();
         m_currentDistance = m_planetSemiMajorAxis * m_initialDistanceMultiplier;
+        m_currentLon = 0.0d;
+        m_currentLat = -Math.PI / 2.0;
+        PositionCamera();
     }
 
     public void InitializeExportedFields()
@@ -132,11 +135,6 @@ public partial class PlanetOrbitalCamera : Camera3D
         m_poleThreshold = 0.15d;
         m_currentLat = 0.0d;
         m_currentLon = 0.0d;
-    }
-
-    public override void _Process(double delta)
-    {
-
     }
 
     public override void _Input(InputEvent @event)
@@ -216,6 +214,11 @@ public partial class PlanetOrbitalCamera : Camera3D
 
     private void DeterminePanSpeed()
     {
+        if (CurrentZoomLevel == 0)
+        {
+            CurrentZoomLevel = 1;
+        }
+
         int latTile = MapUtils.LatitudeToTileCoordinateMercator(DisplayLat, CurrentZoomLevel);
         double latRange = MapUtils.TileToLatRange(latTile, CurrentZoomLevel);
         double lonRange = MapUtils.TileToLonRange(CurrentZoomLevel);
@@ -260,12 +263,6 @@ public partial class PlanetOrbitalCamera : Camera3D
 
         LookAt(Vector3.Zero, Vector3.Up);
 
-    }
-
-    public void InitializeCameraPosition(Vector3 position)
-    {
-        Position = position;
-        PositionCamera();
     }
 
     // Sets camera parameters based on the planet type

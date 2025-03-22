@@ -28,7 +28,6 @@ public partial class Earth : Planet
 
     public override void _Ready()
     {
-        InitializeCamera();
         m_defaultZoomLevel = 6;
         base._Ready();
     }
@@ -43,6 +42,8 @@ public partial class Earth : Planet
 
     protected override void InitializePlanetSurface(int zoomLevel)
     {
+        InitializeCamera();
+
         m_terrainQuadTree = new TerrainQuadTree(m_planetOrbitalCamera);
         AddChild(m_terrainQuadTree);
         m_terrainQuadTree.Name = "EarthTerrainQuadTree";
@@ -52,10 +53,5 @@ public partial class Earth : Planet
     private void InitializeCamera()
     {
         m_planetOrbitalCamera = GetNode<PlanetOrbitalCamera>("EarthOrbitalCamera");
-
-        // Lat/lon of zero degrees corresponds to the negative X axis, so we position our camera there
-        Vector3 camPos = new Vector3(-SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * 10, 0, 0);
-
-        m_planetOrbitalCamera.InitializeCameraPosition(camPos);
     }
 }
