@@ -52,7 +52,6 @@ using Hermes.Common.GodotUtils;
 /// </summary>
 public sealed partial class TerrainQuadTree : Node
 {
-    #region Constants & Configuration
 
     // If we hit x% of the maximum allowed amount of nodes, we will begin culling unused nodes in the quadtree
     public float MaxNodesCleanupThresholdPercent = 0.90F;
@@ -77,10 +76,6 @@ public sealed partial class TerrainQuadTree : Node
         156000.0f, 78000.0f, 39000.0f, 19500.0f, 9750.0f, 4875.0f, 2437.5f, 1218.75f, 609.375f, 304.6875f, 152.34f,
         76.17f, 38.08f, 19.04f, 9.52f, 4.76f, 2.38f, 1.2f, 0.6f, 0.35f
     };
-
-    #endregion Constants & Configuration
-
-    #region Dependencies & State
 
     public readonly PlanetOrbitalCamera m_camera;
     public readonly TerrainQuadTreeUpdater m_quadTreeUpdater;
@@ -126,18 +121,10 @@ public sealed partial class TerrainQuadTree : Node
     public ConcurrentQueue<TerrainQuadTreeNode> SplitQueueNodes { get; } = new ConcurrentQueue<TerrainQuadTreeNode>();
     public ConcurrentQueue<TerrainQuadTreeNode> MergeQueueNodes { get; } = new ConcurrentQueue<TerrainQuadTreeNode>();
 
-    #endregion Dependencies & State
-
-    #region Signals
-
     // Signal emitted by TerrainQuadTree to the TerrainQuadTreeUpdater when we have finished splitting/merging
     // all nodes in the queue, so that TerrainQuadTreeUpdater can safely run the next tree traversal
     [Signal]
     public delegate void QuadTreeUpdatedEventHandler();
-
-    #endregion Signals
-
-    #region Constructor & Initialization
 
     public TerrainQuadTree(PlanetOrbitalCamera camera, int maxNodes = 7500, int minDepth = 6, int maxDepth = 20)
     {
@@ -188,10 +175,6 @@ public sealed partial class TerrainQuadTree : Node
                 MergeThresholdFactor;
         }
     }
-
-    #endregion Constructor & Initialization
-
-    #region Godot Lifecycle
 
     public override void _Process(double delta)
     {
@@ -261,10 +244,6 @@ public sealed partial class TerrainQuadTree : Node
             m_currentNodeCount = GetTree().GetNodeCount();
         }
     }
-
-    #endregion Godot Lifecycle
-
-    #region QuadTree Initialization & Manipulation
 
     /// <summary>
     /// Initializes the quadtree at the specified zoom level. Note that if the current minimum zoom level
@@ -521,6 +500,4 @@ public sealed partial class TerrainQuadTree : Node
     {
         m_canUpdateQuadTree = true;
     }
-
-    #endregion QuadTree Initialization & Manipulation
 }
