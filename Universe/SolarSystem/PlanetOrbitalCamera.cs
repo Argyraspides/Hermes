@@ -162,20 +162,20 @@ public partial class PlanetOrbitalCamera : Camera3D
 
     private void HandleCameraZooming(InputEventMouseButton mouseEvent)
     {
+        // TODO::ARGYRASPIDES() { There is a bit of a disconnect here. The camera knows the distance from the planet
+        // center but not from the planet surface? Reconcile this as this is a shite way to do it }
         m_cameraZoomSpeed = 1;
         if (mouseEvent.ButtonIndex == MouseButton.WheelUp)
         {
             m_currentDistance -= m_cameraZoomSpeed;
             PositionCamera();
-            EmitSignal(SignalName.OrbitalCameraAltChanged, m_currentDistance);
-            GD.Print("Current distance in cam: " + m_currentDistance);
-
+            EmitSignal(SignalName.OrbitalCameraAltChanged, CurrentAltitude);
         }
         else if (mouseEvent.ButtonIndex == MouseButton.WheelDown)
         {
             m_currentDistance += m_cameraZoomSpeed;
             PositionCamera();
-            EmitSignal(SignalName.OrbitalCameraAltChanged, m_currentDistance);
+            EmitSignal(SignalName.OrbitalCameraAltChanged, CurrentAltitude);
         }
     }
 
