@@ -1,13 +1,29 @@
 <Project Sdk="Godot.NET.Sdk/4.3.0">
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <TargetFramework Condition=" '$(GodotTargetPlatform)' == 'android' ">net7.0</TargetFramework>
         <TargetFramework Condition=" '$(GodotTargetPlatform)' == 'ios' ">net8.0</TargetFramework>
         <EnableDynamicLoading>true</EnableDynamicLoading>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <StartAction>Program</StartAction>
+        <StartProgram>/home/gaugamela/AppImages/Godot/Godot_v4.3-stable_mono_linux_x86_64/Godot_v4.3-stable_mono_linux.x86_64</StartProgram>
+        <StartWorkingDirectory>./</StartWorkingDirectory>
     </PropertyGroup>
     <ItemGroup>
+        <Content Include="Common\Assets\Triangle.svg" />
+        <Content Include="Common\Assets\Triangle.svg.import" />
         <Content Include="Common\Shaders\WebMercatorToWGS84Shader.gdshader"/>
+        <Content Include="Core\UI\Components\CompassDisplay.tscn" />
+        <Content Include="Core\Vehicle\Assets\Images\BoatIcon.png" />
+        <Content Include="Core\Vehicle\Assets\Images\BoatIcon.png.import" />
+        <Content Include="Core\Vehicle\Assets\Images\JetIcon.png" />
+        <Content Include="Core\Vehicle\Assets\Images\JetIcon.png.import" />
+        <Content Include="Core\Vehicle\Assets\Images\QuadcopterIcon.png" />
+        <Content Include="Core\Vehicle\Assets\Images\QuadcopterIcon.png.import" />
+        <Content Include="docs\Hermes.png" />
+        <Content Include="docs\Hermes.png.import" />
+        <Content Include="docs\Rules\csharp-style-guide.md" />
+        <Content Include="docs\Rules\shader-style-guide.md" />
         <Content Include="Languages\DialectConversionDefinitions\common_to_hellenic.xml"/>
         <Content Include="Languages\DialectDefinitions\common.xml"/>
         <Content Include="Languages\DialectDefinitions\hellenic.xml"/>
