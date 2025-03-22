@@ -1,0 +1,65 @@
+[gd_scene load_steps=3 format=3 uid="uid://caexyoqtj5mgq"]
+
+[ext_resource type="Texture2D" uid="uid://cngohqvlh1cmv" path="res://Common/Assets/Triangle.svg" id="1_xlmrf"]
+[ext_resource type="Script" path="res://Core/UI/Components/CompassDisplay.cs" id="2_0ovod"]
+
+[node name="CompassDisplay" type="Control"]
+layout_mode = 3
+anchor_right = 0.075
+anchor_bottom = 0.1
+
+[node name="CompassNeedle" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="CompassNeedleIcon" type="TextureRect" parent="CompassNeedle"]
+custom_minimum_size = Vector2(15, 15)
+layout_mode = 2
+texture = ExtResource("1_xlmrf")
+expand_mode = 4
+script = ExtResource("2_0ovod")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="WestTick" type="ColorRect" parent="HBoxContainer"]
+custom_minimum_size = Vector2(25, 5)
+layout_mode = 2
+size_flags_horizontal = 2
+size_flags_vertical = 4
+
+[node name="EastTick" type="ColorRect" parent="HBoxContainer"]
+custom_minimum_size = Vector2(25, 5)
+layout_mode = 2
+size_flags_horizontal = 10
+size_flags_vertical = 4
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="NorthTick" type="ColorRect" parent="VBoxContainer"]
+custom_minimum_size = Vector2(5, 25)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 2
+
+[node name="SouthTick" type="ColorRect" parent="VBoxContainer"]
+custom_minimum_size = Vector2(5, 25)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 10
