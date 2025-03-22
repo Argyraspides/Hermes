@@ -107,9 +107,11 @@ public partial class PlanetOrbitalCamera : Camera3D
         InitializeExportedFields();
         SetPlanetParameters(PlanetType);
         DetermineCameraAltitude();
+
         m_currentDistance = m_planetSemiMajorAxis * m_initialDistanceMultiplier;
         m_currentLon = 0.0d;
         m_currentLat = -Math.PI / 2.0;
+
         PositionCamera();
     }
 
