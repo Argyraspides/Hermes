@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://bnaccj7r33kqb"]
+[gd_scene load_steps=15 format=3 uid="uid://bnaccj7r33kqb"]
 
 [ext_resource type="Script" path="res://Universe/SolarSystem/SolarSystem.cs" id="1_ks12t"]
 [ext_resource type="Texture2D" uid="uid://dw16otbm13s3h" path="res://Universe/SolarSystem/Assets/ESO_-_Milky_Way.jpg" id="1_nxqmc"]
@@ -7,6 +7,7 @@
 [ext_resource type="Theme" uid="uid://dll7gj5amwt4g" path="res://Universe/UI/Themes/DefaultHermesTheme.tres" id="5_dxgph"]
 [ext_resource type="Script" path="res://Universe/UI/UIComponents/CameraDistanceLabel.cs" id="6_xdu25"]
 [ext_resource type="Script" path="res://Universe/UI/UIComponents/CameraLatLonLabel.cs" id="7_61pj5"]
+[ext_resource type="PackedScene" uid="uid://b3vyff8oebx32" path="res://Universe/UI/UIComponents/VehicleCardPanel.tscn" id="8_1orsf"]
 [ext_resource type="Script" path="res://Core/Vehicle/VehicleManager.cs" id="8_poxgf"]
 
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_enyp5"]
@@ -127,6 +128,9 @@ bbcode_enabled = true
 text = "[center]Camera: 50,000 km[/center]"
 fit_content = true
 script = ExtResource("6_xdu25")
+
+[node name="VehicleCardPanel" parent="UILayer/MainUI" instance=ExtResource("8_1orsf")]
+layout_mode = 1
 
 [node name="Node" type="Node" parent="."]
 script = ExtResource("8_poxgf")

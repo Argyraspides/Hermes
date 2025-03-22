@@ -12,11 +12,11 @@ Common/Communications/Protocols/MAVLink/MAVLinkDefinitionGeneration/MAVLinkDefin
 # VSCode folder
 .vscode/
 
-# Large asset folder
+# Large asset folders
 Universe/SolarSystem/Assets
 Universe/SolarSystem/Planets/Earth/Assets
-
 Universe/UI/Fonts
+Common/Assets
 
 # Build folder for releases
 Build/

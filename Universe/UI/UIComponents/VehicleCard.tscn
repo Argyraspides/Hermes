@@ -1,14 +1,14 @@
 [gd_scene load_steps=2 format=3 uid="uid://boeeonhq3s5og"]
 
-[ext_resource type="PackedScene" uid="uid://caexyoqtj5mgq" path="res://Core/UI/Components/CompassDisplay.tscn" id="1_kvnjl"]
+[ext_resource type="PackedScene" uid="uid://caexyoqtj5mgq" path="res://Universe/UI/UIComponents/CompassDisplay.tscn" id="1_kvnjl"]
 
 [node name="VehicleCard" type="Control"]
+custom_minimum_size = Vector2(300, 150)
 layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+anchor_right = 0.156
+anchor_bottom = 0.139
+offset_right = -299.52
+offset_bottom = -150.12
 
 [node name="ColorRect" type="ColorRect" parent="."]
 layout_mode = 1
@@ -29,6 +29,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="CompassDisplay" parent="HBoxContainer" instance=ExtResource("1_kvnjl")]
+custom_minimum_size = Vector2(150, 125)
 layout_mode = 2
-size_flags_horizontal = 6
+size_flags_horizontal = 2
 size_flags_vertical = 4

@@ -13,7 +13,6 @@
         <Content Include="Common\Assets\Triangle.svg" />
         <Content Include="Common\Assets\Triangle.svg.import" />
         <Content Include="Common\Shaders\WebMercatorToWGS84Shader.gdshader"/>
-        <Content Include="Core\UI\Components\CompassDisplay.tscn" />
         <Content Include="Core\Vehicle\Assets\Images\BoatIcon.png" />
         <Content Include="Core\Vehicle\Assets\Images\BoatIcon.png.import" />
         <Content Include="Core\Vehicle\Assets\Images\JetIcon.png" />
@@ -32,10 +31,19 @@
         <Content Include="Languages\Generators\HellenicDialectGenerator.py"/>
         <Content Include="Languages\Generators\MAVLink\CommonToHellenicConverterGenerator.py"/>
         <Content Include="Languages\README.md"/>
-        <Content Include="State\Dialects\common.xml"/>
-        <Content Include="State\Dialects\hellenic.xml"/>
-        <Content Include="State\Dialects\minimal.xml"/>
-        <Content Include="State\Dialects\standard.xml"/>
+        <Content Include="Universe\SolarSystem\Assets\ESO_-_Milky_Way.jpg" />
+        <Content Include="Universe\SolarSystem\Assets\ESO_-_Milky_Way.jpg.import" />
+        <Content Include="Universe\SolarSystem\SolarSystem.tscn" />
+        <Content Include="Universe\UI\Fonts\Equinox\Equinox Bold.otf" />
+        <Content Include="Universe\UI\Fonts\Equinox\Equinox Bold.otf.import" />
+        <Content Include="Universe\UI\Fonts\Equinox\Equinox Regular.otf" />
+        <Content Include="Universe\UI\Fonts\Equinox\Equinox Regular.otf.import" />
+        <Content Include="Universe\UI\Fonts\Jura\Jura-Regular.ttf" />
+        <Content Include="Universe\UI\Fonts\Jura\Jura-Regular.ttf.import" />
+        <Content Include="Universe\UI\Themes\DefaultHermesTheme.tres" />
+        <Content Include="Universe\UI\UIComponents\CompassDisplay.tscn" />
+        <Content Include="Universe\UI\UIComponents\VehicleCard.tscn" />
+        <Content Include="Universe\UI\UIComponents\VehicleCardPanel.tscn" />
     </ItemGroup>
     <ItemGroup>
         <Compile Remove="**/submodules/**/*.cs"/>
@@ -43,7 +51,6 @@
     <ItemGroup>
         <Folder Include="Languages\ConcreteConversions\"/>
         <Folder Include="Languages\ConcreteDialects\MAVLinkCommon\"/>
-        <Folder Include="Universe\UI\"/>
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
