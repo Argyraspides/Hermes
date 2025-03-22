@@ -223,10 +223,6 @@ public partial class PlanetOrbitalCamera : Camera3D
 
     private void DeterminePanSpeed()
     {
-        if (CurrentZoomLevel == 0)
-        {
-            CurrentZoomLevel = 1;
-        }
         int latTile = MapUtils.LatitudeToTileCoordinateMercator(DisplayLat, CurrentZoomLevel);
         double latRange = MapUtils.TileToLatRange(latTile, CurrentZoomLevel);
         double lonRange = MapUtils.TileToLonRange(CurrentZoomLevel);
