@@ -177,7 +177,6 @@ public partial class PlanetOrbitalCamera : Camera3D
 
     private void HandleCameraZooming(InputEventMouseButton mouseEvent)
     {
-        m_cameraZoomSpeed = 1;
         // TODO::ARGYRASPIDES() { Right now map utils assumes this function is talking about the earth }
         if (mouseEvent.ButtonIndex == MouseButton.WheelUp)
         {
