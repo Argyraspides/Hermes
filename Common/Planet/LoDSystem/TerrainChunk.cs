@@ -187,7 +187,7 @@ public partial class TerrainChunk : Node3D
             throw new ArgumentNullException("Cannot set position of a terrain chunk with a null map tile");
         }
 
-        Vector3 cartesianPos = MapUtils.LatLonToCartesian(MapTile.Latitude, MapTile.Longitude);
+        Vector3 cartesianPos = MapUtils.LatLonToCartesianNormalized(MapTile.Latitude, MapTile.Longitude);
 
         float latScale = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
         float lonScale = SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM;

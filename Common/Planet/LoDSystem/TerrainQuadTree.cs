@@ -109,8 +109,6 @@ public sealed partial class TerrainQuadTree : Node
     // emmitted by TerrainQuadTreeUpdater when it is done with a tree traversal iteration
     public bool m_canUpdateQuadTree = false;
 
-    public int m_currentCameraZoomLevel;
-
     // Mutex to access the root nodes
     public object rootNodeLock = new object();
 
@@ -198,6 +196,22 @@ public sealed partial class TerrainQuadTree : Node
     public override void _Process(double delta)
     {
         CameraPosition = m_camera.Position;
+        // TODO::ARGYRASPIDES() { Right now map utils assumes this function is talking about the earth }
+        Vector3 surfacePoint = MapUtils.LatLonToCartesian(m_camera.TrueLat, m_camera.TrueLon);
+        // TODO::ARGYRASPIDES() { Validate that this is the actual, true altitude above the current point on the planet's surface.
+        // The numbers appear correct but they're ever so slightly off from Google Earth's measurements, though I can't be sure
+        // I was doing a fair comparison }
+        m_camera.CurrentAltitude = surfacePoint.DistanceTo(m_camera.Position);
+        for (int i = m_baseAltitudeThresholds.Length - 1; i > 1; i--)
+        {
+            if (m_baseAltitudeThresholds[i] < m_camera.CurrentAltitude  &&
+                m_baseAltitudeThresholds[i - 1] > m_camera.CurrentAltitude )
+            {
+                m_camera.CurrentZoomLevel = i;
+                break;
+            }
+        }
+
         if (m_canUpdateQuadTree)
         {
             lock (rootNodeLock)

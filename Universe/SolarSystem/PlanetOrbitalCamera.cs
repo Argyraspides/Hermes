@@ -48,12 +48,15 @@ public partial class PlanetOrbitalCamera : Camera3D
     [Export] private double m_currentDistance;
 
     // Camera control settings
-    [Export] private double m_cameraPanMultiplier = 7d;     // Speed of camera panning
-    [Export] private double m_poleThreshold = 0.15d;        // Degrees of latitude from the poles (radians) to lock the camera
+    [Export] private double m_cameraPanSpeed = 7d;     // Speed of camera panning
+    [Export] private double m_cameraZoomSpeed = 1.0;   // Speed of camera zooming
+    [Export] private double m_poleThreshold = 0.15d;   // Degrees of latitude from the poles (radians) to lock the camera
 
     // Latitude and longitude that the center of the camera is looking at (radians)
+    // DisplayLat and DisplayLon are offset to show the user the lat/lon position
+    // in a standard format
     private double m_currentLat = 0.0d;
-    public double CurrentLat
+    public double DisplayLat
     {
         get
         {
@@ -61,16 +64,34 @@ public partial class PlanetOrbitalCamera : Camera3D
         }
     }
 
+    public double TrueLat
+    {
+        get
+        {
+            return m_currentLat;
+        }
+    }
+
 
     private double m_currentLon = 0.0d;
-    public double CurrentLon
+    public double DisplayLon
     {
         get
         {
             return -m_currentLon;
         }
     }
-    public double CurrentAltitude { get; private set; }
+    public double TrueLon
+    {
+        get
+        {
+            return m_currentLon;
+        }
+    }
+
+    public double CurrentAltitude { get; set; }
+
+    public int CurrentZoomLevel = 0;
 
     private double m_planetSemiMajorAxis;
     private double m_planetSemiMinorAxis;
@@ -92,7 +113,7 @@ public partial class PlanetOrbitalCamera : Camera3D
         m_maxDistanceMultiplier = 10.0;
         m_initialDistanceMultiplier = 3.0;
 
-        m_cameraPanMultiplier = 0.01d;
+        m_cameraPanSpeed = 0.01d;
         m_poleThreshold = 0.15d;
         m_currentLat = 0.0d;
         m_currentLon = 0.0d;
@@ -109,6 +130,11 @@ public partial class PlanetOrbitalCamera : Camera3D
         {
             HandleCameraPanning(dragEvent);
         }
+
+        if (@event is InputEventMouseButton mouseEvent)
+        {
+            HandleCameraZooming(mouseEvent);
+        }
     }
 
     // Ensure you have "Emulate Touch From Mouse" enabled in Godot.
@@ -117,7 +143,7 @@ public partial class PlanetOrbitalCamera : Camera3D
     {
         // X = longitude, Y = latitude
 
-        Vector2 dragVector = dragEvent.ScreenRelative * (float)m_cameraPanMultiplier;
+        Vector2 dragVector = dragEvent.ScreenRelative * (float)m_cameraPanSpeed;
 
         // Prevent flipping the camera over the poles
         double targetLat = (m_currentLat + dragVector.Y) % Math.PI;
@@ -128,9 +154,42 @@ public partial class PlanetOrbitalCamera : Camera3D
 
         m_currentLon = (m_currentLon + dragVector.X) % (Math.PI * 2);
 
-        GD.Print(Mathf.RadToDeg(CurrentLat) + ", " + Mathf.RadToDeg(CurrentLon) + ")");
-        // GD.Print("True: (" + Mathf.RadToDeg(m_currentLat) + ", " + Mathf.RadToDeg(m_currentLon) + ")");
+        PositionCamera();
 
+        EmitSignal(SignalName.OrbitalCameraLatLonChanged, DisplayLat, DisplayLon);
+    }
+
+    private void HandleCameraZooming(InputEventMouseButton mouseEvent)
+    {
+        m_cameraZoomSpeed = 1;
+        if (mouseEvent.ButtonIndex == MouseButton.WheelUp)
+        {
+            m_currentDistance -= m_cameraZoomSpeed;
+            PositionCamera();
+            EmitSignal(SignalName.OrbitalCameraAltChanged, m_currentDistance);
+            GD.Print("Current distance in cam: " + m_currentDistance);
+
+        }
+        else if (mouseEvent.ButtonIndex == MouseButton.WheelDown)
+        {
+            m_currentDistance += m_cameraZoomSpeed;
+            PositionCamera();
+            EmitSignal(SignalName.OrbitalCameraAltChanged, m_currentDistance);
+        }
+    }
+
+    private void DetermineZoomSpeed()
+    {
+
+    }
+
+    private void DeterminePanSpeed()
+    {
+
+    }
+
+    private void PositionCamera()
+    {
         // Points on ellipsoid (remember Godot has 'y' as up and 'z' perpendicular to 'x', so the 'y' and 'z' equations are swapped here)
         // 'a', 'b', and 'c' are semi-major/minor axes. In our case we always orient the planets so that their axis of rotation is
         // on the +ve y-axis, 'a' and 'b' are therefore the semi-major axes, and 'c' is the semi-minor axis
@@ -146,15 +205,12 @@ public partial class PlanetOrbitalCamera : Camera3D
 
         LookAt(Vector3.Zero, Vector3.Up);
 
-        EmitSignal(SignalName.OrbitalCameraLatLonChanged, CurrentLat, CurrentLon);
     }
 
     public void InitializeCameraPosition(Vector3 position)
     {
         Position = position;
-        Position = Position.Rotated(new Vector3(0, 1, 0), (float)m_currentLat);
-        Position = Position.Rotated(new Vector3(1, 0, 0), (float)m_currentLon);
-        LookAt(Vector3.Zero, Vector3.Up);
+        PositionCamera();
     }
 
     // Sets camera parameters based on the planet type

@@ -285,7 +285,7 @@ public static class MapUtils
     /// coordinate system, which is a Cartesian system centered at the Earth's center of mass.
     /// Returns value as kilometers. Takes the Earth as a WGS84 ellipsoid.
     /// </summary>
-    public static Vector3 LatLonToCartesian(double lat, double lon)
+    public static Vector3 LatLonToCartesianNormalized(double lat, double lon)
     {
         // Calculate the radius of the parallel (distance from the Earth's axis of rotation)
         // at the given latitude. This accounts for the Earth's ellipsoidal shape.
@@ -309,6 +309,17 @@ public static class MapUtils
             (float)(x / SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM), // Normalize by dividing by semi-major axis
             (float)(z / SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM), // Y is up in Godot
             (float)(y / SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM) // Swap Y and Z for Godot's coordinate system
+        );
+    }
+
+    public static Vector3 LatLonToCartesian(double lat, double lon)
+    {
+        return new Vector3(
+            (float)(SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * Math.Cos(lon) *
+                    Math.Sin(lat)),
+            (float)(SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM * Math.Cos(lat)),
+            (float)(SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * Math.Sin(lon) *
+                    Math.Sin(lat))
         );
     }
 
