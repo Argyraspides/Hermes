@@ -177,19 +177,12 @@ public partial class PlanetOrbitalCamera : Camera3D
 
     private void HandleCameraZooming(InputEventMouseButton mouseEvent)
     {
-        // TODO::ARGYRASPIDES() { Right now map utils assumes this function is talking about the earth }
-        if (mouseEvent.ButtonIndex == MouseButton.WheelUp)
+        bool u = mouseEvent.ButtonIndex == MouseButton.WheelUp;
+        bool d = mouseEvent.ButtonIndex == MouseButton.WheelDown;
+        if (u || d)
         {
             DetermineZoomSpeed();
-            m_currentDistance -= m_cameraZoomSpeed;
-            PositionCamera();
-            EmitSignal(SignalName.OrbitalCameraAltChanged, CurrentAltitude);
-            DetermineCameraAltitude();
-        }
-        else if (mouseEvent.ButtonIndex == MouseButton.WheelDown)
-        {
-            DetermineZoomSpeed();
-            m_currentDistance += m_cameraZoomSpeed;
+            m_currentDistance += u ? -m_cameraZoomSpeed : m_cameraZoomSpeed;
             PositionCamera();
             EmitSignal(SignalName.OrbitalCameraAltChanged, CurrentAltitude);
             DetermineCameraAltitude();
@@ -206,6 +199,7 @@ public partial class PlanetOrbitalCamera : Camera3D
             CurrentZoomLevel = 1;
         }
 
+        // TODO::ARGYRASPIDES() { Right now map utils assumes this function is talking about the earth }
         int latTile = MapUtils.LatitudeToTileCoordinateMercator(DisplayLat, CurrentZoomLevel);
         double latRange = MapUtils.TileToLatRange(latTile, CurrentZoomLevel);
         double lonRange = MapUtils.TileToLonRange(CurrentZoomLevel);
