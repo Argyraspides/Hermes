@@ -18,6 +18,7 @@
 */
 
 using System;
+using Hermes.Common.Map.Utils;
 
 namespace Hermes.Universe.SolarSystem;
 
@@ -216,51 +217,12 @@ public partial class PlanetOrbitalCamera : Camera3D
     // Sets camera parameters based on the planet type
     public void SetPlanetParameters(PlanetShapeType planetType)
     {
-        (double planetSemiMajorAxis, double planetSemiMinorAxis) = GetPlanetSemiMajorAxis(planetType);
+        (double planetSemiMajorAxis, double planetSemiMinorAxis) = MapUtils.GetPlanetSemiMajorAxis(planetType);
         m_planetSemiMajorAxis = planetSemiMajorAxis;
         m_planetSemiMinorAxis = planetSemiMinorAxis;
         m_minCameraRadialDistance = planetSemiMajorAxis * m_minDistanceMultiplier;
         m_maxCameraRadialDistance = planetSemiMajorAxis * m_maxDistanceMultiplier;
         m_initialCameraRadialDistance = planetSemiMajorAxis * m_initialDistanceMultiplier;
-    }
-
-    private (double, double) GetPlanetSemiMajorAxis(PlanetShapeType planetType)
-    {
-        switch (planetType)
-        {
-            case PlanetShapeType.SPHERE:
-                return (SolarSystemConstants.BLANK_PLANET_SEMI_MAJOR_AXIS_LEN_KM, SolarSystemConstants.BLANK_PLANET_SEMI_MINOR_AXIS_LEN_KM);
-
-            case PlanetShapeType.WGS84_ELLIPSOID:
-                return (SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM, SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM);
-
-            case PlanetShapeType.MERCURY:
-                return (SolarSystemConstants.MERCURY_SEMI_MAJOR_AXIS_LEN_KM, SolarSystemConstants.MERCURY_SEMI_MINOR_AXIS_LEN_KM);
-
-            case PlanetShapeType.VENUS:
-                return (SolarSystemConstants.VENUS_SEMI_MAJOR_AXIS_LEN_KM, SolarSystemConstants.VENUS_SEMI_MINOR_AXIS_LEN_KM);
-
-            case PlanetShapeType.MARS:
-                return (SolarSystemConstants.MARS_SEMI_MAJOR_AXIS_LEN_KM, SolarSystemConstants.MARS_SEMI_MINOR_AXIS_LEN_KM);
-
-            case PlanetShapeType.JUPITER:
-                return (SolarSystemConstants.JUPITER_SEMI_MAJOR_AXIS_LEN_KM, SolarSystemConstants.JUPITER_SEMI_MINOR_AXIS_LEN_KM);
-
-            case PlanetShapeType.SATURN:
-                return (SolarSystemConstants.SATURN_SEMI_MAJOR_AXIS_LEN_KM, SolarSystemConstants.SATURN_SEMI_MINOR_AXIS_LEN_KM);
-
-            case PlanetShapeType.URANUS:
-                return (SolarSystemConstants.URANUS_SEMI_MAJOR_AXIS_LEN_KM, SolarSystemConstants.URANUS_SEMI_MINOR_AXIS_LEN_KM);
-
-            case PlanetShapeType.NEPTUNE:
-                return (SolarSystemConstants.NEPTUNE_SEMI_MAJOR_AXIS_LEN_KM, SolarSystemConstants.NEPTUNE_SEMI_MINOR_AXIS_LEN_KM);
-
-            case PlanetShapeType.UNKNOWN:
-                return (SolarSystemConstants.BLANK_PLANET_SEMI_MAJOR_AXIS_LEN_KM, SolarSystemConstants.BLANK_PLANET_SEMI_MINOR_AXIS_LEN_KM);
-            default:
-                return (SolarSystemConstants.BLANK_PLANET_SEMI_MAJOR_AXIS_LEN_KM, SolarSystemConstants.BLANK_PLANET_SEMI_MINOR_AXIS_LEN_KM);
-
-        }
     }
 
     public void ChangePlanet(PlanetShapeType planetType)
