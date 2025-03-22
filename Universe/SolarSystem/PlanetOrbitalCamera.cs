@@ -250,6 +250,8 @@ public partial class PlanetOrbitalCamera : Camera3D
         // y = c cos(v)
         // z = b sin(u) sin(v)
 
+        m_currentDistance = Math.Clamp(m_currentDistance, m_minCameraRadialDistance, m_maxCameraRadialDistance);
+
         Position = new Vector3(
             (float)(m_currentDistance * Math.Cos(m_currentLon) * Math.Sin(m_currentLat)),
             (float)(m_currentDistance * Math.Cos(m_currentLat)),
