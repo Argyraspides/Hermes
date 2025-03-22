@@ -62,37 +62,17 @@ public partial class PlanetOrbitalCamera : Camera3D
     // in a standard format
     private double m_currentLat = 0.0d;
     public double DisplayLat
-    {
-        get
-        {
-            return m_currentLat + (Math.PI / 2.0);
-        }
-    }
+    { get { return m_currentLat + (Math.PI / 2.0); } }
 
     public double TrueLat
-    {
-        get
-        {
-            return m_currentLat;
-        }
-    }
+    { get { return m_currentLat; } }
 
 
     private double m_currentLon = 0.0d;
     public double DisplayLon
-    {
-        get
-        {
-            return -m_currentLon;
-        }
-    }
+    { get { return -m_currentLon; } }
     public double TrueLon
-    {
-        get
-        {
-            return m_currentLon;
-        }
-    }
+    { get { return m_currentLon; } }
 
     public double CurrentAltitude { get; set; }
 
@@ -276,14 +256,5 @@ public partial class PlanetOrbitalCamera : Camera3D
         m_minCameraRadialDistance = planetSemiMajorAxis * m_minDistanceMultiplier;
         m_maxCameraRadialDistance = planetSemiMajorAxis * m_maxDistanceMultiplier;
         m_initialCameraRadialDistance = planetSemiMajorAxis * m_initialDistanceMultiplier;
-    }
-
-    public void ChangePlanet(PlanetShapeType planetType)
-    {
-        PlanetType = planetType;
-        SetPlanetParameters(planetType);
-
-        // Reset the camera position
-        m_currentDistance = m_initialCameraRadialDistance;
     }
 }
