@@ -25,6 +25,7 @@ namespace Hermes.Universe.SolarSystem;
 using Godot;
 using Hermes.Common.Planet;
 
+// All planets are assumed to be describable by an ellipsoid.
 public partial class PlanetOrbitalCamera : Camera3D
 {
     [Signal]
@@ -36,9 +37,9 @@ public partial class PlanetOrbitalCamera : Camera3D
     [Export] public PlanetShapeType PlanetType { get; set; } = PlanetShapeType.WGS84_ELLIPSOID;
 
     // Camera distance parameters - set based on planet type
-    [Export] private double m_minCameraRadialDistance;
-    [Export] private double m_maxCameraRadialDistance;
-    [Export] private double m_initialCameraRadialDistance;
+    [Export] private double m_minCameraRadialDistance = 0.0d;
+    [Export] private double m_maxCameraRadialDistance = 0.0d;
+    [Export] private double m_initialCameraRadialDistance = 0.0d;
 
     // Multipliers for camera distances to ensure planet is in full view
     [Export] private double m_minDistanceMultiplier = 1.0;
@@ -46,10 +47,12 @@ public partial class PlanetOrbitalCamera : Camera3D
     [Export] private double m_initialDistanceMultiplier = 3.0; // Good starting point for full planet view
 
     // Current distances from planet center
-    [Export] private double m_currentDistance;
+    [Export] private double m_currentDistance = 0.0d;
 
     // Camera control settings
-    [Export] private double m_cameraPanSpeed = 7d;     // Speed of camera panning
+    [Export] private Vector2 m_cameraPanSpeedMultiplier = new Vector2(1,1);
+    [Export] private Vector2 m_cameraPanSpeed = new Vector2(1,1);     // Speed of camera panning
+
     [Export] private double m_cameraZoomSpeed = 1.0;   // Speed of camera zooming
     [Export] private double m_poleThreshold = 0.15d;   // Degrees of latitude from the poles (radians) to lock the camera
 
@@ -102,7 +105,7 @@ public partial class PlanetOrbitalCamera : Camera3D
     {
         InitializeExportedFields();
         SetPlanetParameters(PlanetType);
-
+        DetermineCameraAltitude();
         m_currentDistance = m_planetSemiMajorAxis * m_initialDistanceMultiplier;
     }
 
@@ -114,7 +117,13 @@ public partial class PlanetOrbitalCamera : Camera3D
         m_maxDistanceMultiplier = 10.0;
         m_initialDistanceMultiplier = 3.0;
 
-        m_cameraPanSpeed = 0.01d;
+
+        m_cameraPanSpeedMultiplier = new Vector2(
+            0.0175f,
+            0.0175f
+        );
+        DeterminePanSpeed();
+
         m_poleThreshold = 0.15d;
         m_currentLat = 0.0d;
         m_currentLon = 0.0d;
@@ -144,7 +153,7 @@ public partial class PlanetOrbitalCamera : Camera3D
     {
         // X = longitude, Y = latitude
 
-        Vector2 dragVector = dragEvent.ScreenRelative * (float)m_cameraPanSpeed;
+        Vector2 dragVector = (dragEvent.ScreenRelative * m_cameraPanSpeed);
 
         // Prevent flipping the camera over the poles
         double targetLat = (m_currentLat + dragVector.Y) % Math.PI;
@@ -156,37 +165,66 @@ public partial class PlanetOrbitalCamera : Camera3D
         m_currentLon = (m_currentLon + dragVector.X) % (Math.PI * 2);
 
         PositionCamera();
+        DeterminePanSpeed();
 
         EmitSignal(SignalName.OrbitalCameraLatLonChanged, DisplayLat, DisplayLon);
     }
 
     private void HandleCameraZooming(InputEventMouseButton mouseEvent)
     {
-        // TODO::ARGYRASPIDES() { There is a bit of a disconnect here. The camera knows the distance from the planet
-        // center but not from the planet surface? Reconcile this as this is a shite way to do it }
         m_cameraZoomSpeed = 1;
+        // TODO::ARGYRASPIDES() { Right now map utils assumes this function is talking about the earth }
         if (mouseEvent.ButtonIndex == MouseButton.WheelUp)
         {
             m_currentDistance -= m_cameraZoomSpeed;
             PositionCamera();
             EmitSignal(SignalName.OrbitalCameraAltChanged, CurrentAltitude);
+            DetermineCameraAltitude();
         }
         else if (mouseEvent.ButtonIndex == MouseButton.WheelDown)
         {
             m_currentDistance += m_cameraZoomSpeed;
             PositionCamera();
             EmitSignal(SignalName.OrbitalCameraAltChanged, CurrentAltitude);
+            DetermineCameraAltitude();
         }
     }
 
     private void DetermineZoomSpeed()
     {
 
+
     }
 
     private void DeterminePanSpeed()
     {
+        if (CurrentZoomLevel == 0)
+        {
+            CurrentZoomLevel = 1;
+        }
+        int latTile = MapUtils.LatitudeToTileCoordinateMercator(DisplayLat, CurrentZoomLevel);
+        double latRange = MapUtils.TileToLatRange(latTile, CurrentZoomLevel);
+        double lonRange = MapUtils.TileToLonRange(CurrentZoomLevel);
 
+        m_cameraPanSpeed = new Vector2(
+            Mathf.Log(CurrentZoomLevel) *  // ln(ZoomLevel) Approximates the curve of map tile longitude range decreasing with increasing zoom level
+            (1.0f / CurrentZoomLevel) *    // Weighting bias for higher zoom levels -- the amount we pan by also decreases as we zoom in more
+            (float)lonRange,
+            Mathf.Log(CurrentZoomLevel) *
+            (1.0f / CurrentZoomLevel) *
+            (float)latRange
+            ) * m_cameraPanSpeedMultiplier;
+    }
+
+    private void DetermineCameraAltitude()
+    {
+        // TODO::ARGYRASPIDES() { Validate that this is the actual, true altitude above the current point on the planet's surface.
+        // The numbers appear correct but they're ever so slightly off from Google Earth's measurements, though I can't be sure
+
+        // Point on the planets surface above our current lat/lon point
+        // TODO::ARGYRASPIDES() { The map utils function below assumes the dimensions of the earth. Change soon! }
+        Vector3 surfacePoint = MapUtils.LatLonToCartesian(m_currentLat, m_currentLon);
+        CurrentAltitude = surfacePoint.DistanceTo(Position);
     }
 
     private void PositionCamera()
