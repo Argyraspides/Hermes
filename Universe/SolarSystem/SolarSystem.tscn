@@ -7,7 +7,7 @@
 [ext_resource type="Theme" uid="uid://dll7gj5amwt4g" path="res://Universe/UI/Themes/DefaultHermesTheme.tres" id="5_dxgph"]
 [ext_resource type="Script" path="res://Universe/UI/UIComponents/CameraDistanceLabel.cs" id="6_xdu25"]
 [ext_resource type="Script" path="res://Universe/UI/UIComponents/CameraLatLonLabel.cs" id="7_61pj5"]
-[ext_resource type="PackedScene" uid="uid://b3vyff8oebx32" path="res://Universe/UI/UIComponents/VehicleCardPanel.tscn" id="8_1orsf"]
+[ext_resource type="PackedScene" uid="uid://b3vyff8oebx32" path="res://Universe/UI/UIComponents/VehicleCardPanel/VehicleCardPanel.tscn" id="8_1orsf"]
 [ext_resource type="Script" path="res://Core/Vehicle/VehicleManager.cs" id="8_poxgf"]
 
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_enyp5"]

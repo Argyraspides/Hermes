@@ -1,15 +1,16 @@
-[gd_scene load_steps=3 format=3 uid="uid://boeeonhq3s5og"]
+[gd_scene load_steps=4 format=3 uid="uid://boeeonhq3s5og"]
 
 [ext_resource type="Script" path="res://Universe/UI/UIComponents/VehicleCard/VehicleCard.cs" id="1_kr3c1"]
-[ext_resource type="PackedScene" uid="uid://caexyoqtj5mgq" path="res://Universe/UI/UIComponents/VehicleCard/CompassDisplay.tscn" id="1_kvnjl"]
+[ext_resource type="PackedScene" uid="uid://caexyoqtj5mgq" path="res://Universe/UI/UIComponents/CompassDisplay/CompassDisplay.tscn" id="1_kvnjl"]
+[ext_resource type="Texture2D" uid="uid://c45q553312b50" path="res://Common/Assets/QuestionMark.png" id="2_khkcl"]
 
 [node name="VehicleCard" type="Control"]
-custom_minimum_size = Vector2(300, 150)
+custom_minimum_size = Vector2(0, 150)
 layout_mode = 3
-anchor_right = 0.156
+anchor_right = 0.25
 anchor_bottom = 0.139
-offset_right = -299.52
-offset_bottom = -150.12
+offset_right = 0.47998
+offset_bottom = -0.12001
 script = ExtResource("1_kr3c1")
 
 [node name="ColorRect" type="ColorRect" parent="."]
@@ -22,16 +23,41 @@ grow_vertical = 2
 size_flags_horizontal = 3
 color = Color(0.187176, 0.187176, 0.187176, 1)
 
+[node name="VehicleName" type="HBoxContainer" parent="."]
+clip_contents = true
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 0.15
+grow_horizontal = 2
+
+[node name="TextureRect" type="TextureRect" parent="VehicleName"]
+layout_mode = 2
+texture = ExtResource("2_khkcl")
+expand_mode = 2
+
+[node name="RichTextLabel" type="RichTextLabel" parent="VehicleName"]
+custom_minimum_size = Vector2(150, 15)
+layout_mode = 2
+theme_override_font_sizes/normal_font_size = 12
+bbcode_enabled = true
+text = "UNKNOWN VEHICLE"
+fit_content = true
+
 [node name="TelemetryPanel" type="HBoxContainer" parent="."]
 layout_mode = 1
-anchors_preset = 15
+anchors_preset = -1
+anchor_top = 0.15
 anchor_right = 1.0
-anchor_bottom = 1.0
+anchor_bottom = 0.85
+offset_top = 0.0499973
+offset_right = -0.47998
+offset_bottom = 0.0499878
 grow_horizontal = 2
 grow_vertical = 2
 
 [node name="CompassDisplay" parent="TelemetryPanel" instance=ExtResource("1_kvnjl")]
-custom_minimum_size = Vector2(150, 125)
+custom_minimum_size = Vector2(150, 100)
 layout_mode = 2
 size_flags_horizontal = 2
 size_flags_vertical = 4
