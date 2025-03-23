@@ -18,7 +18,7 @@ public partial class VehicleCardPanel : Control
     {
         EventBus.Instance.NewVehicleConnected += OnNewVehicleConnected;
 
-        m_cardStack = GetNode<VBoxContainer>("CardStack");
+        m_cardStack = GetNode<PanelContainer>("PanelContainer").GetNode<VBoxContainer>("CardStack");
 
         m_collapsePanelButton = GetNode<Button>("CollapsePanelButton");
 

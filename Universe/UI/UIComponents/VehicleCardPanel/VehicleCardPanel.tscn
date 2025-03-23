@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://Universe/UI/UIComponents/VehicleCardPanel/VehicleCardPanel.cs" id="1_5uxtg"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ht4ee"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lfe7d"]
 bg_color = Color(0.101961, 0.101961, 0.101961, 1)
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_jvnt0"]
@@ -17,15 +17,15 @@ size_flags_vertical = 4
 theme_override_constants/separation = 0
 script = ExtResource("1_5uxtg")
 
-[node name="CardStack" type="VBoxContainer" parent="."]
+[node name="PanelContainer" type="PanelContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_lfe7d")
+
+[node name="CardStack" type="VBoxContainer" parent="PanelContainer"]
 custom_minimum_size = Vector2(480, 1080)
 layout_mode = 2
 size_flags_horizontal = 3
-
-[node name="CardStackBackground" type="Panel" parent="CardStack"]
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_styles/panel = SubResource("StyleBoxFlat_ht4ee")
 
 [node name="CollapsePanelButton" type="Button" parent="."]
 z_index = 875
