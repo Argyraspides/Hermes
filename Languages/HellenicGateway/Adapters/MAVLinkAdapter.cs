@@ -26,7 +26,8 @@ public class MAVLinkAdapter : IProtocolAdapter
     private MAVLinkStateMachine m_mavlinkStateMachine = new MAVLinkStateMachine();
 
     private MAVLinkUDPListener m_udpListener = new MAVLinkUDPListener(
-        new IPEndPoint(IPAddress.Parse("127.0.0.1"), KnownWorlds.DEFAULT_MAVLINK_PORT)
+        // new IPEndPoint(IPAddress.Parse("127.0.0.1"), KnownWorlds.DEFAULT_MAVLINK_PORT),
+        new IPEndPoint(IPAddress.Parse("127.0.0.1"), 14445)
     );
 
 
@@ -103,13 +104,9 @@ public class MAVLinkAdapter : IProtocolAdapter
                         }
 
                         m_messageQueue.AddLast(hellenicMessage);
-                        GD.Print("Message Queue Size (Adapter): " + m_messageQueue.Count);
-
                     }
                 }
             }
-
-            Thread.Sleep(2000);
         }
     }
 

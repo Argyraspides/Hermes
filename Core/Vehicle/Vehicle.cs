@@ -19,7 +19,8 @@ public partial class Vehicle : RigidBody3D
     {
         if(component == null || component.ComponentType == ComponentType.NULL)
         {
-            throw new ArgumentNullException("Cannot add a null component to vehicle");
+            // throw new ArgumentNullException("Cannot add a null component to vehicle");
+            return;
         }
         m_components.TryAdd(component.ComponentType, component);
     }
@@ -41,6 +42,7 @@ public partial class Vehicle : RigidBody3D
         foreach (Component component in m_components.Values)
         {
             component.UpdateComponentState(message);
+            GD.Print("UpdateComponent");
         }
     }
 }

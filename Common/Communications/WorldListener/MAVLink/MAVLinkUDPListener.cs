@@ -60,6 +60,7 @@ public class MAVLinkUDPListener
                             new global::MAVLink.MAVLinkMessage(dat.Buffer)));
                 }
             }
+            Thread.Sleep(1000);
         }
     }
 

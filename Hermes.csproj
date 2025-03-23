@@ -41,9 +41,9 @@
         <Content Include="Universe\UI\Fonts\Jura\Jura-Regular.ttf" />
         <Content Include="Universe\UI\Fonts\Jura\Jura-Regular.ttf.import" />
         <Content Include="Universe\UI\Themes\DefaultHermesTheme.tres" />
-        <Content Include="Universe\UI\UIComponents\CompassDisplay.tscn" />
-        <Content Include="Universe\UI\UIComponents\VehicleCard.tscn" />
-        <Content Include="Universe\UI\UIComponents\VehicleCardPanel.tscn" />
+        <Content Include="Universe\UI\UIComponents\CompassDisplay\CompassDisplay.tscn" />
+        <Content Include="Universe\UI\UIComponents\VehicleCardPanel\VehicleCardPanel.tscn" />
+        <Content Include="Universe\UI\UIComponents\VehicleCard\VehicleCard.tscn" />
     </ItemGroup>
     <ItemGroup>
         <Compile Remove="**/submodules/**/*.cs"/>

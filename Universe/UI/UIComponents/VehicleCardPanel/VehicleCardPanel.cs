@@ -1,8 +1,9 @@
-using Godot;
-using System;
 using System.Collections.Generic;
+using Godot;
 using Hermes.Core.Vehicle;
 using Hermes.Universe.Autoloads;
+
+namespace Hermes.Universe.UI.UIComponents.VehicleCardPanel;
 
 public partial class VehicleCardPanel : Control
 {
@@ -11,15 +12,15 @@ public partial class VehicleCardPanel : Control
 
     private VBoxContainer m_cardStack;
 
-	// Called when the node enters the scene tree for the first time.
-	public override void _Ready()
-	{
+    // Called when the node enters the scene tree for the first time.
+    public override void _Ready()
+    {
         EventBus.Instance.NewVehicleConnected += OnNewVehicleConnected;
         m_cardStack = GetNode<VBoxContainer>("CardStack");
-	}
+    }
 
-	// Called every frame. 'delta' is the elapsed time since the previous frame.
-	public override void _Process(double delta)
+    // Called every frame. 'delta' is the elapsed time since the previous frame.
+    public override void _Process(double delta)
     {
     }
 
@@ -28,7 +29,7 @@ public partial class VehicleCardPanel : Control
         vehicles.Add(vehicle);
 
         var vehicleCardScene = GD.Load<PackedScene>("res://Universe/UI/UIComponents/VehicleCard.tscn");
-        var vehicleCardInstance = vehicleCardScene.Instantiate<VehicleCard>();
+        var vehicleCardInstance = vehicleCardScene.Instantiate<Hermes.Universe.UI.UIComponents.VehicleCard.VehicleCard>();
         vehicleCardInstance.Vehicle = vehicle;
         m_cardStack.AddChild(vehicleCardInstance);
     }
