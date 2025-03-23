@@ -47,7 +47,7 @@ public partial class VehicleManager : Node
         // TODO::ARGYRASPIDES() { Maybe have some timer here for staleness and then just remove from dictionary }
     }
 
-    void OnHellenicMessageReceived(HellenicMessage message)
+    public void OnHellenicMessageReceived(HellenicMessage message)
     {
         UpdateVehicle(message);
         CleanupVehicles();

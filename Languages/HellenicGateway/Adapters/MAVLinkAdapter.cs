@@ -36,7 +36,7 @@ public class MAVLinkAdapter : IProtocolAdapter
     // Basically a circular buffer/deque
     private LinkedList<HellenicMessage> m_messageQueue;
     private object m_messageQueueLock = new object();
-    private int m_maxMessageQueueSize = 4096;
+    private int m_maxMessageQueueSize = 50;
 
     public bool IsOfProtocolType(byte[] rawPacket)
     {
@@ -94,18 +94,18 @@ public class MAVLinkAdapter : IProtocolAdapter
             if (m_udpListener.GetNextMessage() is MAVLink.MAVLinkMessage msg)
             {
                 List<HellenicMessage> hellenicMessages = MAVLinkToHellenicTranslator.TranslateMAVLinkMessage(msg);
-                // lock (m_messageQueueLock)
-                // {
+                lock (m_messageQueueLock)
+                {
                     foreach (HellenicMessage hellenicMessage in hellenicMessages)
                     {
                         if (m_messageQueue.Count >= m_maxMessageQueueSize)
                         {
-                            continue; //m_messageQueue.RemoveFirst();
+                            m_messageQueue.RemoveFirst();
                         }
 
                         m_messageQueue.AddLast(hellenicMessage);
                     }
-                // }
+                }
             }
         }
     }

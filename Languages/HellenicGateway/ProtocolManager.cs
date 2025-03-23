@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Godot;
 using Hermes.Common.Communications.WorldListener;
+using Hermes.Core.Vehicle;
 using Hermes.Languages.HellenicGateway.Adapters;
 
 namespace Hermes.Languages.HellenicGateway;
@@ -28,7 +29,8 @@ public partial class ProtocolManager : Node
         {
             if (protocolAdapter.GetNextHellenicMessage() is HellenicMessage nextMessage)
             {
-                EmitSignal(SignalName.HellenicMessageReceived, nextMessage);
+                VehicleManager.Instance.OnHellenicMessageReceived(nextMessage);
+                // EmitSignal(SignalName.HellenicMessageReceived, nextMessage);
             }
         }
     }

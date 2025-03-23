@@ -42,7 +42,6 @@ public partial class Vehicle : RigidBody3D
         foreach (Component component in m_components.Values)
         {
             component.UpdateComponentState(message);
-            GD.Print("UpdateComponent");
         }
     }
 }
