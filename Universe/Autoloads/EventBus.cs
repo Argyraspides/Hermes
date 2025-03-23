@@ -1,3 +1,5 @@
+using Hermes.Core.Vehicle;
+
 namespace Hermes.Universe.Autoloads;
 
 using Hermes.Universe.SolarSystem;
@@ -37,9 +39,59 @@ public partial class EventBus : Node
         EmitSignal(SignalName.PlanetOrbitalCameraAltChanged, altitude);
     }
 
+    private void LoadPlanetOrbitalCameraNodes()
+    {
+        var solarSystem = GetTree().CurrentScene;
+        m_mainCamera = solarSystem.GetNode<PlanetOrbitalCamera>("Earth/EarthOrbitalCamera");
+    }
+
+    private void ConnectPlanetOrbitalCameraNodes()
+    {
+        m_mainCamera.OrbitalCameraAltChanged += OnPlanetOrbitalCameraAltChanged;
+        m_mainCamera.OrbitalCameraLatLonChanged += OnPlanetOrbitalCameraLatLonChanged;
+    }
+
+    // ***************** VEHICLE MANAGER ***************** //
+
+    private VehicleManager m_vehicleManager;
+
+    [Signal]
+    public delegate void NewVehicleConnectedEventHandler(Vehicle vehicle);
+
+    [Signal]
+    public delegate void NewVehicleDisconnectedEventHandler(Vehicle vehicle);
+
+    private void OnNewVehicleConnected(Vehicle vehicle)
+    {
+        EmitSignal(SignalName.NewVehicleConnected, vehicle);
+    }
+
+    private void OnNewVehicleDisconnected(Vehicle vehicle)
+    {
+        EmitSignal(SignalName.NewVehicleDisconnected, vehicle);
+    }
+
+    private void LoadVehicleManagerNode()
+    {
+        m_vehicleManager = VehicleManager.Instance;
+    }
+
+    private void ConnectVehicleManagerNode()
+    {
+        m_vehicleManager.NewVehicleConnected += OnNewVehicleConnected;
+    }
+
+
+
+
+
+
+
+
+
+
 
     // ***************** INITIALIZERS ***************** //
-
 
     public override void _Ready()
     {
@@ -55,13 +107,13 @@ public partial class EventBus : Node
 
     private void LoadNodes()
     {
-        var solarSystem = GetTree().CurrentScene;
-        m_mainCamera = solarSystem.GetNode<PlanetOrbitalCamera>("Earth/EarthOrbitalCamera");
+        LoadPlanetOrbitalCameraNodes();
+        LoadVehicleManagerNode();
     }
 
     private void ConnectNodes()
     {
-        m_mainCamera.OrbitalCameraAltChanged += OnPlanetOrbitalCameraAltChanged;
-        m_mainCamera.OrbitalCameraLatLonChanged += OnPlanetOrbitalCameraLatLonChanged;
+        ConnectPlanetOrbitalCameraNodes();
+        ConnectVehicleManagerNode();
     }
 }

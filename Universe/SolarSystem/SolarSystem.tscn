@@ -64,6 +64,9 @@ grow_vertical = 2
 size_flags_vertical = 4
 theme = ExtResource("5_dxgph")
 
+[node name="VehicleCardPanel" parent="UILayer/MainUI" instance=ExtResource("8_1orsf")]
+layout_mode = 1
+
 [node name="VBoxContainer" type="VBoxContainer" parent="UILayer/MainUI"]
 layout_mode = 1
 anchors_preset = 15
@@ -128,9 +131,6 @@ bbcode_enabled = true
 text = "[center]Camera: 50,000 km[/center]"
 fit_content = true
 script = ExtResource("6_xdu25")
-
-[node name="VehicleCardPanel" parent="UILayer/MainUI" instance=ExtResource("8_1orsf")]
-layout_mode = 1
 
 [node name="Node" type="Node" parent="."]
 script = ExtResource("8_poxgf")

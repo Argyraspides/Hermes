@@ -1,5 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://boeeonhq3s5og"]
+[gd_scene load_steps=3 format=3 uid="uid://boeeonhq3s5og"]
 
+[ext_resource type="Script" path="res://Universe/UI/UIComponents/VehicleCard.cs" id="1_kr3c1"]
 [ext_resource type="PackedScene" uid="uid://caexyoqtj5mgq" path="res://Universe/UI/UIComponents/CompassDisplay.tscn" id="1_kvnjl"]
 
 [node name="VehicleCard" type="Control"]
@@ -9,6 +10,7 @@ anchor_right = 0.156
 anchor_bottom = 0.139
 offset_right = -299.52
 offset_bottom = -150.12
+script = ExtResource("1_kr3c1")
 
 [node name="ColorRect" type="ColorRect" parent="."]
 layout_mode = 1
@@ -20,7 +22,7 @@ grow_vertical = 2
 size_flags_horizontal = 3
 color = Color(0.187176, 0.187176, 0.187176, 1)
 
-[node name="HBoxContainer" type="HBoxContainer" parent="."]
+[node name="TelemetryPanel" type="HBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -28,7 +30,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="CompassDisplay" parent="HBoxContainer" instance=ExtResource("1_kvnjl")]
+[node name="CompassDisplay" parent="TelemetryPanel" instance=ExtResource("1_kvnjl")]
 custom_minimum_size = Vector2(150, 125)
 layout_mode = 2
 size_flags_horizontal = 2

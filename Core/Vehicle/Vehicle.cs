@@ -16,7 +16,7 @@ public partial class Vehicle : RigidBody3D
 
     public void AddComponent(Component component)
     {
-        m_components.Add(component.ComponentType, component);
+        m_components.TryAdd(component.ComponentType, component);
     }
 
     public bool HasComponent(ComponentType componentType)
@@ -24,10 +24,18 @@ public partial class Vehicle : RigidBody3D
         return m_components.ContainsKey(componentType);
     }
 
+    public Component GetComponent(ComponentType componentType)
+    {
+        return m_components[componentType];
+    }
+
     // TODO::ARGYRASPIDES() { Not sure I like this ... A vehicle shouldn't be aware of the hellenic messaging system.
     // think about it later ... }
-    public void UpdateComponent(ComponentType componentType, HellenicMessage message)
+    public void UpdateComponent(HellenicMessage message)
     {
-        m_components[componentType].UpdateComponentState(message);
+        foreach (Component component in m_components.Values)
+        {
+            component.UpdateComponentState(message);
+        }
     }
 }

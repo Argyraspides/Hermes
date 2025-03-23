@@ -125,6 +125,7 @@ public class MAVLinkAdapter : IProtocolAdapter
             if (m_messageQueue.Count > 0)
             {
                 msg = m_messageQueue.First.Value;
+                m_messageQueue.RemoveFirst();
             }
         }
 

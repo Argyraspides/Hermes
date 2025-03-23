@@ -21,6 +21,7 @@ config/icon="res://docs/Hermes.png"
 
 EventBus="*res://Universe/Autoloads/EventBus.cs"
 ProtocolManager="*res://Languages/HellenicGateway/ProtocolManager.cs"
+VehicleManager="*res://Core/Vehicle/VehicleManager.cs"
 
 [debug]
 

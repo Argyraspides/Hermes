@@ -18,10 +18,14 @@ public static class HellenicMessageToComponentConverter
     {
         switch (message.Id)
         {
+            // TODO::ARGYRASPIDES() { How do you know that heading is always coming from a GPS? What if it's coming from a dedicated
+            // compass component? And how do you know altitude is coming from a GPS? What if its coming from an altimeter? }
             case (uint)HellenicMessageType.LatitudeLongitude:
                 return ComponentType.GPS;
-            default:
-                break;
+            case (uint)HellenicMessageType.Altitude:
+                return ComponentType.GPS;
+            case (uint)HellenicMessageType.Heading:
+                return ComponentType.GPS;
         }
 
         return ComponentType.NULL;

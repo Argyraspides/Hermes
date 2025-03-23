@@ -16,27 +16,29 @@ namespace Hermes.Core.Vehicle;
 // Nothing else!!
 public partial class VehicleManager : Node
 {
+    public static VehicleManager Instance { get; private set; }
+
+    [Signal]
+    public delegate void NewVehicleConnectedEventHandler(Vehicle vehicle);
+
     private Dictionary<uint, Vehicle> m_Vehicles = new Dictionary<uint, Vehicle>();
 
     public override void _Ready()
     {
+        Instance = this;
         ProtocolManager.Instance.HellenicMessageReceived += OnHellenicMessageReceived;
     }
 
-    // Update the vehicles components with the message
     void UpdateVehicle(HellenicMessage message)
     {
-        m_Vehicles.TryAdd(message.EntityId, new Vehicle());
-
-        Vehicle vehicle = m_Vehicles[message.EntityId];
-        ComponentType componentType = HellenicMessageToComponentConverter.GetComponentTypeByMessage(message);
-        if (!vehicle.HasComponent(componentType))
+        if (m_Vehicles.TryAdd(message.EntityId, new Vehicle()))
         {
-            Component newComponent = HellenicMessageToComponentConverter.GetComponentByType(componentType);
-            vehicle.AddComponent(newComponent);
+            EmitSignal(SignalName.NewVehicleConnected, m_Vehicles[message.EntityId]);
         }
-
-        vehicle.UpdateComponent(componentType, message);
+        ComponentType componentType = HellenicMessageToComponentConverter.GetComponentTypeByMessage(message);
+        Vehicle vehicle = m_Vehicles[message.EntityId];
+        vehicle.AddComponent(HellenicMessageToComponentConverter.GetComponentByType(componentType));
+        vehicle.UpdateComponent(message);
     }
 
     // Clean up any stale vehicles
