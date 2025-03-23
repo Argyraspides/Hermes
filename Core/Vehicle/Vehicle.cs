@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Godot;
 using Hermes.Core.Vehicle.Components;
@@ -16,6 +17,10 @@ public partial class Vehicle : RigidBody3D
 
     public void AddComponent(Component component)
     {
+        if(component == null || component.ComponentType == ComponentType.NULL)
+        {
+            throw new ArgumentNullException("Cannot add a null component to vehicle");
+        }
         m_components.TryAdd(component.ComponentType, component);
     }
 

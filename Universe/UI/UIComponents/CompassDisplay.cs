@@ -23,7 +23,7 @@ public partial class CompassDisplay : Control
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
 	public override void _Process(double delta)
     {
-        m_compassLabelContainer.GetChild<RichTextLabel>(0).Text = $"[center]{(int)HeadingDeg}\u00b0[/center]";
+        m_compassLabelContainer.GetChild<RichTextLabel>(0).Text = $"[center] {(int)HeadingDeg}\u00b0[/center]";
         m_compassNeedleContainer.RotationDegrees = (float)HeadingDeg;
     }
 }

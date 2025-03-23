@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using Godot;
 
 namespace Hermes.Common.Communications.WorldListener.MAVLink;
 

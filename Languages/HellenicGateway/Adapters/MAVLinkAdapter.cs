@@ -1,5 +1,6 @@
 using System.Net;
 using System.Threading;
+using Godot;
 using Hermes.Common.Communications.WorldListener;
 using Hermes.Common.Communications.WorldListener.MAVLink;
 
@@ -102,6 +103,8 @@ public class MAVLinkAdapter : IProtocolAdapter
                         }
 
                         m_messageQueue.AddLast(hellenicMessage);
+                        GD.Print("Message Queue Size (Adapter): " + m_messageQueue.Count);
+
                     }
                 }
             }
