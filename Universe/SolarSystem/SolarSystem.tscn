@@ -62,28 +62,37 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 size_flags_vertical = 4
+mouse_filter = 2
 theme = ExtResource("5_dxgph")
 
-[node name="VehicleCardPanel" parent="UILayer/MainUI" instance=ExtResource("8_1orsf")]
-layout_mode = 1
-
-[node name="VBoxContainer" type="VBoxContainer" parent="UILayer/MainUI"]
+[node name="HBoxContainer" type="HBoxContainer" parent="UILayer/MainUI"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 0
+
+[node name="VehicleCardPanel" parent="UILayer/MainUI/HBoxContainer" instance=ExtResource("8_1orsf")]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.3
+script = null
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UILayer/MainUI/HBoxContainer"]
+layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 10
 alignment = 2
 
-[node name="ZoomButtons" type="VBoxContainer" parent="UILayer/MainUI/VBoxContainer"]
+[node name="ZoomButtons" type="VBoxContainer" parent="UILayer/MainUI/HBoxContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 8
 
-[node name="ZoomInButton" type="Button" parent="UILayer/MainUI/VBoxContainer/ZoomButtons"]
+[node name="ZoomInButton" type="Button" parent="UILayer/MainUI/HBoxContainer/VBoxContainer/ZoomButtons"]
 custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
@@ -91,7 +100,7 @@ theme_override_styles/focus = SubResource("StyleBoxEmpty_5q0bj")
 theme_override_styles/normal = SubResource("StyleBoxFlat_ftcah")
 text = "+"
 
-[node name="ZoomOutButton" type="Button" parent="UILayer/MainUI/VBoxContainer/ZoomButtons"]
+[node name="ZoomOutButton" type="Button" parent="UILayer/MainUI/HBoxContainer/VBoxContainer/ZoomButtons"]
 custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
@@ -100,17 +109,17 @@ theme_override_styles/focus = SubResource("StyleBoxEmpty_5q0bj")
 theme_override_styles/normal = SubResource("StyleBoxFlat_ftcah")
 text = "-"
 
-[node name="BottomPanel" type="PanelContainer" parent="UILayer/MainUI/VBoxContainer"]
+[node name="BottomPanel" type="PanelContainer" parent="UILayer/MainUI/HBoxContainer/VBoxContainer"]
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 
-[node name="CameraInfoBar" type="HBoxContainer" parent="UILayer/MainUI/VBoxContainer/BottomPanel"]
+[node name="CameraInfoBar" type="HBoxContainer" parent="UILayer/MainUI/HBoxContainer/VBoxContainer/BottomPanel"]
 custom_minimum_size = Vector2(650, 0)
 layout_direction = 3
 layout_mode = 2
 size_flags_horizontal = 8
 
-[node name="CameraLatLonLabel" type="RichTextLabel" parent="UILayer/MainUI/VBoxContainer/BottomPanel/CameraInfoBar"]
+[node name="CameraLatLonLabel" type="RichTextLabel" parent="UILayer/MainUI/HBoxContainer/VBoxContainer/BottomPanel/CameraInfoBar"]
 layout_direction = 3
 layout_mode = 2
 size_flags_horizontal = 3
@@ -121,7 +130,7 @@ text = "[center]11.234568°S, 89.167689°E  [/center]"
 fit_content = true
 script = ExtResource("7_61pj5")
 
-[node name="CameraDistanceLabel" type="RichTextLabel" parent="UILayer/MainUI/VBoxContainer/BottomPanel/CameraInfoBar"]
+[node name="CameraDistanceLabel" type="RichTextLabel" parent="UILayer/MainUI/HBoxContainer/VBoxContainer/BottomPanel/CameraInfoBar"]
 layout_direction = 3
 layout_mode = 2
 size_flags_horizontal = 3
