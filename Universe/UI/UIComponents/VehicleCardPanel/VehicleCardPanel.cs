@@ -11,12 +11,19 @@ public partial class VehicleCardPanel : Control
     List<Vehicle> vehicles = new List<Vehicle>();
 
     private VBoxContainer m_cardStack;
+    private Button m_collapsePanelButton;
 
     // Called when the node enters the scene tree for the first time.
     public override void _Ready()
     {
         EventBus.Instance.NewVehicleConnected += OnNewVehicleConnected;
+
         m_cardStack = GetNode<VBoxContainer>("CardStack");
+
+        m_collapsePanelButton = GetNode<Button>("CollapsePanelButton");
+
+        m_collapsePanelButton.Pressed += OnCollapsePanelButtonPressed;
+
     }
 
     // Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -37,5 +44,11 @@ public partial class VehicleCardPanel : Control
     public void OnNewVehicleDisconnected(Vehicle vehicle)
     {
 
+    }
+
+    public void OnCollapsePanelButtonPressed()
+    {
+        m_cardStack.Visible = !m_cardStack.Visible;
+        m_collapsePanelButton.Text = m_cardStack.Visible ? "<" : ">";
     }
 }
