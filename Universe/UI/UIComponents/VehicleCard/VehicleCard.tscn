@@ -36,7 +36,10 @@ layout_mode = 2
 texture = ExtResource("2_khkcl")
 expand_mode = 2
 
-[node name="RichTextLabel" type="RichTextLabel" parent="VehicleName"]
+[node name="CenterContainer" type="CenterContainer" parent="VehicleName"]
+layout_mode = 2
+
+[node name="RichTextLabel" type="RichTextLabel" parent="VehicleName/CenterContainer"]
 custom_minimum_size = Vector2(150, 15)
 layout_mode = 2
 theme_override_font_sizes/normal_font_size = 12
