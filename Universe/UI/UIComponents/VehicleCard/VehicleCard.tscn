@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://boeeonhq3s5og"]
 
-[ext_resource type="Script" path="res://Universe/UI/UIComponents/VehicleCard.cs" id="1_kr3c1"]
-[ext_resource type="PackedScene" uid="uid://caexyoqtj5mgq" path="res://Universe/UI/UIComponents/CompassDisplay.tscn" id="1_kvnjl"]
+[ext_resource type="Script" path="res://Universe/UI/UIComponents/VehicleCard/VehicleCard.cs" id="1_kr3c1"]
+[ext_resource type="PackedScene" uid="uid://caexyoqtj5mgq" path="res://Universe/UI/UIComponents/VehicleCard/CompassDisplay.tscn" id="1_kvnjl"]
 
 [node name="VehicleCard" type="Control"]
 custom_minimum_size = Vector2(300, 150)

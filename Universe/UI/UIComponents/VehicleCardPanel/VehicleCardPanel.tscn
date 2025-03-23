@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://b3vyff8oebx32"]
 
-[ext_resource type="Script" path="res://Universe/UI/UIComponents/VehicleCardPanel.cs" id="1_5uxtg"]
+[ext_resource type="Script" path="res://Universe/UI/UIComponents/VehicleCardPanel/VehicleCardPanel.cs" id="1_5uxtg"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kfe6x"]
 bg_color = Color(0.0392157, 0.0392157, 0.0392157, 1)

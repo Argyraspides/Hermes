@@ -48,17 +48,17 @@ public class MAVLinkUDPListener
             {
                 var dat = await udpClient.ReceiveAsync();
 
-                lock (m_messageQueueLock)
-                {
+                // lock (m_messageQueueLock)
+                // {
                     if (messageQueue.Count >= m_maxMessageBufferSize)
                     {
-                        messageQueue.RemoveFirst();
+                        continue;//messageQueue.RemoveFirst();
                     }
 
                     messageQueue.AddLast(
                         new LinkedListNode<global::MAVLink.MAVLinkMessage>(
                             new global::MAVLink.MAVLinkMessage(dat.Buffer)));
-                }
+                // }
             }
             Thread.Sleep(1000);
         }
@@ -79,14 +79,14 @@ public class MAVLinkUDPListener
     public global::MAVLink.MAVLinkMessage GetNextMessage()
     {
         global::MAVLink.MAVLinkMessage msg = null;
-        lock (m_messageQueueLock)
-        {
+        // lock (m_messageQueueLock)
+        // {
             if (messageQueue.Count > 0)
             {
                 msg = messageQueue.First.Value;
                 messageQueue.RemoveFirst();
             }
-        }
+        // }
 
         return msg;
     }

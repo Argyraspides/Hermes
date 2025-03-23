@@ -94,18 +94,18 @@ public class MAVLinkAdapter : IProtocolAdapter
             if (m_udpListener.GetNextMessage() is MAVLink.MAVLinkMessage msg)
             {
                 List<HellenicMessage> hellenicMessages = MAVLinkToHellenicTranslator.TranslateMAVLinkMessage(msg);
-                lock (m_messageQueueLock)
-                {
+                // lock (m_messageQueueLock)
+                // {
                     foreach (HellenicMessage hellenicMessage in hellenicMessages)
                     {
                         if (m_messageQueue.Count >= m_maxMessageQueueSize)
                         {
-                            m_messageQueue.RemoveFirst();
+                            continue; //m_messageQueue.RemoveFirst();
                         }
 
                         m_messageQueue.AddLast(hellenicMessage);
                     }
-                }
+                // }
             }
         }
     }

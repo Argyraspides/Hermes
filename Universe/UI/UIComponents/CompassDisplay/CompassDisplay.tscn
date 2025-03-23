@@ -2,7 +2,7 @@
 
 [ext_resource type="Theme" uid="uid://dll7gj5amwt4g" path="res://Universe/UI/Themes/DefaultHermesTheme.tres" id="1_2vkbw"]
 [ext_resource type="Texture2D" uid="uid://cngohqvlh1cmv" path="res://Common/Assets/Triangle.svg" id="1_xlmrf"]
-[ext_resource type="Script" path="res://Universe/UI/UIComponents/CompassDisplay.cs" id="2_0ovod"]
+[ext_resource type="Script" path="res://Universe/UI/UIComponents/CompassDisplay/CompassDisplay.cs" id="2_0ovod"]
 
 [node name="CompassDisplay" type="Control"]
 layout_mode = 3

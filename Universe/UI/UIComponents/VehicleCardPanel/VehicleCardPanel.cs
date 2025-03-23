@@ -28,7 +28,7 @@ public partial class VehicleCardPanel : Control
     {
         vehicles.Add(vehicle);
 
-        var vehicleCardScene = GD.Load<PackedScene>("res://Universe/UI/UIComponents/VehicleCard.tscn");
+        var vehicleCardScene = GD.Load<PackedScene>("res://Universe/UI/UIComponents/VehicleCard/VehicleCard.tscn");
         var vehicleCardInstance = vehicleCardScene.Instantiate<Hermes.Universe.UI.UIComponents.VehicleCard.VehicleCard>();
         vehicleCardInstance.Vehicle = vehicle;
         m_cardStack.AddChild(vehicleCardInstance);
