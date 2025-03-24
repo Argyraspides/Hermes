@@ -1,4 +1,5 @@
 using Hermes.Core.Vehicle;
+using Hermes.Languages.HellenicGateway;
 
 namespace Hermes.Universe.Autoloads;
 
@@ -19,7 +20,7 @@ using Godot;
 /// globalizing events for different parts of Hermes }
 public partial class EventBus : Node
 {
-    public static EventBus Instance { get; set; }
+    public static EventBus Instance { get; private set; }
 
     // ***************** PLANET ORBITAL CAMERA ***************** //
 
@@ -75,6 +76,9 @@ public partial class EventBus : Node
 
     private void LoadVehicleManagerNode()
     {
+        // TODO::ARGYRASPIDES() { Make protocol manager a non-singleton in future, and
+        // create a "manager registration" phase where these managers are loaded up, and their
+        // events routed to the event bus }
         m_vehicleManager = VehicleManager.Instance;
     }
 
@@ -84,14 +88,30 @@ public partial class EventBus : Node
     }
 
 
+    // ***************** PROTOCOL MANAGER ***************** //
 
+    private ProtocolManager m_protocolManager;
 
+    [Signal]
+    public delegate void HellenicMessageReceivedEventHandler(HellenicMessage message);
 
+    private void OnHellenicMessageReceived(HellenicMessage message)
+    {
+        EmitSignal(SignalName.HellenicMessageReceived);
+    }
 
+    private void LoadProtocolManagerNode()
+    {
+        // TODO::ARGYRASPIDES() { Make protocol manager a non-singleton in future, and
+        // create a "manager registration" phase where these managers are loaded up, and their
+        // events routed to the event bus }
+        m_protocolManager = ProtocolManager.Instance;
+    }
 
-
-
-
+    private void ConnectProtocolManagerNode()
+    {
+        m_protocolManager.HellenicMessageReceived += OnHellenicMessageReceived;
+    }
 
     // ***************** INITIALIZERS ***************** //
 
@@ -111,11 +131,13 @@ public partial class EventBus : Node
     {
         LoadPlanetOrbitalCameraNodes();
         LoadVehicleManagerNode();
+        LoadProtocolManagerNode();
     }
 
     private void ConnectNodes()
     {
         ConnectPlanetOrbitalCameraNodes();
         ConnectVehicleManagerNode();
+        ConnectProtocolManagerNode();
     }
 }

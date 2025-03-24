@@ -29,8 +29,7 @@ public partial class ProtocolManager : Node
         {
             if (protocolAdapter.GetNextHellenicMessage() is HellenicMessage nextMessage)
             {
-                VehicleManager.Instance.OnHellenicMessageReceived(nextMessage);
-                // EmitSignal(SignalName.HellenicMessageReceived, nextMessage);
+                EmitSignal(SignalName.HellenicMessageReceived, nextMessage);
             }
         }
     }

@@ -17,7 +17,7 @@ public class MAVLinkUDPListener
     // MAVLink.MAVLinkMessage is auto generated code. Ensure you've auto-generated the MAVLink headers
     private ConcurrentQueue<global::MAVLink.MAVLinkMessage> m_messageQueue;
 
-    private int m_maxMessageBufferSize = 4096;
+    private int m_maxMessageBufferSize = 45;
 
     Thread m_udpListenerThread;
     private CancellationTokenSource m_cancellationTokenSource;

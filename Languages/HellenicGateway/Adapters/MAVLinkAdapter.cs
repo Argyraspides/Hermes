@@ -36,7 +36,7 @@ public class MAVLinkAdapter : IProtocolAdapter
     private CancellationTokenSource m_cancellationTokenSource;
 
     private ConcurrentQueue<HellenicMessage> m_messageQueue;
-    private int m_maxMessageQueueSize = 4096;
+    private int m_maxMessageQueueSize = 45;
 
     ~MAVLinkAdapter()
     {
@@ -112,7 +112,6 @@ public class MAVLinkAdapter : IProtocolAdapter
     {
         HellenicMessage msg = null;
         m_messageQueue.TryDequeue(out msg);
-        GD.Print("Hellenic buffer size: " + m_messageQueue.Count);
         return msg;
     }
 }

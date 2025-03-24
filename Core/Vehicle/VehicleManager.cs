@@ -4,6 +4,7 @@ using Hermes.Common.Map.Utils;
 using Hermes.Core.Vehicle.Components;
 using Hermes.Core.Vehicle.Components.ComponentStates;
 using Hermes.Languages.HellenicGateway;
+using Hermes.Universe.Autoloads;
 
 namespace Hermes.Core.Vehicle;
 
@@ -26,8 +27,7 @@ public partial class VehicleManager : Node
     public override void _Ready()
     {
         Instance = this;
-        // TODO::ARGYRASPIDES() { Should be done by the event bus }
-        ProtocolManager.Instance.HellenicMessageReceived += OnHellenicMessageReceived;
+        EventBus.Instance.HellenicMessageReceived += OnHellenicMessageReceived;
     }
 
     void UpdateVehicle(HellenicMessage message)
