@@ -84,6 +84,7 @@ size_flags_vertical = 8
 theme_override_constants/separation = 10
 
 [node name="ZoomButtons" type="VBoxContainer" parent="UILayer/MainUI/HBoxContainer/VBoxContainer"]
+layout_direction = 1
 layout_mode = 2
 size_flags_horizontal = 8
 size_flags_vertical = 8
