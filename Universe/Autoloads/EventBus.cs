@@ -15,6 +15,8 @@ using Godot;
 /// It is important that any signals that *are* routed through the event bus are kept to a minimum as to avoid
 /// a barrage of signal calls being routed through one place.
 /// </summary>
+/// TODO::ARGYRASPIDES() { Split up the event bus into multiple parts so its not one massive file, but separate files for
+/// globalizing events for different parts of Hermes }
 public partial class EventBus : Node
 {
     public static EventBus Instance { get; set; }

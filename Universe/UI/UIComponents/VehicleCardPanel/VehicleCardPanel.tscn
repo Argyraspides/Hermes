@@ -10,27 +10,23 @@ bg_color = Color(0.101961, 0.101961, 0.101961, 1)
 [node name="VehicleCardPanel" type="HBoxContainer"]
 anchors_preset = -1
 anchor_bottom = 1.0
-offset_right = 21.0
-grow_vertical = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
+size_flags_horizontal = 0
+size_flags_vertical = 3
 theme_override_constants/separation = 0
 script = ExtResource("1_5uxtg")
 
-[node name="PanelContainer" type="PanelContainer" parent="."]
+[node name="PanelBackground" type="PanelContainer" parent="."]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_lfe7d")
 
-[node name="CardStack" type="VBoxContainer" parent="PanelContainer"]
-custom_minimum_size = Vector2(480, 1080)
+[node name="CardStack" type="VBoxContainer" parent="PanelBackground"]
 layout_mode = 2
-size_flags_horizontal = 3
+size_flags_horizontal = 0
+size_flags_vertical = 0
 
 [node name="CollapsePanelButton" type="Button" parent="."]
-z_index = 875
-z_as_relative = false
-custom_minimum_size = Vector2(21, 1080)
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_styles/focus = SubResource("StyleBoxEmpty_jvnt0")
 text = "<"

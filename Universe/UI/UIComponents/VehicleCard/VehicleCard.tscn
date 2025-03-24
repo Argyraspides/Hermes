@@ -8,7 +8,7 @@
 custom_minimum_size = Vector2(0, 150)
 layout_mode = 3
 anchor_right = 0.25
-anchor_bottom = 0.139
+anchor_bottom = 0.15
 offset_right = 0.47998
 offset_bottom = -0.12001
 script = ExtResource("1_kr3c1")

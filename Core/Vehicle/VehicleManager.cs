@@ -26,6 +26,7 @@ public partial class VehicleManager : Node
     public override void _Ready()
     {
         Instance = this;
+        // TODO::ARGYRASPIDES() { Should be done by the event bus }
         ProtocolManager.Instance.HellenicMessageReceived += OnHellenicMessageReceived;
     }
 

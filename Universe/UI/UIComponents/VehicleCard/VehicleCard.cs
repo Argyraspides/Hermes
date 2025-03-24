@@ -17,6 +17,12 @@ public partial class VehicleCard : Control
 
         // TODO::ARGYRASPIDES() { Move this to the telemetry panel. Parents should only reference their immediate children }
         m_compassDisplay = m_telemetryPanel.GetNode<Hermes.Universe.UI.UIComponents.CompassDisplay.CompassDisplay>("CompassDisplay");
+
+        // Vehicle cards are meant to be used in the vehicle panel. We're giving it a minimum size here
+        // to make sure the panel resizes according to the size of this vehicle card
+        CustomMinimumSize =
+            new Vector2(GetViewport().GetWindow().Size.X * 0.25f,
+                150);
     }
 
     public override void _Process(double delta)

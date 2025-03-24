@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Net;
 using System.Threading;
 using Godot;
@@ -32,18 +33,10 @@ public class MAVLinkAdapter : IProtocolAdapter
 
 
     private Thread m_hellenicProcessorThread;
+    private CancellationTokenSource m_cancellationTokenSource;
 
-    // Basically a circular buffer/deque
-    private LinkedList<HellenicMessage> m_messageQueue;
-    private object m_messageQueueLock = new object();
-    private int m_maxMessageQueueSize = 50;
-
-    public bool IsOfProtocolType(byte[] rawPacket)
-    {
-        if (rawPacket == null || rawPacket.Length < 1)
-            return false;
-        return rawPacket[0] == MAVLink.MAVLINK_STX || rawPacket[0] == MAVLink.MAVLINK_STX_MAVLINK1;
-    }
+    private ConcurrentQueue<HellenicMessage> m_messageQueue;
+    private int m_maxMessageQueueSize = 4096;
 
     ~MAVLinkAdapter()
     {
@@ -79,11 +72,13 @@ public class MAVLinkAdapter : IProtocolAdapter
 
     public void Start()
     {
-        m_messageQueue = new LinkedList<HellenicMessage>();
-        m_udpListener.StartListeningThread();
+        m_messageQueue = new ConcurrentQueue<HellenicMessage>();
+        m_cancellationTokenSource = new CancellationTokenSource();
 
+        m_udpListener.StartListeningThread();
         m_hellenicProcessorThread = new Thread(StartMessageProcessor);
         m_hellenicProcessorThread.Start();
+
     }
 
     private void StartMessageProcessor()
@@ -94,17 +89,14 @@ public class MAVLinkAdapter : IProtocolAdapter
             if (m_udpListener.GetNextMessage() is MAVLink.MAVLinkMessage msg)
             {
                 List<HellenicMessage> hellenicMessages = MAVLinkToHellenicTranslator.TranslateMAVLinkMessage(msg);
-                lock (m_messageQueueLock)
+                foreach (HellenicMessage hellenicMessage in hellenicMessages)
                 {
-                    foreach (HellenicMessage hellenicMessage in hellenicMessages)
+                    if (m_messageQueue.Count >= m_maxMessageQueueSize)
                     {
-                        if (m_messageQueue.Count >= m_maxMessageQueueSize)
-                        {
-                            m_messageQueue.RemoveFirst();
-                        }
-
-                        m_messageQueue.AddLast(hellenicMessage);
+                        m_messageQueue.TryDequeue(out _);
                     }
+
+                    m_messageQueue.Enqueue(hellenicMessage);
                 }
             }
         }
@@ -119,16 +111,8 @@ public class MAVLinkAdapter : IProtocolAdapter
     public HellenicMessage GetNextHellenicMessage()
     {
         HellenicMessage msg = null;
-
-        lock (m_messageQueueLock)
-        {
-            if (m_messageQueue.Count > 0)
-            {
-                msg = m_messageQueue.First.Value;
-                m_messageQueue.RemoveFirst();
-            }
-        }
-
+        m_messageQueue.TryDequeue(out msg);
+        GD.Print("Hellenic buffer size: " + m_messageQueue.Count);
         return msg;
     }
 }
