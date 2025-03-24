@@ -79,7 +79,8 @@ public partial class EventBus : Node
         // TODO::ARGYRASPIDES() { Make protocol manager a non-singleton in future, and
         // create a "manager registration" phase where these managers are loaded up, and their
         // events routed to the event bus }
-        m_vehicleManager = VehicleManager.Instance;
+        m_vehicleManager = new VehicleManager();
+        AddChild(m_vehicleManager);
     }
 
     private void ConnectVehicleManagerNode()
@@ -97,7 +98,7 @@ public partial class EventBus : Node
 
     private void OnHellenicMessageReceived(HellenicMessage message)
     {
-        EmitSignal(SignalName.HellenicMessageReceived);
+        EmitSignal(SignalName.HellenicMessageReceived, message);
     }
 
     private void LoadProtocolManagerNode()
@@ -105,7 +106,8 @@ public partial class EventBus : Node
         // TODO::ARGYRASPIDES() { Make protocol manager a non-singleton in future, and
         // create a "manager registration" phase where these managers are loaded up, and their
         // events routed to the event bus }
-        m_protocolManager = ProtocolManager.Instance;
+        m_protocolManager = new ProtocolManager();
+        AddChild(m_protocolManager);
     }
 
     private void ConnectProtocolManagerNode()
@@ -130,14 +132,14 @@ public partial class EventBus : Node
     private void LoadNodes()
     {
         LoadPlanetOrbitalCameraNodes();
-        LoadVehicleManagerNode();
         LoadProtocolManagerNode();
+        LoadVehicleManagerNode();
     }
 
     private void ConnectNodes()
     {
         ConnectPlanetOrbitalCameraNodes();
-        ConnectVehicleManagerNode();
         ConnectProtocolManagerNode();
+        ConnectVehicleManagerNode();
     }
 }

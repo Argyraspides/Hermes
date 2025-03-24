@@ -17,7 +17,6 @@ namespace Hermes.Core.Vehicle;
 // Nothing else!!
 public partial class VehicleManager : Node
 {
-    public static VehicleManager Instance { get; private set; }
 
     [Signal]
     public delegate void NewVehicleConnectedEventHandler(Vehicle vehicle);
@@ -26,7 +25,6 @@ public partial class VehicleManager : Node
 
     public override void _Ready()
     {
-        Instance = this;
         EventBus.Instance.HellenicMessageReceived += OnHellenicMessageReceived;
     }
 
@@ -48,7 +46,7 @@ public partial class VehicleManager : Node
         // TODO::ARGYRASPIDES() { Maybe have some timer here for staleness and then just remove from dictionary }
     }
 
-    public void OnHellenicMessageReceived(HellenicMessage message)
+    private void OnHellenicMessageReceived(HellenicMessage message)
     {
         UpdateVehicle(message);
         CleanupVehicles();
