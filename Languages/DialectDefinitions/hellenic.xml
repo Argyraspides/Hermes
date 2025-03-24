@@ -1,6 +1,8 @@
 <?xml version="1.0"?>
 <hellenic>
     <!-- Fields that all Hellenic messages should have regardless of type -->
+    <!-- TODO::ARGYRASPIDES() { Change the generator script to make enums as well, add enum fieldsgit st here } -->
+
     <header>
         <fields>
             <field type="uint32_t" name="entity_id">

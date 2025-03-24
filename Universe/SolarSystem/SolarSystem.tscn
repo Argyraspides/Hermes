@@ -75,17 +75,18 @@ theme_override_constants/separation = 0
 
 [node name="VehicleCardPanel" parent="UILayer/MainUI/HBoxContainer" instance=ExtResource("8_1orsf")]
 layout_mode = 2
+size_flags_vertical = 1
 
 [node name="VBoxContainer" type="VBoxContainer" parent="UILayer/MainUI/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 8
 theme_override_constants/separation = 10
-alignment = 2
 
 [node name="ZoomButtons" type="VBoxContainer" parent="UILayer/MainUI/HBoxContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 8
+size_flags_vertical = 8
 
 [node name="ZoomInButton" type="Button" parent="UILayer/MainUI/HBoxContainer/VBoxContainer/ZoomButtons"]
 custom_minimum_size = Vector2(50, 50)
@@ -107,6 +108,7 @@ text = "-"
 [node name="BottomPanel" type="PanelContainer" parent="UILayer/MainUI/HBoxContainer/VBoxContainer"]
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
+size_flags_vertical = 8
 
 [node name="CameraInfoBar" type="HBoxContainer" parent="UILayer/MainUI/HBoxContainer/VBoxContainer/BottomPanel"]
 custom_minimum_size = Vector2(650, 0)
