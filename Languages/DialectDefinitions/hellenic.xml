@@ -86,5 +86,24 @@
                 </field>
             </fields>
         </message>
+
+        <message id="4" name="PULSE">
+            <description>
+                System status message indicating the entity is active and functioning.
+                Used for health monitoring and presence detection.
+            </description>
+            <fields>
+                <field type="uint8_t" name="vehicle_type">
+                    <description>Type of vehicle (currently only supporting quadcopters = 1)</description>
+                </field>
+                <field type="string" name="callsign">
+                    <description>Vehicle identifier or callsign</description>
+                </field>
+                <field type="uint64_t" name="time_usec" units="μs">
+                    <description>Timestamp (microseconds since system boot)</description>
+                </field>
+            </fields>
+        </message>
+
     </messages>
 </hellenic>

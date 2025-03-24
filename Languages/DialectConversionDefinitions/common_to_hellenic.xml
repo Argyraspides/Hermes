@@ -1,6 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <common_to_hellenic>
     <conversions>
+        <message common_id="0">
+            <!-- PULSE Message (id=4) Mappings -->
+            <mapping
+                    common_field_name="type"
+                    hellenic_id="4"
+                    hellenic_field_name="vehicle_type"
+                    conversion="value"><!-- TODO::ARGYRASPIDES() { Reconcile how you're gonna do enums in hellenic } -->
+            </mapping>
+            <default_value
+                    hellenic_id="4"
+                    hellenic_field_name="callsign"
+                    value="UNKNOWN CALLSIGN">
+            </default_value>
+            <default_value
+                    hellenic_id="4"
+                    hellenic_field_name="time_usec"
+                    value="0"><!-- Default to 0 as Heartbeat doesn't have a timestamp field -->
+            </default_value>
+        </message>
         <message common_id="33">
             <!-- LATITUDE_LONGITUDE Message (id=0) Mappings -->
             <mapping
