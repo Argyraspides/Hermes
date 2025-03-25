@@ -5,7 +5,7 @@
 [ext_resource type="Texture2D" uid="uid://c45q553312b50" path="res://Common/Assets/QuestionMark.png" id="2_khkcl"]
 
 [node name="VehicleCard" type="Control"]
-custom_minimum_size = Vector2(0, 150)
+custom_minimum_size = Vector2(250, 150)
 layout_mode = 3
 anchor_right = 0.25
 anchor_bottom = 0.15
