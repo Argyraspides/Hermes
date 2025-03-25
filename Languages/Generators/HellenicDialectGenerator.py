@@ -23,6 +23,8 @@ import xml.etree.ElementTree as ET
 
 # The output class definitions will look like the following:
 
+# Quick run: python3 HellenicDialectGenerator.py  --input_XML ../DialectDefinitions/hellenic.xml --output_dir ../ConcreteDialects/Hellenic/
+
 '''C#
     partial class Altitude : HellenicMessage
     {
@@ -111,7 +113,7 @@ g_type_map = {
 }
 
 
-def generate_hellenic_interface_file(output_dir):
+def generate_hellenic_interface_file(output_dir: str) -> None:
     interface_content = (f""
                          f"using Godot;\n\n\n"
                          f"public abstract partial class HellenicMessage : RefCounted\n"
@@ -130,7 +132,7 @@ def generate_hellenic_interface_file(output_dir):
         f.write(interface_content)
 
 
-def generate_dialect_class(hellenic_xml_message, hellenic_xml_message_header):
+def generate_dialect_class(hellenic_xml_message, hellenic_xml_message_header) -> str:
     # GENERATE BODY OF THE CLASS >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     hellenic_description = hellenic_xml_message.find("description").text
     hellenic_description_comment = generate_description_comment(hellenic_description)
@@ -207,9 +209,10 @@ def generate_dialect_class(hellenic_xml_message, hellenic_xml_message_header):
     return final_class
 
 
-def generate_dialect_classes(hellenic_xml_file_path, output_dir_path):
+def generate_dialect_classes(hellenic_xml_file_path: str, output_dir_path: str) -> None:
     hellenic_xml_root = ET.parse(hellenic_xml_file_path)
 
+    hellenic_xml_message_enums = hellenic_xml_root.find("enums")
     hellenic_xml_message_header = hellenic_xml_root.find("header")
     hellenic_xml_messages = hellenic_xml_root.find("messages")
 
@@ -241,7 +244,7 @@ def generate_description_comment(description: str) -> str:
     return opening_tag + inner_description_comment + closing_tag
 
 
-def snake_to_pascal_case(snake_case_string):
+def snake_to_pascal_case(snake_case_string: str) -> str:
     return ''.join(word.capitalize() for word in snake_case_string.split("_"))
 
 

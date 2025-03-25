@@ -19,6 +19,8 @@ import xml.etree.ElementTree as ET
 
 # This script takes in an XML file that defines mappings from MAVLink messages to Hellenic messages
 
+# Quick run: python3 CommonToHellenicConverterGenerator.py --translation_XML ../../DialectConversionDefinitions/common_to_hellenic.xml --common_XML ../../DialectDefinitions/common.xml --hellenic_XML ../../DialectDefinitions/hellenic.xml --output_dir ../../ConcreteConversions/ToHellenic
+
 # Constants for C# code generation
 g_class_header = (f""
                   f"using System;\n"
@@ -73,7 +75,91 @@ g_type_map = {
 # that they correspond to
 g_translation_function_dict = {}
 
+# TODO::ARGYRASPIDES() { Write this function yourself soon }
+def load_xml_with_includes(file_path, processed_files=None):
+    """
+    Load an XML file and recursively process any include tags,
+    merging the included XML files into the main document.
 
+    Args:
+        file_path: Path to the XML file to load
+        processed_files: Set of already processed files to avoid circular references
+
+    Returns:
+        ElementTree root element with all includes processed
+    """
+    if processed_files is None:
+        processed_files = set()
+
+    # Avoid processing the same file twice (to prevent infinite recursion)
+    absolute_path = os.path.abspath(file_path)
+    if absolute_path in processed_files:
+        return None
+
+    processed_files.add(absolute_path)
+
+    # Parse the main XML file
+    tree = ET.parse(file_path)
+    root = tree.getroot()
+
+    # Create a new root with the same tag and attributes
+    merged_root = ET.Element(root.tag, root.attrib)
+
+    # Copy all non-include elements from the original tree
+    for child in root:
+        if child.tag != 'include':
+            # Deep copy the element
+            child_copy = ET.fromstring(ET.tostring(child))
+            merged_root.append(child_copy)
+
+    # Process include tags and merge their content
+    for include in root.findall('include'):
+        include_file = include.text.strip()
+        include_path = os.path.join(os.path.dirname(file_path), include_file)
+
+        # Load the included XML
+        included_root = load_xml_with_includes(include_path, processed_files.copy())
+
+        if included_root is not None:
+            # Merge messages
+            merged_messages = merged_root.find('messages')
+            included_messages = included_root.find('messages')
+
+            if included_messages is not None:
+                if merged_messages is None:
+                    merged_messages = ET.SubElement(merged_root, 'messages')
+
+                # Track existing message IDs to avoid duplicates
+                existing_message_ids = {msg.get('id') for msg in merged_messages.findall('message')}
+
+                for message in included_messages.findall('message'):
+                    message_id = message.get('id')
+                    if message_id not in existing_message_ids:
+                        # Deep copy the message
+                        message_copy = ET.fromstring(ET.tostring(message))
+                        merged_messages.append(message_copy)
+                        existing_message_ids.add(message_id)
+
+            # Merge enums
+            merged_enums = merged_root.find('enums')
+            included_enums = included_root.find('enums')
+
+            if included_enums is not None:
+                if merged_enums is None:
+                    merged_enums = ET.SubElement(merged_root, 'enums')
+
+                # Track existing enum names to avoid duplicates
+                existing_enum_names = {enum.get('name') for enum in merged_enums.findall('enum')}
+
+                for enum in included_enums.findall('enum'):
+                    enum_name = enum.get('name')
+                    if enum_name not in existing_enum_names:
+                        # Deep copy the enum
+                        enum_copy = ET.fromstring(ET.tostring(enum))
+                        merged_enums.append(enum_copy)
+                        existing_enum_names.add(enum_name)
+
+    return merged_root
 def generate_function(common_xml_message, hellenic_xml_root, translation_xml):
     common_message_name = common_xml_message.get("name")
     common_message_name_pascal_case = snake_to_pascal_case(common_message_name)
@@ -202,9 +288,10 @@ def snake_to_pascal_case(snake_case_string: str) -> str:
 
 
 def generate_converter_file(common_XML_file_path, hellenic_XML_file_path, translation_XML_file_path):
-    common_xml_root = ET.parse(common_XML_file_path).getroot()
+    # Load XML with includes
+    common_xml_root = load_xml_with_includes(common_XML_file_path)
     hellenic_xml_root = ET.parse(hellenic_XML_file_path).getroot()
-    translation_xml_root = ET.parse(translation_XML_file_path).getroot()
+    translation_xml_root = ET.parse(translation_XML_file_path).getroot()  # No need to process includes for this one
 
     functions = ""
     final_file = g_class_header + g_translate_message_function
@@ -213,7 +300,11 @@ def generate_converter_file(common_XML_file_path, hellenic_XML_file_path, transl
     for common_message_mapping in translation_xml_root.find('conversions'):
         # Grab the MAVLink XML message definition for this translation
         common_message_id = common_message_mapping.get('common_id')
-        common_message_xml = common_xml_root.find('messages').find(f'.//message[@id="{common_message_id}"]')
+        common_message_xml = common_xml_root.find('.//message[@id="' + common_message_id + '"]')
+
+        if common_message_xml is None:
+            print(f"Warning: Could not find message with ID {common_message_id} in common XML")
+            continue
 
         conversion_function = generate_function(common_message_xml, hellenic_xml_root, common_message_mapping)
         functions += conversion_function

@@ -7,12 +7,12 @@
                     common_field_name="type"
                     hellenic_id="4"
                     hellenic_field_name="vehicle_type"
-                    conversion="value"><!-- TODO::ARGYRASPIDES() { Reconcile how you're gonna do enums in hellenic } -->
+                    conversion="value">
             </mapping>
             <default_value
                     hellenic_id="4"
                     hellenic_field_name="callsign"
-                    value="UNKNOWN CALLSIGN">
+                    value='"UNKNOWN CALLSIGN"'>
             </default_value>
             <default_value
                     hellenic_id="4"

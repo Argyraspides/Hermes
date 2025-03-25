@@ -15,7 +15,7 @@
                 all the way up to the Millenium Falcon
             </description>
             <entries>
-                <entry value="0" name="QUADCOPTER">
+                <entry value="6" name="QUADCOPTER">
                     <description>A quadcopter UAV</description>
                 </entry>
             </entries>
