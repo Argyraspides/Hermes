@@ -45,10 +45,12 @@ public class MAVLinkUDPListener
     }
 
     // TODO::ARGYRASPIDES() { See if you can offload this to the MAVLink library. OK for now. }
-    public bool IsOfProtocolType(byte[] rawPacket)
+    public bool IsMAVLinkPacket(byte[] rawPacket)
     {
         if (rawPacket == null || rawPacket.Length < 1)
+        {
             return false;
+        }
         return rawPacket[0] == global::MAVLink.MAVLINK_STX || rawPacket[0] == global::MAVLink.MAVLINK_STX_MAVLINK1;
     }
 
@@ -69,7 +71,7 @@ public class MAVLinkUDPListener
                     return;
                 }
 
-                if (!IsOfProtocolType(dat.Buffer))
+                if (!IsMAVLinkPacket(dat.Buffer))
                 {
                     continue;
                 }
