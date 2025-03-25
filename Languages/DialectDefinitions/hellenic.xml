@@ -1,8 +1,6 @@
 <?xml version="1.0"?>
 <hellenic>
     <!-- Fields that all Hellenic messages should have regardless of type -->
-    <!-- TODO::ARGYRASPIDES() { Change the generator script to make enums as well, add enum fieldsgit st here } -->
-
     <header>
         <fields>
             <field type="uint32_t" name="entity_id">
@@ -10,6 +8,19 @@
             </field>
         </fields>
     </header>
+    <enums>
+        <enum name="MACHINE_TYPE">
+            <description>
+                Describes the type of machine, anything from a creepy crawly with hellenic messaging capabilities
+                all the way up to the Millenium Falcon
+            </description>
+            <entries>
+                <entry value="0" name="QUADCOPTER">
+                    <description>A quadcopter UAV</description>
+                </entry>
+            </entries>
+        </enum>
+    </enums>
     <messages>
         <message id="0" name="LATITUDE_LONGITUDE">
             <description>The position of the object expressed in latitude, longitude, and altitude,
@@ -95,8 +106,8 @@
                 Used for health monitoring and presence detection.
             </description>
             <fields>
-                <field type="uint8_t" name="vehicle_type">
-                    <description>Type of vehicle (currently only supporting quadcopters = 1)</description>
+                <field type="uint16_t" name="vehicle_type" enum="MACHINE_TYPE">
+                    <description>Type of vehicle</description>
                 </field>
                 <field type="string" name="callsign">
                     <description>Vehicle identifier or callsign</description>

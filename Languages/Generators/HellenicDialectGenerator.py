@@ -223,7 +223,7 @@ def generate_dialect_classes(hellenic_xml_file_path, output_dir_path):
             f.write(class_file)
 
 
-def generate_description_comment(description):
+def generate_description_comment(description: str) -> str:
     opening_tag = "\t/// <summary>\n"
 
     inner_description_comment = ""
@@ -245,7 +245,8 @@ def snake_to_pascal_case(snake_case_string):
     return ''.join(word.capitalize() for word in snake_case_string.split("_"))
 
 
-def generate_enum_file(hellenic_xml_file_path, output_dir_path):
+# Generates enum file for the messages corresponding to their IDs
+def generate_enum_file(hellenic_xml_file_path: str, output_dir_path: str) -> None:
     hellenic_xml_root = ET.parse(hellenic_xml_file_path)
 
     hellenic_xml_messages = hellenic_xml_root.find("messages")
@@ -272,6 +273,47 @@ def generate_enum_file(hellenic_xml_file_path, output_dir_path):
     with open(output_file_path, "w") as f:
         f.write(final_enum_file)
 
+# Generates enum files for each and every single enum definition in the hellenic message set
+def generate_enum_definition_files(hellenic_xml_file_path: str, output_dir_path: str) -> None:
+
+    hellenic_xml_root = ET.parse(hellenic_xml_file_path)
+    hellenic_enums = hellenic_xml_root.find("enums")
+
+    for enum in hellenic_enums:
+        enum_name = enum.get("name")
+        enum_name_pascal_case = snake_to_pascal_case(enum_name)
+        enum_description = enum.find("description").text
+        enum_description_comment = generate_description_comment(enum_description)
+
+        enum_header = (f""
+                       f"{enum_description_comment}"
+                       f"public enum {enum_name_pascal_case}\n"
+                       f"{{\n"
+                       )
+
+        enum_body = ""
+        enum_entries = enum.find("entries")
+        for entry in enum_entries:
+            entry_name = entry.get("name")
+            entry_name_pascal_case = snake_to_pascal_case(entry_name)
+            enum_value = entry.get("value")
+            entry_description = entry.find("description").text
+            entry_description_comment = generate_description_comment(entry_description)
+
+            enum_body += entry_description_comment
+            enum_body += f"\t{entry_name_pascal_case} = {enum_value},\n"
+
+        # Remove trailing comma
+        enum_body = enum_body[:-2] + "\n"
+
+        enum_file = enum_header + enum_body + "}"
+
+        output_path = os.path.join(output_dir_path, "Enums", f"{enum_name_pascal_case}.cs")
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        with open(output_path, "w") as f:
+            f.write(enum_file)
+
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate C# message dialect from an XML file")
@@ -284,3 +326,4 @@ if __name__ == "__main__":
     generate_hellenic_interface_file(args.output_dir)
     generate_dialect_classes(args.input_XML, args.output_dir)
     generate_enum_file(args.input_XML, args.output_dir)
+    generate_enum_definition_files(args.input_XML, args.output_dir)
