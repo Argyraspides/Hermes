@@ -48,10 +48,6 @@ public class MAVLinkAdapter : IProtocolAdapter
         new IPEndPoint(IPAddress.Parse("127.0.0.1"), 14445)
     );
 
-
-    private Thread m_hellenicProcessorThread;
-    private CancellationTokenSource m_cancellationTokenSource;
-
     private ConcurrentQueue<HellenicMessage> m_messageQueue;
     private int m_maxMessageQueueSize = 45;
 
@@ -90,31 +86,22 @@ public class MAVLinkAdapter : IProtocolAdapter
     public void Start()
     {
         m_messageQueue = new ConcurrentQueue<HellenicMessage>();
-        m_cancellationTokenSource = new CancellationTokenSource();
-
         m_udpListener.StartListeningThread();
-        m_hellenicProcessorThread = new Thread(StartMessageProcessor);
-        m_hellenicProcessorThread.Start();
-
+        m_udpListener.MAVLinkMessageReceived += OnMAVLinkMessageReceived;
     }
 
-    private void StartMessageProcessor()
+    private void OnMAVLinkMessageReceived()
     {
-        // TODO::ARGYRASPIDES(10/03/2025) { Don't do a busy wait like this. Make it event based. Probably a callback for when a UDP message is ready }
-        while (true)
+        if (m_udpListener.GetNextMessage() is MAVLink.MAVLinkMessage msg)
         {
-            if (m_udpListener.GetNextMessage() is MAVLink.MAVLinkMessage msg)
+            List<HellenicMessage> hellenicMessages = HandleMessage(msg);
+            foreach (HellenicMessage hellenicMessage in hellenicMessages)
             {
-                List<HellenicMessage> hellenicMessages = MAVLinkToHellenicTranslator.TranslateMAVLinkMessage(msg);
-                foreach (HellenicMessage hellenicMessage in hellenicMessages)
+                if (m_messageQueue.Count >= m_maxMessageQueueSize)
                 {
-                    if (m_messageQueue.Count >= m_maxMessageQueueSize)
-                    {
-                        m_messageQueue.TryDequeue(out _);
-                    }
-
-                    m_messageQueue.Enqueue(hellenicMessage);
+                    m_messageQueue.TryDequeue(out _);
                 }
+                m_messageQueue.Enqueue(hellenicMessage);
             }
         }
     }
@@ -122,7 +109,6 @@ public class MAVLinkAdapter : IProtocolAdapter
     public void Stop()
     {
         m_udpListener.StopListening();
-        m_hellenicProcessorThread.Join();
     }
 
     public HellenicMessage GetNextHellenicMessage()

@@ -16,6 +16,7 @@ public class MAVLinkUDPListener
 
     // MAVLink.MAVLinkMessage is auto generated code. Ensure you've auto-generated the MAVLink headers
     private ConcurrentQueue<global::MAVLink.MAVLinkMessage> m_messageQueue;
+    public event Action MAVLinkMessageReceived;
 
     private int m_maxMessageBufferSize = 45;
 
@@ -78,7 +79,7 @@ public class MAVLinkUDPListener
                     m_messageQueue.TryDequeue(out _);
                 }
                 m_messageQueue.Enqueue(new global::MAVLink.MAVLinkMessage(dat.Buffer));
-
+                MAVLinkMessageReceived?.Invoke();
             }
         }
     }
