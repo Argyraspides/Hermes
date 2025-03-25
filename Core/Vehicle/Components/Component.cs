@@ -5,8 +5,7 @@ using Hermes.Core.Vehicle.Components.ComponentStates;
 
 public abstract class Component
 {
-    private ComponentType m_ComponentType = ComponentType.NULL;
-    private ComponentState m_ComponentState;
+    protected ComponentType m_ComponentType = ComponentType.NULL;
 
     public ComponentType ComponentType
     {

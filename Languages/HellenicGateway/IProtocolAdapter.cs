@@ -41,4 +41,7 @@ public interface IProtocolAdapter
 
     // Gets the next Hellenic message in the adapters buffer
     HellenicMessage GetNextHellenicMessage();
+
+    // Gets the current size of the Hellenic message buffer
+    int GetHellenicBufferSize();
 }

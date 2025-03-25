@@ -47,7 +47,7 @@ public partial class VehicleManager : Node
         ComponentType componentType = HellenicMessageToComponentConverter.GetComponentTypeByMessage(message);
         Vehicle vehicle = m_Vehicles[message.EntityId];
         vehicle.AddComponent(HellenicMessageToComponentConverter.GetComponentByType(componentType));
-        vehicle.UpdateComponent(message);
+        vehicle.Update(message);
     }
 
     // Clean up any stale vehicles

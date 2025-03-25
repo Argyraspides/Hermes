@@ -28,6 +28,9 @@ using Hermes.Core.Vehicle.Components;
 
 public partial class Vehicle : RigidBody3D
 {
+
+    public MachineType MachineType { get; private set; } = MachineType.Unknown;
+
     private Dictionary<ComponentType, Component> m_components = new Dictionary<ComponentType, Component>();
 
     public override void _Ready()
@@ -54,13 +57,28 @@ public partial class Vehicle : RigidBody3D
         return m_components[componentType];
     }
 
-    // TODO::ARGYRASPIDES() { Not sure I like this ... A vehicle shouldn't be aware of the hellenic messaging system.
-    // think about it later ... }
-    public void UpdateComponent(HellenicMessage message)
+    private void UpdateComponent(HellenicMessage message)
     {
         foreach (Component component in m_components.Values)
         {
             component.UpdateComponentState(message);
         }
+    }
+
+    // TODO::ARGYRASPIDES() { Not sure I like this ... A vehicle shouldn't be aware of the hellenic messaging system.
+    // think about it later ... }
+    private void UpdateIDProperties(HellenicMessage message)
+    {
+        if (message.Id == (uint)HellenicMessageType.Pulse)
+        {
+            Pulse pulseMessage = (Pulse)message;
+            this.MachineType = (MachineType)pulseMessage.VehicleType;
+        }
+    }
+
+    public void Update(HellenicMessage message)
+    {
+        UpdateComponent(message);
+        UpdateIDProperties(message);
     }
 }

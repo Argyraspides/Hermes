@@ -117,4 +117,9 @@ public class MAVLinkAdapter : IProtocolAdapter
         m_messageQueue.TryDequeue(out msg);
         return msg;
     }
+
+    public int GetHellenicBufferSize()
+    {
+        return m_messageQueue.Count;
+    }
 }

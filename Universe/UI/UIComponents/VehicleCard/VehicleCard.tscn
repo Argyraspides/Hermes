@@ -23,7 +23,7 @@ grow_vertical = 2
 size_flags_horizontal = 3
 color = Color(0.187176, 0.187176, 0.187176, 1)
 
-[node name="VehicleName" type="HBoxContainer" parent="."]
+[node name="VehicleNameBox" type="HBoxContainer" parent="."]
 clip_contents = true
 layout_mode = 1
 anchors_preset = -1
@@ -31,15 +31,15 @@ anchor_right = 1.0
 anchor_bottom = 0.15
 grow_horizontal = 2
 
-[node name="TextureRect" type="TextureRect" parent="VehicleName"]
+[node name="TextureRect" type="TextureRect" parent="VehicleNameBox"]
 layout_mode = 2
 texture = ExtResource("2_khkcl")
 expand_mode = 2
 
-[node name="CenterContainer" type="CenterContainer" parent="VehicleName"]
+[node name="CenterContainer" type="CenterContainer" parent="VehicleNameBox"]
 layout_mode = 2
 
-[node name="RichTextLabel" type="RichTextLabel" parent="VehicleName/CenterContainer"]
+[node name="VehicleNameLabel" type="RichTextLabel" parent="VehicleNameBox/CenterContainer"]
 custom_minimum_size = Vector2(150, 15)
 layout_mode = 2
 theme_override_font_sizes/normal_font_size = 12

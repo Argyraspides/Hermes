@@ -43,9 +43,13 @@ public partial class ProtocolManager : Node
     {
         foreach (IProtocolAdapter protocolAdapter in m_protocolAdapters)
         {
-            if (protocolAdapter.GetNextHellenicMessage() is HellenicMessage nextMessage)
+            int bufSize = protocolAdapter.GetHellenicBufferSize();
+            for (int i = 0; i < bufSize; i++)
             {
-                EmitSignal(SignalName.HellenicMessageReceived, nextMessage);
+                if (protocolAdapter.GetNextHellenicMessage() is HellenicMessage nextMessage)
+                {
+                    EmitSignal(SignalName.HellenicMessageReceived, nextMessage);
+                }
             }
         }
     }

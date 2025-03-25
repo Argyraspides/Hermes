@@ -15,8 +15,14 @@
                 all the way up to the Millenium Falcon
             </description>
             <entries>
-                <entry value="6" name="QUADCOPTER">
+                <entry value="2" name="QUADCOPTER">
                     <description>A quadcopter UAV</description>
+                </entry>
+                <entry value="6" name="GROUND_CONTROL_STATION">
+                    <description>Another ground control station</description>
+                </entry>
+                <entry value="65535" name="UNKNOWN">
+                    <description>Unknown machine type</description>
                 </entry>
             </entries>
         </enum>

@@ -2,7 +2,7 @@ namespace Hermes.Core.Vehicle.Components.ComponentStates;
 
 // TODO::ARGYRASPIDES() { Only the GPSComponent should be allowed to change the GPSComponent state.
 // Right now all these fields are out in the open. Change it up! }
-public class GPSComponentState : ComponentState
+public class GPSComponentState
 {
     // Supported by pretty much all GPS components out there
     public double Latitude;
