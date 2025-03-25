@@ -8,7 +8,7 @@ bg_color = Color(0.101961, 0.101961, 0.101961, 1)
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_jvnt0"]
 
 [node name="VehicleCardPanel" type="HBoxContainer"]
-anchors_preset = -1
+anchors_preset = 9
 anchor_bottom = 1.0
 size_flags_horizontal = 0
 size_flags_vertical = 3
