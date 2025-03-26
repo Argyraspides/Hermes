@@ -21,79 +21,7 @@ import xml.etree.ElementTree as ET
 
 # Check the __main__ to see arguments
 
-# The output class definitions will look like the following:
-
 # Quick run: python3 HellenicDialectGenerator.py  --input_XML ../DialectDefinitions/hellenic.xml --output_dir ../ConcreteDialects/Hellenic/
-
-'''C#
-    partial class Altitude : HellenicMessage
-    {
-        /// <summary>
-        /// Altitude (Mean Sea Level or reference frame)
-        /// </summary>
-        public double Alt { get; set; }
-
-        /// <summary>
-        /// Altitude relative to home/base
-        /// </summary>
-        public double RelativeAlt { get; set; }
-
-        /// <summary>
-        /// Timestamp (since system boot)
-        /// </summary>
-        public ulong TimeUsec { get; set; }
-
-        public Altitude(double pAlt, double pRelativeAlt, ulong pTimeUsec, uint pVehicleId)
-        {
-            ID = 1;
-            MessageName = nameof(Altitude);
-            Alt = pAlt;
-            RelativeAlt = pRelativeAlt;
-            TimeUsec = pTimeUsec;
-            VehicleId = pVehicleId;
-        }
-        public Altitude()
-        {
-            ID = 1;
-            MessageName = nameof(Altitude);
-        }
-    }
-'''
-
-# Where HellenicMessage is:
-
-'''C#
-
-    using Godot;
-
-    public abstract partial class HellenicMessage : RefCounted
-    {
-        public uint EntityId { get; set; } = uint.MaxValue;
-        public uint Id { get; protected set; } = uint.MaxValue;
-        public string MessageName { get; protected set; } = string.Empty;
-    }
-
-'''
-
-# The script assumes the XML is formatted as follows:
-
-'''
-<hellenic>
-    <version>2</version>
-    <dialect>1</dialect>
-    <messages>
-        <message id="2" name="GROUND_VELOCITY">
-            <description>
-                The velocity components of the object
-            </description>
-            <fields>
-                <field type="float64" name="vx" units="m/s">
-                    <description>Velocity X (Latitude direction, positive north)</description>
-                </field>
-        </message>
-    </messages>
-</hellenic>
-'''
 
 # Map from the XML type definitions to a C# equivalent
 g_type_map = {
