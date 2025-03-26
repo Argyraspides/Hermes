@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Godot;
 using Hermes.Core.Vehicle;
 using Hermes.Core.Vehicle.Components;
@@ -40,19 +41,32 @@ public partial class VehicleCard : Control
         // VehicleCard's are meant to be used in the VehicleCardPanel. We're giving it a minimum size here
         // to make sure the panel resizes according to the size of this vehicle card
         CustomMinimumSize =
-            new Vector2(GetViewport().GetWindow().Size.X * 0.25f,
-                150);
+            new Vector2(GetViewport().GetWindow().Size.X * 0.3f,
+                225);
     }
 
-    public override void _Process(double delta)
+    private void SetIcon()
     {
-        m_compassDisplay.HeadingDeg = Vehicle.Orientation.Heading;
-        m_vehicleNameLabel.Text = Vehicle.MachineType.ToString();
-
         if (Vehicle.Identity.VehicleType == MachineType.Quadcopter)
         {
             m_vehicleTypeIcon.Texture = GD.Load<Texture2D>("res://Core/Vehicle/Assets/Images/QuadcopterIcon.png");
         }
+        else if (Vehicle.Identity.VehicleType == MachineType.GroundControlStation)
+        {
+            m_vehicleTypeIcon.Texture = GD.Load<Texture2D>("res://Core/Vehicle/Assets/Images/GroundControlStation.png");
+        }
+    }
+
+    public override void _Process(double delta)
+    {
+        if (!double.IsNaN(Vehicle.Orientation.Heading))
+        {
+            m_compassDisplay.HeadingDeg = Vehicle.Orientation.Heading;
+        }
+        m_vehicleNameLabel.Text =
+            Regex.Replace(Vehicle.MachineType.ToString(), @"(?<=[a-z])(?=[A-Z])|(?<=\d)(?=[A-Z])", " ");
+
+        SetIcon();
     }
 
 
