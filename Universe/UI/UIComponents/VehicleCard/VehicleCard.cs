@@ -7,7 +7,7 @@ namespace Hermes.Universe.UI.UIComponents.VehicleCard;
 
 public partial class VehicleCard : Control
 {
-    public Vehicle Vehicle { set; private get; }
+    public Vehicle Vehicle { set; get; }
 
     ColorRect m_colorRect;
 

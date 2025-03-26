@@ -37,7 +37,8 @@ public partial class Vehicle : RigidBody3D
 
     private Dictionary<ComponentType, Component> m_components = new Dictionary<ComponentType, Component>();
 
-    public ulong LastUpdateTimeUsec { get; private set; } = 0;
+    // Last time this vehicle was updated in the Unix timestamp
+    public double LastUpdateTimeUnix { get; private set; } = 0;
 
     public override void _Ready()
     {
@@ -77,13 +78,8 @@ public partial class Vehicle : RigidBody3D
     public void Update(HellenicMessage message)
     {
         HellenicStateUpdater.UpdateStates(message, Position, Orientation, Velocity, Identity);
-
         UpdateComponents(message);
-
-        LastUpdateTimeUsec = Math.Max(LastUpdateTimeUsec,
-            Math.Max(Position.TimeUsec,
-                Math.Max(Orientation.TimeUsec,
-                    Math.Max(Velocity.TimeUsec, Identity.TimeUsec))));
+        LastUpdateTimeUnix = Time.GetUnixTimeFromSystem();
     }
 
     public MachineType MachineType

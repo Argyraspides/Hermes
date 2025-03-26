@@ -18,6 +18,7 @@ public partial class VehicleCardPanel : Control
     public override void _Ready()
     {
         EventBus.Instance.NewVehicleConnected += OnNewVehicleConnected;
+        EventBus.Instance.VehicleDisconnected += OnNewVehicleDisconnected;
 
         m_panelBackground = GetNode<PanelContainer>("PanelBackground");
 
@@ -53,7 +54,14 @@ public partial class VehicleCardPanel : Control
 
     public void OnNewVehicleDisconnected(Vehicle vehicle)
     {
-
+        vehicles.Remove(vehicle);
+        foreach (VehicleCard.VehicleCard vehicleCard in m_cardStack.GetChildren())
+        {
+            if (vehicleCard.Vehicle == vehicle)
+            {
+                vehicleCard.QueueFree();
+            }
+        }
     }
 
     public void OnCollapsePanelButtonPressed()

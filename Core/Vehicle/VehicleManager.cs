@@ -33,15 +33,31 @@ public partial class VehicleManager : Node
     public delegate void NewVehicleConnectedEventHandler(Vehicle vehicle);
 
     [Signal]
-    public delegate void VehicleDisconnectedEventHandler(uint entityId);
+    public delegate void VehicleDisconnectedEventHandler(Vehicle vehicle);
 
     private Dictionary<uint, Vehicle> m_Vehicles = new Dictionary<uint, Vehicle>();
+
+    private readonly int VEHICLE_STALE_TIME_MS = 5;
 
     public override void _Ready()
     {
         EventBus.Instance.HellenicMessageReceived += OnHellenicMessageReceived;
     }
 
+    public override void _Process(double delta)
+    {
+        foreach (Vehicle vehicle in m_Vehicles.Values)
+        {
+            double timeElapsed = Time.GetUnixTimeFromSystem() - vehicle.LastUpdateTimeUnix;
+            if (timeElapsed > VEHICLE_STALE_TIME_MS)
+            {
+                m_Vehicles.Remove(vehicle.Identity.VehicleId);
+                EmitSignal(SignalName.VehicleDisconnected, vehicle);
+            }
+        }
+    }
+    // TODO::ARGYRASPIDES() { Fix your terminology! You have VehicleId, EntityId, Vehicles and Machines...should be unified
+    // make it "MachineId" across the board!!!!!!!!!!!! }
     void UpdateVehicle(HellenicMessage message)
     {
         if (!m_Vehicles.ContainsKey(message.EntityId))
@@ -53,15 +69,9 @@ public partial class VehicleManager : Node
         vehicle.Update(message);
     }
 
-    void CleanupVehicles()
-    {
-        throw new NotImplementedException();
-    }
-
     private void OnHellenicMessageReceived(HellenicMessage message)
     {
         UpdateVehicle(message);
-        CleanupVehicles();
     }
 
     public Vehicle GetVehicle(uint entityId)

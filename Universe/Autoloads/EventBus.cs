@@ -82,16 +82,16 @@ public partial class EventBus : Node
     public delegate void NewVehicleConnectedEventHandler(Vehicle vehicle);
 
     [Signal]
-    public delegate void NewVehicleDisconnectedEventHandler(Vehicle vehicle);
+    public delegate void VehicleDisconnectedEventHandler(Vehicle vehicle);
 
     private void OnNewVehicleConnected(Vehicle vehicle)
     {
         EmitSignal(SignalName.NewVehicleConnected, vehicle);
     }
 
-    private void OnNewVehicleDisconnected(Vehicle vehicle)
+    private void OnVehicleDisconnected(Vehicle vehicle)
     {
-        EmitSignal(SignalName.NewVehicleDisconnected, vehicle);
+        EmitSignal(SignalName.VehicleDisconnected, vehicle);
     }
 
     private void LoadVehicleManagerNode()
@@ -103,6 +103,7 @@ public partial class EventBus : Node
     private void ConnectVehicleManagerNode()
     {
         m_vehicleManager.NewVehicleConnected += OnNewVehicleConnected;
+        m_vehicleManager.VehicleDisconnected += OnVehicleDisconnected;
     }
 
 

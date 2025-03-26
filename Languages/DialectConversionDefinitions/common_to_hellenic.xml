@@ -17,7 +17,9 @@
             <default_value
                     hellenic_id="4"
                     hellenic_field_name="time_usec"
-                    value="0"><!-- Default to 0 as Heartbeat doesn't have a timestamp field -->
+                    value="0">
+                <!-- Default to 0 as Heartbeat doesn't have a timestamp field -->
+                <!-- TODO::ARGYRASPIDES() { This is DANGEROUS! Find a way to map this to "Time.Now()" or something ... } -->
             </default_value>
         </message>
         <message common_id="33">
