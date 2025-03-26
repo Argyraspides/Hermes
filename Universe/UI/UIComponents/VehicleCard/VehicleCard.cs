@@ -48,5 +48,12 @@ public partial class VehicleCard : Control
     {
         m_compassDisplay.HeadingDeg = Vehicle.Orientation.Heading;
         m_vehicleNameLabel.Text = Vehicle.MachineType.ToString();
+
+        if (Vehicle.Identity.VehicleType == MachineType.Quadcopter)
+        {
+            m_vehicleTypeIcon.Texture = GD.Load<Texture2D>("res://Core/Vehicle/Assets/Images/QuadcopterIcon.png");
+        }
     }
+
+
 }
