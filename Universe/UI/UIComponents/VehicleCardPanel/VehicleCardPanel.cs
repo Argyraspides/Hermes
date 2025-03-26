@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Godot;
 using Hermes.Core.Vehicle;
 using Hermes.Universe.Autoloads;
+using GlobalEventBus = Hermes.Universe.Autoloads.EventBus.GlobalEventBus;
 
 namespace Hermes.Universe.UI.UIComponents.VehicleCardPanel;
 
@@ -17,8 +18,8 @@ public partial class VehicleCardPanel : Control
     // Called when the node enters the scene tree for the first time.
     public override void _Ready()
     {
-        EventBus.Instance.NewVehicleConnected += OnNewVehicleConnected;
-        EventBus.Instance.VehicleDisconnected += OnNewVehicleDisconnected;
+        GlobalEventBus.Instance.VehicleEventBus.NewVehicleConnected += OnNewVehicleConnected;
+        GlobalEventBus.Instance.VehicleEventBus.VehicleDisconnected += OnNewVehicleDisconnected;
 
         m_panelBackground = GetNode<PanelContainer>("PanelBackground");
 

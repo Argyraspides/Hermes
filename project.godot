@@ -19,7 +19,7 @@ config/icon="res://docs/Hermes.png"
 
 [autoload]
 
-EventBus="*res://Universe/Autoloads/EventBus.cs"
+GlobalEventBus="*res://Universe/Autoloads/EventBus/GlobalEventBus.cs"
 
 [debug]
 

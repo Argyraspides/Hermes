@@ -17,6 +17,8 @@
 */
 
 
+using Hermes.Universe.Autoloads.EventBus;
+
 namespace Hermes.Universe.UI.UIComponents;
 
 using Godot;
@@ -27,7 +29,7 @@ public partial class CameraDistanceLabel : RichTextLabel
     // Called when the node enters the scene tree for the first time.
     public override void _Ready()
     {
-        EventBus.Instance.PlanetOrbitalCameraAltChanged += UpdateCameraAltitudeLabel;
+       GlobalEventBus.Instance.PlanetaryEventBus.PlanetOrbitalCameraAltChanged += UpdateCameraAltitudeLabel;
     }
 
     private void UpdateCameraAltitudeLabel(double altitude)

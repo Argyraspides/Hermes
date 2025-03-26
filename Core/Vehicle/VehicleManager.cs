@@ -18,6 +18,8 @@
 */
 
 
+using Hermes.Universe.Autoloads.EventBus;
+
 namespace Hermes.Core.Vehicle;
 
 using Godot;
@@ -41,7 +43,7 @@ public partial class VehicleManager : Node
 
     public override void _Ready()
     {
-        EventBus.Instance.HellenicMessageReceived += OnHellenicMessageReceived;
+        GlobalEventBus.Instance.ProtocolEventBus.HellenicMessageReceived += OnHellenicMessageReceived;
     }
 
     public override void _Process(double delta)
