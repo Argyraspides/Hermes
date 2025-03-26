@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using Hermes.Core.Vehicle.Components.ComponentStates;
 
 namespace Hermes.Core.Vehicle.Components;

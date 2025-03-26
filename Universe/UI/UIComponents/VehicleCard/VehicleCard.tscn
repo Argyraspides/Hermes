@@ -31,15 +31,15 @@ anchor_right = 1.0
 anchor_bottom = 0.15
 grow_horizontal = 2
 
-[node name="TextureRect" type="TextureRect" parent="VehicleNameBox"]
+[node name="VehicleTypeIcon" type="TextureRect" parent="VehicleNameBox"]
 layout_mode = 2
 texture = ExtResource("2_khkcl")
 expand_mode = 2
 
-[node name="CenterContainer" type="CenterContainer" parent="VehicleNameBox"]
+[node name="TextCenterContainer" type="CenterContainer" parent="VehicleNameBox"]
 layout_mode = 2
 
-[node name="VehicleNameLabel" type="RichTextLabel" parent="VehicleNameBox/CenterContainer"]
+[node name="VehicleNameLabel" type="RichTextLabel" parent="VehicleNameBox/TextCenterContainer"]
 custom_minimum_size = Vector2(150, 15)
 layout_mode = 2
 theme_override_font_sizes/normal_font_size = 12

@@ -21,15 +21,19 @@
 namespace Hermes.Core.Vehicle;
 
 using Godot;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using Hermes.Core.Vehicle.Components;
 using Hermes.Universe.Autoloads;
 
 public partial class VehicleManager : Node
 {
-
     [Signal]
     public delegate void NewVehicleConnectedEventHandler(Vehicle vehicle);
+
+    [Signal]
+    public delegate void VehicleDisconnectedEventHandler(uint entityId);
 
     private Dictionary<uint, Vehicle> m_Vehicles = new Dictionary<uint, Vehicle>();
 
@@ -40,25 +44,32 @@ public partial class VehicleManager : Node
 
     void UpdateVehicle(HellenicMessage message)
     {
-        if (m_Vehicles.TryAdd(message.EntityId, new Vehicle()))
+        if (!m_Vehicles.ContainsKey(message.EntityId))
         {
+            m_Vehicles[message.EntityId] = new Vehicle();
             EmitSignal(SignalName.NewVehicleConnected, m_Vehicles[message.EntityId]);
         }
-        ComponentType componentType = HellenicMessageToComponentConverter.GetComponentTypeByMessage(message);
         Vehicle vehicle = m_Vehicles[message.EntityId];
-        vehicle.AddComponent(HellenicMessageToComponentConverter.GetComponentByType(componentType));
         vehicle.Update(message);
     }
 
-    // Clean up any stale vehicles
     void CleanupVehicles()
     {
-        // TODO::ARGYRASPIDES() { Maybe have some timer here for staleness and then just remove from dictionary }
+        throw new NotImplementedException();
     }
 
     private void OnHellenicMessageReceived(HellenicMessage message)
     {
         UpdateVehicle(message);
         CleanupVehicles();
+    }
+
+    public Vehicle GetVehicle(uint entityId)
+    {
+        if (m_Vehicles.ContainsKey(entityId))
+        {
+            return m_Vehicles[entityId];
+        }
+        return null;
     }
 }

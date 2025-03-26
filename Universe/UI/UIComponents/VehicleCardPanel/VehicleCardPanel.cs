@@ -21,20 +21,18 @@ public partial class VehicleCardPanel : Control
 
         m_panelBackground = GetNode<PanelContainer>("PanelBackground");
 
-        // TODO::ARGYRASPIDES() { Not sure I like this ... have to keep track of state for minimum size between
-        // the card panel and the Vehicle card. I suppose its not a big deal since these two components go hand in hand but
-        // eh }
-        // Give panel background minimum size so that it shows up even if there's no vehicles and fills out the
-        // entire VehicleCardPanel component
-        m_panelBackground.CustomMinimumSize =
-            new Vector2(GetViewport().GetWindow().Size.X * 0.25f,
-                GetViewport().GetWindow().Size.Y);
-
         m_cardStack = m_panelBackground.GetNode<VBoxContainer>("CardStack");
 
         m_collapsePanelButton = GetNode<Button>("CollapsePanelButton");
 
         m_collapsePanelButton.Pressed += OnCollapsePanelButtonPressed;
+
+
+        // Give panel background minimum size so that it shows up even if there's no vehicles and fills out the
+        // entire VehicleCardPanel component
+        m_panelBackground.CustomMinimumSize =
+            new Vector2(GetViewport().GetWindow().Size.X * 0.25f,
+                GetViewport().GetWindow().Size.Y);
 
     }
 

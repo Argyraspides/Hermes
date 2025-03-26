@@ -6,8 +6,8 @@
 
 [node name="CompassDisplay" type="Control"]
 layout_mode = 3
-anchor_right = 0.078
-anchor_bottom = 0.12
+anchor_right = 0.075
+anchor_bottom = 0.125
 offset_right = 0.23999
 offset_bottom = 0.399994
 theme = ExtResource("1_2vkbw")
@@ -20,10 +20,10 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-pivot_offset = Vector2(75, 65)
+pivot_offset = Vector2(72.12, 67.7)
 
 [node name="CompassNeedleIcon" type="TextureRect" parent="CompassNeedleContainer"]
-custom_minimum_size = Vector2(12.5, 20)
+custom_minimum_size = Vector2(20, 30)
 layout_mode = 2
 texture = ExtResource("1_xlmrf")
 expand_mode = 4
@@ -37,7 +37,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="RichTextLabel" type="RichTextLabel" parent="CompassLabelContainer"]
+[node name="CompassHeadingLabel" type="RichTextLabel" parent="CompassLabelContainer"]
 custom_minimum_size = Vector2(40, 0)
 layout_mode = 2
 theme_override_font_sizes/normal_font_size = 15

@@ -24,14 +24,20 @@ using System;
 using System.Collections.Generic;
 using Godot;
 using Hermes.Core.Vehicle.Components;
-
+using Hermes.Core.Vehicle.States;
 
 public partial class Vehicle : RigidBody3D
 {
 
-    public MachineType MachineType { get; private set; } = MachineType.Unknown;
+    // ********* States that all vehicles regardless of type should have
+    public PositionState Position { get; } = new PositionState();
+    public OrientationState Orientation { get; } = new OrientationState();
+    public VelocityState Velocity { get; } = new VelocityState();
+    public IdentityState Identity { get; } = new IdentityState();
 
     private Dictionary<ComponentType, Component> m_components = new Dictionary<ComponentType, Component>();
+
+    public ulong LastUpdateTimeUsec { get; private set; } = 0;
 
     public override void _Ready()
     {
@@ -41,7 +47,6 @@ public partial class Vehicle : RigidBody3D
     {
         if(component == null || component.ComponentType == ComponentType.NULL)
         {
-            // throw new ArgumentNullException("Cannot add a null component to vehicle");
             return;
         }
         m_components.TryAdd(component.ComponentType, component);
@@ -54,10 +59,14 @@ public partial class Vehicle : RigidBody3D
 
     public Component GetComponent(ComponentType componentType)
     {
+        if (!m_components.ContainsKey(componentType))
+        {
+            return null;
+        }
         return m_components[componentType];
     }
 
-    private void UpdateComponent(HellenicMessage message)
+    private void UpdateComponents(HellenicMessage message)
     {
         foreach (Component component in m_components.Values)
         {
@@ -65,20 +74,20 @@ public partial class Vehicle : RigidBody3D
         }
     }
 
-    // TODO::ARGYRASPIDES() { Not sure I like this ... A vehicle shouldn't be aware of the hellenic messaging system.
-    // think about it later ... }
-    private void UpdateIDProperties(HellenicMessage message)
-    {
-        if (message.Id == (uint)HellenicMessageType.Pulse)
-        {
-            Pulse pulseMessage = (Pulse)message;
-            this.MachineType = (MachineType)pulseMessage.VehicleType;
-        }
-    }
-
     public void Update(HellenicMessage message)
     {
-        UpdateComponent(message);
-        UpdateIDProperties(message);
+        HellenicStateUpdater.UpdateStates(message, Position, Orientation, Velocity, Identity);
+
+        UpdateComponents(message);
+
+        LastUpdateTimeUsec = Math.Max(LastUpdateTimeUsec,
+            Math.Max(Position.TimeUsec,
+                Math.Max(Orientation.TimeUsec,
+                    Math.Max(Velocity.TimeUsec, Identity.TimeUsec))));
+    }
+
+    public MachineType MachineType
+    {
+        get { return Identity.VehicleType; }
     }
 }
