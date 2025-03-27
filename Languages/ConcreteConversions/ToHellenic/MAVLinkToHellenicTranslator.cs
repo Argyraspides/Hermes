@@ -1,6 +1,6 @@
 using System;
+using Godot;
 using System.Collections.Generic;
-using System.IO;
 
 
 /*
@@ -36,7 +36,7 @@ class MAVLinkToHellenicTranslator
 			pEntityId: mavlinkMessage.sysid,
 			pVehicleType: mavlinkData.type,
 			pCallsign: "UNKNOWN CALLSIGN",
-			pTimeUsec: 0
+			pTimeUsec: (ulong)Time.GetUnixTimeFromSystem()
 		);
 
 		return new List<HellenicMessage>

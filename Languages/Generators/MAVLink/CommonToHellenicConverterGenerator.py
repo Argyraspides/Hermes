@@ -24,8 +24,8 @@ import xml.etree.ElementTree as ET
 # Constants for C# code generation
 g_class_header = (f""
                   f"using System;\n"
+                  f"using Godot;\n"
                   f"using System.Collections.Generic;\n"
-                  f"using System.IO;\n"
                   f"\n"
                   f"\n"
                   f"/*\n"
@@ -69,6 +69,12 @@ g_type_map = {
     "float64": "double",
     "char": "char",
     "string": "string"
+}
+
+# TODO::ARGYRASPIDES() { Our generator script should just be stitching things together ... it shouldn't know about
+#  what kind of type our message has. This cast operation should be specified in the XML somehow }
+g_default_value_map = {
+    "f_NOW_TIMESTAMP": "(ulong)Time.GetUnixTimeFromSystem()"
 }
 
 # Dictionary that contains the names of the translation functions mapped to the MAVLink ID
@@ -160,6 +166,8 @@ def load_xml_with_includes(file_path, processed_files=None):
                         existing_enum_names.add(enum_name)
 
     return merged_root
+
+
 def generate_function(common_xml_message, hellenic_xml_root, translation_xml):
     common_message_name = common_xml_message.get("name")
     common_message_name_pascal_case = snake_to_pascal_case(common_message_name)
@@ -215,6 +223,12 @@ def generate_function(common_xml_message, hellenic_xml_root, translation_xml):
         if mapping.tag == "default_value":
             hellenic_message_field_name = mapping.get("hellenic_field_name")
             hellenic_field_default_value = mapping.get("value")
+            if hellenic_field_default_value.startswith("f_"):
+                hellenic_field_default_value = g_default_value_map[hellenic_field_default_value]
+
+            conversion = mapping.get('conversion')
+            hellenic_field_default_value = conversion.replace("value", f"{hellenic_field_default_value}")
+
             msg_param_dict[hellenic_message_name_pascal_case][
                 hellenic_message_field_name] = hellenic_field_default_value
             continue

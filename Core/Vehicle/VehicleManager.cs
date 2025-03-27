@@ -23,11 +23,7 @@ using Hermes.Universe.Autoloads.EventBus;
 namespace Hermes.Core.Vehicle;
 
 using Godot;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using Hermes.Core.Vehicle.Components;
-using Hermes.Universe.Autoloads;
 
 public partial class VehicleManager : Node
 {
@@ -39,7 +35,7 @@ public partial class VehicleManager : Node
 
     private Dictionary<uint, Vehicle> m_Vehicles = new Dictionary<uint, Vehicle>();
 
-    private readonly int VEHICLE_STALE_TIME_MS = 5;
+    private readonly int VEHICLE_STALE_TIME_S = 5;
 
     public override void _Ready()
     {
@@ -51,7 +47,7 @@ public partial class VehicleManager : Node
         foreach (Vehicle vehicle in m_Vehicles.Values)
         {
             double timeElapsed = Time.GetUnixTimeFromSystem() - vehicle.LastUpdateTimeUnix;
-            if (timeElapsed > VEHICLE_STALE_TIME_MS)
+            if (timeElapsed > VEHICLE_STALE_TIME_S)
             {
                 m_Vehicles.Remove(vehicle.Identity.VehicleId);
                 EmitSignal(SignalName.VehicleDisconnected, vehicle);

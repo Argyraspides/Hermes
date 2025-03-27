@@ -12,14 +12,14 @@
             <default_value
                     hellenic_id="4"
                     hellenic_field_name="callsign"
-                    value='"UNKNOWN CALLSIGN"'>
+                    value='"UNKNOWN CALLSIGN"'
+                    conversion="value">
             </default_value>
             <default_value
                     hellenic_id="4"
                     hellenic_field_name="time_usec"
-                    value="0">
-                <!-- Default to 0 as Heartbeat doesn't have a timestamp field -->
-                <!-- TODO::ARGYRASPIDES() { This is DANGEROUS! Find a way to map this to "Time.Now()" or something ... } -->
+                    value="f_NOW_TIMESTAMP"
+                    conversion="value">
             </default_value>
         </message>
         <message common_id="33">
@@ -45,7 +45,8 @@
             <default_value
                     hellenic_id="0"
                     hellenic_field_name="reference_frame"
-                    value="2"><!-- 2 = Earth in your enum -->
+                    value="2"
+                    conversion="value"><!-- 2 = Earth in your enum -->
             </default_value>
 
             <!-- ALTITUDE Message (id=1) Mappings -->
@@ -110,7 +111,8 @@
             <default_value
                     hellenic_id="3"
                     hellenic_field_name="reference_frame"
-                    value="2"><!-- 2 = Earth -->
+                    value="2"
+                    conversion="value"><!-- 2 = Earth -->
             </default_value>
         </message>
     </conversions>
