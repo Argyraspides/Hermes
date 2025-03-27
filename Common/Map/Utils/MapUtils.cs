@@ -17,13 +17,13 @@
 
 */
 
-using Hermes.Common.Planet;
 
 namespace Hermes.Common.Map.Utils;
 
 using System;
 using System.Text;
 using Godot;
+using Hermes.Common.Planet;
 
 /// <summary>
 /// This class just holds a bunch of static functions and definitions for anything map related.

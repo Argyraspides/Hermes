@@ -18,6 +18,7 @@
 */
 
 
+using Hermes.Common.Map.Utils;
 
 namespace Hermes.Core.Machine;
 
@@ -59,7 +60,10 @@ public partial class MachineManager : Node
     {
         if (!m_Machines.ContainsKey(message.MachineId))
         {
-            m_Machines[message.MachineId] = new Machine();
+            var machineCardScene = GD.Load<PackedScene>("res://Core/Machine/Machine.tscn");
+            var machineCardInstance = machineCardScene.Instantiate<Machine>();
+            m_Machines[message.MachineId] = machineCardInstance;
+            AddChild(m_Machines[message.MachineId]);
             EmitSignal(SignalName.NewMachineConnected, m_Machines[message.MachineId]);
         }
         Machine machine = m_Machines[message.MachineId];

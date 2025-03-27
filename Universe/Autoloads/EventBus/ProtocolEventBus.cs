@@ -18,6 +18,7 @@ public partial class ProtocolEventBus : Node
     public void LoadProtocolManagerNode()
     {
         m_protocolManager = new ProtocolManager();
+        m_protocolManager.Name = "Protocol Manager";
         AddChild(m_protocolManager);
     }
 

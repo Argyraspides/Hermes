@@ -47,12 +47,15 @@ public partial class GlobalEventBus : Node
         Instance = this;
 
         PlanetaryEventBus = new PlanetaryEventBus();
+        PlanetaryEventBus.Name = "PlanetaryEventBus";
         AddChild(PlanetaryEventBus);
 
         ProtocolEventBus = new ProtocolEventBus();
+        ProtocolEventBus.Name = "ProtocolEventBus";
         AddChild(ProtocolEventBus);
 
         MachineEventBus = new MachineEventBus();
+        MachineEventBus.Name = "MachineEventBus";
         AddChild(MachineEventBus);
 
         // Important: Only load and connect the nodes once the main scene tree is ready.

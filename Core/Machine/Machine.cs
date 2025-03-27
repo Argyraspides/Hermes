@@ -30,7 +30,7 @@ public partial class Machine : RigidBody3D
 {
 
     // ********* States that all machines regardless of type should have
-    public PositionState Position { get; } = new PositionState();
+    public PositionState _Position { get; } = new PositionState();
     public OrientationState Orientation { get; } = new OrientationState();
     public VelocityState Velocity { get; } = new VelocityState();
     public IdentityState Identity { get; } = new IdentityState();
@@ -77,7 +77,7 @@ public partial class Machine : RigidBody3D
 
     public void Update(HellenicMessage message)
     {
-        HellenicStateUpdater.UpdateStates(message, Position, Orientation, Velocity, Identity);
+        HellenicStateUpdater.UpdateStates(message, this);
         UpdateComponents(message);
         LastUpdateTimeUnix = Time.GetUnixTimeFromSystem();
     }

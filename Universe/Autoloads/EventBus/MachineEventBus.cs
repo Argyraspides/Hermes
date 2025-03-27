@@ -48,6 +48,7 @@ public partial class MachineEventBus : Node
     public void LoadMachineManagerNode()
     {
         m_MachineManager = new MachineManager();
+        m_MachineManager.Name = "MachineManager";
         AddChild(m_MachineManager);
     }
 

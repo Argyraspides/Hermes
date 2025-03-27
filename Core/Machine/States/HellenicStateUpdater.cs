@@ -1,8 +1,7 @@
-using Hermes.Core.Machine.States;
+using Godot;
+using Hermes.Common.Map.Utils;
 
-namespace Hermes.Core.Machine;
-
-using Core.Machine.States;
+namespace Hermes.Core.Machine.States;
 
 /// <summary>
 /// A helper class that translates Hellenic messages into updates to machine state objects.
@@ -14,86 +13,89 @@ public static class HellenicStateUpdater
     /// </summary>
     public static void UpdateStates(
         HellenicMessage message,
-        PositionState position,
-        OrientationState orientation,
-        VelocityState velocity,
-        IdentityState identity)
+        Machine machine)
     {
         switch (message.Id)
         {
             case (uint)HellenicMessageType.LatitudeLongitude:
-                UpdatePositionFromLatLon(message as LatitudeLongitude, position);
+                UpdatePositionFromLatLon(message as LatitudeLongitude, machine);
                 break;
 
             case (uint)HellenicMessageType.Altitude:
-                UpdatePositionFromAltitude(message as Altitude, position);
+                UpdatePositionFromAltitude(message as Altitude, machine);
                 break;
 
             case (uint)HellenicMessageType.Heading:
-                UpdateOrientationFromHeading(message as Heading, orientation);
+                UpdateOrientationFromHeading(message as Heading, machine);
                 break;
 
             case (uint)HellenicMessageType.GroundVelocity:
-                UpdateVelocityFromGroundVelocity(message as GroundVelocity, velocity);
+                UpdateVelocityFromGroundVelocity(message as GroundVelocity, machine);
                 break;
 
             case (uint)HellenicMessageType.Pulse:
-                UpdateIdentityFromPulse(message as Pulse, identity);
+                UpdateIdentityFromPulse(message as Pulse, machine);
                 break;
         }
     }
 
-    private static void UpdatePositionFromLatLon(LatitudeLongitude latLon, PositionState position)
+    private static void UpdatePositionFromLatLon(LatitudeLongitude latLon, Machine machine)
     {
         if (latLon == null) return;
 
-        position.Latitude = latLon.Lat;
-        position.Longitude = latLon.Lon;
-        position.ReferenceFrame = latLon.ReferenceFrame;
-        position.TimeUsec = latLon.TimeUsec;
+        machine._Position.Latitude = latLon.Lat;
+        machine._Position.Longitude = latLon.Lon;
+        machine._Position.ReferenceFrame = latLon.ReferenceFrame;
+        machine._Position.TimeUsec = latLon.TimeUsec;
+
+        // TODO::ARGYRASPIDES() { This conversion is all fucked up. Fix it. }
+        machine.GlobalPosition = MapUtils.LatLonToCartesian(
+                Mathf.DegToRad(latLon.Lat + 10),
+            Mathf.DegToRad(latLon.Lon + 160)
+        );
     }
 
-    private static void UpdatePositionFromAltitude(Altitude alt, PositionState position)
+    private static void UpdatePositionFromAltitude(Altitude alt, Machine machine)
     {
         if (alt == null) return;
 
-        position.Altitude = alt.Alt;
-        position.RelativeAltitude = alt.RelativeAlt;
+        machine._Position.Altitude = alt.Alt;
+        machine._Position.RelativeAltitude = alt.RelativeAlt;
         // Don't overwrite the timestamp if this update is older than our position
-        if (alt.TimeUsec > position.TimeUsec)
+        if (alt.TimeUsec >  machine._Position.TimeUsec)
         {
-            position.TimeUsec = alt.TimeUsec;
+            machine._Position.TimeUsec = alt.TimeUsec;
         }
         // position.AltitudeSource could be set if the message included source info
     }
 
-    private static void UpdateOrientationFromHeading(Heading hdg, OrientationState orientation)
+    private static void UpdateOrientationFromHeading(Heading hdg, Machine machine)
     {
         if (hdg == null) return;
 
-        orientation.Heading = hdg.Hdg;
-        orientation.ReferenceFrame = hdg.ReferenceFrame;
-        orientation.TimeUsec = hdg.TimeUsec;
+        machine.Orientation.Heading = hdg.Hdg;
+        machine.Orientation.ReferenceFrame = hdg.ReferenceFrame;
+        machine.Orientation.TimeUsec = hdg.TimeUsec;
         // orientation.HeadingSource could be set if the message included source info
     }
 
-    private static void UpdateVelocityFromGroundVelocity(GroundVelocity vel, VelocityState velocity)
+    private static void UpdateVelocityFromGroundVelocity(GroundVelocity vel, Machine machine)
     {
         if (vel == null) return;
 
-        velocity.VelocityX = vel.Vx;
-        velocity.VelocityY = vel.Vy;
-        velocity.VelocityZ = vel.Vz;
-        velocity.TimeUsec = vel.TimeUsec;
+        machine.Velocity.VelocityX = vel.Vx;
+        machine.Velocity.VelocityY = vel.Vy;
+        machine.Velocity.VelocityZ = vel.Vz;
+        machine.Velocity.TimeUsec = vel.TimeUsec;
         // velocity.VelocitySource could be set if the message included source info
     }
 
-    private static void UpdateIdentityFromPulse(Pulse pulse, IdentityState identity)
+    private static void UpdateIdentityFromPulse(Pulse pulse, Machine machine)
     {
         if (pulse == null) return;
-        identity.MachineId = pulse.MachineId;
-        identity.MachineType = (MachineType)pulse.MachineType;
-        identity.Callsign = pulse.Callsign;
-        identity.TimeUsec = pulse.TimeUsec;
+        machine.Identity.MachineId = pulse.MachineId;
+        machine.Identity.MachineType = (MachineType)pulse.MachineType;
+        machine.Identity.Callsign = pulse.Callsign;
+        machine.Identity.TimeUsec = pulse.TimeUsec;
     }
 }
