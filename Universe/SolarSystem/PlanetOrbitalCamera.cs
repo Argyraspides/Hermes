@@ -85,13 +85,23 @@ public partial class PlanetOrbitalCamera : Camera3D
     {
         InitializeExportedFields();
         SetPlanetParameters(PlanetType);
-        DetermineCameraAltitude();
 
         m_currentDistance = m_planetSemiMajorAxis * m_initialDistanceMultiplier;
         m_currentLon = 0.0d;
         m_currentLat = -Math.PI / 2.0;
 
         PositionCamera();
+        DetermineCameraAltitude();
+
+        GetTree().Root.Ready += OnSceneTreeReady;
+    }
+
+    private void OnSceneTreeReady()
+    {
+        // Let everyone who is interested know our initial camera position
+        // after everyone has loaded into the scene tree
+        EmitSignal(SignalName.OrbitalCameraLatLonChanged, DisplayLat, DisplayLon);
+        EmitSignal(SignalName.OrbitalCameraAltChanged, CurrentAltitude);
     }
 
     public void InitializeExportedFields()
