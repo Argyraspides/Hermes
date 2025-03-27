@@ -9,6 +9,11 @@
 [ext_resource type="Script" path="res://Universe/UI/UIComponents/CameraLatLonLabel.cs" id="7_61pj5"]
 [ext_resource type="PackedScene" uid="uid://b3vyff8oebx32" path="res://Universe/UI/UIComponents/MachineCardPanel/MachineCardPanel.tscn" id="8_1orsf"]
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_5q0bj"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ftcah"]
+bg_color = Color(0.0705882, 0.0705882, 0.0705882, 1)
+
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_enyp5"]
 panorama = ExtResource("1_nxqmc")
 energy_multiplier = 0.5
@@ -27,29 +32,8 @@ fog_sky_affect = 0.015
 adjustment_enabled = true
 adjustment_saturation = 2.0
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_5q0bj"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ftcah"]
-bg_color = Color(0.0705882, 0.0705882, 0.0705882, 1)
-
 [node name="SolarSystem" type="Node3D"]
 script = ExtResource("1_ks12t")
-
-[node name="Backdrop" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_sabak")
-
-[node name="Earth" parent="." instance=ExtResource("3_bobqk")]
-
-[node name="EarthOrbitalCamera" type="Camera3D" parent="Earth"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -154.961, 0, 0)
-current = true
-fov = 60.0
-far = 100000.0
-script = ExtResource("3_jsn1l")
-
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="Earth/EarthOrbitalCamera"]
-transform = Transform3D(0.766044, 0.321394, -0.55667, 0, 0.866025, 0.5, 0.642788, -0.383022, 0.663414, 0, 0, -8000)
-light_energy = 0.6
 
 [node name="UILayer" type="CanvasLayer" parent="."]
 
@@ -139,3 +123,19 @@ bbcode_enabled = true
 text = "[center]Camera: 50,000 km[/center]"
 fit_content = true
 script = ExtResource("6_xdu25")
+
+[node name="Backdrop" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_sabak")
+
+[node name="Earth" parent="." instance=ExtResource("3_bobqk")]
+
+[node name="EarthOrbitalCamera" type="Camera3D" parent="Earth"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -154.961, 0, 0)
+current = true
+fov = 60.0
+far = 100000.0
+script = ExtResource("3_jsn1l")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="Earth/EarthOrbitalCamera"]
+transform = Transform3D(0.766044, 0.321394, -0.55667, 0, 0.866025, 0.5, 0.642788, -0.383022, 0.663414, 0, 0, -8000)
+light_energy = 0.6

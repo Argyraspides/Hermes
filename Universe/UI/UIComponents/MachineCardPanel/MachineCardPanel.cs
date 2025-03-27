@@ -47,20 +47,20 @@ public partial class MachineCardPanel : Control
     {
         machines.Add(machine);
 
-        var vehicleCardScene = GD.Load<PackedScene>("res://Universe/UI/UIComponents/VehicleCard/VehicleCard.tscn");
-        var vehicleCardInstance = vehicleCardScene.Instantiate<Hermes.Universe.UI.UIComponents.MachineCard.MachineCard>();
-        vehicleCardInstance.Machine = machine;
-        m_cardStack.AddChild(vehicleCardInstance);
+        var machineCardScene = GD.Load<PackedScene>("res://Universe/UI/UIComponents/MachineCard/MachineCard.tscn");
+        var machineCardInstance = machineCardScene.Instantiate<Hermes.Universe.UI.UIComponents.MachineCard.MachineCard>();
+        machineCardInstance.Machine = machine;
+        m_cardStack.AddChild(machineCardInstance);
     }
 
     public void OnNewMachineDisconnected(Machine machine)
     {
         machines.Remove(machine);
-        foreach (MachineCard.MachineCard vehicleCard in m_cardStack.GetChildren())
+        foreach (MachineCard.MachineCard machineCard in m_cardStack.GetChildren())
         {
-            if (vehicleCard.Machine == machine)
+            if (machineCard.Machine == machine)
             {
-                vehicleCard.QueueFree();
+                machineCard.QueueFree();
             }
         }
     }

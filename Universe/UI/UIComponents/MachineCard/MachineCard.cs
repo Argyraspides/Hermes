@@ -13,9 +13,9 @@ public partial class MachineCard : Control
     ColorRect m_colorRect;
 
     private HBoxContainer m_machineNameBox;
-    private TextureRect m_vehicleTypeIcon;
+    private TextureRect m_machineTypeIcon;
     private CenterContainer m_textCenterContainer;
-    private RichTextLabel m_vehicleNameLabel;
+    private RichTextLabel m_machineNameLabel;
 
     private HBoxContainer m_telemetryPanel;
 
@@ -27,19 +27,19 @@ public partial class MachineCard : Control
 
         m_colorRect = GetNode<ColorRect>("ColorRect");
 
-        m_machineNameBox = GetNode<HBoxContainer>("VehicleNameBox");
+        m_machineNameBox = GetNode<HBoxContainer>("MachineNameBox");
 
-        m_vehicleTypeIcon = m_machineNameBox.GetNode<TextureRect>("VehicleTypeIcon");
+        m_machineTypeIcon = m_machineNameBox.GetNode<TextureRect>("MachineTypeIcon");
         m_textCenterContainer = m_machineNameBox.GetNode<CenterContainer>("TextCenterContainer");
 
-        m_vehicleNameLabel = m_textCenterContainer.GetNode<RichTextLabel>("VehicleNameLabel");
+        m_machineNameLabel = m_textCenterContainer.GetNode<RichTextLabel>("MachineNameLabel");
 
         m_telemetryPanel = GetNode<HBoxContainer>("TelemetryPanel");
 
         m_compassDisplay = m_telemetryPanel.GetNode<CompassDisplay.CompassDisplay>("CompassDisplay");
 
-        // VehicleCard's are meant to be used in the VehicleCardPanel. We're giving it a minimum size here
-        // to make sure the panel resizes according to the size of this vehicle card
+        // MachineCard's are meant to be used in the MachineCardPanel. We're giving it a minimum size here
+        // to make sure the panel resizes according to the size of this machine card
         CustomMinimumSize =
             new Vector2(GetViewport().GetWindow().Size.X * 0.3f,
                 225);
@@ -49,11 +49,11 @@ public partial class MachineCard : Control
     {
         if (Machine.Identity.MachineType == MachineType.Quadcopter)
         {
-            m_vehicleTypeIcon.Texture = GD.Load<Texture2D>("res://Core/Vehicle/Assets/Images/QuadcopterIcon.png");
+            m_machineTypeIcon.Texture = GD.Load<Texture2D>("res://Core/Machine/Assets/Images/QuadcopterIcon.png");
         }
         else if (Machine.Identity.MachineType == MachineType.GroundControlStation)
         {
-            m_vehicleTypeIcon.Texture = GD.Load<Texture2D>("res://Core/Vehicle/Assets/Images/GroundControlStation.png");
+            m_machineTypeIcon.Texture = GD.Load<Texture2D>("res://Core/Machine/Assets/Images/GroundControlStation.png");
         }
     }
 
@@ -63,7 +63,7 @@ public partial class MachineCard : Control
         {
             m_compassDisplay.HeadingDeg = Machine.Orientation.Heading;
         }
-        m_vehicleNameLabel.Text =
+        m_machineNameLabel.Text =
             Regex.Replace(Machine.MachineType.ToString(), @"(?<=[a-z])(?=[A-Z])|(?<=\d)(?=[A-Z])", " ");
 
         SetIcon();

@@ -18,12 +18,12 @@
 */
 
 
-using Hermes.Universe.Autoloads.EventBus;
 
 namespace Hermes.Core.Machine;
 
 using Godot;
 using System.Collections.Generic;
+using Hermes.Universe.Autoloads.EventBus;
 
 public partial class MachineManager : Node
 {
