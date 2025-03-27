@@ -1,10 +1,10 @@
 [gd_scene load_steps=4 format=3 uid="uid://boeeonhq3s5og"]
 
-[ext_resource type="Script" path="res://Universe/UI/UIComponents/VehicleCard/VehicleCard.cs" id="1_kr3c1"]
+[ext_resource type="Script" path="res://Universe/UI/UIComponents/MachineCard/MachineCard.cs" id="1_kr3c1"]
 [ext_resource type="PackedScene" uid="uid://caexyoqtj5mgq" path="res://Universe/UI/UIComponents/CompassDisplay/CompassDisplay.tscn" id="1_kvnjl"]
 [ext_resource type="Texture2D" uid="uid://c45q553312b50" path="res://Common/Assets/QuestionMark.png" id="2_khkcl"]
 
-[node name="VehicleCard" type="Control"]
+[node name="MachineCard" type="Control"]
 custom_minimum_size = Vector2(500, 225)
 layout_mode = 3
 anchor_right = 0.3
@@ -47,7 +47,7 @@ custom_minimum_size = Vector2(250, 15)
 layout_mode = 2
 theme_override_font_sizes/normal_font_size = 16
 bbcode_enabled = true
-text = "UNKNOWN VEHICLE"
+text = "UNKNOWN MACHINE"
 fit_content = true
 
 [node name="TelemetryPanel" type="HBoxContainer" parent="."]

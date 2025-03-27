@@ -1,8 +1,8 @@
 using System;
 using System.ComponentModel;
-using Hermes.Core.Vehicle.Components.ComponentStates;
+using Hermes.Core.Machine.Components.ComponentStates;
 
-namespace Hermes.Core.Vehicle.Components;
+namespace Hermes.Core.Machine.Components;
 
 public class GPSComponent : Component
 {

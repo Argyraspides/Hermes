@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bftp5xrrndty5"
-path="res://.godot/imported/GroundControlStation.png-47da9b1d64dde86f250341e1d9e65141.ctex"
+uid="uid://bbh6h30733adj"
+path="res://.godot/imported/QuadcopterIcon.png-8230b4033c824fc50d8d3163ff21e94c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Core/Vehicle/Assets/Images/GroundControlStation.png"
-dest_files=["res://.godot/imported/GroundControlStation.png-47da9b1d64dde86f250341e1d9e65141.ctex"]
+source_file="res://Core/Machine/Assets/Images/QuadcopterIcon.png"
+dest_files=["res://.godot/imported/QuadcopterIcon.png-8230b4033c824fc50d8d3163ff21e94c.ctex"]
 
 [params]
 

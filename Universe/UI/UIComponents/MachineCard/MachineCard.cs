@@ -1,18 +1,18 @@
 using System.Text.RegularExpressions;
 using Godot;
-using Hermes.Core.Vehicle;
-using Hermes.Core.Vehicle.Components;
+using Hermes.Core.Machine;
+using Hermes.Core.Machine.Components;
 using Hermes.Universe.UI.UIComponents.CompassDisplay;
 
-namespace Hermes.Universe.UI.UIComponents.VehicleCard;
+namespace Hermes.Universe.UI.UIComponents.MachineCard;
 
-public partial class VehicleCard : Control
+public partial class MachineCard : Control
 {
-    public Vehicle Vehicle { set; get; }
+    public Machine Machine { set; get; }
 
     ColorRect m_colorRect;
 
-    private HBoxContainer m_vehicleNameBox;
+    private HBoxContainer m_machineNameBox;
     private TextureRect m_vehicleTypeIcon;
     private CenterContainer m_textCenterContainer;
     private RichTextLabel m_vehicleNameLabel;
@@ -27,10 +27,10 @@ public partial class VehicleCard : Control
 
         m_colorRect = GetNode<ColorRect>("ColorRect");
 
-        m_vehicleNameBox = GetNode<HBoxContainer>("VehicleNameBox");
+        m_machineNameBox = GetNode<HBoxContainer>("VehicleNameBox");
 
-        m_vehicleTypeIcon = m_vehicleNameBox.GetNode<TextureRect>("VehicleTypeIcon");
-        m_textCenterContainer = m_vehicleNameBox.GetNode<CenterContainer>("TextCenterContainer");
+        m_vehicleTypeIcon = m_machineNameBox.GetNode<TextureRect>("VehicleTypeIcon");
+        m_textCenterContainer = m_machineNameBox.GetNode<CenterContainer>("TextCenterContainer");
 
         m_vehicleNameLabel = m_textCenterContainer.GetNode<RichTextLabel>("VehicleNameLabel");
 
@@ -47,11 +47,11 @@ public partial class VehicleCard : Control
 
     private void SetIcon()
     {
-        if (Vehicle.Identity.VehicleType == MachineType.Quadcopter)
+        if (Machine.Identity.MachineType == MachineType.Quadcopter)
         {
             m_vehicleTypeIcon.Texture = GD.Load<Texture2D>("res://Core/Vehicle/Assets/Images/QuadcopterIcon.png");
         }
-        else if (Vehicle.Identity.VehicleType == MachineType.GroundControlStation)
+        else if (Machine.Identity.MachineType == MachineType.GroundControlStation)
         {
             m_vehicleTypeIcon.Texture = GD.Load<Texture2D>("res://Core/Vehicle/Assets/Images/GroundControlStation.png");
         }
@@ -59,12 +59,12 @@ public partial class VehicleCard : Control
 
     public override void _Process(double delta)
     {
-        if (!double.IsNaN(Vehicle.Orientation.Heading))
+        if (!double.IsNaN(Machine.Orientation.Heading))
         {
-            m_compassDisplay.HeadingDeg = Vehicle.Orientation.Heading;
+            m_compassDisplay.HeadingDeg = Machine.Orientation.Heading;
         }
         m_vehicleNameLabel.Text =
-            Regex.Replace(Vehicle.MachineType.ToString(), @"(?<=[a-z])(?=[A-Z])|(?<=\d)(?=[A-Z])", " ");
+            Regex.Replace(Machine.MachineType.ToString(), @"(?<=[a-z])(?=[A-Z])|(?<=\d)(?=[A-Z])", " ");
 
         SetIcon();
     }

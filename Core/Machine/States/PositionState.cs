@@ -1,9 +1,9 @@
-using Hermes.Core.Vehicle.Components;
+using Hermes.Core.Machine.Components;
 
-namespace Hermes.Core.Vehicle.States;
+namespace Hermes.Core.Machine.States;
 
 /// <summary>
-/// Represents the position state of a vehicle, independent of which component provides the data.
+/// Represents the position state of a machine, independent of which component provides the data.
 /// Includes location coordinates, altitude, and reference frame information.
 /// </summary>
 public class PositionState
@@ -47,6 +47,5 @@ public class PositionState
 
     public PositionState()
     {
-        // Defaults already set in property declarations
     }
 }

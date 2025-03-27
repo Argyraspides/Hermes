@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bbh6h30733adj"
-path="res://.godot/imported/QuadcopterIcon.png-83c7975e3d01ba0e465ac35571f139bf.ctex"
+uid="uid://b42ypy1pprv7p"
+path="res://.godot/imported/JetIcon.png-725bd828b5d9932ef44426d57c67f6a7.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Core/Vehicle/Assets/Images/QuadcopterIcon.png"
-dest_files=["res://.godot/imported/QuadcopterIcon.png-83c7975e3d01ba0e465ac35571f139bf.ctex"]
+source_file="res://Core/Machine/Assets/Images/JetIcon.png"
+dest_files=["res://.godot/imported/JetIcon.png-725bd828b5d9932ef44426d57c67f6a7.ctex"]
 
 [params]
 

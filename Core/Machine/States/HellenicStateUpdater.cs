@@ -1,9 +1,11 @@
-namespace Hermes.Core.Vehicle;
+using Hermes.Core.Machine.States;
 
-using Hermes.Core.Vehicle.States;
+namespace Hermes.Core.Machine;
+
+using Core.Machine.States;
 
 /// <summary>
-/// A helper class that translates Hellenic messages into updates to vehicle state objects.
+/// A helper class that translates Hellenic messages into updates to machine state objects.
 /// </summary>
 public static class HellenicStateUpdater
 {
@@ -89,8 +91,8 @@ public static class HellenicStateUpdater
     private static void UpdateIdentityFromPulse(Pulse pulse, IdentityState identity)
     {
         if (pulse == null) return;
-        identity.VehicleId = pulse.EntityId;
-        identity.VehicleType = (MachineType)pulse.VehicleType;
+        identity.MachineId = pulse.MachineId;
+        identity.MachineType = (MachineType)pulse.MachineType;
         identity.Callsign = pulse.Callsign;
         identity.TimeUsec = pulse.TimeUsec;
     }

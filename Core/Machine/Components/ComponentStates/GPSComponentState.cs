@@ -1,4 +1,4 @@
-namespace Hermes.Core.Vehicle.Components.ComponentStates;
+namespace Hermes.Core.Machine.Components.ComponentStates;
 
 // TODO::ARGYRASPIDES() { Only the GPSComponent should be allowed to change the GPSComponent state.
 // Right now all these fields are out in the open. Change it up! }

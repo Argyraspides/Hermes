@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bd4n0evklccgu"
-path="res://.godot/imported/BoatIcon.png-56e0f39ff2a6a8f1bb26ff8b9559df72.ctex"
+path="res://.godot/imported/BoatIcon.png-8ac0070e68d4f36663c5ee3b31a487a1.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Core/Vehicle/Assets/Images/BoatIcon.png"
-dest_files=["res://.godot/imported/BoatIcon.png-56e0f39ff2a6a8f1bb26ff8b9559df72.ctex"]
+source_file="res://Core/Machine/Assets/Images/BoatIcon.png"
+dest_files=["res://.godot/imported/BoatIcon.png-8ac0070e68d4f36663c5ee3b31a487a1.ctex"]
 
 [params]
 

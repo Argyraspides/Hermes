@@ -1,7 +1,7 @@
-namespace Hermes.Core.Vehicle.Components;
+namespace Hermes.Core.Machine.Components;
 
 using System;
-using Hermes.Core.Vehicle.Components.ComponentStates;
+using Core.Machine.Components.ComponentStates;
 
 public abstract class Component
 {

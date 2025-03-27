@@ -7,7 +7,7 @@
 [ext_resource type="Theme" uid="uid://dll7gj5amwt4g" path="res://Universe/UI/Themes/DefaultHermesTheme.tres" id="5_dxgph"]
 [ext_resource type="Script" path="res://Universe/UI/UIComponents/CameraDistanceLabel.cs" id="6_xdu25"]
 [ext_resource type="Script" path="res://Universe/UI/UIComponents/CameraLatLonLabel.cs" id="7_61pj5"]
-[ext_resource type="PackedScene" uid="uid://b3vyff8oebx32" path="res://Universe/UI/UIComponents/VehicleCardPanel/VehicleCardPanel.tscn" id="8_1orsf"]
+[ext_resource type="PackedScene" uid="uid://b3vyff8oebx32" path="res://Universe/UI/UIComponents/MachineCardPanel/MachineCardPanel.tscn" id="8_1orsf"]
 
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_enyp5"]
 panorama = ExtResource("1_nxqmc")
@@ -64,7 +64,7 @@ size_flags_vertical = 4
 mouse_filter = 1
 theme = ExtResource("5_dxgph")
 
-[node name="VehicleCardPanel" parent="UILayer/MainUI" instance=ExtResource("8_1orsf")]
+[node name="MachineCardPanel" parent="UILayer/MainUI" instance=ExtResource("8_1orsf")]
 layout_mode = 1
 offset_right = 13.0
 grow_vertical = 2

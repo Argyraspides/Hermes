@@ -1,9 +1,9 @@
-using Hermes.Core.Vehicle.Components;
+using Hermes.Core.Machine.Components;
 
-namespace Hermes.Core.Vehicle.States;
+namespace Hermes.Core.Machine.States;
 
 /// <summary>
-/// Represents the orientation state of a vehicle, independent of which component provides the data.
+/// Represents the orientation state of a machine, independent of which component provides the data.
 /// Includes heading, and future expansion for pitch, roll, etc.
 /// </summary>
 public class OrientationState
@@ -47,6 +47,5 @@ public class OrientationState
 
     public OrientationState()
     {
-        // Defaults already set in property declarations
     }
 }

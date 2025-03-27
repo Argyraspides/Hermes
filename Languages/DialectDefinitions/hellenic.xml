@@ -3,8 +3,8 @@
     <!-- Fields that all Hellenic messages should have regardless of type -->
     <header>
         <fields>
-            <field type="uint32_t" name="entity_id">
-                <description>ID of the entity that sent this message</description>
+            <field type="uint32_t" name="machine_id">
+                <description>ID of the machine that sent this message</description>
             </field>
         </fields>
     </header>
@@ -112,11 +112,11 @@
                 Used for health monitoring and presence detection.
             </description>
             <fields>
-                <field type="uint16_t" name="vehicle_type" enum="MACHINE_TYPE">
-                    <description>Type of vehicle</description>
+                <field type="uint16_t" name="machine_type" enum="MACHINE_TYPE">
+                    <description>Type of machine</description>
                 </field>
                 <field type="string" name="callsign">
-                    <description>Vehicle identifier or callsign</description>
+                    <description>Machine identifier or callsign</description>
                 </field>
                 <field type="uint64_t" name="time_usec" units="μs">
                     <description>Timestamp (microseconds since system boot)</description>

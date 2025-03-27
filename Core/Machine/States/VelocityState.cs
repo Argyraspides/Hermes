@@ -1,9 +1,9 @@
-using Hermes.Core.Vehicle.Components;
+using Hermes.Core.Machine.Components;
 
-namespace Hermes.Core.Vehicle.States;
+namespace Hermes.Core.Machine.States;
 
 /// <summary>
-/// Represents the velocity state of a vehicle, independent of which component provides the data.
+/// Represents the velocity state of a machine, independent of which component provides the data.
 /// Includes ground velocity components in all three axes.
 /// </summary>
 public class VelocityState
@@ -49,6 +49,5 @@ public class VelocityState
 
     public VelocityState()
     {
-        // Defaults already set in property declarations
     }
 }

@@ -6,7 +6,7 @@
             <mapping
                     common_field_name="type"
                     hellenic_id="4"
-                    hellenic_field_name="vehicle_type"
+                    hellenic_field_name="machine_type"
                     conversion="value">
             </mapping>
             <default_value

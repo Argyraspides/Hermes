@@ -19,7 +19,7 @@
 
 
 using Godot;
-using Hermes.Core.Vehicle;
+using Hermes.Core.Machine;
 using Hermes.Languages.HellenicGateway;
 using Hermes.Universe.SolarSystem;
 
@@ -42,7 +42,7 @@ public partial class GlobalEventBus : Node
 
     public PlanetaryEventBus PlanetaryEventBus { get; private set; }
     public ProtocolEventBus ProtocolEventBus { get; private set; }
-    public VehicleEventBus VehicleEventBus { get; private set; }
+    public MachineEventBus MachineEventBus { get; private set; }
 
     public override void _Ready()
     {
@@ -54,8 +54,8 @@ public partial class GlobalEventBus : Node
         ProtocolEventBus = new ProtocolEventBus();
         AddChild(ProtocolEventBus);
 
-        VehicleEventBus = new VehicleEventBus();
-        AddChild(VehicleEventBus);
+        MachineEventBus = new MachineEventBus();
+        AddChild(MachineEventBus);
 
         // Important: Only load and connect the nodes once the main scene tree is ready.
         // Autoloads always load before the scene tree, and some things, such as the planet
@@ -73,13 +73,13 @@ public partial class GlobalEventBus : Node
     {
         PlanetaryEventBus.LoadPlanetOrbitalCameraNodes();
         ProtocolEventBus.LoadProtocolManagerNode();
-        VehicleEventBus.LoadVehicleManagerNode();
+        MachineEventBus.LoadMachineManagerNode();
     }
 
     private void ConnectNodes()
     {
         PlanetaryEventBus.ConnectPlanetOrbitalCameraNodes();
         ProtocolEventBus.ConnectProtocolManagerNode();
-        VehicleEventBus.ConnectVehicleManagerNode();
+        MachineEventBus.ConnectMachineManagerNode();
     }
 }

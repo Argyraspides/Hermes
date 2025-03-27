@@ -1,6 +1,6 @@
 using System.ComponentModel;
 
-namespace Hermes.Core.Vehicle.Components;
+namespace Hermes.Core.Machine.Components;
 
 /*
 TODO::ARGYRASPIDES() {

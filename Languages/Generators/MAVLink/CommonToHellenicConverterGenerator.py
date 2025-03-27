@@ -72,7 +72,8 @@ g_type_map = {
 }
 
 # TODO::ARGYRASPIDES() { Our generator script should just be stitching things together ... it shouldn't know about
-#  what kind of type our message has. This cast operation should be specified in the XML somehow }
+#  what kind of type our message has. This cast operation should be specified in the XML somehow and then our script
+#  can deal with automagically handling the casting in a "dumb" way }
 g_default_value_map = {
     "f_NOW_TIMESTAMP": "(ulong)Time.GetUnixTimeFromSystem()"
 }
@@ -81,7 +82,7 @@ g_default_value_map = {
 # that they correspond to
 g_translation_function_dict = {}
 
-# TODO::ARGYRASPIDES() { Write this function yourself soon }
+# TODO::ARGYRASPIDES() { Rewrite this soon coz its ugly }
 def load_xml_with_includes(file_path, processed_files=None):
     """
     Load an XML file and recursively process any include tags,
@@ -218,7 +219,7 @@ def generate_function(common_xml_message, hellenic_xml_root, translation_xml):
             # All messages must include a vehicle/system id
             # TODO::ARGYRASPIDES() { Again with this derived message stuff... we shouldnt have to do this bruh }
             # should all be defined in the XML with zero hardcoding in the generator script
-            msg_param_dict[hellenic_message_name_pascal_case] = {"entity_id": "mavlinkMessage.sysid"}
+            msg_param_dict[hellenic_message_name_pascal_case] = {"machine_id": "mavlinkMessage.sysid"}
 
         if mapping.tag == "default_value":
             hellenic_message_field_name = mapping.get("hellenic_field_name")

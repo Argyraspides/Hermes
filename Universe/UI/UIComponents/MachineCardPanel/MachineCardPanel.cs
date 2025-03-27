@@ -1,15 +1,15 @@
 using System.Collections.Generic;
 using Godot;
-using Hermes.Core.Vehicle;
+using Hermes.Core.Machine;
 using Hermes.Universe.Autoloads;
 using GlobalEventBus = Hermes.Universe.Autoloads.EventBus.GlobalEventBus;
 
-namespace Hermes.Universe.UI.UIComponents.VehicleCardPanel;
+namespace Hermes.Universe.UI.UIComponents.MachineCardPanel;
 
-public partial class VehicleCardPanel : Control
+public partial class MachineCardPanel : Control
 {
 
-    List<Vehicle> vehicles = new List<Vehicle>();
+    List<Machine> machines = new List<Machine>();
 
     private VBoxContainer m_cardStack;
     private PanelContainer m_panelBackground;
@@ -18,8 +18,8 @@ public partial class VehicleCardPanel : Control
     // Called when the node enters the scene tree for the first time.
     public override void _Ready()
     {
-        GlobalEventBus.Instance.VehicleEventBus.NewVehicleConnected += OnNewVehicleConnected;
-        GlobalEventBus.Instance.VehicleEventBus.VehicleDisconnected += OnNewVehicleDisconnected;
+        GlobalEventBus.Instance.MachineEventBus.NewMachineConnected += OnNewMachineConnected;
+        GlobalEventBus.Instance.MachineEventBus.MachineDisconnected += OnNewMachineDisconnected;
 
         m_panelBackground = GetNode<PanelContainer>("PanelBackground");
 
@@ -43,22 +43,22 @@ public partial class VehicleCardPanel : Control
     {
     }
 
-    public void OnNewVehicleConnected(Vehicle vehicle)
+    public void OnNewMachineConnected(Machine machine)
     {
-        vehicles.Add(vehicle);
+        machines.Add(machine);
 
         var vehicleCardScene = GD.Load<PackedScene>("res://Universe/UI/UIComponents/VehicleCard/VehicleCard.tscn");
-        var vehicleCardInstance = vehicleCardScene.Instantiate<Hermes.Universe.UI.UIComponents.VehicleCard.VehicleCard>();
-        vehicleCardInstance.Vehicle = vehicle;
+        var vehicleCardInstance = vehicleCardScene.Instantiate<Hermes.Universe.UI.UIComponents.MachineCard.MachineCard>();
+        vehicleCardInstance.Machine = machine;
         m_cardStack.AddChild(vehicleCardInstance);
     }
 
-    public void OnNewVehicleDisconnected(Vehicle vehicle)
+    public void OnNewMachineDisconnected(Machine machine)
     {
-        vehicles.Remove(vehicle);
-        foreach (VehicleCard.VehicleCard vehicleCard in m_cardStack.GetChildren())
+        machines.Remove(machine);
+        foreach (MachineCard.MachineCard vehicleCard in m_cardStack.GetChildren())
         {
-            if (vehicleCard.Vehicle == vehicle)
+            if (vehicleCard.Machine == machine)
             {
                 vehicleCard.QueueFree();
             }

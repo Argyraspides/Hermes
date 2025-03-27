@@ -18,18 +18,18 @@
 */
 
 
-namespace Hermes.Core.Vehicle;
+namespace Hermes.Core.Machine;
 
-using System;
+
 using System.Collections.Generic;
 using Godot;
-using Hermes.Core.Vehicle.Components;
-using Hermes.Core.Vehicle.States;
+using Core.Machine.Components;
+using Core.Machine.States;
 
-public partial class Vehicle : RigidBody3D
+public partial class Machine : RigidBody3D
 {
 
-    // ********* States that all vehicles regardless of type should have
+    // ********* States that all machines regardless of type should have
     public PositionState Position { get; } = new PositionState();
     public OrientationState Orientation { get; } = new OrientationState();
     public VelocityState Velocity { get; } = new VelocityState();
@@ -84,6 +84,6 @@ public partial class Vehicle : RigidBody3D
 
     public MachineType MachineType
     {
-        get { return Identity.VehicleType; }
+        get { return Identity.MachineType; }
     }
 }

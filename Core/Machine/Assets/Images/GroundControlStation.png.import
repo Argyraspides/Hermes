@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b42ypy1pprv7p"
-path="res://.godot/imported/JetIcon.png-3f189c11aec97752f070fbc24d598d41.ctex"
+uid="uid://bftp5xrrndty5"
+path="res://.godot/imported/GroundControlStation.png-ff685b4492519cf3a143ec7cfd91885f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Core/Vehicle/Assets/Images/JetIcon.png"
-dest_files=["res://.godot/imported/JetIcon.png-3f189c11aec97752f070fbc24d598d41.ctex"]
+source_file="res://Core/Machine/Assets/Images/GroundControlStation.png"
+dest_files=["res://.godot/imported/GroundControlStation.png-ff685b4492519cf3a143ec7cfd91885f.ctex"]
 
 [params]
 
