@@ -17,6 +17,6 @@ shape = SubResource("SphereShape3D_eo4ee")
 disabled = true
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-transform = Transform3D(50, 0, 0, 0, 50, 0, 0, 0, 50, 0, 0, 0)
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0, 0)
 material_override = SubResource("StandardMaterial3D_tin1h")
 mesh = SubResource("SphereMesh_70ktl")

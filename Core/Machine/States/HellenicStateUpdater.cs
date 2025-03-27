@@ -48,7 +48,8 @@ public static class HellenicStateUpdater
         machine._Position.ReferenceFrame = latLon.ReferenceFrame;
         machine._Position.TimeUsec = latLon.TimeUsec;
 
-        // TODO::ARGYRASPIDES() { This conversion is all fucked up. Fix it. This works but eh }
+        // TODO::ARGYRASPIDES() !URGENT! { This conversion is all fucked up. Fix it.
+        // We are pretty close to the right position but not quite. }
         machine.GlobalPosition = MapUtils.LatLonToCartesian(
                 Mathf.DegToRad(latLon.Lat - 90),
             Mathf.DegToRad(-latLon.Lon)
