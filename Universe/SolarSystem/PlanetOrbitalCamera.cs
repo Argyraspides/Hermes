@@ -17,13 +17,12 @@
 
 */
 
-using System;
-using Hermes.Common.Map.Utils;
-
 namespace Hermes.Universe.SolarSystem;
 
 using Godot;
+using System;
 using Hermes.Common.Planet;
+using Hermes.Common.Map.Utils;
 
 // All planets are assumed to be describable by an ellipsoid.
 public partial class PlanetOrbitalCamera : Camera3D

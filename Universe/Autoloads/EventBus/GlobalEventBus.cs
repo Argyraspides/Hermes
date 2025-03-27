@@ -18,12 +18,10 @@
 */
 
 
-using Godot;
-using Hermes.Core.Machine;
-using Hermes.Languages.HellenicGateway;
-using Hermes.Universe.SolarSystem;
-
 namespace Hermes.Universe.Autoloads.EventBus;
+
+using Godot;
+
 
 /// <summary>
 /// The event bus is mainly used to inform UI components about changes that have occurred in Hermes' backend.
