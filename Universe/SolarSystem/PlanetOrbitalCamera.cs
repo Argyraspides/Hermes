@@ -113,14 +113,14 @@ public partial class PlanetOrbitalCamera : Camera3D
         m_initialDistanceMultiplier = 3.0;
 
         m_cameraPanSpeedMultiplier = new Vector2(
-            0.0175f,
-            0.0175f
+            0.00175f,
+            0.00175f
         );
         DeterminePanSpeed();
 
         m_cameraZoomSpeedMultiplier = new Vector2(
-            5000.0f,
-            5000.0f).Length();
+            50.0f,
+            50.0f).Length();
         DetermineZoomSpeed();
 
         m_poleThreshold = 0.15d;

@@ -50,10 +50,13 @@ public static class HellenicStateUpdater
 
         // TODO::ARGYRASPIDES() !URGENT! { This conversion is all fucked up. Fix it.
         // We are pretty close to the right position but not quite. }
-        machine.GlobalPosition = MapUtils.LatLonToCartesian(
-                Mathf.DegToRad(latLon.Lat - 90),
-            Mathf.DegToRad(-latLon.Lon)
+        Vector3 globalPosition = MapUtils.LatLonToCartesian(
+            Mathf.DegToRad(latLon.Lat),
+            Mathf.DegToRad(latLon.Lon)
         );
+        globalPosition.X *= -1;
+        machine.GlobalPosition = globalPosition;
+
     }
 
     private static void UpdatePositionFromAltitude(Altitude alt, Machine machine)

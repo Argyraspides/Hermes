@@ -316,13 +316,11 @@ public static class MapUtils
 
     public static Vector3 LatLonToCartesian(double lat, double lon)
     {
-        return new Vector3(
-            (float)(SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * Math.Cos(lon) *
-                    Math.Sin(lat)),
-            (float)(SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM * Math.Cos(lat)),
-            (float)(SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * Math.Sin(lon) *
-                    Math.Sin(lat))
-        );
+        Vector3 cartesianNormalized = LatLonToCartesianNormalized(lat, lon);
+        cartesianNormalized.X *= SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
+        cartesianNormalized.Z *= SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM;
+        cartesianNormalized.Y *= SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
+        return cartesianNormalized;
     }
 
     public static (double, double) GetPlanetSemiMajorAxis(PlanetShapeType planetType)
