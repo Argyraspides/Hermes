@@ -57,19 +57,11 @@ public partial class PlanetOrbitalCamera : Camera3D
     // DisplayLat and DisplayLon are offset to show the user the lat/lon position
     // in a standard format
     private double m_currentLat = 0.0d;
-    public double DisplayLat
-    {
-        get { return m_currentLat; }
-    }
-
     public double Lat
     { get { return m_currentLat; } }
 
 
     private double m_currentLon = 0.0d;
-    public double DisplayLon
-    { get { return m_currentLon; } }
-
     public double Lon
     { get { return m_currentLon; } }
 
@@ -100,7 +92,7 @@ public partial class PlanetOrbitalCamera : Camera3D
     {
         // Let everyone who is interested know our initial camera position
         // after everyone has loaded into the scene tree
-        EmitSignal(SignalName.OrbitalCameraLatLonChanged, DisplayLat, DisplayLon);
+        EmitSignal(SignalName.OrbitalCameraLatLonChanged, Lat, Lon);
         EmitSignal(SignalName.OrbitalCameraAltChanged, CurrentAltitude);
     }
 
@@ -113,14 +105,14 @@ public partial class PlanetOrbitalCamera : Camera3D
         m_initialAltitudeMultiplier = 3.0;
 
         m_cameraPanSpeedMultiplier = new Vector2(
-            0.00175f,
-            0.00175f
+            0.0175f,
+            0.0175f
         );
         DeterminePanSpeed();
 
         m_cameraZoomSpeedMultiplier = new Vector2(
-            50.0f,
-            50.0f).Length();
+            5000.0f,
+            5000.0f).Length();
         DetermineZoomSpeed();
 
         m_poleThreshold = 0.15d;
@@ -162,7 +154,7 @@ public partial class PlanetOrbitalCamera : Camera3D
         PositionCamera();
         DeterminePanSpeed();
 
-        EmitSignal(SignalName.OrbitalCameraLatLonChanged, DisplayLat, DisplayLon);
+        EmitSignal(SignalName.OrbitalCameraLatLonChanged, Lat, Lon);
     }
 
     private void HandleCameraZooming(InputEventMouseButton mouseEvent)
@@ -189,7 +181,7 @@ public partial class PlanetOrbitalCamera : Camera3D
         }
 
         // TODO::ARGYRASPIDES() { Right now map utils assumes this function is talking about the earth }
-        int latTile = MapUtils.LatitudeToTileCoordinateMercator(DisplayLat, CurrentZoomLevel);
+        int latTile = MapUtils.LatitudeToTileCoordinateMercator(Lat, CurrentZoomLevel);
         double latRange = MapUtils.TileToLatRange(latTile, CurrentZoomLevel);
         double lonRange = MapUtils.TileToLonRange(CurrentZoomLevel);
 
@@ -210,7 +202,7 @@ public partial class PlanetOrbitalCamera : Camera3D
             CurrentZoomLevel = 1;
         }
 
-        int latTile = MapUtils.LatitudeToTileCoordinateMercator(DisplayLat, CurrentZoomLevel);
+        int latTile = MapUtils.LatitudeToTileCoordinateMercator(Lat, CurrentZoomLevel);
         double latRange = MapUtils.TileToLatRange(latTile, CurrentZoomLevel);
         double lonRange = MapUtils.TileToLonRange(CurrentZoomLevel);
 
@@ -237,7 +229,7 @@ public partial class PlanetOrbitalCamera : Camera3D
         (double planetSemiMajorAxis, double planetSemiMinorAxis) = MapUtils.GetPlanetSemiMajorAxis(planetType);
         m_planetSemiMajorAxis = planetSemiMajorAxis;
         m_planetSemiMinorAxis = planetSemiMinorAxis;
-        m_minCameraAltitude = planetSemiMajorAxis * m_minAltitudeMultiplier;
+        m_minCameraAltitude = 5;
         m_maxCameraAltitude = planetSemiMajorAxis * m_maxAltitudeMultiplier;
         m_initialCameraAltitude = planetSemiMajorAxis * m_initialAltitudeMultiplier;
     }
