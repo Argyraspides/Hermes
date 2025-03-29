@@ -285,42 +285,94 @@ public static class MapUtils
     /// <summary>
     /// Converts latitude and longitude from radians to the Earth-Centered, Earth-Fixed (ECEF)
     /// coordinate system, which is a Cartesian system centered at the Earth's center of mass.
-    /// Returns value as kilometers. Takes the Earth as a WGS84 ellipsoid.
+    /// Returns value as normalized kilometers. Takes the Earth as a WGS84 ellipsoid. The input
+    /// latitude should be in the range -π/2 to π/2, and the longitude -π to π.
+    /// Null island at geodetic latitude and longitude of (0,0) lies on the +ve x-axis.
     /// </summary>
     public static Vector3 LatLonToCartesianNormalized(double lat, double lon)
     {
-        // Calculate the radius of the parallel (distance from the Earth's axis of rotation)
-        // at the given latitude. This accounts for the Earth's ellipsoidal shape.
-        double N = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM / Math.Sqrt(1.0 -
-            (SolarSystemConstants.EARTH_ECCENTRICITY_SQUARED *
-             Math.Pow(Math.Sin(lat), 2)));
+        lat -= Math.PI / 2.0d;
+        lon += Math.PI;
 
-        // X coordinate: distance from the Earth's axis (prime meridian)
-        double x = N * Math.Cos(lat) * Math.Cos(lon);
+        double a = 1;
+        double b = 1;
+        double c =
+            SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM /
+            SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
 
-        // Y coordinate: distance from the Earth's axis (90 degrees east)
-        double y = N * Math.Cos(lat) * Math.Sin(lon);
+        double zCoo = a * Math.Sin(lat) * Math.Cos(lon);
+        double xCoo = b * Math.Sin(lat) * Math.Sin(lon);
+        double yCoo = c * Math.Cos(lat);
 
-        // Z coordinate: distance from the equatorial plane
-        // Note: We multiply by (1-e²) to account for the polar flattening
-        double z = N * (1.0 - SolarSystemConstants.EARTH_ECCENTRICITY_SQUARED) * Math.Sin(lat);
-
-        // Convert to Godot's coordinate system
-        // Godot's default: Y is up, X is right, Z is forward
         return new Vector3(
-            (float)(x / SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM), // Normalize by dividing by semi-major axis
-            (float)(z / SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM), // Y is up in Godot
-            (float)(y / SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM) // Swap Y and Z for Godot's coordinate system
+            (float)xCoo,
+            (float)yCoo,
+            (float)zCoo
         );
     }
 
     public static Vector3 LatLonToCartesian(double lat, double lon)
     {
-        Vector3 cartesianNormalized = LatLonToCartesianNormalized(lat, lon);
-        cartesianNormalized.X *= SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
-        cartesianNormalized.Z *= SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM;
-        cartesianNormalized.Y *= SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
-        return cartesianNormalized;
+        lat -= Math.PI / 2.0;
+        lon += Math.PI;
+
+        double a = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
+        double b = a;
+        double c = SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM;
+
+        double zCoo = a * Math.Sin(lat) * Math.Cos(lon);
+        double xCoo = b * Math.Sin(lat) * Math.Sin(lon);
+        double yCoo = c * Math.Cos(lat);
+
+        return new Vector3(
+            (float)xCoo,
+            (float)yCoo,
+            (float)zCoo
+        );
+    }
+
+    public static double LatLonToCartesianX(double lat, double lon)
+    {
+        lat -= Math.PI / 2.0;
+        lon += Math.PI;
+        return Math.Sin(lat) * Math.Sin(lon);
+    }
+
+    public static double LatLonToCartesianY(double lat)
+    {
+        lat -= Math.PI / 2.0;
+        double minorToMajorRatio = SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM /
+                                   SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
+        return minorToMajorRatio * Math.Cos(lat);
+    }
+
+    public static double LatLonToCartesianZ(double lat, double lon)
+    {
+        lat -= Math.PI / 2.0;
+        lon += Math.PI;
+        return Math.Sin(lat) * Math.Cos(lon);
+    }
+    public static Vector3 LatLonToCartesian(double lat, double lon, double alt)
+    {
+        lat -= Math.PI / 2.0;
+        lon += Math.PI;
+
+        double equitorialAltScalar = 1.0d + (alt / SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM);
+        double polarAltScalar = 1.0d + (alt / SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM);
+
+        double a = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * equitorialAltScalar;
+        double b = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * equitorialAltScalar;
+        double c = SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM * polarAltScalar;
+
+        double zCoo = a * Math.Sin(lat) * Math.Cos(lon);
+        double xCoo = b * Math.Sin(lat) * Math.Sin(lon);
+        double yCoo = c * Math.Cos(lat);
+
+        return new Vector3(
+            (float)xCoo,
+            (float)yCoo,
+            (float)zCoo
+        );
     }
 
     public static (double, double) GetPlanetSemiMajorAxis(PlanetShapeType planetType)

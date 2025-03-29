@@ -187,30 +187,12 @@ public partial class TerrainChunk : Node3D
             throw new ArgumentNullException("Cannot set position of a terrain chunk with a null map tile");
         }
 
-        Vector3 cartesianPos = MapUtils.LatLonToCartesianNormalized(MapTile.Latitude, MapTile.Longitude);
-
-        float latScale = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
-        float lonScale = SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM;
-
-        GlobalPosition = cartesianPos;
-
-        // TODO::ARGYRASPIDES() !!URGENT!! { Okay you should really fix this up. Coordinating
-        // positions in the world is gonna completely rely on this ... }
-        // TODO::ARGYRASPIDES() {
-        // - Just come up with a nice coordinate system and fucking stick to it. In this case lets just do like
-        // the center of the earth is (0,0,0), and (0,0) lat/lon is defined as null island. Be incredibly strict
-        // with this and follow it the ENTIRE WAY THROUGH. From:
-        //      - The moment that we generate a mesh in the wgs84 ellipsoid mesh generator
-        //      - To the moment we construct the earths surface in the terrain quad tree
-        //      - Go through all the map utils library shit and document their exact inputs and ranges for lat/lon
-        //      - Ensure the lat/lon to ECEF follows a very strict definition.
-        //}
-
-    Transform = Transform.Scaled(
-            new Vector3(
-                -latScale, // Negative as the shader outputs the image with east/west inverted
-                lonScale,
-                latScale
-            ));
+        GlobalPosition = MapUtils.LatLonToCartesianNormalized(MapTile.Latitude, MapTile.Longitude);
+        Transform = Transform.Scaled(
+                new Vector3(
+                    SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM,
+                    SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM,
+                    SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM
+                ));
     }
 }

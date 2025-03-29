@@ -36,17 +36,14 @@ public partial class PlanetOrbitalCamera : Camera3D
     [Export] public PlanetShapeType PlanetType { get; set; } = PlanetShapeType.WGS84_ELLIPSOID;
 
     // Camera distance parameters - set based on planet type
-    [Export] private double m_minCameraRadialDistance = 0.0d;
-    [Export] private double m_maxCameraRadialDistance = 0.0d;
-    [Export] private double m_initialCameraRadialDistance = 0.0d;
+    [Export] private double m_minCameraAltitude = 0.0d;
+    [Export] private double m_maxCameraAltitude = 0.0d;
+    [Export] private double m_initialCameraAltitude = 0.0d;
 
     // Multipliers for camera distances to ensure planet is in full view
-    [Export] private double m_minDistanceMultiplier = 1.0;
-    [Export] private double m_maxDistanceMultiplier = 10.0;
-    [Export] private double m_initialDistanceMultiplier = 3.0; // Good starting point for full planet view
-
-    // Current distances from planet center
-    [Export] private double m_currentDistance = 0.0d;
+    [Export] private double m_minAltitudeMultiplier = 1.0;
+    [Export] private double m_maxAltitudeMultiplier = 10.0;
+    [Export] private double m_initialAltitudeMultiplier = 3.0; // Good starting point for full planet view
 
     // Camera control settings
     [Export] private Vector2 m_cameraPanSpeedMultiplier = new Vector2(1,1);
@@ -61,19 +58,23 @@ public partial class PlanetOrbitalCamera : Camera3D
     // in a standard format
     private double m_currentLat = 0.0d;
     public double DisplayLat
-    { get { return m_currentLat + (Math.PI / 2.0); } }
+    {
+        get { return m_currentLat; }
+    }
 
-    public double TrueLat
+    public double Lat
     { get { return m_currentLat; } }
 
 
     private double m_currentLon = 0.0d;
     public double DisplayLon
-    { get { return -m_currentLon; } }
-    public double TrueLon
     { get { return m_currentLon; } }
 
-    public double CurrentAltitude { get; set; }
+    public double Lon
+    { get { return m_currentLon; } }
+
+    public double m_currentAltitude = 10000.0d;
+    public double CurrentAltitude { get { return m_currentAltitude; } }
 
     public int CurrentZoomLevel = 0;
 
@@ -86,12 +87,11 @@ public partial class PlanetOrbitalCamera : Camera3D
         InitializeExportedFields();
         SetPlanetParameters(PlanetType);
 
-        m_currentDistance = m_planetSemiMajorAxis * m_initialDistanceMultiplier;
+        m_currentAltitude = m_planetSemiMajorAxis * m_initialAltitudeMultiplier;
         m_currentLon = 0.0d;
-        m_currentLat = -Math.PI / 2.0;
+        m_currentLat = 0.0d;
 
         PositionCamera();
-        DetermineCameraAltitude();
 
         GetTree().Root.Ready += OnSceneTreeReady;
     }
@@ -108,9 +108,9 @@ public partial class PlanetOrbitalCamera : Camera3D
     {
         PlanetType = PlanetShapeType.WGS84_ELLIPSOID;
 
-        m_minDistanceMultiplier = 1.0;
-        m_maxDistanceMultiplier = 10.0;
-        m_initialDistanceMultiplier = 3.0;
+        m_minAltitudeMultiplier = 1.0;
+        m_maxAltitudeMultiplier = 10.0;
+        m_initialAltitudeMultiplier = 3.0;
 
         m_cameraPanSpeedMultiplier = new Vector2(
             0.00175f,
@@ -124,8 +124,6 @@ public partial class PlanetOrbitalCamera : Camera3D
         DetermineZoomSpeed();
 
         m_poleThreshold = 0.15d;
-        m_currentLat = 0.0d;
-        m_currentLon = 0.0d;
     }
 
     public override void _Input(InputEvent @event)
@@ -151,12 +149,15 @@ public partial class PlanetOrbitalCamera : Camera3D
 
         // Prevent flipping the camera over the poles
         double targetLat = (m_currentLat + dragVector.Y) % Math.PI;
-        if (targetLat < -m_poleThreshold && targetLat > (-Math.PI + m_poleThreshold))
+        double northPoleThresh = (Math.PI / 2.0d) - m_poleThreshold;
+        double southPoleThresh = -northPoleThresh;
+
+        if (targetLat < northPoleThresh && targetLat > southPoleThresh)
         {
             m_currentLat = targetLat;
         }
 
-        m_currentLon = (m_currentLon + dragVector.X) % (Math.PI * 2);
+        m_currentLon = (m_currentLon - dragVector.X) % (Math.PI * 2);
 
         PositionCamera();
         DeterminePanSpeed();
@@ -171,10 +172,9 @@ public partial class PlanetOrbitalCamera : Camera3D
         if (u || d)
         {
             DetermineZoomSpeed();
-            m_currentDistance += u ? -m_cameraZoomSpeed : m_cameraZoomSpeed;
+            m_currentAltitude += u ? -m_cameraZoomSpeed : m_cameraZoomSpeed;
             PositionCamera();
             EmitSignal(SignalName.OrbitalCameraAltChanged, CurrentAltitude);
-            DetermineCameraAltitude();
         }
     }
 
@@ -224,36 +224,11 @@ public partial class PlanetOrbitalCamera : Camera3D
             ) * m_cameraPanSpeedMultiplier;
     }
 
-    private void DetermineCameraAltitude()
-    {
-        // TODO::ARGYRASPIDES() { Validate that this is the actual, true altitude above the current point on the planet's surface.
-        // The numbers appear correct but they're ever so slightly off from Google Earth's measurements, though I can't be sure
-
-        // Point on the planets surface above our current lat/lon point
-        // TODO::ARGYRASPIDES() { The map utils function below assumes the dimensions of the earth. Change soon! }
-        Vector3 surfacePoint = MapUtils.LatLonToCartesian(m_currentLat, m_currentLon);
-        CurrentAltitude = surfacePoint.DistanceTo(Position);
-    }
-
     private void PositionCamera()
     {
-        // Points on ellipsoid (remember Godot has 'y' as up and 'z' perpendicular to 'x', so the 'y' and 'z' equations are swapped here)
-        // 'a', 'b', and 'c' are semi-major/minor axes. In our case we always orient the planets so that their axis of rotation is
-        // on the +ve y-axis, 'a' and 'b' are therefore the semi-major axes, and 'c' is the semi-minor axis
-        // x = a cos(u) sin(v)
-        // y = c cos(v)
-        // z = b sin(u) sin(v)
-
-        m_currentDistance = Math.Clamp(m_currentDistance, m_minCameraRadialDistance, m_maxCameraRadialDistance);
-
-        Position = new Vector3(
-            (float)(m_currentDistance * Math.Cos(m_currentLon) * Math.Sin(m_currentLat)),
-            (float)(m_currentDistance * Math.Cos(m_currentLat)),
-            (float)(m_currentDistance * Math.Sin(m_currentLon) * Math.Sin(m_currentLat))
-        );
-
+        m_currentAltitude = Math.Clamp(m_currentAltitude, m_minCameraAltitude, m_maxCameraAltitude);
+        Position = MapUtils.LatLonToCartesian(m_currentLat, m_currentLon, m_currentAltitude);
         LookAt(Vector3.Zero, Vector3.Up);
-
     }
 
     // Sets camera parameters based on the planet type
@@ -262,8 +237,8 @@ public partial class PlanetOrbitalCamera : Camera3D
         (double planetSemiMajorAxis, double planetSemiMinorAxis) = MapUtils.GetPlanetSemiMajorAxis(planetType);
         m_planetSemiMajorAxis = planetSemiMajorAxis;
         m_planetSemiMinorAxis = planetSemiMinorAxis;
-        m_minCameraRadialDistance = planetSemiMajorAxis * m_minDistanceMultiplier;
-        m_maxCameraRadialDistance = planetSemiMajorAxis * m_maxDistanceMultiplier;
-        m_initialCameraRadialDistance = planetSemiMajorAxis * m_initialDistanceMultiplier;
+        m_minCameraAltitude = planetSemiMajorAxis * m_minAltitudeMultiplier;
+        m_maxCameraAltitude = planetSemiMajorAxis * m_maxAltitudeMultiplier;
+        m_initialCameraAltitude = planetSemiMajorAxis * m_initialAltitudeMultiplier;
     }
 }
