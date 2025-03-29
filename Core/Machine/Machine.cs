@@ -18,6 +18,8 @@
 */
 
 
+using Hermes.Common.Map.Utils;
+
 namespace Hermes.Core.Machine;
 
 
