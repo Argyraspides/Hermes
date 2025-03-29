@@ -35,6 +35,7 @@ using Hermes.Common.Planet;
 public static class MapUtils
 {
     public const double PI = Math.PI;
+    public const double TWO_PI = PI * 2.0;
 
     /// <summary>
     /// These aren't necessarily a universal constant. You can stop the Web Mercator projection at
@@ -53,8 +54,6 @@ public static class MapUtils
 
     public const double RADIANS_TO_DEGREES = 180.0 / PI;
     public const double DEGREES_TO_RADIANS = PI / 180.0;
-
-    public const double TWO_PI = PI * 2.0;
 
     /// <summary>
     /// Converts line of latitude (radians) to a latitude tile coordinate (y axis) on the Mercator projection,
@@ -100,12 +99,10 @@ public static class MapUtils
     /// </summary>
     public static int LongitudeToTileCoordinateMercator(double lon, int zoom)
     {
-        double lonDeg = lon * RADIANS_TO_DEGREES;
-
         int tilesPerSide = 1 << zoom;
 
-        double numeratorExpr = lonDeg + 180.0;
-        double denominatorExpr = 360.0;
+        double numeratorExpr = lon + PI;
+        double denominatorExpr = TWO_PI;
 
         double divisionExpr = numeratorExpr / denominatorExpr;
 
@@ -277,7 +274,7 @@ public static class MapUtils
     /// </summary>
     public static double TileToLonRange(int zoom)
     {
-        // The full 360° of longitude is divided evenly among 2^zoom tiles.
+        // The full 360° (2π) of longitude is divided evenly among 2^zoom tiles.
         return TWO_PI / (1 << zoom);
     }
 
