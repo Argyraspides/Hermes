@@ -283,12 +283,21 @@ public static class MapUtils
 
 
     /// <summary>
-    /// Converts latitude and longitude from radians to the Earth-Centered, Earth-Fixed (ECEF)
-    /// coordinate system, which is a Cartesian system centered at the Earth's center of mass.
-    /// Returns value as normalized kilometers. Takes the Earth as a WGS84 ellipsoid. The input
-    /// latitude should be in the range -π/2 to π/2, and the longitude -π to π.
-    /// Null island at geodetic latitude and longitude of (0,0) lies on the +ve x-axis.
+    /// Converts latitude and longitude from radians to a normalized Cartesian coordinate
+    /// in a Earth-Centered, Earth-Fixed (ECEF) system based on the WGS84 ellipsoid.
+    ///
+    /// The function returns coordinates normalized to the Earth's semi-major axis (equatorial radius),
+    /// which is assigned a length of 1.0, with the semi-minor axis (polar radius) scaled proportionally.
+    ///
+    /// Input assumptions:
+    /// - Latitude range: [-π/2, π/2] (South Pole to North Pole)
+    /// - Longitude range: [-π, π] (180°W to 180°E)
+    /// - Null island (0,0) lies on the +ve Z-axis in the Godot coordinate system
+    /// - Increasing longitude corresponds to eastward movement
     /// </summary>
+    /// <param name="lat">Latitude in radians, range [-π/2, π/2]</param>
+    /// <param name="lon">Longitude in radians, range [-π, π]</param>
+    /// <returns>Normalized Cartesian coordinates as a Vector3</returns>
     public static Vector3 LatLonToCartesianNormalized(double lat, double lon)
     {
         lat -= Math.PI / 2.0d;
@@ -311,6 +320,19 @@ public static class MapUtils
         );
     }
 
+    /// <summary>
+    /// Converts latitude and longitude from radians to actual Cartesian coordinates
+    /// in kilometers in a Earth-Centered, Earth-Fixed (ECEF) system based on the WGS84 ellipsoid.
+    ///
+    /// Input assumptions:
+    /// - Latitude range: [-π/2, π/2] (South Pole to North Pole)
+    /// - Longitude range: [-π, π] (180°W to 180°E)
+    /// - Null island (0,0) lies on the +ve Z-axis in the Godot coordinate system
+    /// - Increasing longitude corresponds to eastward movement
+    /// </summary>
+    /// <param name="lat">Latitude in radians, range [-π/2, π/2]</param>
+    /// <param name="lon">Longitude in radians, range [-π, π]</param>
+    /// <returns>Cartesian coordinates in kilometers as a Vector3</returns>
     public static Vector3 LatLonToCartesian(double lat, double lon)
     {
         lat -= Math.PI / 2.0;
@@ -331,6 +353,21 @@ public static class MapUtils
         );
     }
 
+    /// <summary>
+    /// Calculates the normalized X coordinate for a point on the WGS84 ellipsoid
+    /// at the given latitude and longitude.
+    ///
+    /// The X axis points eastward at equator-prime meridian intersection.
+    /// The value is normalized to make the major axis (equatorial radius) of length 1.0.
+    ///
+    /// Input assumptions:
+    /// - Latitude range: [-π/2, π/2] (South Pole to North Pole)
+    /// - Longitude range: [-π, π] (180°W to 180°E)
+    /// - Null island (0,0) lies on the +ve Z-axis in the Godot coordinate system
+    /// </summary>
+    /// <param name="lat">Latitude in radians, range [-π/2, π/2]</param>
+    /// <param name="lon">Longitude in radians, range [-π, π]</param>
+    /// <returns>Normalized X coordinate</returns>
     public static double LatLonToCartesianX(double lat, double lon)
     {
         lat -= Math.PI / 2.0;
@@ -338,6 +375,19 @@ public static class MapUtils
         return Math.Sin(lat) * Math.Sin(lon);
     }
 
+    /// <summary>
+    /// Calculates the normalized Y coordinate for a point on the WGS84 ellipsoid
+    /// at the given latitude.
+    ///
+    /// The Y axis points toward the North Pole.
+    /// The value is scaled by the ratio of semi-minor to semi-major axis to accurately
+    /// represent Earth's oblate spheroid shape, with the major axis normalized to length 1.0.
+    ///
+    /// Input assumptions:
+    /// - Latitude range: [-π/2, π/2] (South Pole to North Pole)
+    /// </summary>
+    /// <param name="lat">Latitude in radians, range [-π/2, π/2]</param>
+    /// <returns>Normalized Y coordinate</returns>
     public static double LatLonToCartesianY(double lat)
     {
         lat -= Math.PI / 2.0;
@@ -346,12 +396,46 @@ public static class MapUtils
         return minorToMajorRatio * Math.Cos(lat);
     }
 
+    /// <summary>
+    /// Calculates the normalized Z coordinate for a point on the WGS84 ellipsoid
+    /// at the given latitude and longitude.
+    ///
+    /// The Z axis points toward the prime meridian at the equator (null island).
+    /// The value is normalized to make the major axis (equatorial radius) of length 1.0.
+    ///
+    /// Input assumptions:
+    /// - Latitude range: [-π/2, π/2] (South Pole to North Pole)
+    /// - Longitude range: [-π, π] (180°W to 180°E)
+    /// - Null island (0,0) lies on the +ve Z-axis in the Godot coordinate system
+    /// </summary>
+    /// <param name="lat">Latitude in radians, range [-π/2, π/2]</param>
+    /// <param name="lon">Longitude in radians, range [-π, π]</param>
+    /// <returns>Normalized Z coordinate</returns>
     public static double LatLonToCartesianZ(double lat, double lon)
     {
         lat -= Math.PI / 2.0;
         lon += Math.PI;
         return Math.Sin(lat) * Math.Cos(lon);
     }
+
+    /// <summary>
+    /// Converts latitude, longitude, and altitude to actual Cartesian coordinates
+    /// in kilometers in a Earth-Centered, Earth-Fixed (ECEF) system based on the WGS84 ellipsoid.
+    ///
+    /// The altitude is measured in kilometers from the ellipsoid surface, with positive values
+    /// representing points above the surface and negative values representing points below it.
+    ///
+    /// Input assumptions:
+    /// - Latitude range: [-π/2, π/2] (South Pole to North Pole)
+    /// - Longitude range: [-π, π] (180°W to 180°E)
+    /// - Altitude in kilometers
+    /// - Null island (0,0) lies on the +ve Z-axis in the Godot coordinate system
+    /// - Increasing longitude corresponds to eastward movement
+    /// </summary>
+    /// <param name="lat">Latitude in radians, range [-π/2, π/2]</param>
+    /// <param name="lon">Longitude in radians, range [-π, π]</param>
+    /// <param name="alt">Altitude in kilometers from the WGS84 ellipsoid surface</param>
+    /// <returns>Cartesian coordinates in kilometers as a Vector3</returns>
     public static Vector3 LatLonToCartesian(double lat, double lon, double alt)
     {
         lat -= Math.PI / 2.0;
