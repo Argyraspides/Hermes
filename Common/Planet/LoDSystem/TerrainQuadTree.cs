@@ -279,17 +279,16 @@ public sealed partial class TerrainQuadTree : Node3D
         {
             ArrayMesh meshSegment = GenerateMeshForNode(node);
             node.Chunk.MeshInstance = new MeshInstance3D { Mesh = meshSegment };
-            // AddChild(node);
 
-            node.Chunk.SetPositionAndSize(); // Set the position of the chunk itself
-            node.SetPosition(node.Chunk.Position); // Set the position of the node (copy chunk position)
+            node.Chunk.SetPositionAndSize();        // Set the position of the chunk itself
+            node.Position = node.Chunk.Position;    // Set the position of the node (copy chunk position)
 
             node.Chunk.Name = GenerateChunkName(node);
 
             node.Chunk.Load();
         }
 
-        node.IsVisible = true;
+        node.IsDeepest = true;
         node.Chunk.Visible = true;
     }
 
@@ -336,7 +335,7 @@ public sealed partial class TerrainQuadTree : Node3D
     /// </summary>
     /// <param name="node">Node to be split</param>
     /// <exception cref="ArgumentNullException">Thrown if the TerrainQuadTreeNode is not valid</exception>
-    private async void SplitNode(TerrainQuadTreeNode node)
+    private void SplitNode(TerrainQuadTreeNode node)
     {
         if (!GodotUtils.IsValid(node))
         {
@@ -354,15 +353,17 @@ public sealed partial class TerrainQuadTree : Node3D
 
         foreach (var childNode in node.ChildNodes)
         {
-            childNode.IsVisible = true;
+            childNode.IsDeepest = true;
             childNode.Chunk.Visible = true;
             childNode.Chunk.TerrainChunkMesh.SortingOffset = CHUNK_SORT_OFFSET * childNode.Depth;
         }
 
         node.Chunk.TerrainChunkMesh.SortingOffset = -CHUNK_SORT_OFFSET * node.Depth;
-        // TODO::ARGYRASPIDES() { This is confusing. "IsVisible" is just a flag for the quadtree updater,
-        // but for our seams solution we are actually keeping visibility on. Rename? }
-        node.IsVisible = false;
+        // Don't toggle parent visibility off to prevent gaps between meshes of different
+        // zoom levels
+        // TODO::ARGYRASPIDES() { Find a way to make sure that only the parent of the deepest node remains
+        // visible, and not every parent node up until the deepest node }
+        node.IsDeepest = false;
     }
 
     private void MergeNodeChildren(TerrainQuadTreeNode parent)
@@ -374,14 +375,14 @@ public sealed partial class TerrainQuadTree : Node3D
 
         parent.Chunk.TerrainChunkMesh.SortingOffset = CHUNK_SORT_OFFSET * parent.Depth;
         parent.Chunk.Visible = true;
-        parent.IsVisible = true;
+        parent.IsDeepest = true;
 
         foreach (var childNode in parent.ChildNodes)
         {
             if (GodotUtils.IsValid(childNode))
             {
                 childNode.Chunk.Visible = false;
-                childNode.IsVisible = false;
+                childNode.IsDeepest = false;
                 childNode.Chunk.TerrainChunkMesh.SortingOffset = -CHUNK_SORT_OFFSET * childNode.Depth;
             }
         }

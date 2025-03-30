@@ -185,7 +185,7 @@ public partial class TerrainQuadTreeUpdater : Node
         if (!GodotUtils.IsValid(node)) return;
 
         // Splitting happens top-down, so we do it first prior to recursing down further
-        if (node.IsVisible && ShouldSplit(node))
+        if (node.IsDeepest && ShouldSplit(node))
         {
             m_terrainQuadTree.SplitQueueNodes.Enqueue(node);
             return;
@@ -210,6 +210,9 @@ public partial class TerrainQuadTreeUpdater : Node
                m_terrainQuadTree.MaxNodesCleanupThresholdPercent;
     }
 
+    // TODO::ARGYRASPIDES() { Make these not just distance based but also based on what is visible on the screen.
+    // Sometimes the center of the screen is more detailed than the rest and it can look jarring if the map tiles
+    // are from completely different times }
     private bool ShouldSplit(TerrainQuadTreeNode node)
     {
         if (!GodotUtils.IsValid(node)) throw new ArgumentNullException(nameof(node), "node cannot be null");
@@ -293,7 +296,7 @@ public partial class TerrainQuadTreeUpdater : Node
         if (!GodotUtils.IsValid(parentNode)) return;
 
         // We only want to cull nodes BELOW the ones that are currently visible in the scene
-        if (parentNode.IsVisible)
+        if (parentNode.IsDeepest)
         {
             // Cull all sub-trees below the parent
             RemoveSubQuadTreeThreadSafe(parentNode);
