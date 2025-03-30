@@ -91,7 +91,7 @@ public sealed partial class TerrainQuadTree : Node3D
 
     // Maximum amount of split and merge operations allowed per frame in the scene tree.
     // This is to spread the workload of splitting/merging over multiple frames
-    private const int MaxQueueUpdatesPerFrame = 2;
+    private const int MaxQueueUpdatesPerFrame = 6;
 
     // To prevent hysterisis and oscillation between merging/splitting at fine boundaries, we multiply the merge
     // thresholds to be greater than the split thresholds
