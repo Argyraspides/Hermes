@@ -357,10 +357,10 @@ public sealed partial class TerrainQuadTree : Node3D
         {
             childNode.IsVisible = true;
             childNode.Chunk.Visible = true;
-            childNode.Chunk.MeshInstance3D.SortingOffset = CHUNK_SORT_OFFSET * childNode.Depth;
+            childNode.Chunk.TerrainChunkMesh.SortingOffset = CHUNK_SORT_OFFSET * childNode.Depth;
         }
 
-        node.Chunk.MeshInstance3D.SortingOffset = -CHUNK_SORT_OFFSET * node.Depth;
+        node.Chunk.TerrainChunkMesh.SortingOffset = -CHUNK_SORT_OFFSET * node.Depth;
         node.IsVisible = false;
     }
 
@@ -373,7 +373,7 @@ public sealed partial class TerrainQuadTree : Node3D
     {
         if (!GodotUtils.IsValid(parent)) { return; }
 
-        parent.Chunk.MeshInstance3D.SortingOffset = CHUNK_SORT_OFFSET * parent.Depth;
+        parent.Chunk.TerrainChunkMesh.SortingOffset = CHUNK_SORT_OFFSET * parent.Depth;
         parent.Chunk.Visible = true;
         parent.IsVisible = true;
 
@@ -383,7 +383,7 @@ public sealed partial class TerrainQuadTree : Node3D
             {
                 childNode.Chunk.Visible = false;
                 childNode.IsVisible = false;
-                childNode.Chunk.MeshInstance3D.SortingOffset = -CHUNK_SORT_OFFSET * childNode.Depth;
+                childNode.Chunk.TerrainChunkMesh.SortingOffset = -CHUNK_SORT_OFFSET * childNode.Depth;
             }
         }
     }
