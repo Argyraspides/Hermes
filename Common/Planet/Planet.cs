@@ -26,7 +26,7 @@ public abstract partial class Planet : StaticBody3D
     /// <summary>
     /// For debugging purposes. Shows the wireframe of the planet's mesh
     /// </summary>
-    [Export] private bool m_showWireframe = false;
+    [Export] private bool m_showWireframe = true;
 
     private bool m_previousWireframeState = false;
 

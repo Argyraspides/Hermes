@@ -438,22 +438,22 @@ public static class MapUtils
         lat -= Math.PI / 2.0;
         lon += Math.PI;
 
-        double equitorialAltScalar = 1.0d + (alt / SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM);
-        double polarAltScalar = 1.0d + (alt / SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM);
-
-        double a = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * equitorialAltScalar;
-        double b = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * equitorialAltScalar;
-        double c = SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM * polarAltScalar;
+        double a = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
+        double b = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
+        double c = SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM;
 
         double zCoo = a * Math.Sin(lat) * Math.Cos(lon);
         double xCoo = b * Math.Sin(lat) * Math.Sin(lon);
         double yCoo = c * Math.Cos(lat);
 
+        double dist = Math.Sqrt((xCoo * xCoo) + (yCoo * yCoo) + (zCoo * zCoo));
+        double altScalar = 1.0d + (alt / dist);
+
         return new Vector3(
             (float)xCoo,
             (float)yCoo,
             (float)zCoo
-        );
+        ) * (float)altScalar;
     }
 
     public static (double, double) GetPlanetSemiMajorAxis(PlanetShapeType planetType)
@@ -508,9 +508,8 @@ public static class MapUtils
         double sphereCircum
     )
     {
-        double latRange = (radius / sphereCircum) * TWO_PI;
-        double lonRange = (radius / sphereCircum) * TWO_PI;
-        return (latRange, lonRange);
+        double range = (radius / sphereCircum) * TWO_PI;
+        return (range, range);
     }
 
 

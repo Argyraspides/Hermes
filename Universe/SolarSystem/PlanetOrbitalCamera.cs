@@ -140,16 +140,21 @@ public partial class PlanetOrbitalCamera : Camera3D
         Vector2 dragVector = (dragEvent.ScreenRelative * m_cameraPanSpeed);
 
         // Prevent flipping the camera over the poles
-        double targetLat = (m_currentLat + dragVector.Y) % Math.PI;
+        double targetLat = m_currentLat + dragVector.Y;
+        targetLat = Math.Clamp(targetLat, -Math.PI / 2.0d, Math.PI / 2.0d);
+
         double northPoleThresh = (Math.PI / 2.0d) - m_poleThreshold;
         double southPoleThresh = -northPoleThresh;
+
 
         if (targetLat < northPoleThresh && targetLat > southPoleThresh)
         {
             m_currentLat = targetLat;
         }
 
-        m_currentLon = (m_currentLon - dragVector.X) % (Math.PI * 2);
+        m_currentLon -= dragVector.X;
+        m_currentLon = (m_currentLon < -Math.PI) ?  Math.PI : m_currentLon;
+        m_currentLon = (m_currentLon >  Math.PI) ? -Math.PI : m_currentLon;
 
         PositionCamera();
         DeterminePanSpeed();
@@ -229,7 +234,7 @@ public partial class PlanetOrbitalCamera : Camera3D
         (double planetSemiMajorAxis, double planetSemiMinorAxis) = MapUtils.GetPlanetSemiMajorAxis(planetType);
         m_planetSemiMajorAxis = planetSemiMajorAxis;
         m_planetSemiMinorAxis = planetSemiMinorAxis;
-        m_minCameraAltitude = 5;
+        m_minCameraAltitude = 0.2d;
         m_maxCameraAltitude = planetSemiMajorAxis * m_maxAltitudeMultiplier;
         m_initialCameraAltitude = planetSemiMajorAxis * m_initialAltitudeMultiplier;
     }

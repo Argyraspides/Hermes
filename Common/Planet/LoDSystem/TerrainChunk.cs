@@ -187,6 +187,7 @@ public partial class TerrainChunk : Node3D
             throw new ArgumentNullException("Cannot set position of a terrain chunk with a null map tile");
         }
 
+        // TODO::ARGYRASPIDES() { Change this up so it is planet independent! }
         GlobalPosition = MapUtils.LatLonToCartesianNormalized(MapTile.Latitude, MapTile.Longitude);
         Transform = Transform.Scaled(
                 new Vector3(
@@ -194,5 +195,8 @@ public partial class TerrainChunk : Node3D
                     SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM,
                     SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM
                 ));
+
+        // TODO::ARGYRASPIDE() { This is such a stupid solution ... we shouldn't need to do this. Fix it up ASAP! }
+        MeshInstance3D.Transform = MeshInstance3D.Transform.Scaled(new Vector3(1.003f, 1.003f, 1.003f));
     }
 }

@@ -50,7 +50,7 @@ using Hermes.Common.GodotUtils;
 /// and the cycle repeats.
 ///
 /// </summary>
-public sealed partial class TerrainQuadTree : Node
+public sealed partial class TerrainQuadTree : Node3D
 {
 
     // If we hit x% of the maximum allowed amount of nodes, we will begin culling unused nodes in the quadtree
@@ -65,10 +65,14 @@ public sealed partial class TerrainQuadTree : Node
     public const float MergeThresholdFactor = 1.15F;
 
     // Hard limit of allowed depth of the quadtree
-    public const int MaxDepthLimit = 23;
+    public const int MAX_DEPTH_LIMIT = 23;
 
     // Hard limit of minimum allowed depth of the quadtree
-    public const int MinDepthLimit = 1;
+    public const int MIN_DEPTH_LIMIT = 1;
+
+    // To prevent seams, we keep only the parent chunk of the current deepest visible.
+    // This is the offset used to determine the draw order (children should be drawn after parents)
+    public const float CHUNK_SORT_OFFSET = 10.0f;
 
     // TODO(Argyrsapides, 22/02/2025): Make this a configurable curve or something
     private readonly double[] m_baseAltitudeThresholds = new double[]
@@ -116,6 +120,11 @@ public sealed partial class TerrainQuadTree : Node
     // which is a copy of the camera's position updated from the TerrainQuadTree thread, so that it can
     // be accessed by the TerrainQuadTreeUpdater thread safely
     public Vector3 CameraPosition { get; private set; }
+    public double CameraAltitude { get; private set; }
+    public double CameraFov { get; private set; }
+    public int CameraZoomLevel { get; private set; }
+    public double CameraLat { get; private set; }
+    public double CameraLon { get; private set; }
 
     // Queue of nodes that should be split/merged as determined by the TerrainQuadTreeUpdater
     public ConcurrentQueue<TerrainQuadTreeNode> SplitQueueNodes { get; } = new ConcurrentQueue<TerrainQuadTreeNode>();
@@ -142,9 +151,9 @@ public sealed partial class TerrainQuadTree : Node
 
     private void ValidateConstructorArguments(int maxDepth, int minDepth, int maxNodes)
     {
-        if (maxDepth > MaxDepthLimit || maxDepth < MinDepthLimit)
+        if (maxDepth > MAX_DEPTH_LIMIT || maxDepth < MIN_DEPTH_LIMIT)
         {
-            throw new ArgumentException($"maxDepth must be between {MinDepthLimit} and {MaxDepthLimit}");
+            throw new ArgumentException($"maxDepth must be between {MIN_DEPTH_LIMIT} and {MAX_DEPTH_LIMIT}");
         }
 
         if (maxDepth < minDepth)
@@ -179,12 +188,18 @@ public sealed partial class TerrainQuadTree : Node
     public override void _Process(double delta)
     {
         CameraPosition = m_camera.Position;
+        CameraAltitude = m_camera.CurrentAltitude;
+        CameraFov = m_camera.Fov;
+        CameraLat = m_camera.Lat;
+        CameraLon = m_camera.Lon;
+
         for (int i = m_baseAltitudeThresholds.Length - 1; i > 1; i--)
         {
             if (m_baseAltitudeThresholds[i] < m_camera.CurrentAltitude  &&
                 m_baseAltitudeThresholds[i - 1] > m_camera.CurrentAltitude )
             {
                 m_camera.CurrentZoomLevel = i;
+                CameraZoomLevel = i;
                 break;
             }
         }
@@ -208,6 +223,7 @@ public sealed partial class TerrainQuadTree : Node
     private void ProcessSplitQueue()
     {
         int dequeuesProcessed = 0;
+
         while (SplitQueueNodes.TryDequeue(out TerrainQuadTreeNode node) &&
                dequeuesProcessed++ < MaxQueueUpdatesPerFrame)
         {
@@ -267,6 +283,7 @@ public sealed partial class TerrainQuadTree : Node
                 int latTileCoo = i / nodesPerSide;
                 int lonTileCoo = i % nodesPerSide;
                 TerrainQuadTreeNode n = CreateNode(latTileCoo, lonTileCoo, m_minDepth);
+                n.Name = $"TerrainQuadTreeNode_{i}";
                 RootNodes.Add(n);
                 nodeQueue.Enqueue(RootNodes[i]);
             }
@@ -299,6 +316,8 @@ public sealed partial class TerrainQuadTree : Node
         while (queue.Count > 0)
         {
             TerrainQuadTreeNode node = queue.Dequeue();
+
+            AddChild(node);
             InitializeTerrainNodeMesh(node);
         }
     }
@@ -338,9 +357,10 @@ public sealed partial class TerrainQuadTree : Node
         {
             childNode.IsVisible = true;
             childNode.Chunk.Visible = true;
+            childNode.Chunk.MeshInstance3D.SortingOffset = CHUNK_SORT_OFFSET * childNode.Depth;
         }
 
-        node.Chunk.Visible = false;
+        node.Chunk.MeshInstance3D.SortingOffset = -CHUNK_SORT_OFFSET * node.Depth;
         node.IsVisible = false;
     }
 
@@ -353,6 +373,7 @@ public sealed partial class TerrainQuadTree : Node
     {
         if (!GodotUtils.IsValid(parent)) { return; }
 
+        parent.Chunk.MeshInstance3D.SortingOffset = CHUNK_SORT_OFFSET * parent.Depth;
         parent.Chunk.Visible = true;
         parent.IsVisible = true;
 
@@ -362,6 +383,7 @@ public sealed partial class TerrainQuadTree : Node
             {
                 childNode.Chunk.Visible = false;
                 childNode.IsVisible = false;
+                childNode.Chunk.MeshInstance3D.SortingOffset = -CHUNK_SORT_OFFSET * childNode.Depth;
             }
         }
     }
@@ -387,7 +409,7 @@ public sealed partial class TerrainQuadTree : Node
         {
             ArrayMesh meshSegment = GenerateMeshForNode(node);
             node.Chunk.MeshInstance = new MeshInstance3D { Mesh = meshSegment };
-            AddChild(node);
+            // AddChild(node);
 
             node.Chunk.SetPositionAndSize(); // Set the position of the chunk itself
             node.SetPosition(node.Chunk.Position); // Set the position of the node (copy chunk position)
@@ -464,6 +486,7 @@ public sealed partial class TerrainQuadTree : Node
             (int childLatTileCoo, int childLonTileCoo) =
                 CalculateChildTileCoordinates(parentLatTileCoo, parentLonTileCoo, i);
             parentNode.ChildNodes[i] = CreateNode(childLatTileCoo, childLonTileCoo, childZoomLevel);
+            parentNode.AddChild(parentNode.ChildNodes[i]);
         }
     }
 
