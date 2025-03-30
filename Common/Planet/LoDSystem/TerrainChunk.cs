@@ -42,7 +42,7 @@ public partial class TerrainChunk : Node3D
     /// In general, if the mesh includes the poles of the planet,
     /// the mesh will be triangular. Otherwise, it will be a quadrilateral.
     /// </summary>
-    public MeshInstance3D MeshInstance3D { get; private set; }
+    public MeshInstance3D TerrainChunkMesh { get; private set; }
 
 
     /// <summary>
@@ -55,8 +55,8 @@ public partial class TerrainChunk : Node3D
 
     public MeshInstance3D MeshInstance
     {
-        get => MeshInstance3D;
-        set => MeshInstance3D = value;
+        get => TerrainChunkMesh;
+        set => TerrainChunkMesh = value;
     }
 
     /// <summary>
@@ -67,11 +67,11 @@ public partial class TerrainChunk : Node3D
     /// <param name="latRange">Latitude range covered in radians.</param>
     /// <param name="lonRange">Longitude range covered in radians.</param>
     /// <param name="zoomLevel">Map zoom level.</param>
-    /// <param name="meshInstance3D">3D mesh instance for the terrain.</param>
+    /// <param name="terrainChunkMesh">3D mesh instance for the terrain.</param>
     /// <param name="texture2D">Texture to be applied to the terrain.</param>
     public TerrainChunk(
         MapTile mapTile,
-        MeshInstance3D meshInstance3D = null,
+        MeshInstance3D terrainChunkMesh = null,
         ShaderMaterial shaderMaterial = null
     )
     {
@@ -91,7 +91,7 @@ public partial class TerrainChunk : Node3D
             throw new Exception("Cannot create a TerrainChunk as the map tile type is unknown");
         }
 
-        MeshInstance3D = meshInstance3D;
+        TerrainChunkMesh = terrainChunkMesh;
         ShaderMaterial = shaderMaterial;
     }
 
@@ -99,9 +99,9 @@ public partial class TerrainChunk : Node3D
     {
         try
         {
-            if (GodotUtils.IsValid(MeshInstance3D))
+            if (GodotUtils.IsValid(TerrainChunkMesh))
             {
-                AddChild(MeshInstance3D);
+                AddChild(TerrainChunkMesh);
                 await InitializeTerrainChunkAsync();
             }
             else
@@ -117,7 +117,7 @@ public partial class TerrainChunk : Node3D
 
     public void ToggleVisible(bool visible)
     {
-        MeshInstance3D.Visible = visible;
+        TerrainChunkMesh.Visible = visible;
     }
 
     /// <summary>
@@ -137,9 +137,9 @@ public partial class TerrainChunk : Node3D
             shaderMat.SetShaderParameter("tile_width", MapTile.Width);
             shaderMat.SetShaderParameter("tile_height", MapTile.Height);
 
-            if (GodotUtils.IsValid(MeshInstance3D))
+            if (GodotUtils.IsValid(TerrainChunkMesh))
             {
-                MeshInstance3D.MaterialOverride = shaderMat;
+                TerrainChunkMesh.MaterialOverride = shaderMat;
             }
             else
             {
@@ -150,9 +150,9 @@ public partial class TerrainChunk : Node3D
         {
             GD.PrintErr("Shader material path is null or empty! Using default shader.");
             var standardShader = new StandardMaterial3D();
-            if (GodotUtils.IsValid(MeshInstance3D))
+            if (GodotUtils.IsValid(TerrainChunkMesh))
             {
-                MeshInstance3D.MaterialOverride = standardShader;
+                TerrainChunkMesh.MaterialOverride = standardShader;
             }
             else
             {
@@ -187,18 +187,16 @@ public partial class TerrainChunk : Node3D
             throw new ArgumentNullException("Cannot set position of a terrain chunk with a null map tile");
         }
 
-        Vector3 cartesianPos = MapUtils.LatLonToCartesian(MapTile.Latitude, MapTile.Longitude);
-
-        float latScale = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
-        float lonScale = SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM;
-
-        GlobalPosition = cartesianPos;
-
+        // TODO::ARGYRASPIDES() { Change this up so it is planet independent! }
+        GlobalPosition = MapUtils.LatLonToCartesianNormalized(MapTile.Latitude, MapTile.Longitude);
         Transform = Transform.Scaled(
-            new Vector3(
-                -latScale, // Negative as the shader outputs the image with east/west inverted
-                lonScale,
-                latScale
-            ));
+                new Vector3(
+                    SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM,
+                    SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM,
+                    SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM
+                ));
+
+        // TODO::ARGYRASPIDE() { This is such a stupid solution ... we shouldn't need to do this. Fix it up ASAP! }
+        TerrainChunkMesh.Transform = TerrainChunkMesh.Transform.Scaled(new Vector3(1.003f, 1.003f, 1.003f));
     }
 }

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b42ypy1pprv7p"
-path="res://.godot/imported/JetIcon.png-bfdfc2fb424a73693dc58d9081105cfa.ctex"
+uid="uid://bd4n0evklccgu"
+path="res://.godot/imported/BoatIcon.png-8ac0070e68d4f36663c5ee3b31a487a1.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Vehicle/Assets/Images/JetIcon.png"
-dest_files=["res://.godot/imported/JetIcon.png-bfdfc2fb424a73693dc58d9081105cfa.ctex"]
+source_file="res://Core/Machine/Assets/Images/BoatIcon.png"
+dest_files=["res://.godot/imported/BoatIcon.png-8ac0070e68d4f36663c5ee3b31a487a1.ctex"]
 
 [params]
 

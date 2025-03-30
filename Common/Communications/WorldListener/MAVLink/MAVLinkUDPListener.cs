@@ -1,71 +1,96 @@
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using System.Threading.Tasks;
+using Godot;
 
 namespace Hermes.Common.Communications.WorldListener.MAVLink;
 
 // See: https://mavlink.io/en/guide/serialization.html
 public class MAVLinkUDPListener
 {
-    private Dictionary<IPEndPoint, UdpClient> udpClients;
+    private Dictionary<IPEndPoint, UdpClient> m_udpClients;
 
     // MAVLink.MAVLinkMessage is auto generated code. Ensure you've auto-generated the MAVLink headers
-    private LinkedList<global::MAVLink.MAVLinkMessage> messageQueue;
-    private int m_maxMessageBufferSize = 4096;
-    private object m_messageQueueLock = new object();
+    private ConcurrentQueue<global::MAVLink.MAVLinkMessage> m_messageQueue;
+    public event Action MAVLinkMessageReceived;
+
+    private int m_maxMessageBufferSize = 45;
 
     Thread m_udpListenerThread;
-    private volatile bool m_isListening;
+    private CancellationTokenSource m_cancellationTokenSource;
 
     public MAVLinkUDPListener(params IPEndPoint[] endPoints)
     {
-        udpClients = new Dictionary<IPEndPoint, UdpClient>();
+        m_udpClients = new Dictionary<IPEndPoint, UdpClient>();
 
         // MAVLink.MAVLinkMessage is auto generated code. Ensure you've auto-generated the MAVLink headers
-        messageQueue = new LinkedList<global::MAVLink.MAVLinkMessage>();
+        m_messageQueue = new ConcurrentQueue<global::MAVLink.MAVLinkMessage>();
+
+        m_cancellationTokenSource = new CancellationTokenSource();
 
         foreach (IPEndPoint endPoint in endPoints)
         {
-            udpClients.Add(endPoint, new UdpClient(endPoint));
+            m_udpClients.Add(endPoint, new UdpClient(endPoint));
         }
     }
 
     public void StartListeningThread()
     {
-        m_udpListenerThread = new Thread(StartListening);
-        m_isListening = true;
-        m_udpListenerThread.Start();
+        m_udpListenerThread = new Thread(StartListening) { IsBackground = true };
+        m_udpListenerThread.Start(m_cancellationTokenSource.Token);
     }
 
-    private async void StartListening()
+    // TODO::ARGYRASPIDES() { See if you can offload this to the MAVLink library. OK for now. }
+    public bool IsMAVLinkPacket(byte[] rawPacket)
     {
-        while (m_isListening)
+        if (rawPacket == null || rawPacket.Length < 1)
         {
-            foreach (var udpClient in udpClients.Values)
+            return false;
+        }
+        return rawPacket[0] == global::MAVLink.MAVLINK_STX || rawPacket[0] == global::MAVLink.MAVLINK_STX_MAVLINK1;
+    }
+
+    private async void StartListening(object pCancellationToken)
+    {
+        CancellationToken cancellationToken = (CancellationToken)pCancellationToken;
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            foreach (var udpClient in m_udpClients.Values)
             {
-                var dat = await udpClient.ReceiveAsync();
-
-                lock (m_messageQueueLock)
+                UdpReceiveResult dat;
+                try
                 {
-                    if (messageQueue.Count >= m_maxMessageBufferSize)
-                    {
-                        messageQueue.RemoveFirst();
-                    }
-
-                    messageQueue.AddLast(
-                        new LinkedListNode<global::MAVLink.MAVLinkMessage>(
-                            new global::MAVLink.MAVLinkMessage(dat.Buffer)));
+                    dat = await udpClient.ReceiveAsync(cancellationToken);
                 }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
+
+                if (!IsMAVLinkPacket(dat.Buffer))
+                {
+                    continue;
+                }
+
+                if (m_messageQueue.Count >= m_maxMessageBufferSize)
+                {
+                    m_messageQueue.TryDequeue(out _);
+                }
+                m_messageQueue.Enqueue(new global::MAVLink.MAVLinkMessage(dat.Buffer));
+                MAVLinkMessageReceived?.Invoke();
             }
         }
     }
 
     public void StopListening()
     {
-        m_isListening = false;
-        foreach (var udpClient in udpClients.Values)
+        m_cancellationTokenSource.Cancel();
+
+        foreach (var udpClient in m_udpClients.Values)
         {
             udpClient.Close();
             udpClient.Dispose();
@@ -77,15 +102,7 @@ public class MAVLinkUDPListener
     public global::MAVLink.MAVLinkMessage GetNextMessage()
     {
         global::MAVLink.MAVLinkMessage msg = null;
-        lock (m_messageQueueLock)
-        {
-            if (messageQueue.Count > 0)
-            {
-                msg = messageQueue.First.Value;
-                messageQueue.RemoveFirst();
-            }
-        }
-
+        m_messageQueue.TryDequeue(out msg);
         return msg;
     }
 }

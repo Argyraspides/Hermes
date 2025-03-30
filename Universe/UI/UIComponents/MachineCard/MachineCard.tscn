@@ -1,0 +1,69 @@
+[gd_scene load_steps=4 format=3 uid="uid://boeeonhq3s5og"]
+
+[ext_resource type="Script" path="res://Universe/UI/UIComponents/MachineCard/MachineCard.cs" id="1_kr3c1"]
+[ext_resource type="PackedScene" uid="uid://caexyoqtj5mgq" path="res://Universe/UI/UIComponents/CompassDisplay/CompassDisplay.tscn" id="1_kvnjl"]
+[ext_resource type="Texture2D" uid="uid://c45q553312b50" path="res://Common/Assets/QuestionMark.png" id="2_khkcl"]
+
+[node name="MachineCard" type="Control"]
+custom_minimum_size = Vector2(500, 225)
+layout_mode = 3
+anchor_right = 0.3
+anchor_bottom = 0.2
+offset_right = 0.47998
+offset_bottom = -0.12001
+script = ExtResource("1_kr3c1")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+color = Color(0.0392157, 0.0392157, 0.0392157, 1)
+
+[node name="MachineNameBox" type="HBoxContainer" parent="."]
+clip_contents = true
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.02
+anchor_top = 0.05
+anchor_right = 1.0
+anchor_bottom = 0.2
+grow_horizontal = 2
+theme_override_constants/separation = 10
+
+[node name="MachineTypeIcon" type="TextureRect" parent="MachineNameBox"]
+layout_mode = 2
+texture = ExtResource("2_khkcl")
+expand_mode = 2
+
+[node name="TextCenterContainer" type="CenterContainer" parent="MachineNameBox"]
+layout_mode = 2
+
+[node name="MachineNameLabel" type="RichTextLabel" parent="MachineNameBox/TextCenterContainer"]
+custom_minimum_size = Vector2(250, 15)
+layout_mode = 2
+theme_override_font_sizes/normal_font_size = 16
+bbcode_enabled = true
+text = "UNKNOWN MACHINE"
+fit_content = true
+
+[node name="TelemetryPanel" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.025
+anchor_top = 0.3
+anchor_right = 1.0
+anchor_bottom = 0.75
+offset_top = 0.0499973
+offset_right = -0.47998
+offset_bottom = 0.0499878
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="CompassDisplay" parent="TelemetryPanel" instance=ExtResource("1_kvnjl")]
+layout_mode = 2
+size_flags_horizontal = 2
+size_flags_vertical = 4

@@ -17,22 +17,23 @@
 
 */
 
-namespace Hermes.Universe.SolarSystem;
-
 using Godot;
 using System;
 
-public partial class SolarSystem : Node3D
+namespace Hermes.Universe.SolarSystem
 {
-    StaticBody3D earth;
-
-    public override void _Ready()
+    public partial class SolarSystem : Node3D
     {
-        earth = GetNode<StaticBody3D>("Earth");
-    }
+        private readonly Vector2I M_MINIMUM_SCREEN_SIZE = new Vector2I(1280, 720);
 
-    // Called every frame. 'delta' is the elapsed time since the previous frame.
-    public override void _Process(double delta)
-    {
+        StaticBody3D earth;
+
+        public override void _Ready()
+        {
+            earth = GetNode<StaticBody3D>("Earth");
+            DisplayServer.WindowSetMinSize(M_MINIMUM_SCREEN_SIZE);
+        }
+
     }
 }
+

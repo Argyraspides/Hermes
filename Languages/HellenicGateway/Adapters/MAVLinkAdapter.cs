@@ -1,10 +1,31 @@
-using System.Net;
-using System.Threading;
+/*
+
+
+
+
+88        88  88888888888  88888888ba   88b           d88  88888888888  ad88888ba
+88        88  88           88      "8b  888b         d888  88          d8"     "8b
+88        88  88           88      ,8P  88`8b       d8'88  88          Y8,
+88aaaaaaaa88  88aaaaa      88aaaaaa8P'  88 `8b     d8' 88  88aaaaa     `Y8aaaaa,
+88""""""""88  88"""""      88""""88'    88  `8b   d8'  88  88"""""       `"""""8b,
+88        88  88           88    `8b    88   `8b d8'   88  88                  `8b
+88        88  88           88     `8b   88    `888'    88  88          Y8a     a8P
+88        88  88888888888  88      `8b  88     `8'     88  88888888888  "Y88888P"
+
+
+                            MESSENGER OF THE MACHINES
+
+*/
+
+
 using Hermes.Common.Communications.WorldListener;
-using Hermes.Common.Communications.WorldListener.MAVLink;
 
 namespace Hermes.Languages.HellenicGateway.Adapters;
 
+using System.Collections.Concurrent;
+using System.Net;
+using System.Threading;
+using Hermes.Common.Communications.WorldListener.MAVLink;
 using System.Collections.Generic;
 using Hermes.Languages.HellenicGateway.StateMachines;
 
@@ -26,22 +47,11 @@ public class MAVLinkAdapter : IProtocolAdapter
 
     private MAVLinkUDPListener m_udpListener = new MAVLinkUDPListener(
         new IPEndPoint(IPAddress.Parse("127.0.0.1"), KnownWorlds.DEFAULT_MAVLINK_PORT)
+        // new IPEndPoint(IPAddress.Parse("127.0.0.1"), 14445)
     );
 
-
-    private Thread m_hellenicProcessorThread;
-
-    // Basically a circular buffer/deque
-    private LinkedList<HellenicMessage> m_messageQueue;
-    private object m_messageQueueLock = new object();
-    private int m_maxMessageQueueSize = 4096;
-
-    public bool IsOfProtocolType(byte[] rawPacket)
-    {
-        if (rawPacket == null || rawPacket.Length < 1)
-            return false;
-        return rawPacket[0] == MAVLink.MAVLINK_STX || rawPacket[0] == MAVLink.MAVLINK_STX_MAVLINK1;
-    }
+    private ConcurrentQueue<HellenicMessage> m_messageQueue;
+    private int m_maxMessageQueueSize = 45;
 
     ~MAVLinkAdapter()
     {
@@ -77,57 +87,41 @@ public class MAVLinkAdapter : IProtocolAdapter
 
     public void Start()
     {
-        m_messageQueue = new LinkedList<HellenicMessage>();
+        m_messageQueue = new ConcurrentQueue<HellenicMessage>();
         m_udpListener.StartListeningThread();
-
-        m_hellenicProcessorThread = new Thread(StartMessageProcessor);
-        m_hellenicProcessorThread.Start();
+        m_udpListener.MAVLinkMessageReceived += OnMAVLinkMessageReceived;
     }
 
-    private void StartMessageProcessor()
+    private void OnMAVLinkMessageReceived()
     {
-        // TODO::ARGYRASPIDES(10/03/2025) { Don't do a busy wait like this. Make it event based. Probably a callback for when a UDP message is ready }
-        while (true)
+        if (m_udpListener.GetNextMessage() is MAVLink.MAVLinkMessage msg)
         {
-            if (m_udpListener.GetNextMessage() is MAVLink.MAVLinkMessage msg)
+            List<HellenicMessage> hellenicMessages = HandleMessage(msg);
+            foreach (HellenicMessage hellenicMessage in hellenicMessages)
             {
-                List<HellenicMessage> hellenicMessages = MAVLinkToHellenicTranslator.TranslateMAVLinkMessage(msg);
-                lock (m_messageQueueLock)
+                if (m_messageQueue.Count >= m_maxMessageQueueSize)
                 {
-                    foreach (HellenicMessage hellenicMessage in hellenicMessages)
-                    {
-                        if (m_messageQueue.Count >= m_maxMessageQueueSize)
-                        {
-                            m_messageQueue.RemoveFirst();
-                        }
-
-                        m_messageQueue.AddLast(hellenicMessage);
-                    }
+                    m_messageQueue.TryDequeue(out _);
                 }
+                m_messageQueue.Enqueue(hellenicMessage);
             }
-
-            Thread.Sleep(2000);
         }
     }
 
     public void Stop()
     {
         m_udpListener.StopListening();
-        m_hellenicProcessorThread.Join();
     }
 
     public HellenicMessage GetNextHellenicMessage()
     {
         HellenicMessage msg = null;
-
-        lock (m_messageQueueLock)
-        {
-            if (m_messageQueue.Count > 0)
-            {
-                msg = m_messageQueue.First.Value;
-            }
-        }
-
+        m_messageQueue.TryDequeue(out msg);
         return msg;
+    }
+
+    public int GetHellenicBufferSize()
+    {
+        return m_messageQueue.Count;
     }
 }

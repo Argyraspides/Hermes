@@ -16,6 +16,7 @@
 
 */
 
+using Hermes.Common.Map.Utils;
 using Hermes.Common.Meshes.MeshGenerators;
 
 namespace Hermes.Common.Planet.LoDSystem;
@@ -53,18 +54,6 @@ using Hermes.Common.GodotUtils;
 /// </summary>
 public partial class TerrainQuadTreeUpdater : Node
 {
-    private readonly TerrainQuadTree m_terrainQuadTree;
-    private readonly int m_quadTreeUpdateIntervalMs = 250;
-    private volatile bool m_isRunning = false;
-
-    // True if we can perform the DFS search to determine which nodes should be split/merged
-    private volatile bool m_canPerformSearch = true;
-
-    // True if we can perform the DFS search to determine which nodes should be culled, and cull them
-    private volatile bool m_canPerformCulling = false;
-
-    public Thread UpdateQuadTreeThread { get; private set; }
-    public Thread CullQuadTreeThread { get; private set; }
 
     // Signal emitted when we are done determining which nodes should be split/merged
     [Signal]
@@ -73,6 +62,20 @@ public partial class TerrainQuadTreeUpdater : Node
     // Signal emitted when we are done culling all unused nodes
     [Signal]
     public delegate void CullQuadTreeFinishedEventHandler();
+
+    public Thread UpdateQuadTreeThread { get; private set; }
+    public Thread CullQuadTreeThread { get; private set; }
+
+    private readonly TerrainQuadTree m_terrainQuadTree;
+
+    private bool m_isRunning = false;
+
+    // True if we can perform the DFS search to determine which nodes should be culled, and cull them
+    private ManualResetEvent m_canPerformCulling = new ManualResetEvent(false);
+
+    // True if we can perform the DFS search to determine which nodes should be split/merged
+    private ManualResetEvent m_canPerformSearch = new ManualResetEvent(true);
+
 
     public TerrainQuadTreeUpdater(TerrainQuadTree terrainQuadTree)
     {
@@ -105,29 +108,22 @@ public partial class TerrainQuadTreeUpdater : Node
     {
         while (m_isRunning)
         {
+            m_canPerformCulling.WaitOne();
             try
             {
-                if (m_canPerformCulling && m_terrainQuadTree.RootNodes != null)
+                if (m_terrainQuadTree.RootNodes == null) continue;
+
+                lock (m_terrainQuadTree.RootNodeLock)
                 {
-                    lock (m_terrainQuadTree.rootNodeLock)
+                    foreach (var rootNode in m_terrainQuadTree.RootNodes)
                     {
-                        foreach (var rootNode in m_terrainQuadTree.RootNodes)
-                        {
-                            if (GodotUtils.IsValid(rootNode) && ExceedsMaxNodeThreshold())
-                            {
-                                CullUnusedNodes(rootNode);
-                            }
-                        }
+                        if (!GodotUtils.IsValid(rootNode) || !ExceedsMaxNodeThreshold()) continue;
+                        CullUnusedNodes(rootNode);
                     }
                 }
 
-                if (m_canPerformCulling)
-                {
-                    EmitSignal(SignalName.CullQuadTreeFinished);
-                    m_canPerformCulling = false;
-                }
-
-                Thread.Sleep(m_quadTreeUpdateIntervalMs);
+                EmitSignal(SignalName.CullQuadTreeFinished);
+                m_canPerformCulling.Reset();
             }
             catch (Exception ex)
             {
@@ -154,29 +150,22 @@ public partial class TerrainQuadTreeUpdater : Node
     {
         while (m_isRunning)
         {
+            m_canPerformSearch.WaitOne();
             try
             {
-                if (m_canPerformSearch && m_terrainQuadTree.RootNodes != null)
+                if(m_terrainQuadTree.RootNodes == null) continue;
+
+                lock (m_terrainQuadTree.RootNodeLock)
                 {
-                    lock (m_terrainQuadTree.rootNodeLock)
+                    foreach (var rootNode in m_terrainQuadTree.RootNodes)
                     {
-                        foreach (var rootNode in m_terrainQuadTree.RootNodes)
-                        {
-                            if (GodotUtils.IsValid(rootNode))
-                            {
-                                UpdateTreeDFS(rootNode);
-                            }
-                        }
+                        if (!GodotUtils.IsValid(rootNode)) continue;
+                        UpdateTreeDFS(rootNode);
                     }
                 }
 
-                if (m_canPerformSearch)
-                {
-                    EmitSignal(SignalName.QuadTreeUpdatesDetermined);
-                    m_canPerformSearch = false;
-                }
-
-                Thread.Sleep(m_quadTreeUpdateIntervalMs);
+                EmitSignal(SignalName.QuadTreeUpdatesDetermined);
+                m_canPerformSearch.Reset();
             }
             catch (Exception ex)
             {
@@ -187,10 +176,10 @@ public partial class TerrainQuadTreeUpdater : Node
 
     private void UpdateTreeDFS(TerrainQuadTreeNode node)
     {
-        if (!GodotUtils.IsValid(node)) { return; }
+        if (!GodotUtils.IsValid(node)) return;
 
         // Splitting happens top-down, so we do it first prior to recursing down further
-        if (node.IsVisible && ShouldSplit(node))
+        if (node.IsDeepest && ShouldSplit(node))
         {
             m_terrainQuadTree.SplitQueueNodes.Enqueue(node);
             return;
@@ -208,23 +197,23 @@ public partial class TerrainQuadTreeUpdater : Node
         }
     }
 
-    private bool ExceedsMaxNodeThreshold() => m_terrainQuadTree.m_currentNodeCount >
-                                              m_terrainQuadTree.m_maxNodes *
-                                              m_terrainQuadTree.MaxNodesCleanupThresholdPercent;
+    private bool ExceedsMaxNodeThreshold()
+    {
+        return m_terrainQuadTree.CurrentNodeCount >
+               m_terrainQuadTree.MaxNodes *
+               m_terrainQuadTree.MaxNodesCleanupThresholdPercent;
+    }
 
-    /// <summary>
-    /// Determines if the node should be split in the quadtree based on a distance threshold
-    /// </summary>
-    /// <param name="node">Node that will be tested for splitting</param>
-    /// <returns>True if the node should split, otherwise false</returns>
-    /// <exception cref="ArgumentNullException">Thrown if the node is invalid</exception>
+    // TODO::ARGYRASPIDES() { Make these not just distance based but also based on what is visible on the screen.
+    // Sometimes the center of the screen is more detailed than the rest and it can look jarring if the map tiles
+    // are from completely different times }
     private bool ShouldSplit(TerrainQuadTreeNode node)
     {
         if (!GodotUtils.IsValid(node)) throw new ArgumentNullException(nameof(node), "node cannot be null");
-        if (node.Depth >= m_terrainQuadTree.m_maxDepth) return false;
+        if (node.Depth >= m_terrainQuadTree.MaxDepth) return false;
 
         float distanceToCamera = node.Position.DistanceTo(m_terrainQuadTree.CameraPosition);
-        bool shouldSplit = m_terrainQuadTree.m_splitThresholds[node.Depth] > distanceToCamera;
+        bool shouldSplit = m_terrainQuadTree.SplitThresholds[node.Depth] > distanceToCamera;
 
         return shouldSplit;
     }
@@ -232,10 +221,10 @@ public partial class TerrainQuadTreeUpdater : Node
     private bool ShouldMerge(TerrainQuadTreeNode node)
     {
         if (!GodotUtils.IsValid(node)) return false;
-        if (node.Depth < m_terrainQuadTree.m_minDepth) return false;
+        if (node.Depth < m_terrainQuadTree.MinDepth) return false;
 
         float distanceToCamera = node.Position.DistanceTo(m_terrainQuadTree.CameraPosition);
-        bool shouldMerge = m_terrainQuadTree.m_mergeThresholds[node.Depth] < distanceToCamera;
+        bool shouldMerge = m_terrainQuadTree.MergeThresholds[node.Depth] < distanceToCamera;
 
         return shouldMerge;
     }
@@ -250,7 +239,7 @@ public partial class TerrainQuadTreeUpdater : Node
     /// <returns>True if the parents children should be merged, otherwise false</returns>
     private bool ShouldMergeChildren(TerrainQuadTreeNode parentNode)
     {
-        if (!GodotUtils.IsValid(parentNode)) { return false; }
+        if (!GodotUtils.IsValid(parentNode)) return false;
 
         foreach (var childNode in parentNode.ChildNodes)
         {
@@ -298,10 +287,10 @@ public partial class TerrainQuadTreeUpdater : Node
     /// <param name="parentNode">The parent node whose entire subtree will be culled</param>
     private void CullUnusedNodes(TerrainQuadTreeNode parentNode)
     {
-        if (!GodotUtils.IsValid(parentNode)) { return; }
+        if (!GodotUtils.IsValid(parentNode)) return;
 
         // We only want to cull nodes BELOW the ones that are currently visible in the scene
-        if (parentNode.IsVisible)
+        if (parentNode.IsDeepest)
         {
             // Cull all sub-trees below the parent
             RemoveSubQuadTreeThreadSafe(parentNode);
@@ -326,6 +315,9 @@ public partial class TerrainQuadTreeUpdater : Node
     /// <returns>Returns an ArrayMesh representing the mesh of the TerrainChunk</returns>
     private ArrayMesh GenerateMeshForNode(TerrainQuadTreeNode node)
     {
+        // TODO::ARGYRASPIDES() { This is specifically for the earth. The terrain quad tree should know
+        // about what kind of planet it is dealing with, and MapUtils needs to be changed to determine what to do based
+        // on planet type }
         ArrayMesh meshSegment =
             WGS84EllipsoidMeshGenerator
                 .CreateEllipsoidMeshSegment(
@@ -342,7 +334,7 @@ public partial class TerrainQuadTreeUpdater : Node
     /// </summary>
     private void OnQuadTreeUpdated()
     {
-        m_canPerformCulling = true;
+        m_canPerformCulling.Set();
     }
 
     /// <summary>
@@ -350,6 +342,6 @@ public partial class TerrainQuadTreeUpdater : Node
     /// </summary>
     private void OnCullingFinished()
     {
-        m_canPerformSearch = true;
+        m_canPerformSearch.Set();
     }
 }

@@ -19,6 +19,7 @@
 
 using Godot;
 using Hermes.Universe.Autoloads;
+using GlobalEventBus = Hermes.Universe.Autoloads.EventBus.GlobalEventBus;
 
 public partial class CameraLatLonLabel : RichTextLabel
 {
@@ -26,7 +27,7 @@ public partial class CameraLatLonLabel : RichTextLabel
 
     public override void _Ready()
     {
-        EventBus.Instance.PlanetOrbitalCameraLatLonChanged += UpdateCameraLatLonLabel;
+        GlobalEventBus.Instance.PlanetaryEventBus.PlanetOrbitalCameraLatLonChanged += UpdateCameraLatLonLabel;
     }
 
     private void UpdateCameraLatLonLabel(double latitude, double longitude)

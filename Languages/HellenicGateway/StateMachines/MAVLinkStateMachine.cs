@@ -22,12 +22,10 @@ public class MAVLinkStateMachine
 
     public void HandleHeartBeatMessage(MAVLink.MAVLinkMessage fullMsg, MAVLink.mavlink_heartbeat_t heartBeatMsg)
     {
-        int x = 5;
     }
 
     public void HandleGlobalPositionIntMessage(MAVLink.MAVLinkMessage fullMsg,
         MAVLink.mavlink_global_position_int_t globalPositionIntMsg)
     {
-        int x = 5;
     }
 }

@@ -1,7 +1,32 @@
 <?xml version="1.0"?>
 <hellenic>
-    <version>2</version>
-    <dialect>1</dialect>
+    <!-- Fields that all Hellenic messages should have regardless of type -->
+    <header>
+        <fields>
+            <field type="uint32_t" name="machine_id">
+                <description>ID of the machine that sent this message</description>
+            </field>
+        </fields>
+    </header>
+    <enums>
+        <enum name="MACHINE_TYPE">
+            <description>
+                Describes the type of machine, anything from a creepy crawly with hellenic messaging capabilities
+                all the way up to the Millenium Falcon
+            </description>
+            <entries>
+                <entry value="2" name="QUADCOPTER">
+                    <description>A quadcopter UAV</description>
+                </entry>
+                <entry value="6" name="GROUND_CONTROL_STATION">
+                    <description>Another ground control station</description>
+                </entry>
+                <entry value="65535" name="UNKNOWN">
+                    <description>Unknown machine type</description>
+                </entry>
+            </entries>
+        </enum>
+    </enums>
     <messages>
         <message id="0" name="LATITUDE_LONGITUDE">
             <description>The position of the object expressed in latitude, longitude, and altitude,
@@ -72,12 +97,29 @@
                     <description>Heading in degrees</description>
                 </field>
                 <field type="uint8_t" name="reference_frame">
-                    <description>Reference frame (0 = Mercury, 1 = Venus, 2 = Earth, 3 = Moon, 4 =
-                        Mars ...)
+                    <description>Reference frame (0 = Mercury, 1 = Venus, 2 = Earth, 3 = Moon, 4 = Mars ...)
                     </description>
                 </field>
                 <field type="uint64_t" name="time_usec" units="μs">
                     <description>Timestamp (since system boot)</description>
+                </field>
+            </fields>
+        </message>
+
+        <message id="4" name="PULSE">
+            <description>
+                System status message indicating the entity is active and functioning.
+                Used for health monitoring and presence detection.
+            </description>
+            <fields>
+                <field type="uint16_t" name="machine_type" enum="MACHINE_TYPE">
+                    <description>Type of machine</description>
+                </field>
+                <field type="string" name="callsign">
+                    <description>Machine identifier or callsign</description>
+                </field>
+                <field type="uint64_t" name="time_usec" units="μs">
+                    <description>Timestamp (microseconds since system boot)</description>
                 </field>
             </fields>
         </message>

@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://bnaccj7r33kqb"]
+[gd_scene load_steps=14 format=3 uid="uid://bnaccj7r33kqb"]
 
 [ext_resource type="Script" path="res://Universe/SolarSystem/SolarSystem.cs" id="1_ks12t"]
 [ext_resource type="Texture2D" uid="uid://dw16otbm13s3h" path="res://Universe/SolarSystem/Assets/ESO_-_Milky_Way.jpg" id="1_nxqmc"]
@@ -7,6 +7,12 @@
 [ext_resource type="Theme" uid="uid://dll7gj5amwt4g" path="res://Universe/UI/Themes/DefaultHermesTheme.tres" id="5_dxgph"]
 [ext_resource type="Script" path="res://Universe/UI/UIComponents/CameraDistanceLabel.cs" id="6_xdu25"]
 [ext_resource type="Script" path="res://Universe/UI/UIComponents/CameraLatLonLabel.cs" id="7_61pj5"]
+[ext_resource type="PackedScene" uid="uid://b3vyff8oebx32" path="res://Universe/UI/UIComponents/MachineCardPanel/MachineCardPanel.tscn" id="8_1orsf"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_5q0bj"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ftcah"]
+bg_color = Color(0.0705882, 0.0705882, 0.0705882, 1)
 
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_enyp5"]
 panorama = ExtResource("1_nxqmc")
@@ -26,29 +32,8 @@ fog_sky_affect = 0.015
 adjustment_enabled = true
 adjustment_saturation = 2.0
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_5q0bj"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ftcah"]
-bg_color = Color(0.0705882, 0.0705882, 0.0705882, 1)
-
 [node name="SolarSystem" type="Node3D"]
 script = ExtResource("1_ks12t")
-
-[node name="Backdrop" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_sabak")
-
-[node name="Earth" parent="." instance=ExtResource("3_bobqk")]
-
-[node name="EarthOrbitalCamera" type="Camera3D" parent="Earth"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -154.961, 0, 0)
-current = true
-fov = 60.0
-far = 100000.0
-script = ExtResource("3_jsn1l")
-
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="Earth/EarthOrbitalCamera"]
-transform = Transform3D(0.766044, 0.321394, -0.55667, 0, 0.866025, 0.5, 0.642788, -0.383022, 0.663414, 0, 0, -8000)
-light_energy = 0.6
 
 [node name="UILayer" type="CanvasLayer" parent="."]
 
@@ -60,23 +45,34 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 size_flags_vertical = 4
+mouse_filter = 1
 theme = ExtResource("5_dxgph")
+
+[node name="MachineCardPanel" parent="UILayer/MainUI" instance=ExtResource("8_1orsf")]
+layout_mode = 1
+offset_right = 13.0
+grow_vertical = 2
+size_flags_horizontal = 1
+size_flags_vertical = 1
 
 [node name="VBoxContainer" type="VBoxContainer" parent="UILayer/MainUI"]
 layout_mode = 1
-anchors_preset = 15
+anchors_preset = 12
+anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_top = -164.0
 grow_horizontal = 2
-grow_vertical = 2
+grow_vertical = 0
 size_flags_horizontal = 3
-size_flags_vertical = 3
+size_flags_vertical = 8
 theme_override_constants/separation = 10
-alignment = 2
 
 [node name="ZoomButtons" type="VBoxContainer" parent="UILayer/MainUI/VBoxContainer"]
+layout_direction = 1
 layout_mode = 2
 size_flags_horizontal = 8
+size_flags_vertical = 4
 
 [node name="ZoomInButton" type="Button" parent="UILayer/MainUI/VBoxContainer/ZoomButtons"]
 custom_minimum_size = Vector2(50, 50)
@@ -98,6 +94,7 @@ text = "-"
 [node name="BottomPanel" type="PanelContainer" parent="UILayer/MainUI/VBoxContainer"]
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
+size_flags_vertical = 10
 
 [node name="CameraInfoBar" type="HBoxContainer" parent="UILayer/MainUI/VBoxContainer/BottomPanel"]
 custom_minimum_size = Vector2(650, 0)
@@ -126,3 +123,20 @@ bbcode_enabled = true
 text = "[center]Camera: 50,000 km[/center]"
 fit_content = true
 script = ExtResource("6_xdu25")
+
+[node name="Backdrop" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_sabak")
+
+[node name="Earth" parent="." instance=ExtResource("3_bobqk")]
+
+[node name="EarthOrbitalCamera" type="Camera3D" parent="Earth"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -154.961, 0, 0)
+current = true
+fov = 60.0
+far = 100000.0
+script = ExtResource("3_jsn1l")
+m_cameraPanSpeedMultiplier = Vector2(0.018, 0.018)
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="Earth/EarthOrbitalCamera"]
+transform = Transform3D(0.866025, 0.25, -0.433013, 0, 0.866025, 0.5, 0.5, -0.433013, 0.75, 0, 0, -8000)
+light_energy = 0.6

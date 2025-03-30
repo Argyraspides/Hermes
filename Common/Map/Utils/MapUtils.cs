@@ -17,11 +17,13 @@
 
 */
 
+
 namespace Hermes.Common.Map.Utils;
 
 using System;
 using System.Text;
 using Godot;
+using Hermes.Common.Planet;
 
 /// <summary>
 /// This class just holds a bunch of static functions and definitions for anything map related.
@@ -33,6 +35,7 @@ using Godot;
 public static class MapUtils
 {
     public const double PI = Math.PI;
+    public const double TWO_PI = PI * 2.0;
 
     /// <summary>
     /// These aren't necessarily a universal constant. You can stop the Web Mercator projection at
@@ -51,8 +54,6 @@ public static class MapUtils
 
     public const double RADIANS_TO_DEGREES = 180.0 / PI;
     public const double DEGREES_TO_RADIANS = PI / 180.0;
-
-    public const double TWO_PI = PI * 2.0;
 
     /// <summary>
     /// Converts line of latitude (radians) to a latitude tile coordinate (y axis) on the Mercator projection,
@@ -98,12 +99,10 @@ public static class MapUtils
     /// </summary>
     public static int LongitudeToTileCoordinateMercator(double lon, int zoom)
     {
-        double lonDeg = lon * RADIANS_TO_DEGREES;
-
         int tilesPerSide = 1 << zoom;
 
-        double numeratorExpr = lonDeg + 180.0;
-        double denominatorExpr = 360.0;
+        double numeratorExpr = lon + PI;
+        double denominatorExpr = TWO_PI;
 
         double divisionExpr = numeratorExpr / denominatorExpr;
 
@@ -275,41 +274,225 @@ public static class MapUtils
     /// </summary>
     public static double TileToLonRange(int zoom)
     {
-        // The full 360° of longitude is divided evenly among 2^zoom tiles.
+        // The full 360° (2π) of longitude is divided evenly among 2^zoom tiles.
         return TWO_PI / (1 << zoom);
     }
 
 
     /// <summary>
-    /// Converts latitude and longitude from radians to the Earth-Centered, Earth-Fixed (ECEF)
-    /// coordinate system, which is a Cartesian system centered at the Earth's center of mass.
-    /// Returns value as kilometers. Takes the Earth as a WGS84 ellipsoid.
+    /// Converts latitude and longitude from radians to a normalized Cartesian coordinate
+    /// in a Earth-Centered, Earth-Fixed (ECEF) system based on the WGS84 ellipsoid.
+    ///
+    /// The function returns coordinates normalized to the Earth's semi-major axis (equatorial radius),
+    /// which is assigned a length of 1.0, with the semi-minor axis (polar radius) scaled proportionally.
+    ///
+    /// Input assumptions:
+    /// - Latitude range: [-π/2, π/2] (South Pole to North Pole)
+    /// - Longitude range: [-π, π] (180°W to 180°E)
+    /// - Null island (0,0) lies on the +ve Z-axis in the Godot coordinate system
+    /// - Increasing longitude corresponds to eastward movement
     /// </summary>
+    /// <param name="lat">Latitude in radians, range [-π/2, π/2]</param>
+    /// <param name="lon">Longitude in radians, range [-π, π]</param>
+    /// <returns>Normalized Cartesian coordinates as a Vector3</returns>
+    public static Vector3 LatLonToCartesianNormalized(double lat, double lon)
+    {
+        lat -= Math.PI / 2.0d;
+        lon += Math.PI;
+
+        double a = 1;
+        double b = 1;
+        double c =
+            SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM /
+            SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
+
+        double zCoo = a * Math.Sin(lat) * Math.Cos(lon);
+        double xCoo = b * Math.Sin(lat) * Math.Sin(lon);
+        double yCoo = c * Math.Cos(lat);
+
+        return new Vector3(
+            (float)xCoo,
+            (float)yCoo,
+            (float)zCoo
+        );
+    }
+
+    /// <summary>
+    /// Converts latitude and longitude from radians to actual Cartesian coordinates
+    /// in kilometers in a Earth-Centered, Earth-Fixed (ECEF) system based on the WGS84 ellipsoid.
+    ///
+    /// Input assumptions:
+    /// - Latitude range: [-π/2, π/2] (South Pole to North Pole)
+    /// - Longitude range: [-π, π] (180°W to 180°E)
+    /// - Null island (0,0) lies on the +ve Z-axis in the Godot coordinate system
+    /// - Increasing longitude corresponds to eastward movement
+    /// </summary>
+    /// <param name="lat">Latitude in radians, range [-π/2, π/2]</param>
+    /// <param name="lon">Longitude in radians, range [-π, π]</param>
+    /// <returns>Cartesian coordinates in kilometers as a Vector3</returns>
     public static Vector3 LatLonToCartesian(double lat, double lon)
     {
-        // Calculate the radius of the parallel (distance from the Earth's axis of rotation)
-        // at the given latitude. This accounts for the Earth's ellipsoidal shape.
-        double N = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM / Math.Sqrt(1.0 -
-            (SolarSystemConstants.EARTH_ECCENTRICITY_SQUARED *
-             Math.Pow(Math.Sin(lat), 2)));
+        lat -= Math.PI / 2.0;
+        lon += Math.PI;
 
-        // X coordinate: distance from the Earth's axis (prime meridian)
-        double x = N * Math.Cos(lat) * Math.Cos(lon);
+        double a = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
+        double b = a;
+        double c = SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM;
 
-        // Y coordinate: distance from the Earth's axis (90 degrees east)
-        double y = N * Math.Cos(lat) * Math.Sin(lon);
+        double zCoo = a * Math.Sin(lat) * Math.Cos(lon);
+        double xCoo = b * Math.Sin(lat) * Math.Sin(lon);
+        double yCoo = c * Math.Cos(lat);
 
-        // Z coordinate: distance from the equatorial plane
-        // Note: We multiply by (1-e²) to account for the polar flattening
-        double z = N * (1.0 - SolarSystemConstants.EARTH_ECCENTRICITY_SQUARED) * Math.Sin(lat);
-
-        // Convert to Godot's coordinate system
-        // Godot's default: Y is up, X is right, Z is forward
         return new Vector3(
-            (float)(x / SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM), // Normalize by dividing by semi-major axis
-            (float)(z / SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM), // Y is up in Godot
-            (float)(y / SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM) // Swap Y and Z for Godot's coordinate system
+            (float)xCoo,
+            (float)yCoo,
+            (float)zCoo
         );
+    }
+
+    /// <summary>
+    /// Calculates the normalized X coordinate for a point on the WGS84 ellipsoid
+    /// at the given latitude and longitude.
+    ///
+    /// The X axis points eastward at equator-prime meridian intersection.
+    /// The value is normalized to make the major axis (equatorial radius) of length 1.0.
+    ///
+    /// Input assumptions:
+    /// - Latitude range: [-π/2, π/2] (South Pole to North Pole)
+    /// - Longitude range: [-π, π] (180°W to 180°E)
+    /// - Null island (0,0) lies on the +ve Z-axis in the Godot coordinate system
+    /// </summary>
+    /// <param name="lat">Latitude in radians, range [-π/2, π/2]</param>
+    /// <param name="lon">Longitude in radians, range [-π, π]</param>
+    /// <returns>Normalized X coordinate</returns>
+    public static double LatLonToCartesianX(double lat, double lon)
+    {
+        lat -= Math.PI / 2.0;
+        lon += Math.PI;
+        return Math.Sin(lat) * Math.Sin(lon);
+    }
+
+    /// <summary>
+    /// Calculates the normalized Y coordinate for a point on the WGS84 ellipsoid
+    /// at the given latitude.
+    ///
+    /// The Y axis points toward the North Pole.
+    /// The value is scaled by the ratio of semi-minor to semi-major axis to accurately
+    /// represent Earth's oblate spheroid shape, with the major axis normalized to length 1.0.
+    ///
+    /// Input assumptions:
+    /// - Latitude range: [-π/2, π/2] (South Pole to North Pole)
+    /// </summary>
+    /// <param name="lat">Latitude in radians, range [-π/2, π/2]</param>
+    /// <returns>Normalized Y coordinate</returns>
+    public static double LatLonToCartesianY(double lat)
+    {
+        lat -= Math.PI / 2.0;
+        double minorToMajorRatio = SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM /
+                                   SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
+        return minorToMajorRatio * Math.Cos(lat);
+    }
+
+    /// <summary>
+    /// Calculates the normalized Z coordinate for a point on the WGS84 ellipsoid
+    /// at the given latitude and longitude.
+    ///
+    /// The Z axis points toward the prime meridian at the equator (null island).
+    /// The value is normalized to make the major axis (equatorial radius) of length 1.0.
+    ///
+    /// Input assumptions:
+    /// - Latitude range: [-π/2, π/2] (South Pole to North Pole)
+    /// - Longitude range: [-π, π] (180°W to 180°E)
+    /// - Null island (0,0) lies on the +ve Z-axis in the Godot coordinate system
+    /// </summary>
+    /// <param name="lat">Latitude in radians, range [-π/2, π/2]</param>
+    /// <param name="lon">Longitude in radians, range [-π, π]</param>
+    /// <returns>Normalized Z coordinate</returns>
+    public static double LatLonToCartesianZ(double lat, double lon)
+    {
+        lat -= Math.PI / 2.0;
+        lon += Math.PI;
+        return Math.Sin(lat) * Math.Cos(lon);
+    }
+
+    /// <summary>
+    /// Converts latitude, longitude, and altitude to actual Cartesian coordinates
+    /// in kilometers in a Earth-Centered, Earth-Fixed (ECEF) system based on the WGS84 ellipsoid.
+    ///
+    /// The altitude is measured in kilometers from the ellipsoid surface, with positive values
+    /// representing points above the surface and negative values representing points below it.
+    ///
+    /// Input assumptions:
+    /// - Latitude range: [-π/2, π/2] (South Pole to North Pole)
+    /// - Longitude range: [-π, π] (180°W to 180°E)
+    /// - Altitude in kilometers
+    /// - Null island (0,0) lies on the +ve Z-axis in the Godot coordinate system
+    /// - Increasing longitude corresponds to eastward movement
+    /// </summary>
+    /// <param name="lat">Latitude in radians, range [-π/2, π/2]</param>
+    /// <param name="lon">Longitude in radians, range [-π, π]</param>
+    /// <param name="alt">Altitude in kilometers from the WGS84 ellipsoid surface</param>
+    /// <returns>Cartesian coordinates in kilometers as a Vector3</returns>
+    public static Vector3 LatLonToCartesian(double lat, double lon, double alt)
+    {
+        lat -= Math.PI / 2.0;
+        lon += Math.PI;
+
+        double a = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
+        double b = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
+        double c = SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM;
+
+        double zCoo = a * Math.Sin(lat) * Math.Cos(lon);
+        double xCoo = b * Math.Sin(lat) * Math.Sin(lon);
+        double yCoo = c * Math.Cos(lat);
+
+        double dist = Math.Sqrt((xCoo * xCoo) + (yCoo * yCoo) + (zCoo * zCoo));
+        double altScalar = 1.0d + (alt / dist);
+
+        return new Vector3(
+            (float)xCoo,
+            (float)yCoo,
+            (float)zCoo
+        ) * (float)altScalar;
+    }
+
+    public static (double, double) GetPlanetSemiMajorAxis(PlanetShapeType planetType)
+    {
+        switch (planetType)
+        {
+            case PlanetShapeType.SPHERE:
+                return (SolarSystemConstants.BLANK_PLANET_SEMI_MAJOR_AXIS_LEN_KM, SolarSystemConstants.BLANK_PLANET_SEMI_MINOR_AXIS_LEN_KM);
+
+            case PlanetShapeType.WGS84_ELLIPSOID:
+                return (SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM, SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM);
+
+            case PlanetShapeType.MERCURY:
+                return (SolarSystemConstants.MERCURY_SEMI_MAJOR_AXIS_LEN_KM, SolarSystemConstants.MERCURY_SEMI_MINOR_AXIS_LEN_KM);
+
+            case PlanetShapeType.VENUS:
+                return (SolarSystemConstants.VENUS_SEMI_MAJOR_AXIS_LEN_KM, SolarSystemConstants.VENUS_SEMI_MINOR_AXIS_LEN_KM);
+
+            case PlanetShapeType.MARS:
+                return (SolarSystemConstants.MARS_SEMI_MAJOR_AXIS_LEN_KM, SolarSystemConstants.MARS_SEMI_MINOR_AXIS_LEN_KM);
+
+            case PlanetShapeType.JUPITER:
+                return (SolarSystemConstants.JUPITER_SEMI_MAJOR_AXIS_LEN_KM, SolarSystemConstants.JUPITER_SEMI_MINOR_AXIS_LEN_KM);
+
+            case PlanetShapeType.SATURN:
+                return (SolarSystemConstants.SATURN_SEMI_MAJOR_AXIS_LEN_KM, SolarSystemConstants.SATURN_SEMI_MINOR_AXIS_LEN_KM);
+
+            case PlanetShapeType.URANUS:
+                return (SolarSystemConstants.URANUS_SEMI_MAJOR_AXIS_LEN_KM, SolarSystemConstants.URANUS_SEMI_MINOR_AXIS_LEN_KM);
+
+            case PlanetShapeType.NEPTUNE:
+                return (SolarSystemConstants.NEPTUNE_SEMI_MAJOR_AXIS_LEN_KM, SolarSystemConstants.NEPTUNE_SEMI_MINOR_AXIS_LEN_KM);
+
+            case PlanetShapeType.UNKNOWN:
+                return (SolarSystemConstants.BLANK_PLANET_SEMI_MAJOR_AXIS_LEN_KM, SolarSystemConstants.BLANK_PLANET_SEMI_MINOR_AXIS_LEN_KM);
+            default:
+                return (SolarSystemConstants.BLANK_PLANET_SEMI_MAJOR_AXIS_LEN_KM, SolarSystemConstants.BLANK_PLANET_SEMI_MINOR_AXIS_LEN_KM);
+
+        }
     }
 
 
@@ -325,9 +508,8 @@ public static class MapUtils
         double sphereCircum
     )
     {
-        double latRange = (radius / sphereCircum) * TWO_PI;
-        double lonRange = (radius / sphereCircum) * TWO_PI;
-        return (latRange, lonRange);
+        double range = (radius / sphereCircum) * TWO_PI;
+        return (range, range);
     }
 
 

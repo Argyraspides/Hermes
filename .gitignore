@@ -3,6 +3,7 @@
 # Testing JetBrains Rider for a very limited time ...
 .idea/
 Hermes.sln.DotSettings.user
+
 /android/
 
 # MAVLink Auto-generated definitions
@@ -11,11 +12,11 @@ Common/Communications/Protocols/MAVLink/MAVLinkDefinitionGeneration/MAVLinkDefin
 # VSCode folder
 .vscode/
 
-# Large asset folder
+# Large asset folders
 Universe/SolarSystem/Assets
 Universe/SolarSystem/Planets/Earth/Assets
-
 Universe/UI/Fonts
+Common/Assets
 
 # Build folder for releases
 Build/

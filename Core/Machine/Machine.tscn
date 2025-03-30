@@ -1,0 +1,22 @@
+[gd_scene load_steps=5 format=3 uid="uid://fqbi1wsleelg"]
+
+[ext_resource type="Script" path="res://Core/Machine/Machine.cs" id="1_ot6hr"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_eo4ee"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tin1h"]
+albedo_color = Color(1, 0, 0.862745, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_70ktl"]
+
+[node name="Machine" type="RigidBody3D"]
+script = ExtResource("1_ot6hr")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("SphereShape3D_eo4ee")
+disabled = true
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(50, 0, 0, 0, 50, 0, 0, 0, 50, 0, 0, 0)
+material_override = SubResource("StandardMaterial3D_tin1h")
+mesh = SubResource("SphereMesh_70ktl")

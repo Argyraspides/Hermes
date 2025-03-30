@@ -16,19 +16,18 @@
 
 */
 
+namespace Hermes.Common.Planet.LoDSystem;
+
+using Godot;
+using System;
 
 using Hermes.Common.Map.Types;
 using Hermes.Common.Map.Utils;
+using Hermes.Common.GodotUtils;
 using Hermes.Common.Meshes.MeshGenerators;
 using Hermes.Universe.SolarSystem;
-
-namespace Hermes.Common.Planet.LoDSystem;
-
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using Godot;
-using Hermes.Common.GodotUtils;
 
 /// <summary>
 /// The TerrainQuadTree class is a custom quadtree implementation meant for any generic LoD requirement, and
@@ -48,71 +47,30 @@ using Hermes.Common.GodotUtils;
 /// this work. The TerrainQuadTreeUpdater will then attempt to cull any unused nodes. When it is finished doing so, it will
 /// again traverse the quadtree to determine which nodes should be split/merged, signal to the TerrainQuadTree when it is finished,
 /// and the cycle repeats.
-///
 /// </summary>
-public sealed partial class TerrainQuadTree : Node
+public sealed partial class TerrainQuadTree : Node3D
 {
-    #region Constants & Configuration
-
-    // If we hit x% of the maximum allowed amount of nodes, we will begin culling unused nodes in the quadtree
-    public float MaxNodesCleanupThresholdPercent = 0.90F;
-
-    // Maximum amount of split and merge operations allowed per frame in the scene tree.
-    // This is to spread the workload of splitting/merging over multiple frames
-    public const int MaxQueueUpdatesPerFrame = 2;
-
-    // To prevent hysterisis and oscillation between merging/splitting at fine boundaries, we multiply the merge
-    // thresholds to be greater than the split thresholds
-    public const float MergeThresholdFactor = 1.15F;
-
-    // Hard limit of allowed depth of the quadtree
-    public const int MaxDepthLimit = 23;
-
-    // Hard limit of minimum allowed depth of the quadtree
-    public const int MinDepthLimit = 1;
-
-    // TODO(Argyrsapides, 22/02/2025): Make this a configurable curve or something
-    private readonly double[] m_baseAltitudeThresholds = new double[]
-    {
-        156000.0f, 78000.0f, 39000.0f, 19500.0f, 9750.0f, 4875.0f, 2437.5f, 1218.75f, 609.375f, 304.6875f, 152.34f,
-        76.17f, 38.08f, 19.04f, 9.52f, 4.76f, 2.38f, 1.2f, 0.6f, 0.35f
-    };
-
-    #endregion Constants & Configuration
-
-    #region Dependencies & State
-
-    public readonly PlanetOrbitalCamera m_camera;
-    public readonly TerrainQuadTreeUpdater m_quadTreeUpdater;
+    // Signal emitted by TerrainQuadTree to the TerrainQuadTreeUpdater when we have finished splitting/merging
+    // all nodes in the queue, so that TerrainQuadTreeUpdater can safely run the next tree traversal
+    [Signal]
+    public delegate void QuadTreeUpdatedEventHandler();
 
     // Current minimum and maximum depths allowed
-    public readonly int m_maxDepth;
-    public readonly int m_minDepth;
+    public int MaxDepth { get; private set; }
+    public int MinDepth { get; private set; }
 
     // Maximum allowed nodes in the scene tree
-    public long m_maxNodes;
+    public long MaxNodes { get; private set; }
 
     // Thresholds below/above which we will split/merge nodes respectively. Each index represents a zoom level,
     // the value at the index represents the threshold in kilometers
-    public double[] m_splitThresholds;
-    public double[] m_mergeThresholds;
+    public double[] SplitThresholds { get; private set; }
+    public double[] MergeThresholds { get; private set; }
 
     // Current amount of nodes in the scene tree (in total -- not just the quadtree)
-    public volatile int m_currentNodeCount = 0;
-
-    // True if the TerrainQuadTree is about to be destroyed. Used as we don't want to update our current node count
-    // when the game is closing and nodes in the scene tree may be invalid
-    public volatile bool m_destructorActivated = false;
-
-    // We only process split/merge operations when the TerrainQuadTreeUpdater is finished determining
-    // which nodes should be split/merged at a particular point in time. This is set to true upon a signal
-    // emmitted by TerrainQuadTreeUpdater when it is done with a tree traversal iteration
-    public bool m_canUpdateQuadTree = false;
-
-    public int m_currentCameraZoomLevel;
-
+    public int CurrentNodeCount { get; private set; }
     // Mutex to access the root nodes
-    public object rootNodeLock = new object();
+    public object RootNodeLock = new object();
 
     // List of root nodes. We are allowed a minimum zoom level of above 1, thus all nodes at zoom level 'z',
     // where 1 < z < m_maxDepth are unnecessary to keep in memory. This is a list of all the root nodes at the minimum
@@ -125,41 +83,54 @@ public sealed partial class TerrainQuadTree : Node
     public Vector3 CameraPosition { get; private set; }
 
     // Queue of nodes that should be split/merged as determined by the TerrainQuadTreeUpdater
-    public ConcurrentQueue<TerrainQuadTreeNode> SplitQueueNodes { get; } = new ConcurrentQueue<TerrainQuadTreeNode>();
-    public ConcurrentQueue<TerrainQuadTreeNode> MergeQueueNodes { get; } = new ConcurrentQueue<TerrainQuadTreeNode>();
+    public ConcurrentQueue<TerrainQuadTreeNode> SplitQueueNodes = new ConcurrentQueue<TerrainQuadTreeNode>();
+    public ConcurrentQueue<TerrainQuadTreeNode> MergeQueueNodes = new ConcurrentQueue<TerrainQuadTreeNode>();
 
-    #endregion Dependencies & State
+    // If we hit x% of the maximum allowed amount of nodes, we will begin culling unused nodes in the quadtree
+    public float MaxNodesCleanupThresholdPercent { get; private set; } = 0.90F;
 
-    #region Signals
+    // Maximum amount of split and merge operations allowed per frame in the scene tree.
+    // This is to spread the workload of splitting/merging over multiple frames
+    private const int MaxQueueUpdatesPerFrame = 6;
 
-    // Signal emitted by TerrainQuadTree to the TerrainQuadTreeUpdater when we have finished splitting/merging
-    // all nodes in the queue, so that TerrainQuadTreeUpdater can safely run the next tree traversal
-    [Signal]
-    public delegate void QuadTreeUpdatedEventHandler();
+    // To prevent hysterisis and oscillation between merging/splitting at fine boundaries, we multiply the merge
+    // thresholds to be greater than the split thresholds
+    private const float MergeThresholdFactor = 1.15F;
 
-    #endregion Signals
+    // Hard limit of allowed depth of the quadtree
+    private const int MAX_DEPTH_LIMIT = 23;
 
-    #region Constructor & Initialization
+    // Hard limit of minimum allowed depth of the quadtree
+    private const int MIN_DEPTH_LIMIT = 1;
+
+    // To prevent seams, we keep only the parent chunk of the current deepest visible.
+    // This is the offset used to determine the draw order (children should be drawn after parents)
+    private const float CHUNK_SORT_OFFSET = 10.0f;
+
+    // TODO(Argyrsapides, 22/02/2025): Make this a configurable curve or something
+    private readonly double[] m_baseAltitudeThresholds = new double[]
+    {
+        156000.0f, 78000.0f, 39000.0f, 19500.0f, 9750.0f, 4875.0f, 2437.5f, 1218.75f, 609.375f, 304.6875f, 152.34f,
+        76.17f, 38.08f, 19.04f, 9.52f, 4.76f, 2.38f, 1.2f, 0.6f, 0.35f
+    };
+
+    private readonly PlanetOrbitalCamera m_camera;
+    private readonly TerrainQuadTreeUpdater m_quadTreeUpdater;
+
+    // True if the TerrainQuadTree is about to be destroyed. Used as we don't want to update our current node count
+    // when the game is closing and nodes in the scene tree may be invalid
+    private bool m_destructorActivated = false;
+
+    // We only process split/merge operations when the TerrainQuadTreeUpdater is finished determining
+    // which nodes should be split/merged at a particular point in time. This is set to true upon a signal
+    // emmitted by TerrainQuadTreeUpdater when it is done with a tree traversal iteration
+    private bool m_canUpdateQuadTree = false;
 
     public TerrainQuadTree(PlanetOrbitalCamera camera, int maxNodes = 7500, int minDepth = 6, int maxDepth = 20)
     {
-        ValidateConstructorArguments(maxDepth, minDepth, maxNodes);
-
-        m_camera = camera ?? throw new ArgumentNullException(nameof(camera));
-        m_maxNodes = maxNodes;
-        m_minDepth = minDepth;
-        m_maxDepth = maxDepth;
-
-        InitializeAltitudeThresholds();
-        m_quadTreeUpdater = new TerrainQuadTreeUpdater(this);
-        m_quadTreeUpdater.QuadTreeUpdatesDetermined += OnQuadTreeUpdatesDetermined;
-    }
-
-    private void ValidateConstructorArguments(int maxDepth, int minDepth, int maxNodes)
-    {
-        if (maxDepth > MaxDepthLimit || maxDepth < MinDepthLimit)
+        if (maxDepth > MAX_DEPTH_LIMIT || maxDepth < MIN_DEPTH_LIMIT)
         {
-            throw new ArgumentException($"maxDepth must be between {MinDepthLimit} and {MaxDepthLimit}");
+            throw new ArgumentException($"maxDepth must be between {MIN_DEPTH_LIMIT} and {MAX_DEPTH_LIMIT}");
         }
 
         if (maxDepth < minDepth)
@@ -171,36 +142,34 @@ public sealed partial class TerrainQuadTree : Node
         {
             throw new ArgumentException("maxNodes must be positive");
         }
+
+        m_camera = camera ?? throw new ArgumentNullException(nameof(camera));
+        MaxNodes = maxNodes;
+        MinDepth = minDepth;
+        MaxDepth = maxDepth;
+
+        InitializeAltitudeThresholds();
+        m_quadTreeUpdater = new TerrainQuadTreeUpdater(this);
+        m_quadTreeUpdater.QuadTreeUpdatesDetermined += OnQuadTreeUpdatesDetermined;
     }
-
-    private void InitializeAltitudeThresholds()
-    {
-        m_splitThresholds = new double[m_maxDepth + 1];
-        m_mergeThresholds = new double[m_maxDepth + 2];
-
-        for (int zoom = 0; zoom < m_maxDepth; zoom++)
-        {
-            m_splitThresholds[zoom] = m_baseAltitudeThresholds[zoom];
-        }
-
-        for (int zoom = 1; zoom < m_maxDepth; zoom++)
-        {
-            m_mergeThresholds[zoom] =
-                m_splitThresholds[zoom - 1] *
-                MergeThresholdFactor;
-        }
-    }
-
-    #endregion Constructor & Initialization
-
-    #region Godot Lifecycle
 
     public override void _Process(double delta)
     {
         CameraPosition = m_camera.Position;
+
+        for (int i = m_baseAltitudeThresholds.Length - 1; i > 1; i--)
+        {
+            if (m_baseAltitudeThresholds[i] < m_camera.CurrentAltitude  &&
+                m_baseAltitudeThresholds[i - 1] > m_camera.CurrentAltitude )
+            {
+                m_camera.CurrentZoomLevel = i;
+                break;
+            }
+        }
+
         if (m_canUpdateQuadTree)
         {
-            lock (rootNodeLock)
+            lock (RootNodeLock)
             {
                 ProcessSplitQueue();
                 ProcessMergeQueue();
@@ -211,26 +180,6 @@ public sealed partial class TerrainQuadTree : Node
                 m_canUpdateQuadTree = false;
                 EmitSignal(SignalName.QuadTreeUpdated);
             }
-        }
-    }
-
-    private void ProcessSplitQueue()
-    {
-        int dequeuesProcessed = 0;
-        while (SplitQueueNodes.TryDequeue(out TerrainQuadTreeNode node) &&
-               dequeuesProcessed++ < MaxQueueUpdatesPerFrame)
-        {
-            SplitNode(node);
-        }
-    }
-
-    private void ProcessMergeQueue()
-    {
-        int dequeuesProcessed = 0;
-        while (MergeQueueNodes.TryDequeue(out TerrainQuadTreeNode node) &&
-               dequeuesProcessed++ < MaxQueueUpdatesPerFrame)
-        {
-            MergeNodeChildren(node);
         }
     }
 
@@ -250,13 +199,9 @@ public sealed partial class TerrainQuadTree : Node
         // the TerrainQuadTree) is about to be deleted.
         else if (!m_destructorActivated && what == NotificationChildOrderChanged)
         {
-            m_currentNodeCount = GetTree().GetNodeCount();
+            CurrentNodeCount = GetTree().GetNodeCount();
         }
     }
-
-    #endregion Godot Lifecycle
-
-    #region QuadTree Initialization & Manipulation
 
     /// <summary>
     /// Initializes the quadtree at the specified zoom level. Note that if the current minimum zoom level
@@ -265,72 +210,132 @@ public sealed partial class TerrainQuadTree : Node
     /// <param name="zoomLevel"> Zoom level to initialize the quadtree to (zoom level means the same thing as depth in this case) </param>
     public void InitializeQuadTree(int zoomLevel)
     {
-        ValidateZoomLevel(zoomLevel);
+        if (zoomLevel > MaxDepth || zoomLevel < MinDepth)
+        {
+            throw new ArgumentException($"zoomLevel must be between {MinDepth} and {MaxDepth}");
+        }
+        m_camera.CurrentZoomLevel = zoomLevel;
 
-        lock (rootNodeLock) // We must lock this as TerrainQuadTreeUpdater also has access to the array of root nodes
+        lock (RootNodeLock)
         {
             Queue<TerrainQuadTreeNode> nodeQueue = new Queue<TerrainQuadTreeNode>();
             RootNodes = new List<TerrainQuadTreeNode>();
 
-            int nodesPerSide = (1 << m_minDepth); // 2^z
+            int nodesPerSide = (1 << MinDepth); // 2^z
             int nodesInLevel = nodesPerSide * nodesPerSide; // 4^z
             for (int i = 0; i < nodesInLevel; i++)
             {
                 int latTileCoo = i / nodesPerSide;
                 int lonTileCoo = i % nodesPerSide;
-                TerrainQuadTreeNode n = CreateNode(latTileCoo, lonTileCoo, m_minDepth);
+                TerrainQuadTreeNode n = CreateNode(latTileCoo, lonTileCoo, MinDepth);
+                n.Name = $"TerrainQuadTreeNode_{latTileCoo}_{lonTileCoo}";
                 RootNodes.Add(n);
                 nodeQueue.Enqueue(RootNodes[i]);
             }
 
-            for (int zLevel = m_minDepth; zLevel < zoomLevel; zLevel++)
+            for (int zLevel = MinDepth; zLevel < zoomLevel; zLevel++)
             {
                 nodesInLevel = 1 << (2 * zLevel); // 4^z
                 for (int n = 0; n < nodesInLevel; n++)
                 {
                     TerrainQuadTreeNode parentNode = nodeQueue.Dequeue();
                     GenerateChildNodes(parentNode);
-                    EnqueueChildren(nodeQueue, parentNode);
+                    foreach (var childNode in parentNode.ChildNodes)
+                    {
+                        nodeQueue.Enqueue(childNode);
+                    }
                 }
             }
 
-            InitializeMeshesInQueue(nodeQueue);
+            while (nodeQueue.Count > 0)
+            {
+                TerrainQuadTreeNode node = nodeQueue.Dequeue();
+                AddChild(node);
+                InitializeTerrainNodeMesh(node);
+            }
         }
     }
 
-    private void EnqueueChildren(Queue<TerrainQuadTreeNode> queue, TerrainQuadTreeNode parentNode)
+    /// <summary>
+    /// Initializes the mesh of a TerrainQuadTreeNode. Does nothing if the mesh is already initialized,
+    /// otherwise creates a new one for it based on the internal TerrainChunks properties.
+    /// </summary>
+    /// <param name="node">The node to initialize the mesh of (for its TerrainChunk)</param>
+    /// <exception cref="ArgumentNullException"></exception>
+    private void InitializeTerrainNodeMesh(TerrainQuadTreeNode node)
     {
-        foreach (var childNode in parentNode.ChildNodes)
+        bool invalidNode =
+            !GodotUtils.IsValid(node) ||
+            !GodotUtils.IsValid(node.Chunk) ||
+            node.Chunk.MapTile == null;
+        if (invalidNode)
         {
-            queue.Enqueue(childNode);
+            throw new ArgumentNullException("Cannot initialize terrain mesh because node is invalid");
+        }
+
+        // If the mesh is invalid this means this is the very first time we are loading up this node into the
+        // scene tree
+        if (!GodotUtils.IsValid(node.Chunk.MeshInstance))
+        {
+            ArrayMesh meshSegment = GenerateMeshForNode(node);
+            node.Chunk.MeshInstance = new MeshInstance3D { Mesh = meshSegment };
+
+            node.Chunk.SetPositionAndSize();        // Set the position of the chunk itself
+            node.Position = node.Chunk.Position;    // Set the position of the node (copy chunk position)
+
+            node.Chunk.Name = GenerateChunkName(node);
+
+            node.Chunk.Load();
+        }
+
+        node.IsDeepest = true;
+        node.Chunk.Visible = true;
+    }
+
+    private void InitializeAltitudeThresholds()
+    {
+        SplitThresholds = new double[MaxDepth + 1];
+        MergeThresholds = new double[MaxDepth + 2];
+
+        for (int zoom = 0; zoom < MaxDepth; zoom++)
+        {
+            SplitThresholds[zoom] = m_baseAltitudeThresholds[zoom];
+        }
+
+        for (int zoom = 1; zoom < MaxDepth; zoom++)
+        {
+            MergeThresholds[zoom] = SplitThresholds[zoom - 1] * MergeThresholdFactor;
         }
     }
 
-    private void InitializeMeshesInQueue(Queue<TerrainQuadTreeNode> queue)
+    private void ProcessSplitQueue()
     {
-        while (queue.Count > 0)
+        int dequeuesProcessed = 0;
+
+        while (SplitQueueNodes.TryDequeue(out TerrainQuadTreeNode node) &&
+               dequeuesProcessed++ < MaxQueueUpdatesPerFrame)
         {
-            TerrainQuadTreeNode node = queue.Dequeue();
-            InitializeTerrainNodeMesh(node);
+            SplitNode(node);
         }
     }
 
-    private void ValidateZoomLevel(int zoomLevel)
+    private void ProcessMergeQueue()
     {
-        if (zoomLevel > m_maxDepth || zoomLevel < m_minDepth)
+        int dequeuesProcessed = 0;
+        while (MergeQueueNodes.TryDequeue(out TerrainQuadTreeNode node) &&
+               dequeuesProcessed++ < MaxQueueUpdatesPerFrame)
         {
-            throw new ArgumentException($"zoomLevel must be between {m_minDepth} and {m_maxDepth}");
+            MergeNodeChildren(node);
         }
     }
 
     /// <summary>
     /// Splits the quad tree nodes by initializing its children. If its children already exists, simply
-    /// toggles their visibility on and itself off. This function is async as generating child nodes if they
-    /// do not exist require a backend API call to retrieve map tile information, or retrieving a map tile from cache
+    /// toggles their visibility on and itself off.
     /// </summary>
     /// <param name="node">Node to be split</param>
     /// <exception cref="ArgumentNullException">Thrown if the TerrainQuadTreeNode is not valid</exception>
-    private async void SplitNode(TerrainQuadTreeNode node)
+    private void SplitNode(TerrainQuadTreeNode node)
     {
         if (!GodotUtils.IsValid(node))
         {
@@ -348,69 +353,39 @@ public sealed partial class TerrainQuadTree : Node
 
         foreach (var childNode in node.ChildNodes)
         {
-            childNode.IsVisible = true;
+            childNode.IsDeepest = true;
             childNode.Chunk.Visible = true;
+            childNode.Chunk.TerrainChunkMesh.SortingOffset = CHUNK_SORT_OFFSET * childNode.Depth;
         }
 
-        node.Chunk.Visible = false;
-        node.IsVisible = false;
+        node.Chunk.TerrainChunkMesh.SortingOffset = -CHUNK_SORT_OFFSET * node.Depth;
+        // Don't toggle parent visibility off to prevent gaps between meshes of different
+        // zoom levels
+        // TODO::ARGYRASPIDES() { Find a way to make sure that only the parent of the deepest node remains
+        // visible, and not every parent node up until the deepest node }
+        node.IsDeepest = false;
     }
 
-    /// <summary>
-    /// Merges a parent nodes' children into itself. This simply toggles the visibility of the parent to true,
-    /// and the visibility of the children to false.
-    /// </summary>
-    /// <param name="parent">The parent to merge its children into</param>
     private void MergeNodeChildren(TerrainQuadTreeNode parent)
     {
-        if (!GodotUtils.IsValid(parent)) { return; }
+        if (!GodotUtils.IsValid(parent))
+        {
+            throw new ArgumentNullException("Attempting to merge an invalid terrain quad tree node");
+        }
 
+        parent.Chunk.TerrainChunkMesh.SortingOffset = CHUNK_SORT_OFFSET * parent.Depth;
         parent.Chunk.Visible = true;
-        parent.IsVisible = true;
+        parent.IsDeepest = true;
 
         foreach (var childNode in parent.ChildNodes)
         {
             if (GodotUtils.IsValid(childNode))
             {
                 childNode.Chunk.Visible = false;
-                childNode.IsVisible = false;
+                childNode.IsDeepest = false;
+                childNode.Chunk.TerrainChunkMesh.SortingOffset = -CHUNK_SORT_OFFSET * childNode.Depth;
             }
         }
-    }
-
-    /// <summary>
-    /// Initializes the mesh of a TerrainQuadTreeNode. Does nothing if the mesh is already initialized,
-    /// otherwise creates a new one for it based on the internal TerrainChunks properties.
-    /// </summary>
-    /// <param name="node">The node to initialize the mesh of (for its TerrainChunk)</param>
-    /// <exception cref="ArgumentNullException"></exception>
-    private void InitializeTerrainNodeMesh(TerrainQuadTreeNode node)
-    {
-        if (!GodotUtils.IsValid(node) || !GodotUtils.IsValid(node.Chunk))
-        {
-            throw new ArgumentNullException("Trying to initialize terrain node mesh that is null");
-        }
-
-        ValidateTerrainNodeForMeshInitialization(node);
-
-        // If the mesh is invalid this means this is the very first time we are loading up this node into the
-        // scene tree
-        if (!GodotUtils.IsValid(node.Chunk.MeshInstance))
-        {
-            ArrayMesh meshSegment = GenerateMeshForNode(node);
-            node.Chunk.MeshInstance = new MeshInstance3D { Mesh = meshSegment };
-            AddChild(node);
-
-            node.Chunk.SetPositionAndSize(); // Set the position of the chunk itself
-            node.SetPosition(node.Chunk.Position); // Set the position of the node (copy chunk position)
-
-            node.Chunk.Name = GenerateChunkName(node);
-
-            node.Chunk.Load();
-        }
-
-        node.IsVisible = true;
-        node.Chunk.Visible = true;
     }
 
     private ArrayMesh GenerateMeshForNode(TerrainQuadTreeNode node)
@@ -432,22 +407,6 @@ public sealed partial class TerrainQuadTree : Node
             $"TerrainChunkm_z{node.Chunk.MapTile.ZoomLevel}m_x{node.Chunk.MapTile.LongitudeTileCoo}m_y{node.Chunk.MapTile.LatitudeTileCoo}";
     }
 
-    private void ValidateTerrainNodeForMeshInitialization(TerrainQuadTreeNode node)
-    {
-        if (!GodotUtils.IsValid(node) || node == null)
-            throw new ArgumentNullException(nameof(node), "Cannot initialize mesh for a null node.");
-        if (!GodotUtils.IsValid(node.Chunk) || node.Chunk == null)
-            throw new ArgumentNullException(nameof(node.Chunk), "Node's chunk is null.");
-        if (node.Chunk.MapTile == null)
-            throw new ArgumentNullException(nameof(node.Chunk.MapTile), "Chunk's MapTile is null.");
-    }
-
-    /// <summary>
-    /// Generates child nodes for the input TerrainQuadTreeNode. Initializes both the inner TerrainChunk
-    /// and MapTile based on the information inside the given TerrainQuadTreeNode
-    /// </summary>
-    /// <param name="parentNode">Parent node to generate children for</param>
-    /// <exception cref="ArgumentNullException"></exception>
     private void GenerateChildNodes(TerrainQuadTreeNode parentNode)
     {
         if (!GodotUtils.IsValid(parentNode))
@@ -476,6 +435,7 @@ public sealed partial class TerrainQuadTree : Node
             (int childLatTileCoo, int childLonTileCoo) =
                 CalculateChildTileCoordinates(parentLatTileCoo, parentLonTileCoo, i);
             parentNode.ChildNodes[i] = CreateNode(childLatTileCoo, childLonTileCoo, childZoomLevel);
+            parentNode.AddChild(parentNode.ChildNodes[i]);
         }
     }
 
@@ -487,13 +447,6 @@ public sealed partial class TerrainQuadTree : Node
         return (childLatTileCoo, childLonTileCoo);
     }
 
-    /// <summary>
-    /// Creates a TerrainQuadTree node and initializes the TerrainChunk with a corresponding MapTile
-    /// </summary>
-    /// <param name="latTileCoo">The latitude tile coordinate of the MapTile</param>
-    /// <param name="lonTileCoo">The longitude tile coordinate of the MapTile</param>
-    /// <param name="zoomLevel">The zoom level of the MapTile/TerrainChunk/TerrainQuadTreeNode</param>
-    /// <returns></returns>
     private TerrainQuadTreeNode CreateNode(int latTileCoo, int lonTileCoo, int zoomLevel)
     {
         double childCenterLat = MapUtils.ComputeCenterLatitude(latTileCoo, zoomLevel);
@@ -512,6 +465,4 @@ public sealed partial class TerrainQuadTree : Node
     {
         m_canUpdateQuadTree = true;
     }
-
-    #endregion QuadTree Initialization & Manipulation
 }

@@ -21,6 +21,13 @@ namespace Hermes.Common.Planet;
 public enum PlanetShapeType
 {
     UNKNOWN,
-    SPHERE,
-    WGS84_ELLIPSOID
+    SPHERE, // Perfect sphere
+    WGS84_ELLIPSOID, // Earth basically
+    MERCURY,
+    VENUS,
+    MARS,
+    JUPITER,
+    SATURN,
+    URANUS,
+    NEPTUNE
 }

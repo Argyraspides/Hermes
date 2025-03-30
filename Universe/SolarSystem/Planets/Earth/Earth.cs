@@ -26,12 +26,8 @@ public partial class Earth : Planet
 {
     private PlanetOrbitalCamera m_planetOrbitalCamera;
 
-    [Export] private Vector3 m_nullIsland;
-
-
     public override void _Ready()
     {
-        InitializeCamera();
         m_defaultZoomLevel = 6;
         base._Ready();
     }
@@ -46,6 +42,8 @@ public partial class Earth : Planet
 
     protected override void InitializePlanetSurface(int zoomLevel)
     {
+        InitializeCamera();
+
         m_terrainQuadTree = new TerrainQuadTree(m_planetOrbitalCamera);
         AddChild(m_terrainQuadTree);
         m_terrainQuadTree.Name = "EarthTerrainQuadTree";
@@ -55,7 +53,5 @@ public partial class Earth : Planet
     private void InitializeCamera()
     {
         m_planetOrbitalCamera = GetNode<PlanetOrbitalCamera>("EarthOrbitalCamera");
-        Vector3 camPos = new Vector3(-SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM * 10, 0, 0);
-        m_planetOrbitalCamera.InitializeCameraPosition(camPos);
     }
 }
