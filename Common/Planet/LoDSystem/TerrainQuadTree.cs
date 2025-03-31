@@ -16,6 +16,8 @@
 
 */
 
+using System.Threading;
+
 namespace Hermes.Common.Planet.LoDSystem;
 
 using Godot;
@@ -50,11 +52,6 @@ using System.Collections.Generic;
 /// </summary>
 public sealed partial class TerrainQuadTree : Node3D
 {
-    // Signal emitted by TerrainQuadTree to the TerrainQuadTreeUpdater when we have finished splitting/merging
-    // all nodes in the queue, so that TerrainQuadTreeUpdater can safely run the next tree traversal
-    [Signal]
-    public delegate void QuadTreeUpdatedEventHandler();
-
     // Current minimum and maximum depths allowed
     public int MaxDepth { get; private set; }
     public int MinDepth { get; private set; }
@@ -71,6 +68,8 @@ public sealed partial class TerrainQuadTree : Node3D
     public int CurrentNodeCount { get; private set; }
     // Mutex to access the root nodes
     public object RootNodeLock = new object();
+
+    private ManualResetEventSlim m_canUpdateQuadTree = new ManualResetEventSlim(false);
 
     // List of root nodes. We are allowed a minimum zoom level of above 1, thus all nodes at zoom level 'z',
     // where 1 < z < m_maxDepth are unnecessary to keep in memory. This is a list of all the root nodes at the minimum
@@ -121,11 +120,6 @@ public sealed partial class TerrainQuadTree : Node3D
     // when the game is closing and nodes in the scene tree may be invalid
     private bool m_destructorActivated = false;
 
-    // We only process split/merge operations when the TerrainQuadTreeUpdater is finished determining
-    // which nodes should be split/merged at a particular point in time. This is set to true upon a signal
-    // emmitted by TerrainQuadTreeUpdater when it is done with a tree traversal iteration
-    private bool m_canUpdateQuadTree = false;
-
     public TerrainQuadTree(PlanetOrbitalCamera camera, int maxNodes = 7500, int minDepth = 6, int maxDepth = 20)
     {
         if (maxDepth > MAX_DEPTH_LIMIT || maxDepth < MIN_DEPTH_LIMIT)
@@ -149,8 +143,7 @@ public sealed partial class TerrainQuadTree : Node3D
         MaxDepth = maxDepth;
 
         InitializeAltitudeThresholds();
-        m_quadTreeUpdater = new TerrainQuadTreeUpdater(this);
-        m_quadTreeUpdater.QuadTreeUpdatesDetermined += OnQuadTreeUpdatesDetermined;
+        m_quadTreeUpdater = new TerrainQuadTreeUpdater(this, m_canUpdateQuadTree);
     }
 
     public override void _Process(double delta)
@@ -167,7 +160,7 @@ public sealed partial class TerrainQuadTree : Node3D
             }
         }
 
-        if (m_canUpdateQuadTree)
+        if (m_canUpdateQuadTree.IsSet)
         {
             lock (RootNodeLock)
             {
@@ -177,8 +170,8 @@ public sealed partial class TerrainQuadTree : Node3D
 
             if (SplitQueueNodes.IsEmpty && MergeQueueNodes.IsEmpty)
             {
-                m_canUpdateQuadTree = false;
-                EmitSignal(SignalName.QuadTreeUpdated);
+                m_canUpdateQuadTree.Reset();
+                m_quadTreeUpdater.CanPerformCulling.Set();
             }
         }
     }
@@ -454,15 +447,5 @@ public sealed partial class TerrainQuadTree : Node3D
 
         var childChunk = new TerrainChunk(new MapTile((float)childCenterLat, (float)childCenterLon, zoomLevel));
         return new TerrainQuadTreeNode(childChunk, zoomLevel);
-    }
-
-    /// <summary>
-    /// Called when the TerrainQuadTreeUpdater has finished a tree traversal iteration and has determined which
-    /// nodes should be split/merged. After this, we are allowed to actually merge/split the nodes in question
-    /// on the main thread in the scene tree.
-    /// </summary>
-    private void OnQuadTreeUpdatesDetermined()
-    {
-        m_canUpdateQuadTree = true;
     }
 }

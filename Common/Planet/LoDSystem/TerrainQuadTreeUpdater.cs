@@ -32,46 +32,47 @@ using Hermes.Common.GodotUtils;
 public partial class TerrainQuadTreeUpdater : Node
 {
 
-    // Signal emitted when we are done determining which nodes should be split/merged and have culled every node
-    // needed
-    [Signal]
-    public delegate void QuadTreeUpdatesDeterminedEventHandler();
+    // True if we can perform the DFS search to determine which nodes should be culled, and cull them
+    public ManualResetEventSlim CanPerformCulling = new ManualResetEventSlim(false);
 
-    public Thread UpdateQuadTreeThread { get; private set; }
-    public Thread CullQuadTreeThread { get; private set; }
+    // True if we can perform the DFS search to determine which nodes should be split/merged
+    private ManualResetEventSlim m_canPerformSearch = new ManualResetEventSlim(true);
+
+    private ManualResetEventSlim m_canUpdateQuadTree;
 
     private readonly TerrainQuadTree m_terrainQuadTree;
 
-    private bool m_isRunning = false;
 
-    // True if we can perform the DFS search to determine which nodes should be culled, and cull them
-    private ManualResetEvent m_canPerformCulling = new ManualResetEvent(false);
+    private Thread m_updateQuadTreeThread;
+    private Thread m_cullQuadTreeThread;
+    private volatile bool m_isRunning = false;
 
-    // True if we can perform the DFS search to determine which nodes should be split/merged
-    private ManualResetEvent m_canPerformSearch = new ManualResetEvent(true);
-
-
-    public TerrainQuadTreeUpdater(TerrainQuadTree terrainQuadTree)
+    public TerrainQuadTreeUpdater(TerrainQuadTree terrainQuadTree, ManualResetEventSlim canUpdateQuadTree)
     {
         m_terrainQuadTree = terrainQuadTree ?? throw new ArgumentNullException(nameof(terrainQuadTree));
-        m_terrainQuadTree.QuadTreeUpdated += OnQuadTreeUpdated;
+        m_canUpdateQuadTree = canUpdateQuadTree ?? throw new ArgumentNullException(nameof(canUpdateQuadTree));
         StartUpdateThread();
+    }
+
+    ~TerrainQuadTreeUpdater()
+    {
+        StopUpdateThread();
     }
 
     private void StartUpdateThread()
     {
-        UpdateQuadTreeThread = new Thread(UpdateQuadTreeThreadFunction)
+        m_updateQuadTreeThread = new Thread(UpdateQuadTreeThreadFunction)
         {
             IsBackground = true, Name = "QuadTreeUpdateThread"
         };
 
-        CullQuadTreeThread = new Thread(StartCullingThreadFunction)
+        m_cullQuadTreeThread = new Thread(StartCullingThreadFunction)
         {
             IsBackground = true, Name = "CullQuadTreeThread"
         };
 
-        UpdateQuadTreeThread.Start();
-        CullQuadTreeThread.Start();
+        m_updateQuadTreeThread.Start();
+        m_cullQuadTreeThread.Start();
         m_isRunning = true;
     }
 
@@ -79,7 +80,7 @@ public partial class TerrainQuadTreeUpdater : Node
     {
         while (m_isRunning)
         {
-            m_canPerformCulling.WaitOne();
+            CanPerformCulling.Wait();
             try
             {
                 if (m_terrainQuadTree.RootNodes == null) continue;
@@ -93,7 +94,7 @@ public partial class TerrainQuadTreeUpdater : Node
                     }
                 }
 
-                m_canPerformCulling.Reset();
+                CanPerformCulling.Reset();
                 m_canPerformSearch.Set();
             }
             catch (Exception ex)
@@ -106,22 +107,25 @@ public partial class TerrainQuadTreeUpdater : Node
     public void StopUpdateThread()
     {
         m_isRunning = false;
-        if (UpdateQuadTreeThread != null && UpdateQuadTreeThread.IsAlive)
+        if (m_updateQuadTreeThread != null && m_updateQuadTreeThread.IsAlive)
         {
-            UpdateQuadTreeThread.Join(1000);
+            m_updateQuadTreeThread.Join(1000);
         }
 
-        if (CullQuadTreeThread != null && CullQuadTreeThread.IsAlive)
+        if (m_cullQuadTreeThread != null && m_cullQuadTreeThread.IsAlive)
         {
-            CullQuadTreeThread.Join(1000);
+            m_cullQuadTreeThread.Join(1000);
         }
+
+        CanPerformCulling.Dispose();
+        m_canPerformSearch.Dispose();
     }
 
     private void UpdateQuadTreeThreadFunction()
     {
         while (m_isRunning)
         {
-            m_canPerformSearch.WaitOne();
+            m_canPerformSearch.Wait();
             try
             {
                 if(m_terrainQuadTree.RootNodes == null) continue;
@@ -135,7 +139,7 @@ public partial class TerrainQuadTreeUpdater : Node
                     }
                 }
 
-                EmitSignal(SignalName.QuadTreeUpdatesDetermined);
+                m_canUpdateQuadTree.Set();
                 m_canPerformSearch.Reset();
             }
             catch (Exception ex)
@@ -298,13 +302,5 @@ public partial class TerrainQuadTreeUpdater : Node
                     (float)node.Chunk.MapTile.LongitudeRange
                 );
         return meshSegment;
-    }
-
-    /// <summary>
-    /// Called via signal when the TerrainQuadTree finishes splitting/merging all nodes in its queue
-    /// </summary>
-    private void OnQuadTreeUpdated()
-    {
-        m_canPerformCulling.Set();
     }
 }
