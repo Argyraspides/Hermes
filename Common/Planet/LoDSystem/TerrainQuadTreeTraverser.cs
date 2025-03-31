@@ -16,8 +16,9 @@
 
 */
 
-using Hermes.Common.Map.Utils;
-using Hermes.Common.Meshes.MeshGenerators;
+using System.Runtime.CompilerServices;
+[assembly: InternalsVisibleTo("TerrainQuadTree")]
+
 
 namespace Hermes.Common.Planet.LoDSystem;
 
@@ -25,36 +26,45 @@ using System;
 using System.Threading;
 using Godot;
 using Hermes.Common.GodotUtils;
+using Hermes.Common.Meshes.MeshGenerators;
 
 /// <summary>
-/// TODO::ARGYRASPIDES() { Update doc for this }
+/// The purpose of this class is to run two intensive operations on two different threads to serve the
+/// TerrainQuadTree class. These are:
+/// - Culling nodes that are no longer needed when we exceed the max node threshold defined in the TerrainQuadTree class
+/// - Determining if quadtree nodes need to be split/merged.
+/// Both requiring the traversal of potentially the entire tree, thus these operations are delegated to this class
+/// which spawns one thread for each operation.
+///
+///
 /// </summary>
-public partial class TerrainQuadTreeUpdater : Node
+public partial class TerrainQuadTreeTraverser : Node
 {
-
-    // True if we can perform the DFS search to determine which nodes should be culled, and cull them
-    public ManualResetEventSlim CanPerformCulling = new ManualResetEventSlim(false);
+    // True if we can perform the DFS search to determine which nodes should be culled, and cull them.
+    // Accessible by the TerrainQuadTree.
+    internal ManualResetEventSlim m_canPerformCulling = new ManualResetEventSlim(false);
 
     // True if we can perform the DFS search to determine which nodes should be split/merged
     private ManualResetEventSlim m_canPerformSearch = new ManualResetEventSlim(true);
 
+    // Injected to us by TerrainQuadTree. We set this once we have culled all nodes and determined
+    // which ones should be merged/split, so that the TerrainQuadTree can go ahead and split/merge them
     private ManualResetEventSlim m_canUpdateQuadTree;
 
     private readonly TerrainQuadTree m_terrainQuadTree;
-
 
     private Thread m_updateQuadTreeThread;
     private Thread m_cullQuadTreeThread;
     private volatile bool m_isRunning = false;
 
-    public TerrainQuadTreeUpdater(TerrainQuadTree terrainQuadTree, ManualResetEventSlim canUpdateQuadTree)
+    public TerrainQuadTreeTraverser(TerrainQuadTree terrainQuadTree, ManualResetEventSlim canUpdateQuadTree)
     {
         m_terrainQuadTree = terrainQuadTree ?? throw new ArgumentNullException(nameof(terrainQuadTree));
         m_canUpdateQuadTree = canUpdateQuadTree ?? throw new ArgumentNullException(nameof(canUpdateQuadTree));
         StartUpdateThread();
     }
 
-    ~TerrainQuadTreeUpdater()
+    ~TerrainQuadTreeTraverser()
     {
         StopUpdateThread();
     }
@@ -80,7 +90,7 @@ public partial class TerrainQuadTreeUpdater : Node
     {
         while (m_isRunning)
         {
-            CanPerformCulling.Wait();
+            m_canPerformCulling.Wait();
             try
             {
                 if (m_terrainQuadTree.RootNodes == null) continue;
@@ -94,7 +104,7 @@ public partial class TerrainQuadTreeUpdater : Node
                     }
                 }
 
-                CanPerformCulling.Reset();
+                m_canPerformCulling.Reset();
                 m_canPerformSearch.Set();
             }
             catch (Exception ex)
@@ -117,7 +127,7 @@ public partial class TerrainQuadTreeUpdater : Node
             m_cullQuadTreeThread.Join(1000);
         }
 
-        CanPerformCulling.Dispose();
+        m_canPerformCulling.Dispose();
         m_canPerformSearch.Dispose();
     }
 

@@ -114,7 +114,7 @@ public sealed partial class TerrainQuadTree : Node3D
     };
 
     private readonly PlanetOrbitalCamera m_camera;
-    private readonly TerrainQuadTreeUpdater m_quadTreeUpdater;
+    private readonly TerrainQuadTreeTraverser m_QuadTreeTraverser;
 
     // True if the TerrainQuadTree is about to be destroyed. Used as we don't want to update our current node count
     // when the game is closing and nodes in the scene tree may be invalid
@@ -143,7 +143,7 @@ public sealed partial class TerrainQuadTree : Node3D
         MaxDepth = maxDepth;
 
         InitializeAltitudeThresholds();
-        m_quadTreeUpdater = new TerrainQuadTreeUpdater(this, m_canUpdateQuadTree);
+        m_QuadTreeTraverser = new TerrainQuadTreeTraverser(this, m_canUpdateQuadTree);
     }
 
     public override void _Process(double delta)
@@ -171,14 +171,14 @@ public sealed partial class TerrainQuadTree : Node3D
             if (SplitQueueNodes.IsEmpty && MergeQueueNodes.IsEmpty)
             {
                 m_canUpdateQuadTree.Reset();
-                m_quadTreeUpdater.CanPerformCulling.Set();
+                m_QuadTreeTraverser.m_canPerformCulling.Set();
             }
         }
     }
 
     public override void _ExitTree()
     {
-        m_quadTreeUpdater.StopUpdateThread();
+        m_QuadTreeTraverser.StopUpdateThread();
         base._ExitTree();
     }
 
