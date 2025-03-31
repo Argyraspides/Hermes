@@ -84,13 +84,14 @@ public sealed partial class TerrainQuadTree : Node3D
     // Queue of nodes that should be split/merged as determined by the TerrainQuadTreeUpdater
     public ConcurrentQueue<TerrainQuadTreeNode> SplitQueueNodes = new ConcurrentQueue<TerrainQuadTreeNode>();
     public ConcurrentQueue<TerrainQuadTreeNode> MergeQueueNodes = new ConcurrentQueue<TerrainQuadTreeNode>();
+    public ConcurrentQueue<TerrainQuadTreeNode> VisibilityQueueNodes = new ConcurrentQueue<TerrainQuadTreeNode>();
 
     // If we hit x% of the maximum allowed amount of nodes, we will begin culling unused nodes in the quadtree
     public float MaxNodesCleanupThresholdPercent { get; private set; } = 0.90F;
 
     // Maximum amount of split and merge operations allowed per frame in the scene tree.
     // This is to spread the workload of splitting/merging over multiple frames
-    private const int MaxQueueUpdatesPerFrame = 6;
+    private const int MaxQueueUpdatesPerFrame = 4;
 
     // To prevent hysterisis and oscillation between merging/splitting at fine boundaries, we multiply the merge
     // thresholds to be greater than the split thresholds
@@ -164,8 +165,9 @@ public sealed partial class TerrainQuadTree : Node3D
         {
             lock (RootNodeLock)
             {
-                ProcessSplitQueue();
+                ProcessVisibleNodeQueue();
                 ProcessMergeQueue();
+                ProcessSplitQueue();
             }
 
             if (SplitQueueNodes.IsEmpty && MergeQueueNodes.IsEmpty)
@@ -235,6 +237,7 @@ public sealed partial class TerrainQuadTree : Node3D
                     GenerateChildNodes(parentNode);
                     foreach (var childNode in parentNode.ChildNodes)
                     {
+                        childNode.IsDeepest = true;
                         nodeQueue.Enqueue(childNode);
                     }
                 }
@@ -319,6 +322,19 @@ public sealed partial class TerrainQuadTree : Node3D
                dequeuesProcessed++ < MaxQueueUpdatesPerFrame)
         {
             MergeNodeChildren(node);
+        }
+    }
+
+    private void ProcessVisibleNodeQueue()
+    {
+        int dequeuesProcessed = 0;
+        while (VisibilityQueueNodes.TryDequeue(out TerrainQuadTreeNode node) &&
+               dequeuesProcessed++ < MaxQueueUpdatesPerFrame)
+        {
+            if (GodotUtils.IsValid(node))
+            {
+                node.Chunk.Visible = false;
+            }
         }
     }
 

@@ -71,7 +71,7 @@ public partial class TerrainQuadTreeTraverser : Node
 
     private void StartUpdateThread()
     {
-        m_updateQuadTreeThread = new Thread(UpdateQuadTreeThreadFunction)
+        m_updateQuadTreeThread = new Thread(DetermineSplitMergeNodeThreadFunction)
         {
             IsBackground = true, Name = "QuadTreeUpdateThread"
         };
@@ -131,7 +131,7 @@ public partial class TerrainQuadTreeTraverser : Node
         m_canPerformSearch.Dispose();
     }
 
-    private void UpdateQuadTreeThreadFunction()
+    private void DetermineSplitMergeNodeThreadFunction()
     {
         while (m_isRunning)
         {
@@ -144,8 +144,7 @@ public partial class TerrainQuadTreeTraverser : Node
                 {
                     foreach (var rootNode in m_terrainQuadTree.RootNodes)
                     {
-                        if (!GodotUtils.IsValid(rootNode)) continue;
-                        UpdateTreeDFS(rootNode);
+                        DetermineSplitMergeNodes(rootNode);
                     }
                 }
 
@@ -159,7 +158,7 @@ public partial class TerrainQuadTreeTraverser : Node
         }
     }
 
-    private void UpdateTreeDFS(TerrainQuadTreeNode node)
+    private void DetermineSplitMergeNodes(TerrainQuadTreeNode node)
     {
         if (!GodotUtils.IsValid(node)) return;
 
@@ -172,7 +171,7 @@ public partial class TerrainQuadTreeTraverser : Node
 
         foreach (var childNode in node.ChildNodes)
         {
-            UpdateTreeDFS(childNode);
+            DetermineSplitMergeNodes(childNode);
         }
 
         // Merging happens bottom-up, so we do it after recursing down the tree
@@ -280,6 +279,11 @@ public partial class TerrainQuadTreeTraverser : Node
             // Cull all sub-trees below the parent
             RemoveSubQuadTreeThreadSafe(parentNode);
             return;
+        }
+
+        if (!parentNode.IsParentOfDeepest() && !parentNode.IsDeepest)
+        {
+            m_terrainQuadTree.VisibilityQueueNodes.Enqueue(parentNode);
         }
 
         // Recursively destroy all nodes

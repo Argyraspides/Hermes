@@ -36,7 +36,6 @@ public sealed partial class TerrainQuadTreeNode : Node3D
     // which are needed to determine conditions under which nodes need to be split/merged
     public Vector3 Position { get; set; }
     public bool IsDeepest { get; set; }
-
     public TerrainQuadTreeNode(TerrainChunk chunk, int depth)
     {
         Chunk = chunk ?? throw new ArgumentNullException(nameof(chunk));
@@ -54,5 +53,19 @@ public sealed partial class TerrainQuadTreeNode : Node3D
         }
 
         return true;
+    }
+
+    public bool IsParentOfDeepest()
+    {
+        if(!HasAllChildren()) { return false; }
+        bool parentOfDeepest = true;
+        for (int i = 0; i < ChildNodes.Length; i++)
+        {
+            if (GodotUtils.IsValid(ChildNodes[i]))
+            {
+                parentOfDeepest &= ChildNodes[i].IsDeepest;
+            }
+        }
+        return parentOfDeepest;
     }
 }
