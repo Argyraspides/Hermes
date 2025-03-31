@@ -339,7 +339,7 @@ public sealed partial class TerrainQuadTree : Node3D
     {
         if (!GodotUtils.IsValid(node))
         {
-            throw new ArgumentNullException("Attempting to split an invalid terrain quad tree node");
+            return;
         }
 
         if (!node.HasAllChildren())
@@ -370,7 +370,7 @@ public sealed partial class TerrainQuadTree : Node3D
     {
         if (!GodotUtils.IsValid(parent))
         {
-            throw new ArgumentNullException("Attempting to merge an invalid terrain quad tree node");
+            return;
         }
 
         parent.Chunk.TerrainChunkMesh.SortingOffset = CHUNK_SORT_OFFSET * parent.Depth;
