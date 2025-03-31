@@ -27,41 +27,15 @@ using Godot;
 using Hermes.Common.GodotUtils;
 
 /// <summary>
-/// The TerrainQuadTreeUpdater is meant to perform the following tasks:
-///
-/// - Determining which nodes in the TerrainQuadTree need to be split/merged (job 1)
-/// - Determining which nodes in the TerrainQuadTree need to be culled if we exceed the maximum node count (job 2)
-///
-/// Both these tasks run on separate threads, also separate from the TerrainQuadTree which runs on the main thread
-///
-/// The flow is as follows:
-///
-/// TerrainQuadTree goes through its queue to split/merge nodes ->
-/// TerrainQuadTree signals to TerrainQuadTreeUpdater that it has finished splitting/merging nodes ->
-/// m_canPerformCulling becomes true ->
-/// We traverse the tree to cull all unused nodes ->
-/// TerrainQuadTreeUpdater signals to itself that it has finished culling all nodes ->
-/// m_canPerformSearch becomes true ->
-/// We traverse the tree to see which nodes should be split/merged, and add them to the TerrainQuadTree's queues ->
-/// We signal to the TerrainQuadTree that we have finished determining which ndoes should be split/merged ->
-/// TerrainQuadTree goes through its queue to split/merge nodes ->
-///
-/// Repeat ...
-///
-/// TerrainQuadTreeUpdater and TerrainQuadTree are tightly coupled by design. Traversing the quadtree is an expensive
-/// procedure and shouldn't be done on the main thread
-///
+/// TODO::ARGYRASPIDES() { Update doc for this }
 /// </summary>
 public partial class TerrainQuadTreeUpdater : Node
 {
 
-    // Signal emitted when we are done determining which nodes should be split/merged
+    // Signal emitted when we are done determining which nodes should be split/merged and have culled every node
+    // needed
     [Signal]
     public delegate void QuadTreeUpdatesDeterminedEventHandler();
-
-    // Signal emitted when we are done culling all unused nodes
-    [Signal]
-    public delegate void CullQuadTreeFinishedEventHandler();
 
     public Thread UpdateQuadTreeThread { get; private set; }
     public Thread CullQuadTreeThread { get; private set; }
@@ -80,10 +54,7 @@ public partial class TerrainQuadTreeUpdater : Node
     public TerrainQuadTreeUpdater(TerrainQuadTree terrainQuadTree)
     {
         m_terrainQuadTree = terrainQuadTree ?? throw new ArgumentNullException(nameof(terrainQuadTree));
-
         m_terrainQuadTree.QuadTreeUpdated += OnQuadTreeUpdated;
-        CullQuadTreeFinished += OnCullingFinished;
-
         StartUpdateThread();
     }
 
@@ -122,8 +93,8 @@ public partial class TerrainQuadTreeUpdater : Node
                     }
                 }
 
-                EmitSignal(SignalName.CullQuadTreeFinished);
                 m_canPerformCulling.Reset();
+                m_canPerformSearch.Set();
             }
             catch (Exception ex)
             {
@@ -335,13 +306,5 @@ public partial class TerrainQuadTreeUpdater : Node
     private void OnQuadTreeUpdated()
     {
         m_canPerformCulling.Set();
-    }
-
-    /// <summary>
-    ///  Called via signal when the TerrainQuadTreeUpdater finishes culling all nodes in the scene tree (one iteration)
-    /// </summary>
-    private void OnCullingFinished()
-    {
-        m_canPerformSearch.Set();
     }
 }
