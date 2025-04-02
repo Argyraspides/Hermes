@@ -144,7 +144,7 @@ public partial class TerrainQuadTreeTraverser : Node
                 {
                     foreach (var rootNode in m_terrainQuadTree.RootNodes)
                     {
-                        DetermineSplitMergeNodes(rootNode);
+                        DetermineSplitMergeNodes(rootNode, null);
                     }
                 }
 
@@ -158,7 +158,7 @@ public partial class TerrainQuadTreeTraverser : Node
         }
     }
 
-    private void DetermineSplitMergeNodes(TerrainQuadTreeNode node)
+    private void DetermineSplitMergeNodes(TerrainQuadTreeNode node, TerrainQuadTreeNode parent)
     {
         if (!GodotUtils.IsValid(node)) return;
 
@@ -166,18 +166,20 @@ public partial class TerrainQuadTreeTraverser : Node
         if (node.IsDeepest && ShouldSplit(node))
         {
             m_terrainQuadTree.SplitQueueNodes.Enqueue(node);
+            if (parent != null) m_terrainQuadTree.InvisibilityQueueNodes.Enqueue(parent);
             return;
         }
 
         foreach (var childNode in node.ChildNodes)
         {
-            DetermineSplitMergeNodes(childNode);
+            DetermineSplitMergeNodes(childNode, node);
         }
 
         // Merging happens bottom-up, so we do it after recursing down the tree
         if (ShouldMergeChildren(node))
         {
             m_terrainQuadTree.MergeQueueNodes.Enqueue(node);
+            if (parent != null) m_terrainQuadTree.VisibilityQueueNodes.Enqueue(parent);
         }
     }
 
@@ -279,11 +281,6 @@ public partial class TerrainQuadTreeTraverser : Node
             // Cull all sub-trees below the parent
             RemoveSubQuadTreeThreadSafe(parentNode);
             return;
-        }
-
-        if (!parentNode.IsParentOfDeepest() && !parentNode.IsDeepest)
-        {
-            m_terrainQuadTree.VisibilityQueueNodes.Enqueue(parentNode);
         }
 
         // Recursively destroy all nodes

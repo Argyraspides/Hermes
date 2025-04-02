@@ -84,8 +84,8 @@ public sealed partial class TerrainQuadTree : Node3D
     // Queue of nodes that should be split/merged as determined by the TerrainQuadTreeUpdater
     public ConcurrentQueue<TerrainQuadTreeNode> SplitQueueNodes = new ConcurrentQueue<TerrainQuadTreeNode>();
     public ConcurrentQueue<TerrainQuadTreeNode> MergeQueueNodes = new ConcurrentQueue<TerrainQuadTreeNode>();
+    public ConcurrentQueue<TerrainQuadTreeNode> InvisibilityQueueNodes = new ConcurrentQueue<TerrainQuadTreeNode>();
     public ConcurrentQueue<TerrainQuadTreeNode> VisibilityQueueNodes = new ConcurrentQueue<TerrainQuadTreeNode>();
-
     // If we hit x% of the maximum allowed amount of nodes, we will begin culling unused nodes in the quadtree
     public float MaxNodesCleanupThresholdPercent { get; private set; } = 0.90F;
 
@@ -115,7 +115,7 @@ public sealed partial class TerrainQuadTree : Node3D
     };
 
     private readonly PlanetOrbitalCamera m_camera;
-    private readonly TerrainQuadTreeTraverser m_QuadTreeTraverser;
+    private TerrainQuadTreeTraverser m_QuadTreeTraverser;
 
     // True if the TerrainQuadTree is about to be destroyed. Used as we don't want to update our current node count
     // when the game is closing and nodes in the scene tree may be invalid
@@ -144,6 +144,10 @@ public sealed partial class TerrainQuadTree : Node3D
         MaxDepth = maxDepth;
 
         InitializeAltitudeThresholds();
+    }
+
+    public override void _Ready()
+    {
         m_QuadTreeTraverser = new TerrainQuadTreeTraverser(this, m_canUpdateQuadTree);
     }
 
@@ -165,9 +169,11 @@ public sealed partial class TerrainQuadTree : Node3D
         {
             lock (RootNodeLock)
             {
-                ProcessVisibleNodeQueue();
-                ProcessMergeQueue();
                 ProcessSplitQueue();
+                ProcessInvisibilityQueue();
+
+                ProcessVisibilityQueue();
+                ProcessMergeQueue();
             }
 
             if (SplitQueueNodes.IsEmpty && MergeQueueNodes.IsEmpty)
@@ -325,18 +331,29 @@ public sealed partial class TerrainQuadTree : Node3D
         }
     }
 
-    private void ProcessVisibleNodeQueue()
+    private void ProcessInvisibilityQueue()
+    {
+        int dequeuesProcessed = 0;
+        while (InvisibilityQueueNodes.TryDequeue(out TerrainQuadTreeNode node) &&
+               dequeuesProcessed++ < MaxQueueUpdatesPerFrame)
+        {
+            if (!GodotUtils.IsValid(node)) continue;
+            node.Chunk.Visible = false;
+        }
+    }
+
+    private void ProcessVisibilityQueue()
     {
         int dequeuesProcessed = 0;
         while (VisibilityQueueNodes.TryDequeue(out TerrainQuadTreeNode node) &&
                dequeuesProcessed++ < MaxQueueUpdatesPerFrame)
         {
-            if (GodotUtils.IsValid(node))
-            {
-                node.Chunk.Visible = false;
-            }
+            if (!GodotUtils.IsValid(node)) continue;
+            node.Chunk.Visible = true;
         }
     }
+
+
 
     /// <summary>
     /// Splits the quad tree nodes by initializing its children. If its children already exists, simply
@@ -368,10 +385,6 @@ public sealed partial class TerrainQuadTree : Node3D
         }
 
         node.Chunk.TerrainChunkMesh.SortingOffset = -CHUNK_SORT_OFFSET * node.Depth;
-        // Don't toggle parent visibility off to prevent gaps between meshes of different
-        // zoom levels
-        // TODO::ARGYRASPIDES() { Find a way to make sure that only the parent of the deepest node remains
-        // visible, and not every parent node up until the deepest node }
         node.IsDeepest = false;
     }
 

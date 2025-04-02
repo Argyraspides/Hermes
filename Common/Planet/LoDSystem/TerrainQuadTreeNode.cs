@@ -54,18 +54,4 @@ public sealed partial class TerrainQuadTreeNode : Node3D
 
         return true;
     }
-
-    public bool IsParentOfDeepest()
-    {
-        if(!HasAllChildren()) { return false; }
-        bool parentOfDeepest = true;
-        for (int i = 0; i < ChildNodes.Length; i++)
-        {
-            if (GodotUtils.IsValid(ChildNodes[i]))
-            {
-                parentOfDeepest &= ChildNodes[i].IsDeepest;
-            }
-        }
-        return parentOfDeepest;
-    }
 }
