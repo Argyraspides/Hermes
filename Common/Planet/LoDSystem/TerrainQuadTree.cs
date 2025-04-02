@@ -84,6 +84,11 @@ public sealed partial class TerrainQuadTree : Node3D
     // Queue of nodes that should be split/merged as determined by the TerrainQuadTreeUpdater
     public ConcurrentQueue<TerrainQuadTreeNode> SplitQueueNodes = new ConcurrentQueue<TerrainQuadTreeNode>();
     public ConcurrentQueue<TerrainQuadTreeNode> MergeQueueNodes = new ConcurrentQueue<TerrainQuadTreeNode>();
+
+    // Queue of nodes that should be turned visible/invisible. To hide gaps between meshes of different zoom levels,
+    // the current solution is to keep the parent of the deepest node visible. When splitting, visibility of parents is kept on.
+    // As we split further, the visibility of the parent of a node that is just about to be split should be turned off. As we
+    // merge back in, since the parent of the node we are about to merge into was previously turned off, we will turn it back on
     public ConcurrentQueue<TerrainQuadTreeNode> InvisibilityQueueNodes = new ConcurrentQueue<TerrainQuadTreeNode>();
     public ConcurrentQueue<TerrainQuadTreeNode> VisibilityQueueNodes = new ConcurrentQueue<TerrainQuadTreeNode>();
     // If we hit x% of the maximum allowed amount of nodes, we will begin culling unused nodes in the quadtree
@@ -169,9 +174,16 @@ public sealed partial class TerrainQuadTree : Node3D
         {
             lock (RootNodeLock)
             {
+                // If we make the parent nodes of the nodes we are about to split invisible before we actually split them, then
+                // we will momentarily see the gaps between meshes of different zoom levels.
+                // So, first we split, keeping the visibility of both children and parent on,
+                // THEN we turn the visibility of the parent of the node that was just split off.
                 ProcessSplitQueue();
                 ProcessInvisibilityQueue();
 
+                // Similar logic here for order. Previously, the visibility of the parent of the node we just split was turned off.
+                // Now, we are merging the children back into the parent. So, we toggle the visibility of the parent of the node
+                // we are merging into back on before we merge to avoid seeing the gaps momentarily.
                 ProcessVisibilityQueue();
                 ProcessMergeQueue();
             }
