@@ -241,7 +241,7 @@ public partial class PlanetOrbitalCamera : Camera3D
         (double planetSemiMajorAxis, double planetSemiMinorAxis) = MapUtils.GetPlanetSemiMajorAxis(planetType);
         m_planetSemiMajorAxis = planetSemiMajorAxis;
         m_planetSemiMinorAxis = planetSemiMinorAxis;
-        m_minCameraAltitude = 0.2d;
+        m_minCameraAltitude = 1.0d;
         m_maxCameraAltitude = planetSemiMajorAxis * m_maxAltitudeMultiplier;
         m_initialCameraAltitude = planetSemiMajorAxis * m_initialAltitudeMultiplier;
     }

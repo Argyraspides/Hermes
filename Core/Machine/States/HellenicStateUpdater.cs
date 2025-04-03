@@ -48,9 +48,13 @@ public static class HellenicStateUpdater
         machine._Position.ReferenceFrame = latLon.ReferenceFrame;
         machine._Position.TimeUsec = latLon.TimeUsec;
 
+        double alt = double.IsNaN(machine._Position.Altitude) ? 0 : machine._Position.Altitude;
+        alt /= 1000; // m to km
+
         machine.GlobalPosition = MapUtils.LatLonToCartesian(
             Mathf.DegToRad(machine._Position.Latitude),
-            Mathf.DegToRad(machine._Position.Longitude)
+            Mathf.DegToRad(machine._Position.Longitude),
+            alt
         );
     }
 

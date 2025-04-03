@@ -449,11 +449,15 @@ public static class MapUtils
         double dist = Math.Sqrt((xCoo * xCoo) + (yCoo * yCoo) + (zCoo * zCoo));
         double altScalar = 1.0d + (alt / dist);
 
+        zCoo *= altScalar;
+        xCoo *= altScalar;
+        yCoo *= altScalar;
+
         return new Vector3(
             (float)xCoo,
             (float)yCoo,
             (float)zCoo
-        ) * (float)altScalar;
+        );
     }
 
     public static (double, double) GetPlanetSemiMajorAxis(PlanetShapeType planetType)
