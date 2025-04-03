@@ -1,7 +1,7 @@
 <h1 align="center">
 Hermes: Messenger of the Machines
 </h1>
-  
+
 <p align="center">
   <img src="docs/Hermes.png" width="300" height="300">
 </p>
@@ -86,5 +86,23 @@ You should now be able to run & debug Hermes.
 ### Step 3 (Optional -- Reccommended): JetBrains Rider Setup
 Simply download [JetBrains Rider](https://www.jetbrains.com/rider/download) and open up the Godot cloned repo. That's it. JetBrains has a [baked-in plugin for Godot development](https://www.jetbrains.com/help/rider/Godot.html#running-and-debugging) which should get you up and running right out of the box with debugging support.
 
-### Step 4: Download the Earth asset pack
-Go to the releases tab and download the asset pack for Earth. Follow the instructions there.
+### Step 4: Generate Hellenic Messages & Translations
+Hermes is protocol-agnostic, with a custom internal messaging system called "Hellenic". There is an XML file in the repository called
+``hellenic.xml`` which is a language-agnostic way to define Hellenic messages. Included with Hermes is also ``common.xml`` which is the
+current source of truth for MAVLink messages, which is Hermes first protocol and messaging system to support, given it is the most
+popular. There are two Python scripts used to generate the Hellenic message definitions in Hermes' native language C#, and another
+Python script to generate a converter class that converts MAVLink messages to Hellenic messages.
+
+Navigate to ``Languages/Generators`` and run:
+
+```python
+python3 HellenicDialectGenerator.py  --input_XML ../DialectDefinitions/hellenic.xml --output_dir ../ConcreteDialects/Hellenic/
+```
+
+Then navigate to ``Languages/Generators/MAVLink`` and run:
+```python
+python3 CommonToHellenicConverterGenerator.py --translation_XML ../../DialectConversionDefinitions/common_to_hellenic.xml --common_XML ../../DialectDefinitions/common.xml --hellenic_XML ../../DialectDefinitions/hellenic.xml --output_dir ../../ConcreteConversions/ToHellenic
+```
+
+### Step 5: Download the Earth asset pack
+Go to the releases tab and download the asset pack for Earth. Follow the instructions there. Hermes is ready to go!
