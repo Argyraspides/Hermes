@@ -192,7 +192,11 @@ public partial class TerrainChunk : Node3D
         Transform = Transform.Scaled(
                 new Vector3(
                     SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM,
-                    SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM,
+                    // We scale 'y' by the semi major axis, since the underlying normalized mesh has its semi-minor
+                    // axis represented as a fraction of the semi-major axis. To get back the true value then,
+                    // we multiply by the semi-major axis. The other axes are given values of '1' for the semi-major axis,
+                    // so again, we multiply by the same to get the true value on the Earth's scale.
+                    SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM,
                     SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM
                 ));
 

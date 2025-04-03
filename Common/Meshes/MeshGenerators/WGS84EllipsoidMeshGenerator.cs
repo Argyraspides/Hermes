@@ -36,6 +36,24 @@ using System.Linq;
 /// </summary>
 public static class WGS84EllipsoidMeshGenerator
 {
+
+        /// <summary>
+        /// Creates an ellipsoid mesh segment for the WGS84 ellipsoid. If the mesh touches the poles, the returned
+        /// mesh will be a triangle, otherwise a quadrilateral composed of two triangles.
+        ///
+        /// The returned mesh will be normalized. In Hermes, the convention is that null island lies on the +ve
+        /// z-axis. The z-axis will therefore pierce the equator, which is the furthest point away from the Earth's center.
+        /// The returned mesh is normalized, meaning that all values are taken as the fraction of the semi-major axis, since
+        /// this is the furthest we can be from Earth's center.
+        ///
+        /// The returned mesh will have its geometric center lie in the origin, so any scaled transformations will be done
+        /// from the center.
+        /// </summary>
+        /// <param name="lat">The center latitude of the mesh</param>
+        /// <param name="lon">The center longitude of the mesh</param>
+        /// <param name="latRange">The range of latitude the mesh is meant to cover</param>
+        /// <param name="lonRange">The range of longitude the mesh is meant to cover</param>
+        /// <returns>A triangle ArrayMesh if the mesh touches the poles, otherwise a quadrilateral mesh</returns>
         public static ArrayMesh CreateEllipsoidMeshSegment(float lat, float lon, float latRange, float lonRange)
         {
             var surfaceArray = new Godot.Collections.Array();
