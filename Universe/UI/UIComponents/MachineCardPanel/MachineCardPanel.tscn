@@ -15,15 +15,13 @@ size_flags_vertical = 3
 theme_override_constants/separation = 0
 script = ExtResource("1_5uxtg")
 
-[node name="PanelBackground" type="PanelContainer" parent="."]
+[node name="PanelBackground" type="ScrollContainer" parent="."]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_lfe7d")
 
 [node name="CardStack" type="VBoxContainer" parent="PanelBackground"]
 layout_mode = 2
-size_flags_horizontal = 0
-size_flags_vertical = 0
 
 [node name="CollapsePanelButton" type="Button" parent="."]
 custom_minimum_size = Vector2(21, 0)

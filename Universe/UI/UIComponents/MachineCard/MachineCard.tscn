@@ -65,5 +65,16 @@ grow_vertical = 2
 
 [node name="CompassDisplay" parent="TelemetryPanel" instance=ExtResource("1_kvnjl")]
 layout_mode = 2
-size_flags_horizontal = 2
+size_flags_horizontal = 0
 size_flags_vertical = 4
+
+[node name="TelemetryLabels" type="GridContainer" parent="TelemetryPanel"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="AltitudeLabel" type="RichTextLabel" parent="TelemetryPanel/TelemetryLabels"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_font_sizes/normal_font_size = 18
+text = "	ALT:				N/A"

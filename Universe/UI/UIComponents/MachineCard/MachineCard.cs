@@ -1,73 +1,89 @@
+namespace Hermes.Universe.UI.UIComponents.MachineCard;
+
+
 using System.Text.RegularExpressions;
 using Godot;
 using Hermes.Core.Machine;
-using Hermes.Core.Machine.Components;
-using Hermes.Universe.UI.UIComponents.CompassDisplay;
 
-namespace Hermes.Universe.UI.UIComponents.MachineCard;
 
 public partial class MachineCard : Control
 {
-    public Machine Machine { set; get; }
+    public Machine Machine { get; set; }
 
-    ColorRect m_colorRect;
-
+    private ColorRect m_colorRect;
     private HBoxContainer m_machineNameBox;
     private TextureRect m_machineTypeIcon;
-    private CenterContainer m_textCenterContainer;
     private RichTextLabel m_machineNameLabel;
-
     private HBoxContainer m_telemetryPanel;
-
-
+    private GridContainer m_telemetryLabels;
+    private RichTextLabel m_altitudeLabel;
     private CompassDisplay.CompassDisplay m_compassDisplay;
 
     public override void _Ready()
     {
-
-        m_colorRect = GetNode<ColorRect>("ColorRect");
-
-        m_machineNameBox = GetNode<HBoxContainer>("MachineNameBox");
-
-        m_machineTypeIcon = m_machineNameBox.GetNode<TextureRect>("MachineTypeIcon");
-        m_textCenterContainer = m_machineNameBox.GetNode<CenterContainer>("TextCenterContainer");
-
-        m_machineNameLabel = m_textCenterContainer.GetNode<RichTextLabel>("MachineNameLabel");
-
-        m_telemetryPanel = GetNode<HBoxContainer>("TelemetryPanel");
-
-        m_compassDisplay = m_telemetryPanel.GetNode<CompassDisplay.CompassDisplay>("CompassDisplay");
-
-        // MachineCard's are meant to be used in the MachineCardPanel. We're giving it a minimum size here
-        // to make sure the panel resizes according to the size of this machine card
-        CustomMinimumSize =
-            new Vector2(GetViewport().GetWindow().Size.X * 0.3f,
-                225);
+        InitializeComponents();
+        SetMinimumSize();
     }
 
-    private void SetIcon()
+    private void InitializeComponents()
     {
-        if (Machine.Identity.MachineType == MachineType.Quadcopter)
+        m_colorRect = GetNode<ColorRect>("ColorRect");
+        m_machineNameBox = GetNode<HBoxContainer>("MachineNameBox");
+        m_machineTypeIcon = m_machineNameBox.GetNode<TextureRect>("MachineTypeIcon");
+        var textCenterContainer = m_machineNameBox.GetNode<CenterContainer>("TextCenterContainer");
+        m_machineNameLabel = textCenterContainer.GetNode<RichTextLabel>("MachineNameLabel");
+        m_telemetryPanel = GetNode<HBoxContainer>("TelemetryPanel");
+        m_compassDisplay = m_telemetryPanel.GetNode<CompassDisplay.CompassDisplay>("CompassDisplay");
+        m_telemetryLabels = m_telemetryPanel.GetNode<GridContainer>("TelemetryLabels");
+        m_altitudeLabel = m_telemetryLabels.GetNode<RichTextLabel>("AltitudeLabel");
+    }
+
+    private void SetMinimumSize()
+    {
+        // MachineCard's are meant to be used in the MachineCardPanel
+        // Set minimum size to ensure the panel resizes accordingly
+        CustomMinimumSize = new Vector2(GetViewport().GetWindow().Size.X * 0.3f, 225);
+    }
+
+    private void UpdateMachineTypeIcon()
+    {
+        string iconPath = Machine.Identity.MachineType switch
         {
-            m_machineTypeIcon.Texture = GD.Load<Texture2D>("res://Core/Machine/Assets/Images/QuadcopterIcon.png");
-        }
-        else if (Machine.Identity.MachineType == MachineType.GroundControlStation)
-        {
-            m_machineTypeIcon.Texture = GD.Load<Texture2D>("res://Core/Machine/Assets/Images/GroundControlStation.png");
-        }
+            MachineType.Quadcopter => "res://Core/Machine/Assets/Images/QuadcopterIcon.png",
+            MachineType.GroundControlStation => "res://Core/Machine/Assets/Images/GroundControlStation.png",
+            _ => string.Empty
+        };
+
+        if (string.IsNullOrEmpty(iconPath)) return;
+        m_machineTypeIcon.Texture = GD.Load<Texture2D>(iconPath);
+    }
+
+    private void UpdateMachineName()
+    {
+        m_machineNameLabel.Text = Regex.Replace(
+            Machine.MachineType.ToString(),
+            @"(?<=[a-z])(?=[A-Z])|(?<=\d)(?=[A-Z])",
+            " "
+        );
+    }
+
+    private void UpdateAltitude()
+    {
+        if (double.IsNaN(Machine._Position.Altitude)) return;
+        m_altitudeLabel.Text = "\tALT:\t\t\t\t" + Machine._Position.Altitude.ToString("F1") + " m";
+    }
+
+    private void UpdateCompass()
+    {
+        if (double.IsNaN(Machine.Orientation.Heading)) return;
+        m_compassDisplay.HeadingDeg = Machine.Orientation.Heading;
     }
 
     public override void _Process(double delta)
     {
-        if (!double.IsNaN(Machine.Orientation.Heading))
-        {
-            m_compassDisplay.HeadingDeg = Machine.Orientation.Heading;
-        }
-        m_machineNameLabel.Text =
-            Regex.Replace(Machine.MachineType.ToString(), @"(?<=[a-z])(?=[A-Z])|(?<=\d)(?=[A-Z])", " ");
-
-        SetIcon();
+        UpdateCompass();
+        UpdateMachineName();
+        UpdateMachineTypeIcon();
+        UpdateAltitude();
     }
-
-
 }
