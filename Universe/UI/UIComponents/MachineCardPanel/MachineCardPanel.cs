@@ -12,7 +12,7 @@ public partial class MachineCardPanel : Control
     List<Machine> machines = new List<Machine>();
 
     private VBoxContainer m_cardStack;
-    private PanelContainer m_panelBackground;
+    private ScrollContainer m_panelBackground;
     private Button m_collapsePanelButton;
 
     // Called when the node enters the scene tree for the first time.
@@ -21,7 +21,7 @@ public partial class MachineCardPanel : Control
         GlobalEventBus.Instance.MachineEventBus.NewMachineConnected += OnNewMachineConnected;
         GlobalEventBus.Instance.MachineEventBus.MachineDisconnected += OnNewMachineDisconnected;
 
-        m_panelBackground = GetNode<PanelContainer>("PanelBackground");
+        m_panelBackground = GetNode<ScrollContainer>("PanelBackground");
 
         m_cardStack = m_panelBackground.GetNode<VBoxContainer>("CardStack");
 

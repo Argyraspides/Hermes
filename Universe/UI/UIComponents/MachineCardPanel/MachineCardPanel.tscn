@@ -16,9 +16,11 @@ theme_override_constants/separation = 0
 script = ExtResource("1_5uxtg")
 
 [node name="PanelBackground" type="ScrollContainer" parent="."]
+clip_contents = false
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_lfe7d")
+horizontal_scroll_mode = 0
 
 [node name="CardStack" type="VBoxContainer" parent="PanelBackground"]
 layout_mode = 2
