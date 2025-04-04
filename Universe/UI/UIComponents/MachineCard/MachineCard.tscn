@@ -11,6 +11,7 @@ anchor_right = 0.3
 anchor_bottom = 0.2
 offset_right = 0.47998
 offset_bottom = -0.12001
+mouse_filter = 1
 script = ExtResource("1_kr3c1")
 
 [node name="ColorRect" type="ColorRect" parent="."]
@@ -78,3 +79,13 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_font_sizes/normal_font_size = 18
 text = "	ALT:				N/A"
+
+[node name="ClickablePanel" type="Panel" parent="."]
+modulate = Color(0, 0, 0, 0)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_default_cursor_shape = 2

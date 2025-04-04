@@ -1,3 +1,5 @@
+using System;
+
 namespace Hermes.Universe.UI.UIComponents.MachineCard;
 
 
@@ -10,19 +12,22 @@ public partial class MachineCard : Control
 {
     public Machine Machine { get; set; }
 
-    private ColorRect m_colorRect;
-    private HBoxContainer m_machineNameBox;
-    private TextureRect m_machineTypeIcon;
-    private RichTextLabel m_machineNameLabel;
-    private HBoxContainer m_telemetryPanel;
-    private GridContainer m_telemetryLabels;
-    private RichTextLabel m_altitudeLabel;
-    private CompassDisplay.CompassDisplay m_compassDisplay;
+    private ColorRect                       m_colorRect;
+    private HBoxContainer                   m_machineNameBox;
+    private TextureRect                     m_machineTypeIcon;
+    private RichTextLabel                   m_machineNameLabel;
+    private HBoxContainer                   m_telemetryPanel;
+    private GridContainer                   m_telemetryLabels;
+    private RichTextLabel                   m_altitudeLabel;
+    private CompassDisplay.CompassDisplay   m_compassDisplay;
 
     public override void _Ready()
     {
         InitializeComponents();
         SetMinimumSize();
+
+        MouseEntered += OnMouseEntered;
+        MouseExited += OnMouseExited;
     }
 
     private void InitializeComponents()
@@ -47,7 +52,7 @@ public partial class MachineCard : Control
 
     private void UpdateMachineTypeIcon()
     {
-        string iconPath = Machine.Identity.MachineType switch
+        string iconPath = Machine.MachineType switch
         {
             MachineType.Quadcopter => "res://Core/Machine/Assets/Images/QuadcopterIcon.png",
             MachineType.GroundControlStation => "res://Core/Machine/Assets/Images/GroundControlStation.png",
@@ -69,14 +74,31 @@ public partial class MachineCard : Control
 
     private void UpdateAltitude()
     {
-        if (double.IsNaN(Machine._Position.Altitude)) return;
-        m_altitudeLabel.Text = "\tALT:\t\t\t\t" + Machine._Position.Altitude.ToString("F1") + " m";
+        Altitude altitudeMsg = (Altitude)Machine.GetHellenicMessage(HellenicMessageType.Altitude);
+        if (altitudeMsg == null) return;
+
+        string altText = altitudeMsg.Alt.HasValue ? altitudeMsg.Alt.Value.ToString("F1") : "N/A";
+
+        m_altitudeLabel.Text = "\tALT:\t\t\t\t" + altText + " m";
     }
 
     private void UpdateCompass()
     {
-        if (double.IsNaN(Machine.Orientation.Heading)) return;
-        m_compassDisplay.HeadingDeg = Machine.Orientation.Heading;
+        Heading headingMsg = (Heading)Machine.GetHellenicMessage(HellenicMessageType.Heading);
+        if (headingMsg == null) return;
+
+        m_compassDisplay.HeadingDeg = headingMsg.Hdg;
+    }
+
+
+    private void OnMouseEntered()
+    {
+        MouseDefaultCursorShape = CursorShape.PointingHand;
+    }
+
+    private void OnMouseExited()
+    {
+        MouseDefaultCursorShape = CursorShape.Arrow;
     }
 
     public override void _Process(double delta)
@@ -86,4 +108,10 @@ public partial class MachineCard : Control
         UpdateMachineTypeIcon();
         UpdateAltitude();
     }
+
+    public override void _Input(InputEvent @event)
+    {
+
+    }
+
 }

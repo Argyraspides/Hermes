@@ -4,7 +4,7 @@ namespace Hermes.Universe.UI.UIComponents.CompassDisplay;
 
 public partial class CompassDisplay : Control
 {
-    public double HeadingDeg = 0.0f;
+    public double? HeadingDeg = 0.0f;
 
     private CenterContainer m_compassNeedleContainer;
     private CenterContainer m_compassLabelContainer;
@@ -29,7 +29,9 @@ public partial class CompassDisplay : Control
 
     public override void _Process(double delta)
     {
-        m_compassHeadingLabel.Text = $"[center] {(int)HeadingDeg}\u00b0[/center]";
-        m_compassNeedleContainer.RotationDegrees = (float)HeadingDeg;
+        string headingText = HeadingDeg.HasValue ? HeadingDeg.Value.ToString("F0") : "N/A";
+
+        m_compassHeadingLabel.Text = $"[center] {headingText}\u00b0[/center]";
+        m_compassNeedleContainer.RotationDegrees = HeadingDeg.HasValue ? (float) HeadingDeg.Value : 0.0f;
     }
 }

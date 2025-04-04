@@ -43,15 +43,16 @@ g_type_map = {
 
 def generate_hellenic_interface_file(output_dir: str) -> None:
     interface_content = (f""
+                         f"#nullable enable\n\n"
                          f"using Godot;\n\n\n"
                          f"public abstract partial class HellenicMessage : RefCounted\n"
                          f"{{\n"
                          f"\t// The ID of the machine this message was sent from\n"
-                         f"\tpublic uint MachineId {{ get; protected set; }} = uint.MaxValue;\n"
+                         f"\tpublic uint? MachineId {{ get; protected set; }}\n"
                          f"\t// The ID of the Hellenic message itself. E.g., An ID of 0 corresponds to \"LatitudeLongitude\"\n"
-                         f"\tpublic uint Id {{ get; protected set; }} = uint.MaxValue;\n"
+                         f"\tpublic uint? Id {{ get; protected set; }}\n"
                          f"\t// The name of this Hellenic message, e.g., \"LatitudeLongitude\"\n"
-                         f"\tpublic string MessageName {{ get; protected set; }} = string.Empty;\n"
+                         f"\tpublic string? MessageName {{ get; protected set; }}\n"
                          f"}}")
 
     output_path = os.path.join(output_dir, "HellenicMessage.cs")
@@ -77,7 +78,7 @@ def generate_dialect_class(hellenic_xml_message, hellenic_xml_message_header) ->
         field_c_sharp_type = g_type_map.get(field.get("type"))
         field_name = field.get("name")
         field_name_pascal_case = snake_to_pascal_case(field_name)
-        field_line = f"\tpublic {field_c_sharp_type} {field_name_pascal_case} {{ get; set; }}\n\n"
+        field_line = f"\tpublic {field_c_sharp_type}? {field_name_pascal_case} {{ get; set; }}\n\n"
         final_class += field_description_comment + field_line
 
     # GENERATE EMPTY CONSTRUCTOR >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>

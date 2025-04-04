@@ -48,9 +48,9 @@ public partial class MachineManager : Node
         foreach (Machine machine in m_Machines.Values)
         {
             double timeElapsed = Time.GetUnixTimeFromSystem() - machine.LastUpdateTimeUnix;
-            if (timeElapsed > MACHINE_STALE_TIME_S)
+            if (machine.MachineId.HasValue && timeElapsed > MACHINE_STALE_TIME_S)
             {
-                m_Machines.Remove(machine.Identity.MachineId);
+                m_Machines.Remove(machine.MachineId.Value);
                 EmitSignal(SignalName.MachineDisconnected, machine);
             }
         }
@@ -58,29 +58,22 @@ public partial class MachineManager : Node
 
     void UpdateMachine(HellenicMessage message)
     {
-        if (!m_Machines.ContainsKey(message.MachineId))
+        if (!message.Id.HasValue || !message.MachineId.HasValue) return;
+
+        if (!m_Machines.ContainsKey(message.MachineId.Value))
         {
             var machineCardScene = GD.Load<PackedScene>("res://Core/Machine/Machine.tscn");
             var machineCardInstance = machineCardScene.Instantiate<Machine>();
-            m_Machines[message.MachineId] = machineCardInstance;
-            AddChild(m_Machines[message.MachineId]);
-            EmitSignal(SignalName.NewMachineConnected, m_Machines[message.MachineId]);
+            m_Machines[message.MachineId.Value] = machineCardInstance;
+            AddChild(m_Machines[message.MachineId.Value]);
+            EmitSignal(SignalName.NewMachineConnected, m_Machines[message.MachineId.Value]);
         }
-        Machine machine = m_Machines[message.MachineId];
+        Machine machine = m_Machines[message.MachineId.Value];
         machine.Update(message);
     }
 
     private void OnHellenicMessageReceived(HellenicMessage message)
     {
         UpdateMachine(message);
-    }
-
-    public Machine GetMachine(uint entityId)
-    {
-        if (m_Machines.ContainsKey(entityId))
-        {
-            return m_Machines[entityId];
-        }
-        return null;
     }
 }

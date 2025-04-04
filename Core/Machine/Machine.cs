@@ -18,74 +18,53 @@
 */
 
 
+using System;
+using Godot.Collections;
 using Hermes.Common.Map.Utils;
 
 namespace Hermes.Core.Machine;
 
 
-using System.Collections.Generic;
 using Godot;
-using Core.Machine.Components;
-using Core.Machine.States;
+using System.Collections.Generic;
 
 public partial class Machine : RigidBody3D
 {
+    public MachineType MachineType { get; private set; } = MachineType.Unknown;
+    public uint? MachineId { get; private set; }
 
-    // ********* States that all machines regardless of type should have
-    public PositionState _Position { get; } = new PositionState();
-    public OrientationState Orientation { get; } = new OrientationState();
-    public VelocityState Velocity { get; } = new VelocityState();
-    public IdentityState Identity { get; } = new IdentityState();
-
-    private Dictionary<ComponentType, Component> m_components = new Dictionary<ComponentType, Component>();
+    private Dictionary<uint, HellenicMessage> m_hellenicMessages = new Dictionary<uint, HellenicMessage>();
 
     // Last time this vehicle was updated in the Unix timestamp
     public double LastUpdateTimeUnix { get; private set; } = 0;
 
-    public override void _Ready()
-    {
-    }
-
-    public void AddComponent(Component component)
-    {
-        if(component == null || component.ComponentType == ComponentType.NULL)
-        {
-            return;
-        }
-        m_components.TryAdd(component.ComponentType, component);
-    }
-
-    public bool HasComponent(ComponentType componentType)
-    {
-        return m_components.ContainsKey(componentType);
-    }
-
-    public Component GetComponent(ComponentType componentType)
-    {
-        if (!m_components.ContainsKey(componentType))
-        {
-            return null;
-        }
-        return m_components[componentType];
-    }
-
-    private void UpdateComponents(HellenicMessage message)
-    {
-        foreach (Component component in m_components.Values)
-        {
-            component.UpdateComponentState(message);
-        }
-    }
-
     public void Update(HellenicMessage message)
     {
-        HellenicStateUpdater.UpdateStates(message, this);
-        UpdateComponents(message);
-        LastUpdateTimeUnix = Time.GetUnixTimeFromSystem();
+        UpdateState(message);
+        UpdateIdentity(message);
     }
 
-    public MachineType MachineType
+    private void UpdateState(HellenicMessage message)
     {
-        get { return Identity.MachineType; }
+        if (!message.Id.HasValue) return;
+
+        LastUpdateTimeUnix = Time.GetUnixTimeFromSystem();
+        m_hellenicMessages[message.Id.Value] = message;
+    }
+
+    private void UpdateIdentity(HellenicMessage message)
+    {
+        if (message is Pulse pulse)
+        {
+            MachineType =
+                pulse.MachineType.HasValue ?
+                    (MachineType)pulse.MachineType.Value : MachineType.Unknown;
+            MachineId = pulse.MachineId;
+        }
+    }
+
+    public HellenicMessage GetHellenicMessage(HellenicMessageType messageType)
+    {
+        return m_hellenicMessages.TryGetValue((uint)messageType, out var hellenicMessage) ? hellenicMessage : null;
     }
 }
