@@ -35,26 +35,13 @@ public partial class MachineEventBus : Node
     [Signal]
     public delegate void MachineDisconnectedEventHandler(Machine machine);
 
-    private void OnNewMachineConnected(Machine machine)
+    public void OnNewMachineConnected(Machine machine)
     {
         EmitSignal(SignalName.NewMachineConnected, machine);
     }
 
-    private void OnMachineDisconnected(Machine machine)
+    public void OnMachineDisconnected(Machine machine)
     {
         EmitSignal(SignalName.MachineDisconnected, machine);
-    }
-
-    public void LoadMachineManagerNode()
-    {
-        m_MachineManager = new MachineManager();
-        m_MachineManager.Name = "MachineManager";
-        AddChild(m_MachineManager);
-    }
-
-    public void ConnectMachineManagerNode()
-    {
-        m_MachineManager.NewMachineConnected += OnNewMachineConnected;
-        m_MachineManager.MachineDisconnected += OnMachineDisconnected;
     }
 }

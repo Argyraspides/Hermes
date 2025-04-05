@@ -1,4 +1,5 @@
 using System;
+using Hermes.Universe.Autoloads.EventBus;
 
 namespace Hermes.Universe.UI.UIComponents.MachineCard;
 
@@ -10,6 +11,11 @@ using Hermes.Core.Machine;
 
 public partial class MachineCard : Control
 {
+    [Signal]
+    public delegate void MachineCardClickedEventHandler(Machine machine);
+
+    private bool m_mouseIsHovering = false;
+
     public Machine Machine { get; set; }
 
     private ColorRect                       m_colorRect;
@@ -28,6 +34,9 @@ public partial class MachineCard : Control
 
         MouseEntered += OnMouseEntered;
         MouseExited += OnMouseExited;
+
+        // TODO::ARGYRASPIDES() { This might be better than having the global event bus need to know of the whereabouts of all the UI components ... }
+        MachineCardClicked += GlobalEventBus.Instance.UIEventBus.OnMachineCardClicked;
     }
 
     private void InitializeComponents()
@@ -94,13 +103,15 @@ public partial class MachineCard : Control
     private void OnMouseEntered()
     {
         MouseDefaultCursorShape = CursorShape.PointingHand;
-        m_colorRect.Color = new Color(0.1f, 0.1f, 0.1f, 1.0f);
+        m_colorRect.Color = new Color(0.05f, 0.05f, 0.05f, 1.0f);
+        m_mouseIsHovering = true;
     }
 
     private void OnMouseExited()
     {
         MouseDefaultCursorShape = CursorShape.Arrow;
         m_colorRect.Color = new Color(0.0f, 0.0f, 0.0f, 1.0f);
+        m_mouseIsHovering = false;
     }
 
     public override void _Process(double delta)
@@ -113,9 +124,14 @@ public partial class MachineCard : Control
 
     public override void _Input(InputEvent @event)
     {
-        if (@event is InputEventMouseButton mouseEvent && mouseEvent.ButtonIndex == MouseButton.Left && !mouseEvent.Pressed)
+        // TODO::ARGYRASPIDES() { Eh ... I'm not a fan of this I think. It is very explicit which I like,
+        // but there seems to be some weird stuff going on in the scene tree
+        if (@event is InputEventMouseButton mouseEvent
+            && mouseEvent.ButtonIndex == MouseButton.Left
+            && mouseEvent.Pressed
+            && m_mouseIsHovering)
         {
-            GD.Print("Control was clicked!");
+            EmitSignal(SignalName.MachineCardClicked, Machine);
         }
     }
 

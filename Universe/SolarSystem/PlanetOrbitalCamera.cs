@@ -24,6 +24,9 @@
 
 */
 
+using Hermes.Core.Machine;
+using Hermes.Universe.Autoloads.EventBus;
+
 namespace Hermes.Universe.SolarSystem;
 
 using Godot;
@@ -91,6 +94,11 @@ public partial class PlanetOrbitalCamera : Camera3D
         m_currentLat = 0.0d;
 
         PositionCamera();
+
+        GlobalEventBus.Instance.UIEventBus.MachineCardClicked += OnMachineCardClicked;
+
+        OrbitalCameraAltChanged += GlobalEventBus.Instance.PlanetaryEventBus.OnPlanetOrbitalCameraAltChanged;
+        OrbitalCameraLatLonChanged += GlobalEventBus.Instance.PlanetaryEventBus.OnPlanetOrbitalCameraLatLonChanged;
 
         GetTree().Root.Ready += OnSceneTreeReady;
     }
@@ -233,6 +241,19 @@ public partial class PlanetOrbitalCamera : Camera3D
         m_currentAltitude = Math.Clamp(m_currentAltitude, m_minCameraAltitude, m_maxCameraAltitude);
         Position = MapUtils.LatLonToCartesian(m_currentLat, m_currentLon, m_currentAltitude);
         LookAt(Vector3.Zero, Vector3.Up);
+    }
+
+    private void OnMachineCardClicked(Machine machine)
+    {
+        Altitude altMsg = (Altitude) machine.GetHellenicMessage(HellenicMessageType.Altitude);
+        LatitudeLongitude latLonMsg = (LatitudeLongitude)machine.GetHellenicMessage(HellenicMessageType.LatitudeLongitude);
+        if (altMsg == null || latLonMsg == null) return;
+
+        // m_currentAltitude = altMsg.Alt.HasValue ? (altMsg.Alt.Value / 1000) + 2 : m_currentAltitude;
+        m_currentLat = latLonMsg.Lat.HasValue ? Mathf.DegToRad(latLonMsg.Lat.Value) : m_currentLat;
+        m_currentLon = latLonMsg.Lon.HasValue ? Mathf.DegToRad(latLonMsg.Lon.Value) : m_currentLon;
+
+        PositionCamera();
     }
 
     // Sets camera parameters based on the planet type

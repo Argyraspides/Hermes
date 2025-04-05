@@ -5,25 +5,12 @@ namespace Hermes.Universe.Autoloads.EventBus;
 
 public partial class ProtocolEventBus : Node
 {
-    private ProtocolManager m_protocolManager;
 
     [Signal]
     public delegate void HellenicMessageReceivedEventHandler(HellenicMessage message);
 
-    private void OnHellenicMessageReceived(HellenicMessage message)
+    public void OnHellenicMessageReceived(HellenicMessage message)
     {
         EmitSignal(SignalName.HellenicMessageReceived, message);
-    }
-
-    public void LoadProtocolManagerNode()
-    {
-        m_protocolManager = new ProtocolManager();
-        m_protocolManager.Name = "Protocol Manager";
-        AddChild(m_protocolManager);
-    }
-
-    public void ConnectProtocolManagerNode()
-    {
-        m_protocolManager.HellenicMessageReceived += OnHellenicMessageReceived;
     }
 }

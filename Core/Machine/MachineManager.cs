@@ -40,7 +40,11 @@ public partial class MachineManager : Node
 
     public override void _Ready()
     {
+
         GlobalEventBus.Instance.ProtocolEventBus.HellenicMessageReceived += OnHellenicMessageReceived;
+
+        NewMachineConnected += GlobalEventBus.Instance.MachineEventBus.OnNewMachineConnected;
+        MachineDisconnected += GlobalEventBus.Instance.MachineEventBus.OnMachineDisconnected;
     }
 
     public override void _Process(double delta)

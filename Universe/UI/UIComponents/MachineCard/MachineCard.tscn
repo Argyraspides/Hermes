@@ -11,7 +11,6 @@ anchor_right = 0.3
 anchor_bottom = 0.2
 offset_right = 0.47998
 offset_bottom = -0.12001
-mouse_filter = 1
 script = ExtResource("1_kr3c1")
 
 [node name="ColorRect" type="ColorRect" parent="."]

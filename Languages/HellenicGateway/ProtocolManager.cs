@@ -18,6 +18,8 @@
 */
 
 
+using Hermes.Universe.Autoloads.EventBus;
+
 namespace Hermes.Languages.HellenicGateway;
 
 using System.Collections.Generic;
@@ -60,6 +62,8 @@ public partial class ProtocolManager : Node
         {
             protocolAdapter.Start();
         }
+
+        HellenicMessageReceived += GlobalEventBus.Instance.ProtocolEventBus.OnHellenicMessageReceived;
     }
 
     public override void _ExitTree()
