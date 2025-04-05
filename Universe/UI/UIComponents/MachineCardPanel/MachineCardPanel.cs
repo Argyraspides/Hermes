@@ -32,11 +32,6 @@ public partial class MachineCardPanel : Control
         m_collapsePanelButton.Pressed += OnCollapsePanelButtonPressed;
     }
 
-    // Called every frame. 'delta' is the elapsed time since the previous frame.
-    public override void _Process(double delta)
-    {
-    }
-
     public void OnNewMachineConnected(Machine machine)
     {
         machines.Add(machine);

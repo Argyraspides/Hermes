@@ -40,13 +40,14 @@ public partial class Machine : RigidBody3D
 
     public void Update(HellenicMessage message)
     {
-        UpdateState(message);
+        UpdateMessages(message);
         UpdateIdentity(message);
+        UpdatePosition(message);
     }
 
-    private void UpdateState(HellenicMessage message)
+    private void UpdateMessages(HellenicMessage message)
     {
-        if (!message.Id.HasValue) return;
+        if (message == null || !message.Id.HasValue) return;
 
         LastUpdateTimeUnix = Time.GetUnixTimeFromSystem();
         m_hellenicMessages[message.Id.Value] = message;
@@ -60,6 +61,19 @@ public partial class Machine : RigidBody3D
                 pulse.MachineType.HasValue ?
                     (MachineType)pulse.MachineType.Value : MachineType.Unknown;
             MachineId = pulse.MachineId;
+        }
+    }
+
+    private void UpdatePosition(HellenicMessage message)
+    {
+        if (message == null || !message.Id.HasValue) return;
+        if (message is not LatitudeLongitude location) return;
+
+        if (location.Lat.HasValue && location.Lon.HasValue)
+        {
+            GlobalPosition = MapUtils.LatLonToCartesian(
+                Mathf.DegToRad((float)location.Lat),
+                Mathf.DegToRad((float)location.Lon));
         }
     }
 

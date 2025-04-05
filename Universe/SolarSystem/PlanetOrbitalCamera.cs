@@ -254,6 +254,9 @@ public partial class PlanetOrbitalCamera : Camera3D
         m_currentLon = latLonMsg.Lon.HasValue ? Mathf.DegToRad(latLonMsg.Lon.Value) : m_currentLon;
 
         PositionCamera();
+
+        EmitSignal(SignalName.OrbitalCameraLatLonChanged, Lat, Lon);
+        EmitSignal(SignalName.OrbitalCameraAltChanged, CurrentAltitude);
     }
 
     // Sets camera parameters based on the planet type

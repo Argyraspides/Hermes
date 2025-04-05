@@ -103,14 +103,15 @@ public partial class MachineCard : Control
     private void OnMouseEntered()
     {
         MouseDefaultCursorShape = CursorShape.PointingHand;
-        m_colorRect.Color = new Color(0.05f, 0.05f, 0.05f, 1.0f);
+        // m_colorRect.Color = new Color(0.05f, 0.05f, 0.05f, 1.0f);
+        m_colorRect.Color = Colors.DarkGray * 0.1f;
         m_mouseIsHovering = true;
     }
 
     private void OnMouseExited()
     {
         MouseDefaultCursorShape = CursorShape.Arrow;
-        m_colorRect.Color = new Color(0.0f, 0.0f, 0.0f, 1.0f);
+        m_colorRect.Color = Colors.Black;
         m_mouseIsHovering = false;
     }
 
@@ -125,7 +126,8 @@ public partial class MachineCard : Control
     public override void _Input(InputEvent @event)
     {
         // TODO::ARGYRASPIDES() { Eh ... I'm not a fan of this I think. It is very explicit which I like,
-        // but there seems to be some weird stuff going on in the scene tree
+        // but there seems to be some weird stuff going on in the scene tree in terms of what events end up being
+        // handled/not handled ... }
         if (@event is InputEventMouseButton mouseEvent
             && mouseEvent.ButtonIndex == MouseButton.Left
             && mouseEvent.Pressed
