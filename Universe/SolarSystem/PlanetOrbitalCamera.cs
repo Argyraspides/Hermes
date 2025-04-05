@@ -56,8 +56,9 @@ public partial class PlanetOrbitalCamera : Camera3D
     [Export] private double m_initialAltitudeMultiplier = 3.0; // Good starting point for full planet view
 
     // Camera control settings
-    [Export] private Vector2 m_cameraPanSpeedMultiplier = new Vector2(1,1);
-    [Export] private Vector2 m_cameraPanSpeed = new Vector2(1,1);     // Speed of camera panning
+    [Export] private Vector2 m_cameraPanSpeedMultiplier = new Vector2(1, 1);
+    [Export] private Vector2 m_cameraPanSpeed = new Vector2(1, 1);     // Speed of camera panning
+    [Export] private Vector2 m_cameraPanSmoothing = new Vector2(0.1f, 0.1f);
 
     [Export] private double m_cameraZoomSpeed = 1.0;            // Speed of camera zooming
     [Export] private double m_cameraZoomSmoothing = 0.25;
@@ -68,11 +69,13 @@ public partial class PlanetOrbitalCamera : Camera3D
     // DisplayLat and DisplayLon are offset to show the user the lat/lon position
     // in a standard format
     private double m_currentLat = 0.0d;
+    private double m_targetLat = 0.0d;
     public double Lat
     { get { return m_currentLat; } }
 
 
     private double m_currentLon = 0.0d;
+    private double m_targetLon = 0.0d;
     public double Lon
     { get { return m_currentLon; } }
 
@@ -169,16 +172,12 @@ public partial class PlanetOrbitalCamera : Camera3D
 
         if (targetLat < northPoleThresh && targetLat > southPoleThresh)
         {
-            m_currentLat = targetLat;
+            m_targetLat = targetLat;
         }
 
-        m_currentLon -= dragVector.X;
-        m_currentLon = (m_currentLon < -Math.PI) ?  Math.PI : m_currentLon;
-        m_currentLon = (m_currentLon >  Math.PI) ? -Math.PI : m_currentLon;
+        m_targetLon -= dragVector.X;
 
         DeterminePanSpeed();
-
-        EmitSignal(SignalName.OrbitalCameraLatLonChanged, Lat, Lon);
     }
 
     private void HandleCameraZooming(InputEventMouseButton mouseEvent)
@@ -189,7 +188,7 @@ public partial class PlanetOrbitalCamera : Camera3D
         {
             DetermineZoomSpeed();
             m_targetAltitude += u ? -m_cameraZoomSpeed : m_cameraZoomSpeed;
-            EmitSignal(SignalName.OrbitalCameraAltChanged, CurrentAltitude);
+            m_targetAltitude = Math.Clamp(m_targetAltitude, m_minCameraAltitude, m_maxCameraAltitude);
         }
     }
 
@@ -234,17 +233,34 @@ public partial class PlanetOrbitalCamera : Camera3D
             (1.0f / CurrentZoomLevel) *    // Weighting bias for higher zoom levels -- the amount we pan by also decreases as we zoom in more
             (float)lonRange,
             Mathf.Log(CurrentZoomLevel) *
-            (1.0f / CurrentZoomLevel) *
+            (5.0f / CurrentZoomLevel) *
             (float)latRange
             ) * m_cameraPanSpeedMultiplier;
     }
 
     private void PositionCamera()
     {
+        double og_alt = m_currentAltitude;
+        double og_lat = m_currentLat;
+        double og_lon = m_currentLon;
+
         double nextAlt = Mathf.Lerp(m_currentAltitude, m_targetAltitude, 0.1);
         m_currentAltitude = Math.Clamp(nextAlt, m_minCameraAltitude, m_maxCameraAltitude);
+
+        m_currentLat = Mathf.LerpAngle(m_currentLat, m_targetLat, m_cameraPanSmoothing.Y);
+        m_currentLon = Mathf.LerpAngle(m_currentLon, m_targetLon, m_cameraPanSmoothing.X);
+
         Position = MapUtils.LatLonToCartesian(m_currentLat, m_currentLon, m_currentAltitude);
         LookAt(Vector3.Zero, Vector3.Up);
+
+        m_currentLat = (m_currentLat < -Math.PI) ?  Math.PI : m_currentLat;
+
+        m_currentLon = (m_currentLon >  Math.PI) ? -Math.PI : m_currentLon;
+        m_currentLon = (m_currentLon < -Math.PI) ? Math.PI : m_currentLon;
+
+        if(og_alt != m_currentAltitude) EmitSignal(SignalName.OrbitalCameraAltChanged, CurrentAltitude);
+        if(og_lat != m_currentLat || og_lon != m_currentLon) EmitSignal(SignalName.OrbitalCameraLatLonChanged, Lat, Lon);
+
     }
 
     private void OnMachineCardClicked(Machine machine)
@@ -253,9 +269,8 @@ public partial class PlanetOrbitalCamera : Camera3D
         LatitudeLongitude latLonMsg = (LatitudeLongitude)machine.GetHellenicMessage(HellenicMessageType.LatitudeLongitude);
         if (altMsg == null || latLonMsg == null) return;
 
-        // m_currentAltitude = altMsg.Alt.HasValue ? (altMsg.Alt.Value / 1000) + 2 : m_currentAltitude;
-        m_currentLat = latLonMsg.Lat.HasValue ? Mathf.DegToRad(latLonMsg.Lat.Value) : m_currentLat;
-        m_currentLon = latLonMsg.Lon.HasValue ? Mathf.DegToRad(latLonMsg.Lon.Value) : m_currentLon;
+        m_targetLat = latLonMsg.Lat.HasValue ? Mathf.DegToRad(latLonMsg.Lat.Value) : m_currentLat;
+        m_targetLon = latLonMsg.Lon.HasValue ? Mathf.DegToRad(latLonMsg.Lon.Value) : m_currentLon;
 
         EmitSignal(SignalName.OrbitalCameraLatLonChanged, Lat, Lon);
         EmitSignal(SignalName.OrbitalCameraAltChanged, CurrentAltitude);
