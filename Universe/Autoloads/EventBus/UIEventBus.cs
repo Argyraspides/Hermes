@@ -12,4 +12,22 @@ public partial class UIEventBus : Node
     {
         EmitSignal(SignalName.MachineCardClicked, machine);
     }
+
+
+    [Signal]
+    public delegate void ZoomInButtonClickedEventHandler();
+
+    public void OnZoomInButtonClicked()
+    {
+        EmitSignal(SignalName.ZoomInButtonClicked);
+    }
+
+    [Signal]
+    public delegate void ZoomOutButtonClickedEventHandler();
+
+    public void OnZoomOutButtonClicked()
+    {
+        EmitSignal(SignalName.ZoomOutButtonClicked);
+    }
+
 }

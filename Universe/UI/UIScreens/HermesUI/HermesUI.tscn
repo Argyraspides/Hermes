@@ -56,7 +56,7 @@ stretch = true
 
 [node name="SubViewport" type="SubViewport" parent="MainUI/HBoxContainer/VBoxContainer/SubViewportContainer"]
 handle_input_locally = false
-size = Vector2i(2, 2)
+size = Vector2i(1899, 1030)
 render_target_update_mode = 4
 
 [node name="SolarSystem" parent="MainUI/HBoxContainer/VBoxContainer/SubViewportContainer/SubViewport" instance=ExtResource("3_hjwp2")]
@@ -111,7 +111,7 @@ size_flags_vertical = 10
 mouse_filter = 2
 script = ExtResource("6_salkb")
 
-[node name="Button" type="Button" parent="MainUI/ZoomButtons"]
+[node name="SettingsButton" type="Button" parent="MainUI/ZoomButtons"]
 custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
 mouse_force_pass_scroll_events = false

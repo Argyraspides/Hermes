@@ -100,6 +100,8 @@ public partial class PlanetOrbitalCamera : Camera3D
         m_currentLat = 0.0d;
 
         GlobalEventBus.Instance.UIEventBus.MachineCardClicked += OnMachineCardClicked;
+        GlobalEventBus.Instance.UIEventBus.ZoomInButtonClicked += OnZoomInButtonClicked;
+        GlobalEventBus.Instance.UIEventBus.ZoomOutButtonClicked += OnZoomOutButtonClicked;
 
         OrbitalCameraAltChanged += GlobalEventBus.Instance.PlanetaryEventBus.OnPlanetOrbitalCameraAltChanged;
         OrbitalCameraLatLonChanged += GlobalEventBus.Instance.PlanetaryEventBus.OnPlanetOrbitalCameraLatLonChanged;
@@ -192,7 +194,6 @@ public partial class PlanetOrbitalCamera : Camera3D
 
         DetermineZoomSpeed();
         m_targetAltitude += u ? -m_cameraZoomSpeed : m_cameraZoomSpeed;
-        m_targetAltitude = Math.Clamp(m_targetAltitude, m_minCameraAltitude, m_maxCameraAltitude);
     }
 
     private void DetermineZoomSpeed()
@@ -247,6 +248,8 @@ public partial class PlanetOrbitalCamera : Camera3D
         double og_lat = m_currentLat;
         double og_lon = m_currentLon;
 
+
+        m_targetAltitude = Math.Clamp(m_targetAltitude, m_minCameraAltitude, m_maxCameraAltitude);
         double nextAlt = Mathf.Lerp(m_currentAltitude, m_targetAltitude, 0.1);
         m_currentAltitude = Math.Clamp(nextAlt, m_minCameraAltitude, m_maxCameraAltitude);
 
@@ -277,6 +280,16 @@ public partial class PlanetOrbitalCamera : Camera3D
 
         EmitSignal(SignalName.OrbitalCameraLatLonChanged, Lat, Lon);
         EmitSignal(SignalName.OrbitalCameraAltChanged, CurrentAltitude);
+    }
+
+    private void OnZoomInButtonClicked()
+    {
+        m_targetAltitude /= 1.1;
+    }
+
+    private void OnZoomOutButtonClicked()
+    {
+        m_targetAltitude *= 1.1;
     }
 
     // Sets camera parameters based on the planet type
