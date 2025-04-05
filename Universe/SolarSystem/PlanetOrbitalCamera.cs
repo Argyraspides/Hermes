@@ -125,7 +125,7 @@ public partial class PlanetOrbitalCamera : Camera3D
         m_poleThreshold = 0.15d;
     }
 
-    public override void _Input(InputEvent @event)
+    public override void _UnhandledInput(InputEvent @event)
     {
         if (@event is InputEventScreenDrag dragEvent)
         {

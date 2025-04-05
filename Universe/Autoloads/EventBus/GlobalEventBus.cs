@@ -42,6 +42,8 @@ public partial class GlobalEventBus : Node
     public ProtocolEventBus ProtocolEventBus { get; private set; }
     public MachineEventBus MachineEventBus { get; private set; }
 
+    public UIEventBus UIEventBus { get; private set; }
+
     public override void _Ready()
     {
         Instance = this;
@@ -57,6 +59,10 @@ public partial class GlobalEventBus : Node
         MachineEventBus = new MachineEventBus();
         MachineEventBus.Name = "MachineEventBus";
         AddChild(MachineEventBus);
+
+        UIEventBus = new UIEventBus();
+        UIEventBus.Name = "UIEventBus";
+        AddChild(UIEventBus);
 
         // Important: Only load and connect the nodes once the main scene tree is ready.
         // Autoloads always load before the scene tree, and some things, such as the planet
@@ -75,6 +81,7 @@ public partial class GlobalEventBus : Node
         PlanetaryEventBus.LoadPlanetOrbitalCameraNodes();
         ProtocolEventBus.LoadProtocolManagerNode();
         MachineEventBus.LoadMachineManagerNode();
+        UIEventBus.LoadUINodes();
     }
 
     private void ConnectNodes()
@@ -82,5 +89,6 @@ public partial class GlobalEventBus : Node
         PlanetaryEventBus.ConnectPlanetOrbitalCameraNodes();
         ProtocolEventBus.ConnectProtocolManagerNode();
         MachineEventBus.ConnectMachineManagerNode();
+        UIEventBus.ConnectUINodes();
     }
 }

@@ -22,6 +22,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 3
+mouse_filter = 2
 color = Color(0.0392157, 0.0392157, 0.0392157, 1)
 
 [node name="MachineNameBox" type="HBoxContainer" parent="."]
@@ -33,19 +34,23 @@ anchor_top = 0.05
 anchor_right = 1.0
 anchor_bottom = 0.2
 grow_horizontal = 2
+mouse_filter = 2
 theme_override_constants/separation = 10
 
 [node name="MachineTypeIcon" type="TextureRect" parent="MachineNameBox"]
 layout_mode = 2
+mouse_filter = 2
 texture = ExtResource("2_khkcl")
 expand_mode = 2
 
 [node name="TextCenterContainer" type="CenterContainer" parent="MachineNameBox"]
 layout_mode = 2
+mouse_filter = 2
 
 [node name="MachineNameLabel" type="RichTextLabel" parent="MachineNameBox/TextCenterContainer"]
 custom_minimum_size = Vector2(250, 15)
 layout_mode = 2
+mouse_filter = 2
 theme_override_font_sizes/normal_font_size = 16
 bbcode_enabled = true
 text = "UNKNOWN MACHINE"
@@ -63,29 +68,23 @@ offset_right = -0.47998
 offset_bottom = 0.0499878
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 
 [node name="CompassDisplay" parent="TelemetryPanel" instance=ExtResource("1_kvnjl")]
 layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 4
+mouse_filter = 2
 
 [node name="TelemetryLabels" type="GridContainer" parent="TelemetryPanel"]
 layout_mode = 2
 size_flags_horizontal = 3
+mouse_filter = 2
 
 [node name="AltitudeLabel" type="RichTextLabel" parent="TelemetryPanel/TelemetryLabels"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+mouse_filter = 2
 theme_override_font_sizes/normal_font_size = 18
 text = "	ALT:				N/A"
-
-[node name="ClickablePanel" type="Panel" parent="."]
-modulate = Color(0, 0, 0, 0)
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_default_cursor_shape = 2

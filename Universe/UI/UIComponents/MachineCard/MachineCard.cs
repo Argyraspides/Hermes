@@ -94,11 +94,13 @@ public partial class MachineCard : Control
     private void OnMouseEntered()
     {
         MouseDefaultCursorShape = CursorShape.PointingHand;
+        m_colorRect.Color = new Color(0.1f, 0.1f, 0.1f, 1.0f);
     }
 
     private void OnMouseExited()
     {
         MouseDefaultCursorShape = CursorShape.Arrow;
+        m_colorRect.Color = new Color(0.0f, 0.0f, 0.0f, 1.0f);
     }
 
     public override void _Process(double delta)

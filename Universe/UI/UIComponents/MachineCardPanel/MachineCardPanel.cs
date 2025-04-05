@@ -28,14 +28,6 @@ public partial class MachineCardPanel : Control
         m_collapsePanelButton = GetNode<Button>("CollapsePanelButton");
 
         m_collapsePanelButton.Pressed += OnCollapsePanelButtonPressed;
-
-
-        // Give panel background minimum size so that it shows up even if there's no vehicles and fills out the
-        // entire VehicleCardPanel component
-        m_panelBackground.CustomMinimumSize =
-            new Vector2(GetViewport().GetWindow().Size.X * 0.25f,
-                GetViewport().GetWindow().Size.Y);
-
     }
 
     // Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -50,15 +42,16 @@ public partial class MachineCardPanel : Control
         var machineCardScene = GD.Load<PackedScene>("res://Universe/UI/UIComponents/MachineCard/MachineCard.tscn");
         var machineCardInstance = machineCardScene.Instantiate<Hermes.Universe.UI.UIComponents.MachineCard.MachineCard>();
         machineCardInstance.Machine = machine;
+        machineCardInstance.Name = $"MachineCard_{machine.Name}";
         m_cardStack.AddChild(machineCardInstance);
     }
 
     public void OnNewMachineDisconnected(Machine machine)
     {
         machines.Remove(machine);
-        foreach (MachineCard.MachineCard machineCard in m_cardStack.GetChildren())
+        foreach (var child in m_cardStack.GetChildren())
         {
-            if (machineCard.Machine == machine)
+            if (child is MachineCard.MachineCard machineCard && machineCard.Machine == machine)
             {
                 machineCard.QueueFree();
             }
