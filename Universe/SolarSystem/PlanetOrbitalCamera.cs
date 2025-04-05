@@ -52,8 +52,8 @@ public partial class PlanetOrbitalCamera : Camera3D
 
     // Multipliers for camera distances to ensure planet is in full view
     [Export] private double m_minAltitudeMultiplier = 1.0;
-    [Export] private double m_maxAltitudeMultiplier = 10.0;
-    [Export] private double m_initialAltitudeMultiplier = 3.0; // Good starting point for full planet view
+    [Export] private double m_maxAltitudeMultiplier = 2.25;
+    [Export] private double m_initialAltitudeMultiplier = 2.0; // Good starting point for full planet view
 
     // Camera control settings
     [Export] private Vector2 m_cameraPanSpeedMultiplier = new Vector2(1, 1);
@@ -95,6 +95,7 @@ public partial class PlanetOrbitalCamera : Camera3D
         SetPlanetParameters(PlanetType);
 
         m_currentAltitude = m_planetSemiMajorAxis * m_initialAltitudeMultiplier;
+        m_targetAltitude = m_currentAltitude;
         m_currentLon = 0.0d;
         m_currentLat = 0.0d;
 
@@ -108,6 +109,9 @@ public partial class PlanetOrbitalCamera : Camera3D
 
     public override void _Process(double delta)
     {
+        bool isZooming = m_targetAltitude != m_currentAltitude;
+        bool isPanning = (m_targetLat != m_currentLat) || (m_targetLon != m_currentLon);
+        if (!isZooming && !isPanning) return;
         PositionCamera();
     }
 
@@ -184,12 +188,11 @@ public partial class PlanetOrbitalCamera : Camera3D
     {
         bool u = mouseEvent.ButtonIndex == MouseButton.WheelUp;
         bool d = mouseEvent.ButtonIndex == MouseButton.WheelDown;
-        if (u || d)
-        {
-            DetermineZoomSpeed();
-            m_targetAltitude += u ? -m_cameraZoomSpeed : m_cameraZoomSpeed;
-            m_targetAltitude = Math.Clamp(m_targetAltitude, m_minCameraAltitude, m_maxCameraAltitude);
-        }
+        if (!u && !d) return;
+
+        DetermineZoomSpeed();
+        m_targetAltitude += u ? -m_cameraZoomSpeed : m_cameraZoomSpeed;
+        m_targetAltitude = Math.Clamp(m_targetAltitude, m_minCameraAltitude, m_maxCameraAltitude);
     }
 
     private void DetermineZoomSpeed()

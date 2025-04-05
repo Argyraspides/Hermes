@@ -18,12 +18,13 @@ sky_material = SubResource("PanoramaSkyMaterial_enyp5")
 background_mode = 2
 background_energy_multiplier = 0.25
 sky = SubResource("Sky_t515d")
-sky_rotation = Vector3(0, 0, 0.767945)
+sky_rotation = Vector3(0, 0, 0.785398)
 fog_mode = 1
 fog_density = 1.0
 fog_sky_affect = 0.015
 adjustment_enabled = true
-adjustment_saturation = 2.0
+adjustment_brightness = 1.25
+adjustment_saturation = 2.5
 
 [node name="SolarSystem" type="Node3D"]
 script = ExtResource("1_ks12t")
