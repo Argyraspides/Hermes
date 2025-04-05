@@ -17,16 +17,15 @@
 
 */
 
-
-using System;
-using Godot.Collections;
-using Hermes.Common.Map.Utils;
+using Hermes.Core.Machine.Capabilities;
 
 namespace Hermes.Core.Machine;
 
-
 using Godot;
 using System.Collections.Generic;
+using Hermes.Common.Map.Utils;
+
+
 
 public partial class Machine : RigidBody3D
 {
@@ -34,6 +33,7 @@ public partial class Machine : RigidBody3D
     public uint? MachineId { get; private set; }
 
     private Dictionary<uint, HellenicMessage> m_hellenicMessages = new Dictionary<uint, HellenicMessage>();
+    private HashSet<Capability> m_capabilities = new HashSet<Capability>();
 
     // Last time this vehicle was updated in the Unix timestamp
     public double LastUpdateTimeUnix { get; private set; } = 0;

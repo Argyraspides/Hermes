@@ -3,7 +3,7 @@
 [ext_resource type="Script" path="res://Universe/SolarSystem/SolarSystem.cs" id="1_ks12t"]
 [ext_resource type="Texture2D" uid="uid://dw16otbm13s3h" path="res://Universe/SolarSystem/Assets/ESO_-_Milky_Way.jpg" id="1_nxqmc"]
 [ext_resource type="Script" path="res://Languages/HellenicGateway/ProtocolManager.cs" id="2_l7c1n"]
-[ext_resource type="Script" path="res://Core/Machine/MachineManager.cs" id="2_p4i7y"]
+[ext_resource type="Script" path="res://Core/Machine/MachineManager/MachineManager.cs" id="2_p4i7y"]
 [ext_resource type="PackedScene" uid="uid://u6dcfgabkcf3" path="res://Universe/SolarSystem/Planets/Earth/earth.tscn" id="3_bobqk"]
 [ext_resource type="Script" path="res://Universe/SolarSystem/PlanetOrbitalCamera.cs" id="3_jsn1l"]
 
