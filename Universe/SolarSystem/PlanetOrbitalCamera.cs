@@ -60,6 +60,7 @@ public partial class PlanetOrbitalCamera : Camera3D
     [Export] private Vector2 m_cameraPanSpeed = new Vector2(1,1);     // Speed of camera panning
 
     [Export] private double m_cameraZoomSpeed = 1.0;            // Speed of camera zooming
+    [Export] private double m_cameraZoomSmoothing = 0.25;
     [Export] private double m_cameraZoomSpeedMultiplier = 1.0;
     [Export] private double m_poleThreshold = 0.15d;   // Degrees of latitude from the poles (radians) to lock the camera
 
@@ -75,7 +76,8 @@ public partial class PlanetOrbitalCamera : Camera3D
     public double Lon
     { get { return m_currentLon; } }
 
-    public double m_currentAltitude = 10000.0d;
+    private double m_currentAltitude = 10000.0d;
+    private double m_targetAltitude = 10000.0d;
     public double CurrentAltitude { get { return m_currentAltitude; } }
 
     public int CurrentZoomLevel = 0;
@@ -93,14 +95,17 @@ public partial class PlanetOrbitalCamera : Camera3D
         m_currentLon = 0.0d;
         m_currentLat = 0.0d;
 
-        PositionCamera();
-
         GlobalEventBus.Instance.UIEventBus.MachineCardClicked += OnMachineCardClicked;
 
         OrbitalCameraAltChanged += GlobalEventBus.Instance.PlanetaryEventBus.OnPlanetOrbitalCameraAltChanged;
         OrbitalCameraLatLonChanged += GlobalEventBus.Instance.PlanetaryEventBus.OnPlanetOrbitalCameraLatLonChanged;
 
         GetTree().Root.Ready += OnSceneTreeReady;
+    }
+
+    public override void _Process(double delta)
+    {
+        PositionCamera();
     }
 
     private void OnSceneTreeReady()
@@ -171,7 +176,6 @@ public partial class PlanetOrbitalCamera : Camera3D
         m_currentLon = (m_currentLon < -Math.PI) ?  Math.PI : m_currentLon;
         m_currentLon = (m_currentLon >  Math.PI) ? -Math.PI : m_currentLon;
 
-        PositionCamera();
         DeterminePanSpeed();
 
         EmitSignal(SignalName.OrbitalCameraLatLonChanged, Lat, Lon);
@@ -184,8 +188,7 @@ public partial class PlanetOrbitalCamera : Camera3D
         if (u || d)
         {
             DetermineZoomSpeed();
-            m_currentAltitude += u ? -m_cameraZoomSpeed : m_cameraZoomSpeed;
-            PositionCamera();
+            m_targetAltitude += u ? -m_cameraZoomSpeed : m_cameraZoomSpeed;
             EmitSignal(SignalName.OrbitalCameraAltChanged, CurrentAltitude);
         }
     }
@@ -238,7 +241,8 @@ public partial class PlanetOrbitalCamera : Camera3D
 
     private void PositionCamera()
     {
-        m_currentAltitude = Math.Clamp(m_currentAltitude, m_minCameraAltitude, m_maxCameraAltitude);
+        double nextAlt = Mathf.Lerp(m_currentAltitude, m_targetAltitude, 0.1);
+        m_currentAltitude = Math.Clamp(nextAlt, m_minCameraAltitude, m_maxCameraAltitude);
         Position = MapUtils.LatLonToCartesian(m_currentLat, m_currentLon, m_currentAltitude);
         LookAt(Vector3.Zero, Vector3.Up);
     }
@@ -252,8 +256,6 @@ public partial class PlanetOrbitalCamera : Camera3D
         // m_currentAltitude = altMsg.Alt.HasValue ? (altMsg.Alt.Value / 1000) + 2 : m_currentAltitude;
         m_currentLat = latLonMsg.Lat.HasValue ? Mathf.DegToRad(latLonMsg.Lat.Value) : m_currentLat;
         m_currentLon = latLonMsg.Lon.HasValue ? Mathf.DegToRad(latLonMsg.Lon.Value) : m_currentLon;
-
-        PositionCamera();
 
         EmitSignal(SignalName.OrbitalCameraLatLonChanged, Lat, Lon);
         EmitSignal(SignalName.OrbitalCameraAltChanged, CurrentAltitude);
