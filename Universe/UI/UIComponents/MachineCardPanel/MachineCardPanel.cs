@@ -12,6 +12,8 @@ public partial class MachineCardPanel : Control
     List<Machine> machines = new List<Machine>();
 
     private VBoxContainer m_cardStack;
+    // TODO::ARGYRASPIDES() { It seems scroll events leak through the scroll container for some stupid reason, despite everything stopping it up to the
+    // main UI. Fix it! Not a criticl issue for now }
     private ScrollContainer m_panelBackground;
     private Button m_collapsePanelButton;
 

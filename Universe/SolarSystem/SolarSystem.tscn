@@ -61,8 +61,10 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-size_flags_vertical = 4
-mouse_filter = 1
+size_flags_horizontal = 0
+size_flags_vertical = 0
+mouse_filter = 2
+mouse_force_pass_scroll_events = false
 theme = ExtResource("5_dxgph")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="UILayer/MainUI"]
@@ -72,6 +74,8 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
+mouse_force_pass_scroll_events = false
 theme_override_constants/separation = 0
 
 [node name="MachineCardPanel" parent="UILayer/MainUI/HBoxContainer" instance=ExtResource("8_1orsf")]
@@ -83,6 +87,7 @@ size_flags_vertical = 1
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 8
+mouse_filter = 2
 theme_override_constants/separation = 10
 
 [node name="ZoomButtons" type="VBoxContainer" parent="UILayer/MainUI/HBoxContainer/VBoxContainer"]
@@ -90,6 +95,7 @@ layout_direction = 1
 layout_mode = 2
 size_flags_horizontal = 8
 size_flags_vertical = 4
+mouse_filter = 2
 
 [node name="Button" type="Button" parent="UILayer/MainUI/HBoxContainer/VBoxContainer/ZoomButtons"]
 custom_minimum_size = Vector2(50, 50)
@@ -121,12 +127,15 @@ text = "-"
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 size_flags_vertical = 10
+mouse_filter = 2
+mouse_force_pass_scroll_events = false
 
 [node name="CameraInfoBar" type="HBoxContainer" parent="UILayer/MainUI/HBoxContainer/VBoxContainer/BottomPanel"]
 custom_minimum_size = Vector2(650, 0)
 layout_direction = 3
 layout_mode = 2
 size_flags_horizontal = 8
+mouse_filter = 2
 
 [node name="CameraLatLonLabel" type="RichTextLabel" parent="UILayer/MainUI/HBoxContainer/VBoxContainer/BottomPanel/CameraInfoBar"]
 layout_direction = 3

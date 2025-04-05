@@ -12,6 +12,8 @@ anchors_preset = 9
 anchor_bottom = 1.0
 size_flags_horizontal = 0
 size_flags_vertical = 3
+mouse_filter = 0
+mouse_force_pass_scroll_events = false
 theme_override_constants/separation = 0
 script = ExtResource("1_5uxtg")
 
@@ -25,6 +27,7 @@ horizontal_scroll_mode = 0
 
 [node name="CardStack" type="VBoxContainer" parent="PanelBackground"]
 layout_mode = 2
+mouse_filter = 2
 
 [node name="CollapsePanelButton" type="Button" parent="."]
 custom_minimum_size = Vector2(21, 0)

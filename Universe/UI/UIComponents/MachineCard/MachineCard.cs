@@ -113,7 +113,10 @@ public partial class MachineCard : Control
 
     public override void _Input(InputEvent @event)
     {
-
+        if (@event is InputEventMouseButton mouseEvent && mouseEvent.ButtonIndex == MouseButton.Left && !mouseEvent.Pressed)
+        {
+            GD.Print("Control was clicked!");
+        }
     }
 
 }
