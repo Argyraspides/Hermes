@@ -18,6 +18,7 @@
 */
 
 
+using Hermes.Languages.HellenicGateway.CommandDispatchers;
 using Hermes.Universe.Autoloads.EventBus;
 
 namespace Hermes.Languages.HellenicGateway;
@@ -33,27 +34,18 @@ public partial class ProtocolManager : Node
     public ProtocolManager()
     {
         m_protocolAdapters = new List<IProtocolAdapter>() { new MAVLinkAdapter() };
+        m_commandDispatchers = new List<ICommandDispatcher>() { new MAVLinkCommandDispatcher() };
     }
 
     [Signal]
     public delegate void HellenicMessageReceivedEventHandler(HellenicMessage message);
 
     private List<IProtocolAdapter> m_protocolAdapters;
-    ICommandDispatcher m_commandDispatcher;
+    private List<ICommandDispatcher> m_commandDispatchers;
 
     public override void _Process(double delta)
     {
-        foreach (IProtocolAdapter protocolAdapter in m_protocolAdapters)
-        {
-            int bufSize = protocolAdapter.GetHellenicBufferSize();
-            for (int i = 0; i < bufSize; i++)
-            {
-                if (protocolAdapter.GetNextHellenicMessage() is HellenicMessage nextMessage)
-                {
-                    EmitSignal(SignalName.HellenicMessageReceived, nextMessage);
-                }
-            }
-        }
+        ProcessHellenicMessages();
     }
 
     public override void _Ready()
@@ -73,4 +65,28 @@ public partial class ProtocolManager : Node
             protocolAdapter.Stop();
         }
     }
+
+    private void ProcessHellenicMessages()
+    {
+        foreach (IProtocolAdapter protocolAdapter in m_protocolAdapters)
+        {
+            int bufSize = protocolAdapter.GetHellenicBufferSize();
+            for (int i = 0; i < bufSize; i++)
+            {
+                if (protocolAdapter.GetNextHellenicMessage() is HellenicMessage nextMessage)
+                {
+                    EmitSignal(SignalName.HellenicMessageReceived, nextMessage);
+                }
+            }
+        }
+    }
+
+    private void ProcessHellenicCommands()
+    {
+        foreach (ICommandDispatcher commandDispatcher in m_commandDispatchers)
+        {
+
+        }
+    }
+
 }

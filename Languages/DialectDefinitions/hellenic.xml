@@ -123,6 +123,8 @@
                 </field>
             </fields>
         </message>
-
     </messages>
+    <commands>
+
+    </commands>
 </hellenic>

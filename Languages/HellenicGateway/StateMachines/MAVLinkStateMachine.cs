@@ -5,8 +5,7 @@ using System.Timers;
 
 enum MAVLinkState
 {
-    ConnectedIdle,
-    DisconnectedIdle
+
 };
 
 public class MAVLinkStateMachine
@@ -20,12 +19,4 @@ public class MAVLinkStateMachine
     // Current state of each drone in terms of their MAVLink connection to Hermes
     private Dictionary<int, MAVLinkState> m_states = new Dictionary<int, MAVLinkState>();
 
-    public void HandleHeartBeatMessage(MAVLink.MAVLinkMessage fullMsg, MAVLink.mavlink_heartbeat_t heartBeatMsg)
-    {
-    }
-
-    public void HandleGlobalPositionIntMessage(MAVLink.MAVLinkMessage fullMsg,
-        MAVLink.mavlink_global_position_int_t globalPositionIntMsg)
-    {
-    }
 }

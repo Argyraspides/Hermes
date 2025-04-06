@@ -43,9 +43,9 @@ uniform int tile_height = 256;
 uniform int tile_width = 256;
 
 // Uniforms for Atmospheric Haze (Distance Based)
-uniform vec4 haze_color : source_color = vec4(0.3, 0.5, 1.0, 1.0); // More vibrant blue default
-uniform float haze_density : hint_range(0.0, 1.0) = 0.01; // Start low for smoothstep
-uniform float haze_start_distance : hint_range(0.0, 10000.0) = 600.0; // Increased default
+uniform vec4 	haze_color : source_color = vec4(0.3, 0.5, 1.0, 1.0); 		// More vibrant blue default
+uniform float 	haze_density : hint_range(0.0, 1.0) = 0.01; 				// Start low for smoothstep
+uniform float 	haze_start_distance : hint_range(0.0, 10000.0) = 600.0; 	// Increased default
 
 // Uniforms for Atmospheric Haze (Limb Effect Based)
 uniform float limb_intensity : hint_range(0.0, 1.0) = 0.99; // How strong the limb effect is
@@ -114,7 +114,7 @@ void fragment() {
     float limb_factor = 1.0 - max(0.0, -dot_prod);
     limb_factor = pow(limb_factor, limb_exponent);
 
-    float final_haze_amount = max(distance_haze_amount, limb_factor * 3.0);
+    float final_haze_amount = max(distance_haze_amount, limb_factor);
 
     // --- Apply Haze ---
     vec3 final_color = mix(map_color.rgb, haze_color.rgb, final_haze_amount);

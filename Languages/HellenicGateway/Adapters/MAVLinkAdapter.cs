@@ -73,12 +73,10 @@ public class MAVLinkAdapter : IProtocolAdapter
             case (uint)MAVLink.MAVLINK_MSG_ID.HEARTBEAT:
                 MAVLink.mavlink_heartbeat_t heartbeatMessage =
                     MavlinkUtil.ByteArrayToStructure<MAVLink.mavlink_heartbeat_t>(fullMAVLinkMessage.buffer);
-                m_mavlinkStateMachine.HandleHeartBeatMessage(fullMAVLinkMessage, heartbeatMessage);
                 break;
             case (uint)MAVLink.MAVLINK_MSG_ID.GLOBAL_POSITION_INT:
                 MAVLink.mavlink_global_position_int_t globalPositionIntMsg =
                     MavlinkUtil.ByteArrayToStructure<MAVLink.mavlink_global_position_int_t>(fullMAVLinkMessage.buffer);
-                m_mavlinkStateMachine.HandleGlobalPositionIntMessage(fullMAVLinkMessage, globalPositionIntMsg);
                 break;
         }
 
