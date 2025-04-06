@@ -26,35 +26,30 @@
  * and applies it to the mesh material.
  *
  * Includes an atmospheric haze effect that blends distant parts of the mesh
- * towards a specified haze color.
+ * towards a specified haze color. To learn exactly how the atmospheric haze works,
+ * see: https://vault-of-shields.vercel.app/On-Hermes/UI-Effects/Atmospheric-Limb
  */
 
 shader_type spatial;
-render_mode blend_mix, depth_draw_opaque, cull_back;
+render_mode cull_back;
 
-// Constants
 const float TWO_PI = 6.28318530718;
 const float QUARTER_PI = 0.78539816339;
 
-// Uniforms for Map Projection
 uniform sampler2D map_tile : source_color, filter_linear_mipmap, repeat_disable;
+
 uniform int zoom_level = 1;
 uniform int tile_height = 256;
 uniform int tile_width = 256;
 
-// Uniforms for Atmospheric Haze (Distance Based)
-uniform vec4 	haze_color : source_color = vec4(0.3, 0.5, 1.0, 1.0); 		// More vibrant blue default
-uniform float 	haze_density : hint_range(0.0, 1.0) = 0.01; 				// Start low for smoothstep
-uniform float 	haze_start_distance : hint_range(0.0, 10000.0) = 600.0; 	// Increased default
-
 // Uniforms for Atmospheric Haze (Limb Effect Based)
-uniform float limb_intensity : hint_range(0.0, 1.0) = 0.99; // How strong the limb effect is
-uniform float limb_exponent : hint_range(0.1, 8.0) = 3.0;  // How sharp the limb transition is (higher = sharper)
+uniform vec4 limb_color : source_color = vec4(0.3, 0.5, 1.0, 1.0);
+uniform float limb_intensity : hint_range(0.0, 3.0) = 1.5;
+uniform float limb_exponent : hint_range(0.1, 7.0) = 7.0;
 
-// Varyings
 varying vec2 vertex_lat_lon;
 varying vec3 world_pos;
-varying vec3 world_normal; // Pass world normal to fragment shader
+varying vec3 world_normal;
 
 // Converts latitude to pixel coordinate on the specific map tile
 // Reference: https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Web_Mercator
@@ -84,10 +79,11 @@ float lon_to_pixel(float lon) {
 void vertex() {
     vertex_lat_lon = UV2;
     world_pos = VERTEX;
-    world_normal = NORMAL; // Store the world-space normal
+    world_normal = NORMAL;
 }
 
 void fragment() {
+
     // --- Map Projection ---
     float lat = vertex_lat_lon.y;
     float lon = vertex_lat_lon.x;
@@ -95,31 +91,21 @@ void fragment() {
     float py = lat_to_pixel(lat);
     vec2 uv = vec2(px / float(tile_width), py / float(tile_height));
     uv = clamp(uv, 0.0001, 0.9999);
+	
     vec4 map_color = texture(map_tile, uv);
 
     // --- Atmospheric Haze Calculation ---
     vec3 view_dir = normalize(world_pos - CAMERA_POSITION_WORLD);
-    float dist = length(world_pos - CAMERA_POSITION_WORLD); // equivalent to distance()
 
-    // 1. Distance-based haze (using smoothstep)
-    float transition_length = 7000.0 / max(haze_density, 0.0001);
-    float haze_end_distance = haze_start_distance + transition_length;
-    float distance_haze_amount = smoothstep(haze_start_distance, haze_end_distance, dist);
-
-    // 2. Limb-based haze factor
-    // dot_prod is ~ -1 facing camera, ~ 0 at limb
     float dot_prod = dot(view_dir, normalize(world_normal));
 
-    // limb_factor is ~ 0 facing camera, ~ 1 at limb
     float limb_factor = 1.0 - max(0.0, -dot_prod);
-    limb_factor = pow(limb_factor, limb_exponent);
+    limb_factor = pow(limb_factor * limb_intensity, limb_exponent);
 
-    float final_haze_amount = max(distance_haze_amount, limb_factor);
+    float final_haze_amount = limb_factor;
 
-    // --- Apply Haze ---
-    vec3 final_color = mix(map_color.rgb, haze_color.rgb, final_haze_amount);
+    vec3 final_color = mix(map_color.rgb, limb_color.rgb, final_haze_amount);
 
-    // --- Final Output ---
     ALBEDO = final_color;
     ALPHA = map_color.a;
 }
