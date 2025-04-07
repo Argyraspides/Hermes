@@ -34,14 +34,12 @@ public partial class ProtocolManager : Node
     public ProtocolManager()
     {
         m_protocolAdapters = new List<IProtocolAdapter>() { new MAVLinkAdapter() };
-        m_commandDispatchers = new List<ICommandDispatcher>() { new MAVLinkCommandDispatcher() };
     }
 
     [Signal]
     public delegate void HellenicMessageReceivedEventHandler(HellenicMessage message);
 
     private List<IProtocolAdapter> m_protocolAdapters;
-    private List<ICommandDispatcher> m_commandDispatchers;
 
     public override void _Process(double delta)
     {
@@ -80,13 +78,4 @@ public partial class ProtocolManager : Node
             }
         }
     }
-
-    private void ProcessHellenicCommands()
-    {
-        foreach (ICommandDispatcher commandDispatcher in m_commandDispatchers)
-        {
-
-        }
-    }
-
 }
