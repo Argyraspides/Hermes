@@ -66,7 +66,7 @@ public partial class MachineManager : Node
 
         if (!m_Machines.ContainsKey(message.MachineId.Value))
         {
-            var machineCardScene = GD.Load<PackedScene>("res://Core/Machine/Machine.tscn");
+            var machineCardScene = GD.Load<PackedScene>("res://Core/Machine/Machine/Machine.tscn");
             var machineCardInstance = machineCardScene.Instantiate<Machine>();
             m_Machines[message.MachineId.Value] = machineCardInstance;
             AddChild(m_Machines[message.MachineId.Value]);

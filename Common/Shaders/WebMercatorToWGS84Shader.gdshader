@@ -91,7 +91,7 @@ void fragment() {
     float py = lat_to_pixel(lat);
     vec2 uv = vec2(px / float(tile_width), py / float(tile_height));
     uv = clamp(uv, 0.0001, 0.9999);
-	
+
     vec4 map_color = texture(map_tile, uv);
 
     // --- Atmospheric Haze Calculation ---
