@@ -21,6 +21,8 @@
         <Content Include="Core\Machine\Assets\Images\QuadcopterIcon.png.import" />
         <Content Include="docs\Hermes.png" />
         <Content Include="docs\Hermes.png.import" />
+        <Content Include="docs\README_Images\MavgenGUIOutputExample.png" />
+        <Content Include="docs\README_Images\MavgenGUIExample.png" />
         <Content Include="docs\Rules\csharp-style-guide.md" />
         <Content Include="docs\Rules\shader-style-guide.md" />
         <Content Include="Languages\DialectConversionDefinitions\common_to_hellenic.xml"/>

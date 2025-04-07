@@ -9,6 +9,13 @@ Hermes: Messenger of the Machines
 
 ## Setup Instructions
 
+### Step 0: Clone
+You know the drill.
+
+```shell
+git clone --recurse-submodules https://github.com/Argyraspides/Hermes.git
+```
+
 ### Step 1: Download the Godot Game Engine
 Ensure you have [Godot 4.3 Mono installed](https://godotengine.org/). It is important you download the mono version (.NET) and not the regular version as Hermes is written entirely in C#.
 
@@ -41,7 +48,7 @@ Under your ``.vscode`` folder, paste the following into your ``launch.json`` fil
         {
             "name": ".NET Core Attach",
             "type": "coreclr",
-            "request": "attach",
+            "request": "attach"
         }
     ]
 }
@@ -95,14 +102,32 @@ Python script to generate a converter class that converts MAVLink messages to He
 
 Navigate to ``Languages/Generators`` and run:
 
-```python
+```bash
 python3 HellenicDialectGenerator.py  --input_XML ../DialectDefinitions/hellenic.xml --output_dir ../ConcreteDialects/Hellenic/
 ```
 
 Then navigate to ``Languages/Generators/MAVLink`` and run:
-```python
+```bash
 python3 CommonToHellenicConverterGenerator.py --translation_XML ../../DialectConversionDefinitions/common_to_hellenic.xml --common_XML ../../DialectDefinitions/common.xml --hellenic_XML ../../DialectDefinitions/hellenic.xml --output_dir ../../ConcreteConversions/ToHellenic
 ```
 
-### Step 5: Download the Earth asset pack
-Go to the releases tab and download the asset pack for Earth. Follow the instructions there. Hermes is ready to go!
+### Step 5: Generate MAVLink Message Definitions
+Navigate to ``Languages/submodules/mavlink`` and use the ``mavgenerate.py`` tool to generate the MAVLink library that
+Hermes uses for its protocol abstraction layer:
+
+```bash
+python3 mavgenerate.py
+```
+
+You should be greeted with the following GUI:
+
+![img.png](docs/README_Images/MavgenGUIExample.png)
+
+Choose the settings above. The location of the XML may change, but look for ``common.xml``. This file is the source
+of truth for all MAVLink messages, commands, and enums. Set the output directory to ``Languages/ConcreteDialects/MAVLinkCommon``.
+then press "Generate". The end result should look like this:
+
+![img.png](docs/README_Images/MavgenGUIOutputExample.png)
+
+### Step 6: Download the Earth asset pack
+Go to the releases tab and download the asset pack for Earth. Follow the instructions there. Hermes is now ready to go!
