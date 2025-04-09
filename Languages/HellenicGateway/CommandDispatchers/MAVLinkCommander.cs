@@ -1,41 +1,231 @@
+using System;
+using System.IO;
+using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-using Hermes.Languages.HellenicGateway.Commands;
+using Hermes.Core.Machine;
+using Microsoft.VisualBasic;
 
 namespace Hermes.Languages.HellenicGateway.CommandDispatchers;
 
 public class MAVLinkCommander
 {
 
-    private const int MAX_RETRIES = 3;
-    private UdpClient m_machineClient = new UdpClient(14580);
-    private MAVLink.MavlinkParse m_mavlinkParser = new MAVLink.MavlinkParse();
-    private byte m_systemId = 255;
+    private const double LAL_LON_SCALE_FACTOR = 1e7;
+    private const int FORCE_ARM_VALUE = 21196;
 
-    // TODO::ARGYRASPIDES() { How is this going to work exactly? What if the vehicle is connected via TCP?
-    // via serial? A developer just wants to "send to a vehicle" and shouldn't give a shit about what
-    // link its using. Just send and forget. Make some "infrastructure" for this here ... }
-    public async Task<MAVLink.MAVLinkMessage> SendCommandInt20(MAVLink.mavlink_command_int_t command)
+    private byte GCS_MAVLINK_ID = 255;
+
+    private int MAVLINK_UDP_RECIEVE_PORT = 14550;
+    private int MAVLINK_UDP_DST_CMD_PORT = 14580;
+    private int HERMES_UDP_SRC_PORT = 11777;
+
+    private MAVLink.MavlinkParse mavlinkParser = new MAVLink.MavlinkParse();
+    private UdpClient sender;
+    private UdpClient receiver;
+    public MAVLinkCommander()
     {
-        // TODO::ARGYRASPIDES() { What about the other params? They should be configurable? What do they mean?
-        // How do I cleanly allow a developer to send commands? }
-        byte[] commandBytes = m_mavlinkParser.GenerateMAVLinkPacket20(
-            MAVLink.MAVLINK_MSG_ID.COMMAND_INT,
-            command
-        );
-
-        // TODO::ARGYRASPIDES() {
-        // Technically the MAVLinkAdapter is going to pick up the acknowledgement command. Thats not so good,
-        // we should be doing retries and whatnot all inside here. I guess MAVLinkAdapter is only going to be
-        // for telemetry? Then it should be called MAVLinkTelemetryAdapter? And this should be called MAVLinkCommandAdapter?
-        // }
-        m_machineClient.Send(commandBytes, commandBytes.Length);
-        return null;
+        sender = new UdpClient(HERMES_UDP_SRC_PORT);
+        receiver = new UdpClient(MAVLINK_UDP_RECIEVE_PORT);
     }
 
-    public async Task<MAVLink.MAVLinkMessage> SendCommandLong20(MAVLink.mavlink_command_long_t command)
+    ~MAVLinkCommander()
     {
-        return null;
+        sender.Close();
+        sender.Dispose();
+
+        receiver.Close();
+        receiver.Dispose();
+    }
+
+    public async Task SendMAVLinkTakeoffCommand(Machine machine, double altitude, double pitch = 0.0d, double yaw = 0.0d)
+    {
+
+       HellenicMessage msg = machine.GetHellenicMessage(HellenicMessageType.LatitudeLongitude);
+       if (msg == null || msg is not LatitudeLongitude latlon)
+       {
+           Console.WriteLine("Cannot send takeoff command -- vehicle lat/lon unknown");
+           return;
+       }
+
+       if (!latlon.Lat.HasValue || !latlon.Lon.HasValue)
+       {
+           Console.WriteLine("Cannot send takeoff command -- vehicle lat/lon unknown");
+           return;
+       }
+
+       if (!machine.MachineId.HasValue)
+       {
+           Console.WriteLine("Cannot send takeoff command -- vehicle machineId unknown");
+           return;
+       }
+
+       int lat = (int)(latlon.Lat.Value * LAL_LON_SCALE_FACTOR);
+       int lon = (int)(latlon.Lon.Value * LAL_LON_SCALE_FACTOR);
+
+        // Should be a mavlink_command_int_t coz we can supply like a reference frame and stuff
+        MAVLink.mavlink_command_int_t mavlinkCommand = new MAVLink.mavlink_command_int_t
+        {
+            param1 = (float)pitch,
+            param2 = float.NaN,
+            param3 = float.NaN,
+            param4 = (float)yaw,
+            x = lat,
+            y = lon,
+            z = (float)altitude,
+            command = (ushort)MAVLink.MAV_CMD.TAKEOFF,
+            target_system = (byte)machine.MachineId.Value,
+            target_component = (byte)MAVLink.MAV_COMPONENT.MAV_COMP_ID_AUTOPILOT1,
+            frame = (byte)MAVLink.MAV_FRAME.GLOBAL_RELATIVE_ALT,
+            current = byte.MinValue,
+            autocontinue = byte.MinValue
+        };
+
+        byte[] packet = mavlinkParser.GenerateMAVLinkPacket20(
+            MAVLink.MAVLINK_MSG_ID.COMMAND_LONG,
+            mavlinkCommand,
+            false,
+            GCS_MAVLINK_ID,
+            (byte)MAVLink.MAV_COMPONENT.MAV_COMP_ID_MISSIONPLANNER,
+            0
+        );
+
+        sender.Send(packet, packet.Length, new IPEndPoint(IPAddress.Loopback, MAVLINK_UDP_DST_CMD_PORT));
+        await AwaitMAVLinkAcknowledgement(machine, MAVLink.MAV_CMD.TAKEOFF);
+    }
+
+    public async Task SendMAVLinkArmCommand(Machine machine, bool forceArm = false)
+    {
+
+        if (machine == null || !machine.MachineId.HasValue)
+        {
+            Console.WriteLine("Cannot send command to null vehicle/vehicle without an ID");
+        }
+
+        // Should be a mavlink_command_int_t coz we can supply like a reference frame and stuff
+        MAVLink.mavlink_command_long_t mavlinkCommand = new MAVLink.mavlink_command_long_t
+        {
+            target_system = (byte)machine.MachineId.Value,
+            target_component = (byte)MAVLink.MAV_COMPONENT.MAV_COMP_ID_AUTOPILOT1,
+            command = (ushort)MAVLink.MAV_CMD.COMPONENT_ARM_DISARM,
+            confirmation = 0,
+            param1 = 1,
+            param2 = forceArm ? FORCE_ARM_VALUE : 0,
+            param3 = float.NaN,
+            param4 = float.NaN,
+            param5 = float.NaN,
+            param6 = float.NaN,
+            param7 = float.NaN
+        };
+
+        byte[] packet = mavlinkParser.GenerateMAVLinkPacket20(
+            MAVLink.MAVLINK_MSG_ID.COMMAND_LONG,
+            mavlinkCommand,
+            false,
+            GCS_MAVLINK_ID,
+            (byte)MAVLink.MAV_COMPONENT.MAV_COMP_ID_MISSIONPLANNER,
+            0
+        );
+        sender.Send(packet, packet.Length, new IPEndPoint(IPAddress.Loopback, MAVLINK_UDP_DST_CMD_PORT));
+
+        await AwaitMAVLinkAcknowledgement(machine, MAVLink.MAV_CMD.COMPONENT_ARM_DISARM);
+    }
+
+    public async Task SendMAVLinkLandCommand(
+        Machine machine,
+        double abortAlt = 0.0d,
+        MAVLink.PRECISION_LAND_MODE landmode = 0,
+        double yaw = 0.0d,
+        double altitude = 0.0d)
+    {
+
+        HellenicMessage msg = machine.GetHellenicMessage(HellenicMessageType.LatitudeLongitude);
+        if (msg == null || msg is not LatitudeLongitude latlon)
+        {
+            Console.WriteLine("Cannot send takeoff command -- vehicle lat/lon unknown");
+            return;
+        }
+
+        if (!latlon.Lat.HasValue || !latlon.Lon.HasValue)
+        {
+            Console.WriteLine("Cannot send takeoff command -- vehicle lat/lon unknown");
+            return;
+        }
+
+        if (!machine.MachineId.HasValue)
+        {
+            Console.WriteLine("Cannot send takeoff command -- vehicle machineId unknown");
+            return;
+        }
+
+        int lat = (int)(latlon.Lat.Value * LAL_LON_SCALE_FACTOR);
+        int lon = (int)(latlon.Lon.Value * LAL_LON_SCALE_FACTOR);
+
+        MAVLink.mavlink_command_int_t mavlinkCommand = new MAVLink.mavlink_command_int_t
+        {
+              param1 = (float)abortAlt,
+              param2 = (float)landmode,
+              param3 = float.NaN,
+              param4 = (float)yaw,
+              x = lat,
+              y = lon,
+              z = (float)altitude,
+              command = (ushort)MAVLink.MAV_CMD.LAND,
+              target_system = (byte)machine.MachineId.Value,
+              target_component = (byte)MAVLink.MAV_COMPONENT.MAV_COMP_ID_AUTOPILOT1,
+              frame = (byte)MAVLink.MAV_FRAME.GLOBAL_RELATIVE_ALT,
+              current = byte.MinValue,
+              autocontinue = byte.MinValue
+        };
+
+        byte[] packet = mavlinkParser.GenerateMAVLinkPacket20(
+            MAVLink.MAVLINK_MSG_ID.COMMAND_INT,
+            mavlinkCommand,
+            false,
+            GCS_MAVLINK_ID,
+            (byte)MAVLink.MAV_COMPONENT.MAV_COMP_ID_MISSIONPLANNER,
+            0
+        );
+
+        sender.Send(packet, packet.Length, new IPEndPoint(IPAddress.Loopback, MAVLINK_UDP_DST_CMD_PORT));
+        await AwaitMAVLinkAcknowledgement(machine, MAVLink.MAV_CMD.LAND);
+    }
+
+    public async Task<bool> AwaitMAVLinkAcknowledgement(Machine machine, MAVLink.MAV_CMD cmd)
+    {
+
+        if (!machine.MachineId.HasValue)
+        {
+            Console.WriteLine("Cannot wait for an acknowledgement of a vehicle without an ID");
+            return false;
+        }
+
+        var oneSecondInTheFuture = DateTime.Now.Add(TimeSpan.FromSeconds(1d));
+        while(DateTime.Now < oneSecondInTheFuture)
+        {
+            var dat = await receiver.ReceiveAsync();
+            using (MemoryStream stream = new MemoryStream(dat.Buffer))
+            {
+                MAVLink.MAVLinkMessage message = mavlinkParser.ReadPacket(stream);
+
+                // TODO::ARGYRASPIDES() { Handle cases where the command is in progress, cancelled, etc }
+                if (message.msgid != (uint)MAVLink.MAVLINK_MSG_ID.COMMAND_ACK) continue;
+
+                MAVLink.mavlink_command_ack_t ack = message.ToStructure<MAVLink.mavlink_command_ack_t>();
+
+                bool thisMachine = machine.MachineId.Value == message.sysid;
+                bool thisCmdAck = ack.command == (ushort)cmd;
+                bool accepted = ack.result == (byte)MAVLink.MAV_RESULT.ACCEPTED;
+
+                if (thisMachine && thisCmdAck && accepted)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+
     }
 
 
