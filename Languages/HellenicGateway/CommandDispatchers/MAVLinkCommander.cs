@@ -11,8 +11,10 @@ namespace Hermes.Languages.HellenicGateway.CommandDispatchers;
 public class MAVLinkCommander
 {
 
-    private const double LAL_LON_SCALE_FACTOR = 1e7;
-    private const int FORCE_ARM_VALUE = 21196;
+    private const double LAT_LON_SCALE_FACTOR = 1e7;
+    private const uint FORCE_ARM_VALUE = 21196;
+    private const uint MAX_WAIT_TIME_MS = 3000;
+    private const uint MAX_RETRIES = 3;
 
     private byte GCS_MAVLINK_ID = 255;
 
@@ -60,75 +62,96 @@ public class MAVLinkCommander
            return;
        }
 
-       int lat = (int)(latlon.Lat.Value * LAL_LON_SCALE_FACTOR);
-       int lon = (int)(latlon.Lon.Value * LAL_LON_SCALE_FACTOR);
+       int lat = (int)(latlon.Lat.Value * LAT_LON_SCALE_FACTOR);
+       int lon = (int)(latlon.Lon.Value * LAT_LON_SCALE_FACTOR);
 
-        // Should be a mavlink_command_int_t coz we can supply like a reference frame and stuff
-        MAVLink.mavlink_command_int_t mavlinkCommand = new MAVLink.mavlink_command_int_t
-        {
-            param1 = (float)pitch,
-            param2 = float.NaN,
-            param3 = float.NaN,
-            param4 = (float)yaw,
-            x = lat,
-            y = lon,
-            z = (float)altitude,
-            command = (ushort)MAVLink.MAV_CMD.TAKEOFF,
-            target_system = (byte)machine.MachineId.Value,
-            target_component = (byte)MAVLink.MAV_COMPONENT.MAV_COMP_ID_AUTOPILOT1,
-            frame = (byte)MAVLink.MAV_FRAME.GLOBAL_RELATIVE_ALT,
-            current = byte.MinValue,
-            autocontinue = byte.MinValue
-        };
+       for (int i = 0; i < MAX_RETRIES; i++)
+       {
+            // Should be a mavlink_command_int_t coz we can supply like a reference frame and stuff
+            MAVLink.mavlink_command_int_t mavlinkCommand = new MAVLink.mavlink_command_int_t
+            {
+                param1 = (float)pitch,
+                param2 = float.NaN,
+                param3 = float.NaN,
+                param4 = (float)yaw,
+                x = lat,
+                y = lon,
+                z = (float)altitude,
+                command = (ushort)MAVLink.MAV_CMD.TAKEOFF,
+                target_system = (byte)machine.MachineId.Value,
+                target_component = (byte)MAVLink.MAV_COMPONENT.MAV_COMP_ID_AUTOPILOT1,
+                frame = (byte)MAVLink.MAV_FRAME.GLOBAL_RELATIVE_ALT,
+                current = byte.MinValue,
+                autocontinue = byte.MinValue
+            };
 
-        byte[] packet = mavlinkParser.GenerateMAVLinkPacket20(
-            MAVLink.MAVLINK_MSG_ID.COMMAND_LONG,
-            mavlinkCommand,
-            false,
-            GCS_MAVLINK_ID,
-            (byte)MAVLink.MAV_COMPONENT.MAV_COMP_ID_MISSIONPLANNER,
-            0
-        );
+            byte[] packet = mavlinkParser.GenerateMAVLinkPacket20(
+                MAVLink.MAVLINK_MSG_ID.COMMAND_LONG,
+                mavlinkCommand,
+                false,
+                GCS_MAVLINK_ID,
+                (byte)MAVLink.MAV_COMPONENT.MAV_COMP_ID_MISSIONPLANNER,
+                0
+            );
 
-        sender.Send(packet, packet.Length, new IPEndPoint(IPAddress.Loopback, MAVLINK_UDP_DST_CMD_PORT));
-        await AwaitMAVLinkAcknowledgement(machine, MAVLink.MAV_CMD.TAKEOFF);
+            sender.Send(packet, packet.Length, new IPEndPoint(IPAddress.Loopback, MAVLINK_UDP_DST_CMD_PORT));
+            bool success = await AwaitMAVLinkAcknowledgement(machine, MAVLink.MAV_CMD.TAKEOFF);
+            if (success)
+            {
+                return;
+            }
+       }
+
+       Console.WriteLine($"Unable to send MAVLink TAKEOFF command after {MAX_RETRIES} attempts");
     }
 
-    public async Task SendMAVLinkArmCommand(Machine machine, bool forceArm = false)
+    public async Task SendMAVLinkArmCommand(Machine machine, bool forceArm = false, uint retryCount = 0)
     {
 
         if (machine == null || !machine.MachineId.HasValue)
         {
             Console.WriteLine("Cannot send command to null vehicle/vehicle without an ID");
+            return;
         }
 
-        // Should be a mavlink_command_int_t coz we can supply like a reference frame and stuff
-        MAVLink.mavlink_command_long_t mavlinkCommand = new MAVLink.mavlink_command_long_t
+        for (int i = 0; i < MAX_RETRIES; i++)
         {
-            target_system = (byte)machine.MachineId.Value,
-            target_component = (byte)MAVLink.MAV_COMPONENT.MAV_COMP_ID_AUTOPILOT1,
-            command = (ushort)MAVLink.MAV_CMD.COMPONENT_ARM_DISARM,
-            confirmation = 0,
-            param1 = 1,
-            param2 = forceArm ? FORCE_ARM_VALUE : 0,
-            param3 = float.NaN,
-            param4 = float.NaN,
-            param5 = float.NaN,
-            param6 = float.NaN,
-            param7 = float.NaN
-        };
+            // Should be a mavlink_command_int_t coz we can supply like a reference frame and stuff
+            MAVLink.mavlink_command_long_t mavlinkCommand = new MAVLink.mavlink_command_long_t
+            {
+                target_system = (byte)machine.MachineId.Value,
+                target_component = (byte)MAVLink.MAV_COMPONENT.MAV_COMP_ID_AUTOPILOT1,
+                command = (ushort)MAVLink.MAV_CMD.COMPONENT_ARM_DISARM,
+                confirmation = 0,
+                param1 = 1,
+                param2 = forceArm ? FORCE_ARM_VALUE : 0,
+                param3 = float.NaN,
+                param4 = float.NaN,
+                param5 = float.NaN,
+                param6 = float.NaN,
+                param7 = float.NaN
+            };
 
-        byte[] packet = mavlinkParser.GenerateMAVLinkPacket20(
-            MAVLink.MAVLINK_MSG_ID.COMMAND_LONG,
-            mavlinkCommand,
-            false,
-            GCS_MAVLINK_ID,
-            (byte)MAVLink.MAV_COMPONENT.MAV_COMP_ID_MISSIONPLANNER,
-            0
-        );
-        sender.Send(packet, packet.Length, new IPEndPoint(IPAddress.Loopback, MAVLINK_UDP_DST_CMD_PORT));
+            byte[] packet = mavlinkParser.GenerateMAVLinkPacket20(
+                MAVLink.MAVLINK_MSG_ID.COMMAND_LONG,
+                mavlinkCommand,
+                false,
+                GCS_MAVLINK_ID,
+                (byte)MAVLink.MAV_COMPONENT.MAV_COMP_ID_MISSIONPLANNER,
+                0
+            );
 
-        await AwaitMAVLinkAcknowledgement(machine, MAVLink.MAV_CMD.COMPONENT_ARM_DISARM);
+            sender.Send(packet, packet.Length, new IPEndPoint(IPAddress.Loopback, MAVLINK_UDP_DST_CMD_PORT));
+
+            bool success = await AwaitMAVLinkAcknowledgement(machine, MAVLink.MAV_CMD.COMPONENT_ARM_DISARM);
+            if (success)
+            {
+                return;
+            }
+        }
+
+        Console.WriteLine($"Unable to send MAVLink COMPONENT_ARM_DISARM command after {MAX_RETRIES} attempts");
+
     }
 
     public async Task SendMAVLinkLandCommand(
@@ -158,37 +181,46 @@ public class MAVLinkCommander
             return;
         }
 
-        int lat = (int)(latlon.Lat.Value * LAL_LON_SCALE_FACTOR);
-        int lon = (int)(latlon.Lon.Value * LAL_LON_SCALE_FACTOR);
+        int lat = (int)(latlon.Lat.Value * LAT_LON_SCALE_FACTOR);
+        int lon = (int)(latlon.Lon.Value * LAT_LON_SCALE_FACTOR);
 
-        MAVLink.mavlink_command_int_t mavlinkCommand = new MAVLink.mavlink_command_int_t
+        for (int i = 0; i < MAX_RETRIES; i++)
         {
-              param1 = (float)abortAlt,
-              param2 = (float)landmode,
-              param3 = float.NaN,
-              param4 = (float)yaw,
-              x = lat,
-              y = lon,
-              z = (float)altitude,
-              command = (ushort)MAVLink.MAV_CMD.LAND,
-              target_system = (byte)machine.MachineId.Value,
-              target_component = (byte)MAVLink.MAV_COMPONENT.MAV_COMP_ID_AUTOPILOT1,
-              frame = (byte)MAVLink.MAV_FRAME.GLOBAL_RELATIVE_ALT,
-              current = byte.MinValue,
-              autocontinue = byte.MinValue
-        };
+            MAVLink.mavlink_command_int_t mavlinkCommand = new MAVLink.mavlink_command_int_t
+            {
+                param1 = (float)abortAlt,
+                param2 = (float)landmode,
+                param3 = float.NaN,
+                param4 = (float)yaw,
+                x = lat,
+                y = lon,
+                z = (float)altitude,
+                command = (ushort)MAVLink.MAV_CMD.LAND,
+                target_system = (byte)machine.MachineId.Value,
+                target_component = (byte)MAVLink.MAV_COMPONENT.MAV_COMP_ID_AUTOPILOT1,
+                frame = (byte)MAVLink.MAV_FRAME.GLOBAL_RELATIVE_ALT,
+                current = byte.MinValue,
+                autocontinue = byte.MinValue
+            };
 
-        byte[] packet = mavlinkParser.GenerateMAVLinkPacket20(
-            MAVLink.MAVLINK_MSG_ID.COMMAND_INT,
-            mavlinkCommand,
-            false,
-            GCS_MAVLINK_ID,
-            (byte)MAVLink.MAV_COMPONENT.MAV_COMP_ID_MISSIONPLANNER,
-            0
-        );
+            byte[] packet = mavlinkParser.GenerateMAVLinkPacket20(
+                MAVLink.MAVLINK_MSG_ID.COMMAND_INT,
+                mavlinkCommand,
+                false,
+                GCS_MAVLINK_ID,
+                (byte)MAVLink.MAV_COMPONENT.MAV_COMP_ID_MISSIONPLANNER,
+                0
+            );
 
-        sender.Send(packet, packet.Length, new IPEndPoint(IPAddress.Loopback, MAVLINK_UDP_DST_CMD_PORT));
-        await AwaitMAVLinkAcknowledgement(machine, MAVLink.MAV_CMD.LAND);
+            sender.Send(packet, packet.Length, new IPEndPoint(IPAddress.Loopback, MAVLINK_UDP_DST_CMD_PORT));
+            bool success = await AwaitMAVLinkAcknowledgement(machine, MAVLink.MAV_CMD.LAND);
+            if (success)
+            {
+                return;
+            }
+        }
+
+        Console.WriteLine($"Unable to send MAVLink LAND command after {MAX_RETRIES} attempts");
     }
 
     public async Task<bool> AwaitMAVLinkAcknowledgement(Machine machine, MAVLink.MAV_CMD cmd)
@@ -200,8 +232,8 @@ public class MAVLinkCommander
             return false;
         }
 
-        var oneSecondInTheFuture = DateTime.Now.Add(TimeSpan.FromSeconds(1d));
-        while(DateTime.Now < oneSecondInTheFuture)
+        var future = DateTime.Now.Add(TimeSpan.FromMilliseconds(MAX_WAIT_TIME_MS));
+        while(DateTime.Now < future)
         {
             var dat = await receiver.ReceiveAsync();
             using (MemoryStream stream = new MemoryStream(dat.Buffer))
