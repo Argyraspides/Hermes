@@ -6,7 +6,7 @@
             <field type="uint32_t" name="machine_id">
                 <description>ID of the machine that sent this message</description>
             </field>
-            <field type="uint32_t" name="original_protocol">
+            <field type="uint32_t" name="original_protocol" enum="PROTOCOLS">
                 <description>The protocol from which this Hellenic message originated</description>
             </field>
         </fields>
