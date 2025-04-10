@@ -24,6 +24,7 @@ public class MAVLinkCommander
     private int HERMES_UDP_SRC_PORT = 11777;
 
     private global::MAVLink.MavlinkParse mavlinkParser = new global::MAVLink.MavlinkParse();
+    // TODO::ARGYRASPIDES() { Figure out how you're gonna manage different links coz its not always gonna be UDP lol }
     private UdpClient sender;
     private UdpClient receiver;
     public MAVLinkCommander()
