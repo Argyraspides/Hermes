@@ -194,7 +194,7 @@ def generate_function(common_xml_message, hellenic_xml_root, translation_xml):
             "lon": "mavlinkData.lon / 10000000.0",
             "time_usec: "mavlinkData.time_boot_ms",
             "reference_frame": 2,                    # DEFAULT VALUE!
-            "vehicle_id": mavlinkMessage.sysid
+            "machine_id": "mavlinkMessage.sysid"
         },
         "Altitude":
         {
@@ -219,7 +219,7 @@ def generate_function(common_xml_message, hellenic_xml_root, translation_xml):
             # All messages must include a vehicle/system id
             # TODO::ARGYRASPIDES() { Again with this derived message stuff... we shouldnt have to do this bruh }
             # should all be defined in the XML with zero hardcoding in the generator script
-            msg_param_dict[hellenic_message_name_pascal_case] = {"machine_id": "mavlinkMessage.sysid"}
+            msg_param_dict[hellenic_message_name_pascal_case] = {"machine_id": "mavlinkMessage.sysid", "original_protocol": "(uint)Protocols.Mavlink"}
 
         if mapping.tag == "default_value":
             hellenic_message_field_name = mapping.get("hellenic_field_name")
@@ -230,8 +230,7 @@ def generate_function(common_xml_message, hellenic_xml_root, translation_xml):
             conversion = mapping.get('conversion')
             hellenic_field_default_value = conversion.replace("value", f"{hellenic_field_default_value}")
 
-            msg_param_dict[hellenic_message_name_pascal_case][
-                hellenic_message_field_name] = hellenic_field_default_value
+            msg_param_dict[hellenic_message_name_pascal_case][hellenic_message_field_name] = hellenic_field_default_value
             continue
 
         # Field name of the common message we are about to map to a hellenic message

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Hermes.Common.HermesUtils;
 using Hermes.Core.Machine;
 
-namespace Hermes.Languages.HellenicGateway.CommandDispatchers;
+namespace Hermes.Languages.HellenicGateway.CommandDispatchers.MAVLink;
 
 public class MAVLinkCommander
 {
@@ -23,7 +23,7 @@ public class MAVLinkCommander
     private int MAVLINK_UDP_DST_CMD_PORT = 14580;
     private int HERMES_UDP_SRC_PORT = 11777;
 
-    private MAVLink.MavlinkParse mavlinkParser = new MAVLink.MavlinkParse();
+    private global::MAVLink.MavlinkParse mavlinkParser = new global::MAVLink.MavlinkParse();
     private UdpClient sender;
     private UdpClient receiver;
     public MAVLinkCommander()
@@ -69,7 +69,7 @@ public class MAVLinkCommander
        for (int i = 0; i < MAX_RETRIES; i++)
        {
             // Should be a mavlink_command_int_t coz we can supply like a reference frame and stuff
-            MAVLink.mavlink_command_int_t mavlinkCommand = new MAVLink.mavlink_command_int_t
+            global::MAVLink.mavlink_command_int_t mavlinkCommand = new global::MAVLink.mavlink_command_int_t
             {
                 param1 = (float)pitch,
                 param2 = float.NaN,
@@ -78,25 +78,25 @@ public class MAVLinkCommander
                 x = lat,
                 y = lon,
                 z = (float)altitude,
-                command = (ushort)MAVLink.MAV_CMD.TAKEOFF,
+                command = (ushort)global::MAVLink.MAV_CMD.TAKEOFF,
                 target_system = (byte)machine.MachineId.Value,
-                target_component = (byte)MAVLink.MAV_COMPONENT.MAV_COMP_ID_AUTOPILOT1,
-                frame = (byte)MAVLink.MAV_FRAME.GLOBAL_RELATIVE_ALT,
+                target_component = (byte)global::MAVLink.MAV_COMPONENT.MAV_COMP_ID_AUTOPILOT1,
+                frame = (byte)global::MAVLink.MAV_FRAME.GLOBAL_RELATIVE_ALT,
                 current = byte.MinValue,
                 autocontinue = byte.MinValue
             };
 
             byte[] packet = mavlinkParser.GenerateMAVLinkPacket20(
-                MAVLink.MAVLINK_MSG_ID.COMMAND_LONG,
+                global::MAVLink.MAVLINK_MSG_ID.COMMAND_LONG,
                 mavlinkCommand,
                 false,
                 GCS_MAVLINK_ID,
-                (byte)MAVLink.MAV_COMPONENT.MAV_COMP_ID_MISSIONPLANNER,
+                (byte)global::MAVLink.MAV_COMPONENT.MAV_COMP_ID_MISSIONPLANNER,
                 0
             );
 
             sender.Send(packet, packet.Length, new IPEndPoint(IPAddress.Loopback, MAVLINK_UDP_DST_CMD_PORT));
-            bool success = await AwaitMAVLinkAcknowledgement(machine, MAVLink.MAV_CMD.TAKEOFF);
+            bool success = await AwaitMAVLinkAcknowledgement(machine, global::MAVLink.MAV_CMD.TAKEOFF);
             if (success)
             {
                 return;
@@ -118,11 +118,11 @@ public class MAVLinkCommander
         for (int i = 0; i < MAX_RETRIES; i++)
         {
             // Should be a mavlink_command_int_t coz we can supply like a reference frame and stuff
-            MAVLink.mavlink_command_long_t mavlinkCommand = new MAVLink.mavlink_command_long_t
+            global::MAVLink.mavlink_command_long_t mavlinkCommand = new global::MAVLink.mavlink_command_long_t
             {
                 target_system = (byte)machine.MachineId.Value,
-                target_component = (byte)MAVLink.MAV_COMPONENT.MAV_COMP_ID_AUTOPILOT1,
-                command = (ushort)MAVLink.MAV_CMD.COMPONENT_ARM_DISARM,
+                target_component = (byte)global::MAVLink.MAV_COMPONENT.MAV_COMP_ID_AUTOPILOT1,
+                command = (ushort)global::MAVLink.MAV_CMD.COMPONENT_ARM_DISARM,
                 confirmation = 0,
                 param1 = 1,
                 param2 = forceArm ? FORCE_ARM_VALUE : 0,
@@ -134,17 +134,17 @@ public class MAVLinkCommander
             };
 
             byte[] packet = mavlinkParser.GenerateMAVLinkPacket20(
-                MAVLink.MAVLINK_MSG_ID.COMMAND_LONG,
+                global::MAVLink.MAVLINK_MSG_ID.COMMAND_LONG,
                 mavlinkCommand,
                 false,
                 GCS_MAVLINK_ID,
-                (byte)MAVLink.MAV_COMPONENT.MAV_COMP_ID_MISSIONPLANNER,
+                (byte)global::MAVLink.MAV_COMPONENT.MAV_COMP_ID_MISSIONPLANNER,
                 0
             );
 
             sender.Send(packet, packet.Length, new IPEndPoint(IPAddress.Loopback, MAVLINK_UDP_DST_CMD_PORT));
 
-            bool success = await AwaitMAVLinkAcknowledgement(machine, MAVLink.MAV_CMD.COMPONENT_ARM_DISARM);
+            bool success = await AwaitMAVLinkAcknowledgement(machine, global::MAVLink.MAV_CMD.COMPONENT_ARM_DISARM);
             if (success)
             {
                 return;
@@ -158,7 +158,7 @@ public class MAVLinkCommander
     public async Task SendMAVLinkLandCommand(
         Machine machine,
         double abortAlt = 0.0d,
-        MAVLink.PRECISION_LAND_MODE landmode = 0,
+        global::MAVLink.PRECISION_LAND_MODE landmode = 0,
         double yaw = 0.0d,
         double altitude = 0.0d)
     {
@@ -187,7 +187,7 @@ public class MAVLinkCommander
 
         for (int i = 0; i < MAX_RETRIES; i++)
         {
-            MAVLink.mavlink_command_int_t mavlinkCommand = new MAVLink.mavlink_command_int_t
+            global::MAVLink.mavlink_command_int_t mavlinkCommand = new global::MAVLink.mavlink_command_int_t
             {
                 param1 = (float)abortAlt,
                 param2 = (float)landmode,
@@ -196,25 +196,25 @@ public class MAVLinkCommander
                 x = lat,
                 y = lon,
                 z = (float)altitude,
-                command = (ushort)MAVLink.MAV_CMD.LAND,
+                command = (ushort)global::MAVLink.MAV_CMD.LAND,
                 target_system = (byte)machine.MachineId.Value,
-                target_component = (byte)MAVLink.MAV_COMPONENT.MAV_COMP_ID_AUTOPILOT1,
-                frame = (byte)MAVLink.MAV_FRAME.GLOBAL_RELATIVE_ALT,
+                target_component = (byte)global::MAVLink.MAV_COMPONENT.MAV_COMP_ID_AUTOPILOT1,
+                frame = (byte)global::MAVLink.MAV_FRAME.GLOBAL_RELATIVE_ALT,
                 current = byte.MinValue,
                 autocontinue = byte.MinValue
             };
 
             byte[] packet = mavlinkParser.GenerateMAVLinkPacket20(
-                MAVLink.MAVLINK_MSG_ID.COMMAND_INT,
+                global::MAVLink.MAVLINK_MSG_ID.COMMAND_INT,
                 mavlinkCommand,
                 false,
                 GCS_MAVLINK_ID,
-                (byte)MAVLink.MAV_COMPONENT.MAV_COMP_ID_MISSIONPLANNER,
+                (byte)global::MAVLink.MAV_COMPONENT.MAV_COMP_ID_MISSIONPLANNER,
                 0
             );
 
             sender.Send(packet, packet.Length, new IPEndPoint(IPAddress.Loopback, MAVLINK_UDP_DST_CMD_PORT));
-            bool success = await AwaitMAVLinkAcknowledgement(machine, MAVLink.MAV_CMD.LAND);
+            bool success = await AwaitMAVLinkAcknowledgement(machine, global::MAVLink.MAV_CMD.LAND);
             if (success)
             {
                 return;
@@ -224,7 +224,7 @@ public class MAVLinkCommander
         HermesUtils.HermesLogError($"Unable to send MAVLink LAND command after {MAX_RETRIES} attempts. MachineID: {machine.MachineId}, AbortAlt: {abortAlt}m");
     }
 
-    public async Task<bool> AwaitMAVLinkAcknowledgement(Machine machine, MAVLink.MAV_CMD cmd)
+    public async Task<bool> AwaitMAVLinkAcknowledgement(Machine machine, global::MAVLink.MAV_CMD cmd)
     {
         if (!machine.MachineId.HasValue)
         {
@@ -243,23 +243,23 @@ public class MAVLinkCommander
             var dat = await receiver.ReceiveAsync();
             using (MemoryStream stream = new MemoryStream(dat.Buffer))
             {
-                MAVLink.MAVLinkMessage message = mavlinkParser.ReadPacket(stream);
+                global::MAVLink.MAVLinkMessage message = mavlinkParser.ReadPacket(stream);
 
-                if (message.msgid != (uint)MAVLink.MAVLINK_MSG_ID.COMMAND_ACK) continue;
+                if (message.msgid != (uint)global::MAVLink.MAVLINK_MSG_ID.COMMAND_ACK) continue;
 
-                MAVLink.mavlink_command_ack_t ack = message.ToStructure<MAVLink.mavlink_command_ack_t>();
+                global::MAVLink.mavlink_command_ack_t ack = message.ToStructure<global::MAVLink.mavlink_command_ack_t>();
 
                 bool thisMachine = (machine.MachineId.Value == message.sysid);
                 bool thisCmdAck = (ack.command == (ushort)cmd);
 
                 if (thisMachine && thisCmdAck)
                 {
-                    if (ack.result == (byte)MAVLink.MAV_RESULT.ACCEPTED)
+                    if (ack.result == (byte)global::MAVLink.MAV_RESULT.ACCEPTED)
                     {
                         return true;
                     }
 
-                    if (ack.result == (byte)MAVLink.MAV_RESULT.IN_PROGRESS && !receivedInProgress)
+                    if (ack.result == (byte)global::MAVLink.MAV_RESULT.IN_PROGRESS && !receivedInProgress)
                     {
                         HermesUtils.HermesLogInfo($"Command {cmd} for MachineID: {machine.MachineId} in progress, extending timeout from {MAX_NORMAL_WAIT_TIME_MS}ms to {IN_PROGRESS_WAIT_TIME_MS}ms");
                         future = DateTime.Now.Add(extendedTimeout);
