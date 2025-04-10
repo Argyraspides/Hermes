@@ -23,7 +23,7 @@ class MAVLinkToHellenicTranslator
 			return conversionFunc(mavlinkMessage);
 		}
 		// No suitable translation function found
-		// Console.WriteLine("Unable to translate MAVLink message! No suitable translation function found for msgid: " + msgId);
+		Console.WriteLine("Unable to translate MAVLink message! No suitable translation function found for msgid: " + msgId);
 		return new List<HellenicMessage>();
 	}
 
@@ -34,6 +34,7 @@ class MAVLinkToHellenicTranslator
 
 		var PulseHellenicMessage = new Pulse(
 			pMachineId: mavlinkMessage.sysid,
+			pOriginalProtocol: (uint)Protocols.Mavlink,
 			pMachineType: mavlinkData.type,
 			pCallsign: "UNKNOWN CALLSIGN",
 			pTimeUsec: (ulong)Time.GetUnixTimeFromSystem()
@@ -52,6 +53,7 @@ class MAVLinkToHellenicTranslator
 
 		var LatitudeLongitudeHellenicMessage = new LatitudeLongitude(
 			pMachineId: mavlinkMessage.sysid,
+			pOriginalProtocol: (uint)Protocols.Mavlink,
 			pLat: mavlinkData.lat / 10000000.0,
 			pLon: mavlinkData.lon / 10000000.0,
 			pTimeUsec: mavlinkData.time_boot_ms,
@@ -60,6 +62,7 @@ class MAVLinkToHellenicTranslator
 
 		var AltitudeHellenicMessage = new Altitude(
 			pMachineId: mavlinkMessage.sysid,
+			pOriginalProtocol: (uint)Protocols.Mavlink,
 			pAlt: mavlinkData.alt / 1000.0,
 			pRelativeAlt: mavlinkData.relative_alt / 1000.0,
 			pTimeUsec: mavlinkData.time_boot_ms
@@ -67,6 +70,7 @@ class MAVLinkToHellenicTranslator
 
 		var GroundVelocityHellenicMessage = new GroundVelocity(
 			pMachineId: mavlinkMessage.sysid,
+			pOriginalProtocol: (uint)Protocols.Mavlink,
 			pVx: mavlinkData.vx / 100.0,
 			pVy: mavlinkData.vy / 100.0,
 			pVz: mavlinkData.vz / -100.0,
@@ -75,6 +79,7 @@ class MAVLinkToHellenicTranslator
 
 		var HeadingHellenicMessage = new Heading(
 			pMachineId: mavlinkMessage.sysid,
+			pOriginalProtocol: (uint)Protocols.Mavlink,
 			pHdg: mavlinkData.hdg / 100.0,
 			pTimeUsec: mavlinkData.time_boot_ms,
 			pReferenceFrame: 2

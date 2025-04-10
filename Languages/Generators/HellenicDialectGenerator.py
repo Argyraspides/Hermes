@@ -53,6 +53,8 @@ def generate_hellenic_interface_file(output_dir: str) -> None:
                          f"\tpublic uint? Id {{ get; protected set; }}\n"
                          f"\t// The name of this Hellenic message, e.g., \"LatitudeLongitude\"\n"
                          f"\tpublic string? MessageName {{ get; protected set; }}\n"
+                         f"\t// The original protocol from which this Hellenic message was created\n"
+                         f"\tpublic uint? OriginalProtocol {{ get; protected set; }}\n"
                          f"}}")
 
     output_path = os.path.join(output_dir, "HellenicMessage.cs")

@@ -6,6 +6,9 @@
             <field type="uint32_t" name="machine_id">
                 <description>ID of the machine that sent this message</description>
             </field>
+            <field type="uint32_t" name="original_protocol">
+                <description>The protocol from which this Hellenic message originated</description>
+            </field>
         </fields>
     </header>
     <enums>
@@ -26,7 +29,20 @@
                 </entry>
             </entries>
         </enum>
+        <enum name="PROTOCOLS">
+            <description>
+                List of supported protocols that can be translated to Hellenic
+            </description>
+            <entries>
+                <entry value="0" name="MAVLINK">
+                    <description>
+                        The MAVLink protocol. See: https://mavlink.io
+                    </description>
+                </entry>
+            </entries>
+        </enum>
     </enums>
+
     <messages>
         <message id="0" name="LATITUDE_LONGITUDE">
             <description>The position of the object expressed in latitude, longitude, and altitude,

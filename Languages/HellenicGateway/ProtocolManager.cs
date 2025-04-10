@@ -18,7 +18,6 @@
 */
 
 
-using Hermes.Languages.HellenicGateway.CommandDispatchers;
 using Hermes.Universe.Autoloads.EventBus;
 
 namespace Hermes.Languages.HellenicGateway;

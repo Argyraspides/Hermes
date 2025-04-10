@@ -18,16 +18,13 @@
 */
 
 
-using Hermes.Common.Communications.WorldListener;
 
 namespace Hermes.Languages.HellenicGateway.Adapters;
 
 using System.Collections.Concurrent;
 using System.Net;
-using System.Threading;
 using Hermes.Common.Communications.WorldListener.MAVLink;
 using System.Collections.Generic;
-using Hermes.Languages.HellenicGateway.StateMachines;
 
 /// <summary>
 /// The MAVLinkAdapter has the single purpose of listening to MAVLink messages over
@@ -43,8 +40,6 @@ using Hermes.Languages.HellenicGateway.StateMachines;
 /// </summary>
 public class MAVLinkAdapter : IProtocolAdapter
 {
-    private MAVLinkStateMachine m_mavlinkStateMachine = new MAVLinkStateMachine();
-
     private MAVLinkUDPListener m_udpListener = new MAVLinkUDPListener(
         // new IPEndPoint(IPAddress.Parse("127.0.0.1"), KnownWorlds.DEFAULT_MAVLINK_PORT)
         new IPEndPoint(IPAddress.Parse("127.0.0.1"), 14445)
@@ -58,31 +53,6 @@ public class MAVLinkAdapter : IProtocolAdapter
         m_udpListener.StopListening();
     }
 
-    public List<HellenicMessage> HandleMessage(MAVLink.MAVLinkMessage fullMAVLinkMessage)
-    {
-        List<HellenicMessage> hellenicMessages = new List<HellenicMessage>();
-        if (fullMAVLinkMessage == null)
-        {
-            return hellenicMessages;
-        }
-
-        hellenicMessages = MAVLinkToHellenicTranslator.TranslateMAVLinkMessage(fullMAVLinkMessage);
-
-        switch (fullMAVLinkMessage.msgid)
-        {
-            case (uint)MAVLink.MAVLINK_MSG_ID.HEARTBEAT:
-                MAVLink.mavlink_heartbeat_t heartbeatMessage =
-                    MavlinkUtil.ByteArrayToStructure<MAVLink.mavlink_heartbeat_t>(fullMAVLinkMessage.buffer);
-                break;
-            case (uint)MAVLink.MAVLINK_MSG_ID.GLOBAL_POSITION_INT:
-                MAVLink.mavlink_global_position_int_t globalPositionIntMsg =
-                    MavlinkUtil.ByteArrayToStructure<MAVLink.mavlink_global_position_int_t>(fullMAVLinkMessage.buffer);
-                break;
-        }
-
-        return hellenicMessages;
-    }
-
     public void Start()
     {
         m_messageQueue = new ConcurrentQueue<HellenicMessage>();
@@ -94,7 +64,8 @@ public class MAVLinkAdapter : IProtocolAdapter
     {
         if (m_udpListener.GetNextMessage() is MAVLink.MAVLinkMessage msg)
         {
-            List<HellenicMessage> hellenicMessages = HandleMessage(msg);
+            List<HellenicMessage> hellenicMessages =
+                MAVLinkToHellenicTranslator.TranslateMAVLinkMessage(msg);
             foreach (HellenicMessage hellenicMessage in hellenicMessages)
             {
                 if (m_messageQueue.Count >= m_maxMessageQueueSize)
