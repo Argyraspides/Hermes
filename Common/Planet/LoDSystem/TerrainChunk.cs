@@ -25,7 +25,7 @@ namespace Hermes.Common.Planet.LoDSystem;
 using System;
 using System.Threading.Tasks;
 using Godot;
-using Hermes.Common.GodotUtils;
+using HermesUtils;
 
 /// <summary>
 /// Represents a single chunk of planetary terrain in a quadtree structure.
@@ -99,7 +99,7 @@ public partial class TerrainChunk : Node3D
     {
         try
         {
-            if (GodotUtils.IsValid(TerrainChunkMesh))
+            if (HermesUtils.IsValid(TerrainChunkMesh))
             {
                 AddChild(TerrainChunkMesh);
                 await InitializeTerrainChunkAsync();
@@ -137,7 +137,7 @@ public partial class TerrainChunk : Node3D
             shaderMat.SetShaderParameter("tile_width", MapTile.Width);
             shaderMat.SetShaderParameter("tile_height", MapTile.Height);
 
-            if (GodotUtils.IsValid(TerrainChunkMesh))
+            if (HermesUtils.IsValid(TerrainChunkMesh))
             {
                 TerrainChunkMesh.MaterialOverride = shaderMat;
             }
@@ -150,7 +150,7 @@ public partial class TerrainChunk : Node3D
         {
             GD.PrintErr("Shader material path is null or empty! Using default shader.");
             var standardShader = new StandardMaterial3D();
-            if (GodotUtils.IsValid(TerrainChunkMesh))
+            if (HermesUtils.IsValid(TerrainChunkMesh))
             {
                 TerrainChunkMesh.MaterialOverride = standardShader;
             }

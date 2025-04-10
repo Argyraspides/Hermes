@@ -25,7 +25,7 @@ namespace Hermes.Common.Planet.LoDSystem;
 using System;
 using System.Threading;
 using Godot;
-using Hermes.Common.GodotUtils;
+using HermesUtils;
 using Hermes.Common.Meshes.MeshGenerators;
 
 /// <summary>
@@ -99,7 +99,7 @@ public partial class TerrainQuadTreeTraverser : Node
                 {
                     foreach (var rootNode in m_terrainQuadTree.RootNodes)
                     {
-                        if (!GodotUtils.IsValid(rootNode) || !ExceedsMaxNodeThreshold()) continue;
+                        if (!HermesUtils.IsValid(rootNode) || !ExceedsMaxNodeThreshold()) continue;
                         CullUnusedNodes(rootNode);
                     }
                 }
@@ -160,7 +160,7 @@ public partial class TerrainQuadTreeTraverser : Node
 
     private void DetermineSplitMergeNodes(TerrainQuadTreeNode node, TerrainQuadTreeNode parent)
     {
-        if (!GodotUtils.IsValid(node)) return;
+        if (!HermesUtils.IsValid(node)) return;
 
         // Splitting happens top-down, so we do it first prior to recursing down further
         if (node.IsDeepest && ShouldSplit(node))
@@ -195,7 +195,7 @@ public partial class TerrainQuadTreeTraverser : Node
     // are from completely different times }
     private bool ShouldSplit(TerrainQuadTreeNode node)
     {
-        if (!GodotUtils.IsValid(node)) throw new ArgumentNullException(nameof(node), "node cannot be null");
+        if (!HermesUtils.IsValid(node)) throw new ArgumentNullException(nameof(node), "node cannot be null");
         if (node.Depth >= m_terrainQuadTree.MaxDepth) return false;
 
         float distanceToCamera = node.Position.DistanceTo(m_terrainQuadTree.CameraPosition);
@@ -206,7 +206,7 @@ public partial class TerrainQuadTreeTraverser : Node
 
     private bool ShouldMerge(TerrainQuadTreeNode node)
     {
-        if (!GodotUtils.IsValid(node)) return false;
+        if (!HermesUtils.IsValid(node)) return false;
         if (node.Depth < m_terrainQuadTree.MinDepth) return false;
 
         float distanceToCamera = node.Position.DistanceTo(m_terrainQuadTree.CameraPosition);
@@ -225,11 +225,11 @@ public partial class TerrainQuadTreeTraverser : Node
     /// <returns>True if the parents children should be merged, otherwise false</returns>
     private bool ShouldMergeChildren(TerrainQuadTreeNode parentNode)
     {
-        if (!GodotUtils.IsValid(parentNode)) return false;
+        if (!HermesUtils.IsValid(parentNode)) return false;
 
         foreach (var childNode in parentNode.ChildNodes)
         {
-            if (!GodotUtils.IsValid(childNode) || !ShouldMerge(childNode))
+            if (!HermesUtils.IsValid(childNode) || !ShouldMerge(childNode))
             {
                 return false;
             }
@@ -245,7 +245,7 @@ public partial class TerrainQuadTreeTraverser : Node
     /// <param name="node"></param>
     private void RemoveQuadTreeNode(TerrainQuadTreeNode node)
     {
-        if (GodotUtils.IsValid(node))
+        if (HermesUtils.IsValid(node))
         {
             node.CallDeferred("queue_free");
         }
@@ -257,7 +257,7 @@ public partial class TerrainQuadTreeTraverser : Node
     /// <param name="parent"></param>
     private void RemoveSubQuadTreeThreadSafe(TerrainQuadTreeNode parent)
     {
-        if (!GodotUtils.IsValid(parent)) return;
+        if (!HermesUtils.IsValid(parent)) return;
 
         foreach (var childNode in parent.ChildNodes)
         {
@@ -273,7 +273,7 @@ public partial class TerrainQuadTreeTraverser : Node
     /// <param name="parentNode">The parent node whose entire subtree will be culled</param>
     private void CullUnusedNodes(TerrainQuadTreeNode parentNode)
     {
-        if (!GodotUtils.IsValid(parentNode)) return;
+        if (!HermesUtils.IsValid(parentNode)) return;
 
         // We only want to cull nodes BELOW the ones that are currently visible in the scene
         if (parentNode.IsDeepest)
@@ -286,7 +286,7 @@ public partial class TerrainQuadTreeTraverser : Node
         // Recursively destroy all nodes
         foreach (var terrainQuadTreeNode in parentNode.ChildNodes)
         {
-            if (GodotUtils.IsValid(terrainQuadTreeNode))
+            if (HermesUtils.IsValid(terrainQuadTreeNode))
             {
                 CullUnusedNodes(terrainQuadTreeNode);
             }

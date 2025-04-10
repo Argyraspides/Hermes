@@ -25,7 +25,7 @@ using System;
 
 using Hermes.Common.Map.Types;
 using Hermes.Common.Map.Utils;
-using Hermes.Common.GodotUtils;
+using HermesUtils;
 using Hermes.Common.Meshes.MeshGenerators;
 using Hermes.Universe.SolarSystem;
 using System.Collections.Concurrent;
@@ -279,8 +279,8 @@ public sealed partial class TerrainQuadTree : Node3D
     private void InitializeTerrainNodeMesh(TerrainQuadTreeNode node)
     {
         bool invalidNode =
-            !GodotUtils.IsValid(node) ||
-            !GodotUtils.IsValid(node.Chunk) ||
+            !HermesUtils.IsValid(node) ||
+            !HermesUtils.IsValid(node.Chunk) ||
             node.Chunk.MapTile == null;
         if (invalidNode)
         {
@@ -289,7 +289,7 @@ public sealed partial class TerrainQuadTree : Node3D
 
         // If the mesh is invalid this means this is the very first time we are loading up this node into the
         // scene tree
-        if (!GodotUtils.IsValid(node.Chunk.MeshInstance))
+        if (!HermesUtils.IsValid(node.Chunk.MeshInstance))
         {
             ArrayMesh meshSegment = GenerateMeshForNode(node);
             node.Chunk.MeshInstance = new MeshInstance3D { Mesh = meshSegment };
@@ -349,7 +349,7 @@ public sealed partial class TerrainQuadTree : Node3D
         while (InvisibilityQueueNodes.TryDequeue(out TerrainQuadTreeNode node) &&
                dequeuesProcessed++ < MaxQueueUpdatesPerFrame)
         {
-            if (!GodotUtils.IsValid(node)) continue;
+            if (!HermesUtils.IsValid(node)) continue;
             node.Chunk.Visible = false;
         }
     }
@@ -360,7 +360,7 @@ public sealed partial class TerrainQuadTree : Node3D
         while (VisibilityQueueNodes.TryDequeue(out TerrainQuadTreeNode node) &&
                dequeuesProcessed++ < MaxQueueUpdatesPerFrame)
         {
-            if (!GodotUtils.IsValid(node)) continue;
+            if (!HermesUtils.IsValid(node)) continue;
             node.Chunk.Visible = true;
         }
     }
@@ -375,7 +375,7 @@ public sealed partial class TerrainQuadTree : Node3D
     /// <exception cref="ArgumentNullException">Thrown if the TerrainQuadTreeNode is not valid</exception>
     private void SplitNode(TerrainQuadTreeNode node)
     {
-        if (!GodotUtils.IsValid(node))
+        if (!HermesUtils.IsValid(node))
         {
             return;
         }
@@ -402,7 +402,7 @@ public sealed partial class TerrainQuadTree : Node3D
 
     private void MergeNodeChildren(TerrainQuadTreeNode parent)
     {
-        if (!GodotUtils.IsValid(parent))
+        if (!HermesUtils.IsValid(parent))
         {
             return;
         }
@@ -413,7 +413,7 @@ public sealed partial class TerrainQuadTree : Node3D
 
         foreach (var childNode in parent.ChildNodes)
         {
-            if (GodotUtils.IsValid(childNode))
+            if (HermesUtils.IsValid(childNode))
             {
                 childNode.Chunk.Visible = false;
                 childNode.IsDeepest = false;
@@ -443,12 +443,12 @@ public sealed partial class TerrainQuadTree : Node3D
 
     private void GenerateChildNodes(TerrainQuadTreeNode parentNode)
     {
-        if (!GodotUtils.IsValid(parentNode))
+        if (!HermesUtils.IsValid(parentNode))
         {
             throw new ArgumentNullException(nameof(parentNode), "Cannot generate children for a null node.");
         }
 
-        if (!GodotUtils.IsValid(parentNode.Chunk))
+        if (!HermesUtils.IsValid(parentNode.Chunk))
         {
             throw new ArgumentNullException(nameof(parentNode),
                 "Cannot generate children for a node with a null terrain chunk.");

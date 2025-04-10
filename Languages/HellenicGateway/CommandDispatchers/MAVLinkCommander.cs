@@ -3,8 +3,8 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using Hermes.Common.HermesUtils;
 using Hermes.Core.Machine;
-using Microsoft.VisualBasic;
 
 namespace Hermes.Languages.HellenicGateway.CommandDispatchers;
 
@@ -13,7 +13,8 @@ public class MAVLinkCommander
 
     private const double LAT_LON_SCALE_FACTOR = 1e7;
     private const uint FORCE_ARM_VALUE = 21196;
-    private const uint MAX_WAIT_TIME_MS = 3000;
+    private const uint MAX_NORMAL_WAIT_TIME_MS = 1500;
+    private const uint IN_PROGRESS_WAIT_TIME_MS = 3000;
     private const uint MAX_RETRIES = 3;
 
     private byte GCS_MAVLINK_ID = 255;
@@ -46,19 +47,19 @@ public class MAVLinkCommander
        HellenicMessage msg = machine.GetHellenicMessage(HellenicMessageType.LatitudeLongitude);
        if (msg == null || msg is not LatitudeLongitude latlon)
        {
-           Console.WriteLine("Cannot send takeoff command -- vehicle lat/lon unknown");
+           HermesUtils.HermesLogError($"Cannot send takeoff command -- vehicle lat/lon unknown. MachineID: {(machine?.MachineId?.ToString() ?? "null")}");
            return;
        }
 
        if (!latlon.Lat.HasValue || !latlon.Lon.HasValue)
        {
-           Console.WriteLine("Cannot send takeoff command -- vehicle lat/lon unknown");
+           HermesUtils.HermesLogError($"Cannot send takeoff command -- vehicle lat/lon unknown. MachineID: {machine.MachineId}");
            return;
        }
 
        if (!machine.MachineId.HasValue)
        {
-           Console.WriteLine("Cannot send takeoff command -- vehicle machineId unknown");
+           HermesUtils.HermesLogError("Cannot send takeoff command -- vehicle machineId unknown");
            return;
        }
 
@@ -102,7 +103,7 @@ public class MAVLinkCommander
             }
        }
 
-       Console.WriteLine($"Unable to send MAVLink TAKEOFF command after {MAX_RETRIES} attempts");
+       HermesUtils.HermesLogError($"Unable to send MAVLink TAKEOFF command after {MAX_RETRIES} attempts. MachineID: {machine.MachineId}, Alt: {altitude}m");
     }
 
     public async Task SendMAVLinkArmCommand(Machine machine, bool forceArm = false, uint retryCount = 0)
@@ -110,7 +111,7 @@ public class MAVLinkCommander
 
         if (machine == null || !machine.MachineId.HasValue)
         {
-            Console.WriteLine("Cannot send command to null vehicle/vehicle without an ID");
+            HermesUtils.HermesLogError($"Cannot send ARM command to null vehicle/vehicle without an ID. MachineID: {(machine?.MachineId?.ToString() ?? "null")}");
             return;
         }
 
@@ -150,7 +151,7 @@ public class MAVLinkCommander
             }
         }
 
-        Console.WriteLine($"Unable to send MAVLink COMPONENT_ARM_DISARM command after {MAX_RETRIES} attempts");
+        HermesUtils.HermesLogError($"Unable to send MAVLink COMPONENT_ARM_DISARM command after {MAX_RETRIES} attempts. MachineID: {machine.MachineId}, ForceArm: {forceArm}");
 
     }
 
@@ -165,19 +166,19 @@ public class MAVLinkCommander
         HellenicMessage msg = machine.GetHellenicMessage(HellenicMessageType.LatitudeLongitude);
         if (msg == null || msg is not LatitudeLongitude latlon)
         {
-            Console.WriteLine("Cannot send takeoff command -- vehicle lat/lon unknown");
+            HermesUtils.HermesLogError($"Cannot send land command -- vehicle lat/lon unknown. MachineID: {(machine?.MachineId?.ToString() ?? "null")}");
             return;
         }
 
         if (!latlon.Lat.HasValue || !latlon.Lon.HasValue)
         {
-            Console.WriteLine("Cannot send takeoff command -- vehicle lat/lon unknown");
+            HermesUtils.HermesLogError($"Cannot send land command -- vehicle lat/lon unknown. MachineID: {machine.MachineId}");
             return;
         }
 
         if (!machine.MachineId.HasValue)
         {
-            Console.WriteLine("Cannot send takeoff command -- vehicle machineId unknown");
+            HermesUtils.HermesLogError("Cannot send land command -- vehicle machineId unknown");
             return;
         }
 
@@ -220,19 +221,23 @@ public class MAVLinkCommander
             }
         }
 
-        Console.WriteLine($"Unable to send MAVLink LAND command after {MAX_RETRIES} attempts");
+        HermesUtils.HermesLogError($"Unable to send MAVLink LAND command after {MAX_RETRIES} attempts. MachineID: {machine.MachineId}, AbortAlt: {abortAlt}m");
     }
 
     public async Task<bool> AwaitMAVLinkAcknowledgement(Machine machine, MAVLink.MAV_CMD cmd)
     {
-
         if (!machine.MachineId.HasValue)
         {
-            Console.WriteLine("Cannot wait for an acknowledgement of a vehicle without an ID");
+            HermesUtils.HermesLogError("Cannot wait for an acknowledgement of a vehicle without an ID");
             return false;
         }
 
-        var future = DateTime.Now.Add(TimeSpan.FromMilliseconds(MAX_WAIT_TIME_MS));
+        var initialTimeout = TimeSpan.FromMilliseconds(MAX_NORMAL_WAIT_TIME_MS);
+        var extendedTimeout = TimeSpan.FromMilliseconds(IN_PROGRESS_WAIT_TIME_MS);
+
+        var future = DateTime.Now.Add(initialTimeout);
+        bool receivedInProgress = false;
+
         while(DateTime.Now < future)
         {
             var dat = await receiver.ReceiveAsync();
@@ -240,24 +245,45 @@ public class MAVLinkCommander
             {
                 MAVLink.MAVLinkMessage message = mavlinkParser.ReadPacket(stream);
 
-                // TODO::ARGYRASPIDES() { Handle cases where the command is in progress, cancelled, etc }
                 if (message.msgid != (uint)MAVLink.MAVLINK_MSG_ID.COMMAND_ACK) continue;
 
                 MAVLink.mavlink_command_ack_t ack = message.ToStructure<MAVLink.mavlink_command_ack_t>();
 
-                bool thisMachine = machine.MachineId.Value == message.sysid;
-                bool thisCmdAck = ack.command == (ushort)cmd;
-                bool accepted = ack.result == (byte)MAVLink.MAV_RESULT.ACCEPTED;
+                bool thisMachine = (machine.MachineId.Value == message.sysid);
+                bool thisCmdAck = (ack.command == (ushort)cmd);
 
-                if (thisMachine && thisCmdAck && accepted)
+                if (thisMachine && thisCmdAck)
                 {
-                    return true;
+                    if (ack.result == (byte)MAVLink.MAV_RESULT.ACCEPTED)
+                    {
+                        return true;
+                    }
+
+                    if (ack.result == (byte)MAVLink.MAV_RESULT.IN_PROGRESS && !receivedInProgress)
+                    {
+                        HermesUtils.HermesLogInfo($"Command {cmd} for MachineID: {machine.MachineId} in progress, extending timeout from {MAX_NORMAL_WAIT_TIME_MS}ms to {IN_PROGRESS_WAIT_TIME_MS}ms");
+                        future = DateTime.Now.Add(extendedTimeout);
+                        receivedInProgress = true;
+                    }
+                    else
+                    {
+                        HermesUtils.HermesLogWarning($"Command {cmd} for MachineID: {machine.MachineId} returned result: {ack.result}");
+                        return false;
+                    }
                 }
             }
         }
 
-        return false;
+        if (receivedInProgress)
+        {
+            HermesUtils.HermesLogError($"Command {cmd} for MachineID: {machine.MachineId} timed out while in progress after {IN_PROGRESS_WAIT_TIME_MS}ms");
+        }
+        else
+        {
+            HermesUtils.HermesLogError($"Command {cmd} for MachineID: {machine.MachineId} timed out waiting for acknowledgment after {MAX_NORMAL_WAIT_TIME_MS}ms");
+        }
 
+        return false;
     }
 
 
