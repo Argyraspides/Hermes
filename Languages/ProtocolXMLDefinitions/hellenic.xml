@@ -42,7 +42,6 @@
             </entries>
         </enum>
     </enums>
-
     <messages>
         <message id="0" name="LATITUDE_LONGITUDE">
             <description>The position of the object expressed in latitude, longitude, and altitude,
@@ -141,6 +140,5 @@
         </message>
     </messages>
     <commands>
-
     </commands>
 </hellenic>
