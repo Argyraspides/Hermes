@@ -106,7 +106,7 @@ public class MAVLinkCommander
        HermesUtils.HermesLogError($"Unable to send MAVLink TAKEOFF command after {MAX_RETRIES} attempts. MachineID: {machine.MachineId}, Alt: {altitude}m");
     }
 
-    public async Task SendMAVLinkArmCommand(Machine machine, bool forceArm = false, uint retryCount = 0)
+    public async Task SendMAVLinkArmCommand(Machine machine, bool forceArm = false)
     {
 
         if (machine == null || !machine.MachineId.HasValue)
