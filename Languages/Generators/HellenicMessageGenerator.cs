@@ -33,8 +33,8 @@ public static class HellenicMessageGenerator
         string hellenicMessageNamePascal = GeneratorUtils.SnakeToPascal(hellenicMessageName);
         stringBuilder.Append($"\tpublic {hellenicMessageNamePascal}()\n\t{{\n");
 
-        var hellenicHeaderFieldsElement = headerElement.Element(HellenicXMLDefinitions.FIELDS_ELEMENT);
-        var hellenicHeaderFields = hellenicHeaderFieldsElement.Elements(HellenicXMLDefinitions.FIELD_ELEMENT);
+        XElement hellenicHeaderFieldsElement = headerElement.Element(HellenicXMLDefinitions.FIELDS_ELEMENT);
+        IEnumerable<XElement> hellenicHeaderFields = hellenicHeaderFieldsElement.Elements(HellenicXMLDefinitions.FIELD_ELEMENT);
 
         // Default constructor
         foreach (var field in hellenicHeaderFields)
@@ -60,22 +60,22 @@ public static class HellenicMessageGenerator
         StringBuilder stringBuilder = new StringBuilder();
 
         // <fields> of the message
-        var fieldsElement = messageElement.Element(HellenicXMLDefinitions.FIELDS_ELEMENT);
+        XElement fieldsElement = messageElement.Element(HellenicXMLDefinitions.FIELDS_ELEMENT);
         // Each <field> in <fields> of the message
-        var fields = fieldsElement.Elements(HellenicXMLDefinitions.FIELD_ELEMENT);
+        IEnumerable<XElement> fields = fieldsElement.Elements(HellenicXMLDefinitions.FIELD_ELEMENT);
 
         // <fields> of the header
-        var headerFieldsElement = headerElement.Element(HellenicXMLDefinitions.FIELDS_ELEMENT);
+        XElement headerFieldsElement = headerElement.Element(HellenicXMLDefinitions.FIELDS_ELEMENT);
         // Each <field> in <fields> of the header
-        var headerFields = headerFieldsElement.Elements(HellenicXMLDefinitions.FIELD_ELEMENT);
+        IEnumerable<XElement> headerFields = headerFieldsElement.Elements(HellenicXMLDefinitions.FIELD_ELEMENT);
 
 
         // List of all attributes values for every single <field> in the header
-        var headerFieldNameAttributeValues =
+        IEnumerable<string> headerFieldNameAttributeValues =
             headerFields.Attributes(HellenicXMLDefinitions.NAME_ATTRIBUTE).Select(attribute => attribute.Value);
 
         // Each <field> element in the <fields> of a message
-        foreach (var field in fields)
+        foreach (XElement field in fields)
         {
             string fieldName = field.Attribute(HellenicXMLDefinitions.NAME_ATTRIBUTE).Value;
 
@@ -107,16 +107,16 @@ public static class HellenicMessageGenerator
         StringBuilder stringBuilder = new StringBuilder();
 
         // The fields that all messages should have
-        var headerFieldsElement = headerElement.Element(HellenicXMLDefinitions.FIELDS_ELEMENT);
-        var headerFields = headerFieldsElement.Elements(HellenicXMLDefinitions.FIELD_ELEMENT);
+        XElement headerFieldsElement = headerElement.Element(HellenicXMLDefinitions.FIELDS_ELEMENT);
+        IEnumerable<XElement> headerFields = headerFieldsElement.Elements(HellenicXMLDefinitions.FIELD_ELEMENT);
 
         // Fields defined in the <fields> element of the <messages>. These may or may not override
         // the fields defined in the headers.
-        var uniqueFieldsElement = messageElement.Element(HellenicXMLDefinitions.FIELDS_ELEMENT);
-        var uniqueFields = uniqueFieldsElement.Elements(HellenicXMLDefinitions.FIELD_ELEMENT);
+        XElement uniqueFieldsElement = messageElement.Element(HellenicXMLDefinitions.FIELDS_ELEMENT);
+        IEnumerable<XElement> uniqueFields = uniqueFieldsElement.Elements(HellenicXMLDefinitions.FIELD_ELEMENT);
 
         // List of all "name" attribute values for every single field of the message
-        var messageFieldAttributeNames =
+        IEnumerable<string> messageFieldAttributeNames =
             messageElement.Element(HellenicXMLDefinitions.FIELDS_ELEMENT).
                 Elements(HellenicXMLDefinitions.FIELD_ELEMENT).Attributes().Select(attrib => (string)attrib);
 
@@ -125,7 +125,7 @@ public static class HellenicMessageGenerator
         stringBuilder.Append($"\tpublic {hellenicMessageNamePascal}(\n");
 
         // Generate the constructor declaration for the mandatory header fields
-        foreach (var field in headerFields)
+        foreach (XElement field in headerFields)
         {
             string fieldName = field.Attribute(HellenicXMLDefinitions.NAME_ATTRIBUTE).Value;
             string fieldNamePascal = GeneratorUtils.SnakeToPascal(fieldName);
@@ -143,7 +143,7 @@ public static class HellenicMessageGenerator
 
 
         // Generate the constructor declaration for the unique fields of this particular message
-        foreach (var field in uniqueFields)
+        foreach (XElement field in uniqueFields)
         {
             bool fieldOverrides = field.Attributes().Any(attrib => attrib.Name.LocalName == HellenicXMLDefinitions.OVERRIDE_ATTRIBUTE);
             if(fieldOverrides) continue;
@@ -163,7 +163,7 @@ public static class HellenicMessageGenerator
         stringBuilder.Append("\t)\n\t{\n");
 
         // Final constructor body -- all the unique fields in the derived message
-        foreach (var field in uniqueFields)
+        foreach (XElement field in uniqueFields)
         {
             string fieldName = field.Attribute(HellenicXMLDefinitions.NAME_ATTRIBUTE).Value;
             string fieldNamePascal = GeneratorUtils.SnakeToPascal(fieldName);
@@ -184,7 +184,7 @@ public static class HellenicMessageGenerator
         }
 
         // Final constructor body -- all the header fields that haven't yet been added (non-overridden)
-        foreach (var field in headerFields)
+        foreach (XElement field in headerFields)
         {
             string fieldName = field.Attribute(HellenicXMLDefinitions.NAME_ATTRIBUTE).Value;
             string fieldNamePascal = GeneratorUtils.SnakeToPascal(fieldName);
@@ -215,11 +215,11 @@ public static class HellenicMessageGenerator
         stringBuilder.Append(HellenicXMLDefinitions.HELLENIC_MESSAGE_FUNCTION_DECLARATION);
 
         // The <fields> element for the header
-        var fieldsElement = hellenicHeader.Element(HellenicXMLDefinitions.FIELDS_ELEMENT);
+        XElement fieldsElement = hellenicHeader.Element(HellenicXMLDefinitions.FIELDS_ELEMENT);
         // List of every single <field> element inside <fields>
-        var fields = fieldsElement.Elements();
+        IEnumerable<XElement> fields = fieldsElement.Elements();
 
-        foreach(var field in fields)
+        foreach(XElement field in fields)
         {
 
             // E.g., "latitude_longitude" in the XML and "LatitudeLongitude" in C# Hellenic
@@ -230,7 +230,7 @@ public static class HellenicMessageGenerator
             string fieldType = field.Attribute(HellenicXMLDefinitions.TYPE_ATTRIBUTE).Value;
             string csFieldType = HellenicXMLDefinitions.TypeMap[fieldType];
 
-            var fieldDescElement = field.Element(HellenicXMLDefinitions.DESCRIPTION_ELEMENT);
+            XElement fieldDescElement = field.Element(HellenicXMLDefinitions.DESCRIPTION_ELEMENT);
             string fieldDescComment = GeneratorUtils.DescriptionToSummaryComment(fieldDescElement.Value);
 
             stringBuilder.Append($"\n{fieldDescComment}\n".Replace("\n", "\n\t"));
@@ -247,14 +247,14 @@ public static class HellenicMessageGenerator
     public static void GenerateHellenicMessages(XElement headerElement, XElement messagesElement)
     {
 
-        var messageElements = messagesElement.Elements(HellenicXMLDefinitions.MESSAGE_ELEMENT);
+        IEnumerable<XElement> messageElements = messagesElement.Elements(HellenicXMLDefinitions.MESSAGE_ELEMENT);
 
-        foreach (var message in messageElements)
+        foreach (XElement message in messageElements)
         {
 
             StringBuilder stringBuilder = new StringBuilder();
 
-            var hellenicMessageDescriptionElement = message.Element(HellenicXMLDefinitions.DESCRIPTION_ELEMENT);
+            XElement hellenicMessageDescriptionElement = message.Element(HellenicXMLDefinitions.DESCRIPTION_ELEMENT);
             string hellenicMessageDescription = hellenicMessageDescriptionElement.Value;
             string hellenicMessageDescriptionComment = GeneratorUtils.DescriptionToSummaryComment(hellenicMessageDescription);
 
@@ -267,16 +267,16 @@ public static class HellenicMessageGenerator
             stringBuilder.Append(HELLENIC_MESSAGE_CLASS_HEADER);
 
 
-            var messageFields = message.Elements(HellenicXMLDefinitions.FIELD_ELEMENT);
+            IEnumerable<XElement> messageFields = message.Elements(HellenicXMLDefinitions.FIELD_ELEMENT);
 
-            foreach (var field in messageFields)
+            foreach (XElement field in messageFields)
             {
                 string hellenicFieldType = field.Attribute(HellenicXMLDefinitions.TYPE_ATTRIBUTE).Value;
                 string hellenicCsFieldType = HellenicXMLDefinitions.TypeMap[hellenicFieldType];
 
                 string hellenicFieldName = field.Attribute(HellenicXMLDefinitions.NAME_ATTRIBUTE).Value;
 
-                var hellenicFieldDescription = field.Element(HellenicXMLDefinitions.DESCRIPTION_ELEMENT);
+                XElement hellenicFieldDescription = field.Element(HellenicXMLDefinitions.DESCRIPTION_ELEMENT);
                 string hellenicFieldComment = GeneratorUtils.DescriptionToSummaryComment(hellenicFieldDescription.Value);
 
                 stringBuilder.Append($"{hellenicFieldComment}\n");
@@ -298,9 +298,9 @@ public static class HellenicMessageGenerator
     public static void GenerateHellenicEnums(XElement enumsElement)
     {
 
-        var enums = enumsElement.Elements(HellenicXMLDefinitions.ENUM_ELEMENT);
+        IEnumerable<XElement> enums = enumsElement.Elements(HellenicXMLDefinitions.ENUM_ELEMENT);
 
-        foreach (var _enum in enums)
+        foreach (XElement _enum in enums)
         {
 
             StringBuilder stringBuilder = new StringBuilder();
@@ -310,10 +310,10 @@ public static class HellenicMessageGenerator
 
             stringBuilder.Append($"public enum {enumNamePascal}\n{{\n");
 
-            var enumEntriesElement = _enum.Element(HellenicXMLDefinitions.ENTRIES_ELEMENT);
-            var enumEntries = enumEntriesElement.Elements(HellenicXMLDefinitions.ENTRY_ELEMENT);
+            XElement enumEntriesElement = _enum.Element(HellenicXMLDefinitions.ENTRIES_ELEMENT);
+            IEnumerable<XElement> enumEntries = enumEntriesElement.Elements(HellenicXMLDefinitions.ENTRY_ELEMENT);
 
-            foreach (var enumEntry in enumEntries)
+            foreach (XElement enumEntry in enumEntries)
             {
                 string entryName = enumEntry.Attribute(HellenicXMLDefinitions.NAME_ATTRIBUTE).Value;
                 string entryNamePascal = GeneratorUtils.SnakeToPascal(entryName);
@@ -343,8 +343,8 @@ public static class HellenicMessageGenerator
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.Append(HellenicXMLDefinitions.HELLENIC_MESSAGE_ENUM_DECLARATION);
 
-        var messages = messagesElement.Elements(HellenicXMLDefinitions.MESSAGE_ELEMENT);
-        foreach (var message in messages)
+        IEnumerable<XElement> messages = messagesElement.Elements(HellenicXMLDefinitions.MESSAGE_ELEMENT);
+        foreach (XElement message in messages)
         {
             string messageId = message.Attribute(HellenicXMLDefinitions.ID_ATTRIBUTE).Value;
 
@@ -392,13 +392,13 @@ public static class HellenicMessageGenerator
 
         XDocument mavXml = XDocument.Load(INPUT_HELLENIC_XML_FILE);
 
-        var root = mavXml.Element(HellenicXMLDefinitions.ROOT);
+        XElement root = mavXml.Element(HellenicXMLDefinitions.ROOT);
 
-        var headerElement = root.Element(HellenicXMLDefinitions.HEADER_ELEMENT);
+        XElement headerElement = root.Element(HellenicXMLDefinitions.HEADER_ELEMENT);
 
-        var enumsElement = root.Element(HellenicXMLDefinitions.ENUMS_ELEMENT);
+        XElement enumsElement = root.Element(HellenicXMLDefinitions.ENUMS_ELEMENT);
 
-        var messagesElement = root.Element(HellenicXMLDefinitions.MESSAGES_ELEMENT);
+        XElement messagesElement = root.Element(HellenicXMLDefinitions.MESSAGES_ELEMENT);
 
         GenerateHellenicMessageBaseClass(headerElement);
         GenerateHellenicMessages(headerElement, messagesElement);
