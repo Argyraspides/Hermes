@@ -86,7 +86,25 @@ public static class GeneratorUtils
     // Merges the contents of two XML elements together
     public static XElement MergeElements(XElement element1, XElement element2)
     {
-        throw new NotImplementedException();
+
+        if (element1 == null || element2 == null)
+        {
+            throw new ArgumentNullException();
+        }
+
+        if (element1.Name != element2.Name)
+        {
+            throw new ArgumentException("Elements must have the same name in order to merge them!");
+        }
+
+        XElement result = new XElement(element1.Name);
+
+
+        // TODO::ARGYRASPIDES() { FINISH THIS }
+
+
+        return result;
+
     }
 
     // Recursively fetches all XMLs in an <include> element. The value
