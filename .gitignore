@@ -30,3 +30,5 @@ Languages/DialectConverters
 Languages/ConcreteDialects
 Languages/submodules
 Languages/ConcreteConversions
+Languages/Generators/bin
+Languages/Generators/obj
