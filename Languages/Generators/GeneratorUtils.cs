@@ -14,6 +14,7 @@
 
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 
 public static class GeneratorUtils
 {
@@ -79,4 +80,18 @@ public static class GeneratorUtils
         return stringBuilder.ToString();
 
     }
+
+    // Merges the contents of two XML elements together
+    public static XElement MergeElements(XElement element1, XElement element2)
+    {
+        throw new NotImplementedException();
+    }
+
+    // Recursively fetches all XMLs in an <include> element. The value
+    // inside the element is treated as a relative path from the location of the XML file
+    public static IEnumerable<XDocument> GetIncludedXMLs()
+    {
+        throw new NotImplementedException();
+    }
+
 }

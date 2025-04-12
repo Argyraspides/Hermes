@@ -55,6 +55,22 @@ public static class HellenicXMLDefinitions
 
     // ***************************************************************
     //
+    // XML element (tag) and attribute names exclusive to common_to_hellenic.xml
+    //
+    // ***************************************************************
+    public const string CONVERSION_ROOT = "common_to_hellenic";
+    public const string CONVERSIONS_ELEMENT = "conversions";
+    public const string MAPPING_ELEMENT = "mapping";
+    public const string DEFAULT_VALUE_ELEMENT = "default_value";
+    public const string COMMON_ID_ATTRIBUTE = "common_id";
+    public const string COMMON_FIELD_NAME_ATTRIBUTE= "common_field_name";
+    public const string HELLENIC_ID_ATTRIBUTE = "hellenic_id";
+    public const string HELLENICE_FIELD_NAME_ATTRIBUTE = "hellenic_field_name";
+    public const string CONVERSION_ATTRIBUTE = "conversion";
+
+
+    // ***************************************************************
+    //
     // Map from the types in XML to C# types
     //
     // ***************************************************************
@@ -88,6 +104,23 @@ public static class HellenicXMLDefinitions
 
     public const string HELLENIC_MESSAGE_ENUM_NAME = "HellenicMessageType";
     public const string HELLENIC_MESSAGE_ENUM_DECLARATION = $"public enum {HELLENIC_MESSAGE_ENUM_NAME}\n{{\n";
+
+
+    // ***************************************************************
+    //
+    // MAVLink to Hellenic translator declarations
+    //
+    // ***************************************************************
+    public const string TRANSLATOR_DECLARATION = "class MAVLinkToHellenicTranslator\n{\n";
+
+    public const string MAVLINK_MESSAGE_TYPE = "MAVLink.MAVLinkMessage";
+    public const string MAVLINK_MESSAGE_PARAM = "mavlinkMessage";
+    public const string TRANSLATOR_API_DECLARATION =
+        $"\tpublic static List<{HELLENIC_CLASS_NAME}> TranslateMAVLinkMessage({MAVLINK_MESSAGE_TYPE} {MAVLINK_MESSAGE_PARAM})";
+
+    public const string TRANSLATOR_DICT_DECLARATION =
+        $"\tpublic static Dictionary<uint, Func<{MAVLINK_MESSAGE_TYPE}, List<{HELLENIC_CLASS_NAME}>>>\n\t\tMAVLinkIdToConversionFunctionDict\n\t\t\t=\n\t\t\tnew Dictionary<uint, Func<{MAVLINK_MESSAGE_TYPE}, List<{HELLENIC_CLASS_NAME}>>>()\n\t\t\t{{";
+
 
     // ***************************************************************
     //
