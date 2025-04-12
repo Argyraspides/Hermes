@@ -12,6 +12,7 @@
 //
 
 
+using System.Data;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
@@ -20,6 +21,7 @@ public static class GeneratorUtils
 {
 
     public const uint MAX_WORDS_PER_LINE = 10;
+    public const uint MAX_XML_INCLUDES = 500;
 
     public static string SnakeToPascal(string str)
     {
@@ -88,10 +90,38 @@ public static class GeneratorUtils
     }
 
     // Recursively fetches all XMLs in an <include> element. The value
-    // inside the element is treated as a relative path from the location of the XML file
-    public static IEnumerable<XDocument> GetIncludedXMLs()
+    // inside the element is treated as a relative path from the location of the XML file.
+    // The include must be inside the root element
+    public static HashSet<XDocument> GetIncludedXMLs(string path)
     {
-        throw new NotImplementedException();
+
+        HashSet<XDocument> includedXMLs = new HashSet<XDocument>();
+
+        XDocument mainXml = XDocument.Load(path);
+        XElement rootElement = mainXml.Root ?? throw new NoNullAllowedException("Could not load main XML, no root element!");
+
+        for(int i = 0; i < MAX_XML_INCLUDES; i++)
+        {
+            var includeElement = rootElement.Element("include");
+            if(includeElement == null) break;
+
+            string nextXmlPath = includeElement.Value;
+
+            XDocument nextXml = XDocument.Load($"{Directory.GetCurrentDirectory()}/{nextXmlPath}");
+
+            if(includedXMLs.Contains(nextXml))
+            {
+                throw new InvalidOperationException("Detected circular includes!");
+            }
+
+            includedXMLs.Add(nextXml);
+            rootElement = nextXml.Root ?? throw new NoNullAllowedException();
+
+        }
+
+
+        return includedXMLs;
+
     }
 
 }
