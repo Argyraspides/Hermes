@@ -39,8 +39,7 @@ partial class GroundVelocity : HellenicMessage
 		double pVx,
 		double pVy,
 		double pVz,
-		ulong pTimeUsec
-	)
+		ulong pTimeUsec	)
 	{
 		Id = 2;
 		Vx = pVx;

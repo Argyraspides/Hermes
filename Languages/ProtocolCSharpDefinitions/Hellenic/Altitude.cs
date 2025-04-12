@@ -33,8 +33,7 @@ partial class Altitude : HellenicMessage
 		uint pOriginalProtocol,
 		double pAlt,
 		double pRelativeAlt,
-		ulong pTimeUsec
-	)
+		ulong pTimeUsec	)
 	{
 		Id = 1;
 		Alt = pAlt;

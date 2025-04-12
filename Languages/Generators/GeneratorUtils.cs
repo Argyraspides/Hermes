@@ -8,6 +8,12 @@ public static class GeneratorUtils
 
     public static string SnakeToPascal(string str)
     {
+
+        if (string.IsNullOrEmpty(str))
+        {
+            return string.Empty;
+        }
+
         StringBuilder stringBuilder = new StringBuilder();
         bool capitalizeNext = true;
 
@@ -29,6 +35,12 @@ public static class GeneratorUtils
 
     public static string DescriptionToSummaryComment(string str)
     {
+
+        if (string.IsNullOrEmpty(str))
+        {
+            return string.Empty;
+        }
+
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.Append("/// <summary>\n/// ");
 

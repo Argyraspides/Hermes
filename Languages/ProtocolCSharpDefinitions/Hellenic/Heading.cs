@@ -33,8 +33,7 @@ partial class Heading : HellenicMessage
 		uint pOriginalProtocol,
 		double pHdg,
 		byte pReferenceFrame,
-		ulong pTimeUsec
-	)
+		ulong pTimeUsec	)
 	{
 		Id = 3;
 		Hdg = pHdg;

@@ -1,5 +1,16 @@
+//
+//
+// 88        88  88888888888  88888888ba   88        88         db         88888888888  ad88888ba  888888888888  88        88   ad88888ba
+// 88        88  88           88      "8b  88        88        d88b        88          d8"     "8b      88       88        88  d8"     "8b
+// 88        88  88           88      ,8P  88        88       d8'`8b       88          Y8,              88       88        88  Y8,
+// 88aaaaaaaa88  88aaaaa      88aaaaaa8P'  88aaaaaaaa88      d8'  `8b      88aaaaa     `Y8aaaaa,        88       88        88  `Y8aaaaa,
+// 88""""""""88  88"""""      88""""""'    88""""""""88     d8YaaaaY8b     88"""""       `"""""8b,      88       88        88    `"""""8b,
+// 88        88  88           88           88        88    d8""""""""8b    88                  `8b      88       88        88          `8b
+// 88        88  88           88           88        88   d8'        `8b   88          Y8a     a8P      88       Y8a.    .a8P  Y8a     a8P
+// 88        88  88888888888  88           88        88  d8'          `8b  88888888888  "Y88888P"       88        `"Y8888Y"'    "Y88888P"
+//
+//
 
-using System.Collections.Generic;
 public static class HellenicXMLDefinitions
 {
 
@@ -40,6 +51,11 @@ public static class HellenicXMLDefinitions
     public const string OVERRIDE_ATTRIBUTE = "override";
 
 
+    // ***************************************************************
+    //
+    // Map from the types in XML to C# types
+    //
+    // ***************************************************************
     public static readonly Dictionary<string, string> TypeMap = new Dictionary<string, string>
     {
         ["uint8_t"] = "byte",
@@ -76,7 +92,12 @@ public static class HellenicXMLDefinitions
     // Helper strings
     //
     // ***************************************************************
+
     public const string END_BRACE = "}\n"; // LMAO reminds me of the #define END_BRACE } example in C++ when learning how macros work
+    public const string UNKNOWN_MESSAGE = "UnknownMessage";
+    public const string UNKNOWN_TYPE = "unknown_type";
+    public const string UNKNOWN_ENUM = "UnknownEnum";
+    public const string DEFAULT_TYPE = "object";
 
 
 }

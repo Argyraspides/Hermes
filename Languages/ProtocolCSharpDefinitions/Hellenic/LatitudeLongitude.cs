@@ -41,8 +41,7 @@ partial class LatitudeLongitude : HellenicMessage
 		double pLat,
 		double pLon,
 		byte pReferenceFrame,
-		ulong pTimeUsec
-	)
+		ulong pTimeUsec	)
 	{
 		Id = 0;
 		Lat = pLat;

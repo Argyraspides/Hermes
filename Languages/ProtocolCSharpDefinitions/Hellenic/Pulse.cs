@@ -33,8 +33,7 @@ partial class Pulse : HellenicMessage
 		uint pOriginalProtocol,
 		ushort pMachineType,
 		string pCallsign,
-		ulong pTimeUsec
-	)
+		ulong pTimeUsec	)
 	{
 		Id = 4;
 		MachineType = pMachineType;
