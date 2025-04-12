@@ -30,5 +30,7 @@ Languages/DialectConverters
 Languages/ConcreteDialects
 Languages/submodules
 Languages/ConcreteConversions
+
+# Auto-generated folders when you run the generator scripts
 Languages/Generators/bin
 Languages/Generators/obj
