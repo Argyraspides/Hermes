@@ -13,6 +13,10 @@
 
 #pragma warning disable CS8600, CS8604, CS8619, CS8618
 
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text;
 using System.Xml.Linq;
 
