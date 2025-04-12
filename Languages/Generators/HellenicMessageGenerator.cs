@@ -729,10 +729,10 @@ public static class HellenicMessageGenerator
             }
         }
 
-        XDocument mavXml;
+        XDocument hellenicXml;
         try
         {
-            mavXml = XDocument.Load(INPUT_HELLENIC_XML_FILE);
+            hellenicXml = XDocument.Load(INPUT_HELLENIC_XML_FILE);
         }
         catch (Exception ex)
         {
@@ -741,7 +741,7 @@ public static class HellenicMessageGenerator
         }
 
         // <hellenic> element
-        XElement root = mavXml.Element(HellenicXMLDefinitions.ROOT);
+        XElement root = hellenicXml.Element(HellenicXMLDefinitions.ROOT);
         if (root == null)
         {
             File.WriteAllText($"{OUTPUT_PATH}/ERROR_MISSING_ROOT.cs", $"// WARNING!! Root element '{HellenicXMLDefinitions.ROOT}' not found in XML !!\n");
