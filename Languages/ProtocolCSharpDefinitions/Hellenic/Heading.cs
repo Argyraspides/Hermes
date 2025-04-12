@@ -1,33 +1,44 @@
-	/// <summary>
-	/// The velocity components of the object
-	/// </summary>
+/// <summary>
+///   The velocity components of the object 
+///   
+/// </summary>
 partial class Heading : HellenicMessage
 {
+
 	/// <summary>
-	/// Heading in degrees
+	/// Heading in degrees 
 	/// </summary>
 	public double? Hdg { get; set; }
 
+
 	/// <summary>
-	/// Reference frame (0 = Mercury, 1 = Venus, 2 = Earth, 3 = Moon, 4 = Mars ...)
+	/// Reference frame (0 = Mercury, 1 = Venus, 
+	/// 2 = Earth, 3 = Moon, 4 =  
+	/// Mars ...)   
 	/// </summary>
 	public byte? ReferenceFrame { get; set; }
 
+
 	/// <summary>
-	/// Timestamp (since system boot)
+	/// Timestamp (since system boot) 
 	/// </summary>
 	public ulong? TimeUsec { get; set; }
 
 	public Heading()
 	{
 		Id = 3;
-		MessageName = nameof(Heading);
 	}
 
-	public Heading(double pHdg, byte pReferenceFrame, ulong pTimeUsec, uint pMachineId, uint pOriginalProtocol)
+
+	public Heading(
+		uint pMachineId,
+		uint pOriginalProtocol,
+		double pHdg,
+		byte pReferenceFrame,
+		ulong pTimeUsec
+	)
 	{
 		Id = 3;
-		MessageName = nameof(Heading);
 		Hdg = pHdg;
 		ReferenceFrame = pReferenceFrame;
 		TimeUsec = pTimeUsec;

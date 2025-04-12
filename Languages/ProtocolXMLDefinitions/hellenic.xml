@@ -9,12 +9,17 @@
             <field type="uint32_t" name="original_protocol" enum="PROTOCOLS">
                 <description>The protocol from which this Hellenic message originated</description>
             </field>
+            <field type="uint32_t" name="id">
+                <description>The ID of the Hellenic message itself. E.g., An ID of 0 corresponds to
+                    "LatitudeLongitude"</description>
+            </field>
         </fields>
     </header>
     <enums>
         <enum name="MACHINE_TYPE">
             <description>
-                Describes the type of machine, anything from a creepy crawly with hellenic messaging capabilities
+                Describes the type of machine, anything from a creepy crawly with hellenic messaging
+                capabilities
                 all the way up to the Millenium Falcon
             </description>
             <entries>
@@ -48,6 +53,9 @@
                 supporting high-precision planetary and space navigation.
             </description>
             <fields>
+                <field type="uint32_t" name="id" override="true" value="0">
+                    <description>Message ID (0 = LATITUDE_LONGITUDE)</description>
+                </field>
                 <field type="float64" name="lat" units="degrees">
                     <description>Latitude (WGS84 or planetary model)</description>
                 </field>
@@ -71,6 +79,9 @@
                 and deep-space operations.
             </description>
             <fields>
+                <field type="uint32_t" name="id" override="true" value="1">
+                    <description>Message ID (1 = ALTITUDE)</description>
+                </field>
                 <field type="float64" name="alt" units="m">
                     <description>Altitude (Mean Sea Level or reference frame)</description>
                 </field>
@@ -88,6 +99,9 @@
                 The velocity components of the object
             </description>
             <fields>
+                <field type="uint32_t" name="id" override="true" value="2">
+                    <description>Message ID (2 = GROUND_VELOCITY)</description>
+                </field>
                 <field type="float64" name="vx" units="m/s">
                     <description>Velocity X (Latitude direction, positive north)</description>
                 </field>
@@ -108,11 +122,15 @@
                 The velocity components of the object
             </description>
             <fields>
+                <field type="uint32_t" name="id" override="true" value="3">
+                    <description>Message ID (3 = HEADING)</description>
+                </field>
                 <field type="float64" name="hdg" units="deg">
                     <description>Heading in degrees</description>
                 </field>
                 <field type="uint8_t" name="reference_frame">
-                    <description>Reference frame (0 = Mercury, 1 = Venus, 2 = Earth, 3 = Moon, 4 = Mars ...)
+                    <description>Reference frame (0 = Mercury, 1 = Venus, 2 = Earth, 3 = Moon, 4 =
+                        Mars ...)
                     </description>
                 </field>
                 <field type="uint64_t" name="time_usec" units="μs">
@@ -127,6 +145,9 @@
                 Used for health monitoring and presence detection.
             </description>
             <fields>
+                <field type="uint32_t" name="id" override="true" value="4">
+                    <description>Message ID (4 = PULSE)</description>
+                </field>
                 <field type="uint16_t" name="machine_type" enum="MACHINE_TYPE">
                     <description>Type of machine</description>
                 </field>

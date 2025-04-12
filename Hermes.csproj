@@ -30,7 +30,6 @@
         <Content Include="Languages\ProtocolXMLDefinitions\hellenic.xml" />
         <Content Include="Languages\ProtocolXMLDefinitions\minimal.xml" />
         <Content Include="Languages\ProtocolXMLDefinitions\standard.xml" />
-        <Content Include="Languages\Generators\HellenicDialectGenerator.py"/>
         <Content Include="Languages\Generators\MAVLink\CommonToHellenicConverterGenerator.py"/>
         <Content Include="Universe\SolarSystem\Assets\ESO_-_Milky_Way.jpg" />
         <Content Include="Universe\SolarSystem\Assets\ESO_-_Milky_Way.jpg.import" />

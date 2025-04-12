@@ -1,0 +1,15 @@
+/home/gaugamela/gh/Hermes/Languages/Generators/bin/Debug/net9.0/Generators
+/home/gaugamela/gh/Hermes/Languages/Generators/bin/Debug/net9.0/Generators.deps.json
+/home/gaugamela/gh/Hermes/Languages/Generators/bin/Debug/net9.0/Generators.runtimeconfig.json
+/home/gaugamela/gh/Hermes/Languages/Generators/bin/Debug/net9.0/Generators.dll
+/home/gaugamela/gh/Hermes/Languages/Generators/bin/Debug/net9.0/Generators.pdb
+/home/gaugamela/gh/Hermes/Languages/Generators/obj/Debug/net9.0/Generators.GeneratedMSBuildEditorConfig.editorconfig
+/home/gaugamela/gh/Hermes/Languages/Generators/obj/Debug/net9.0/Generators.AssemblyInfoInputs.cache
+/home/gaugamela/gh/Hermes/Languages/Generators/obj/Debug/net9.0/Generators.AssemblyInfo.cs
+/home/gaugamela/gh/Hermes/Languages/Generators/obj/Debug/net9.0/Generators.csproj.CoreCompileInputs.cache
+/home/gaugamela/gh/Hermes/Languages/Generators/obj/Debug/net9.0/Generators.sourcelink.json
+/home/gaugamela/gh/Hermes/Languages/Generators/obj/Debug/net9.0/Generators.dll
+/home/gaugamela/gh/Hermes/Languages/Generators/obj/Debug/net9.0/refint/Generators.dll
+/home/gaugamela/gh/Hermes/Languages/Generators/obj/Debug/net9.0/Generators.pdb
+/home/gaugamela/gh/Hermes/Languages/Generators/obj/Debug/net9.0/Generators.genruntimeconfig.cache
+/home/gaugamela/gh/Hermes/Languages/Generators/obj/Debug/net9.0/ref/Generators.dll
