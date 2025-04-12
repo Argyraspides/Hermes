@@ -4,20 +4,20 @@ using System.Text.RegularExpressions;
 public static class GeneratorUtils
 {
 
-    public const uint MAX_WORDS_PER_LINE = 7;
+    public const uint MAX_WORDS_PER_LINE = 10;
 
     public static string SnakeToPascal(string str)
     {
         StringBuilder stringBuilder = new StringBuilder();
         bool capitalizeNext = true;
-        
+
         foreach (char c in str)
         {
             if(c == '_')
             {
                 capitalizeNext = true;
             }
-            else 
+            else
             {
                 stringBuilder.Append(capitalizeNext ? char.ToUpper(c) : char.ToLower(c));
                 capitalizeNext = false;

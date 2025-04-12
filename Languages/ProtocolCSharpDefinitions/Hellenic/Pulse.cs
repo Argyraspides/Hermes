@@ -1,7 +1,6 @@
 /// <summary>
-///   System status message indicating the entity 
-/// is active and functioning.  Used for health monitoring 
-/// and presence detection.   
+///   System status message indicating the entity is active and 
+/// functioning.  Used for health monitoring and presence detection.   
 /// </summary>
 partial class Pulse : HellenicMessage
 {

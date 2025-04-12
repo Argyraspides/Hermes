@@ -1,7 +1,6 @@
 /// <summary>
-/// The altitude of the object with high precision, 
-/// applicable to both  planetary  and deep-space operations. 
-///   
+/// The altitude of the object with high precision, applicable to both 
+///  planetary  and deep-space operations.   
 /// </summary>
 partial class Altitude : HellenicMessage
 {

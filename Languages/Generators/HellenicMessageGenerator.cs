@@ -33,20 +33,23 @@ public static class HellenicMessageGenerator
         string hellenicMessageNamePascal = GeneratorUtils.SnakeToPascal(hellenicMessageName);
         stringBuilder.Append($"\tpublic {hellenicMessageNamePascal}()\n\t{{\n");
 
-        XElement hellenicHeaderFieldsElement = headerElement.Element(HellenicXMLDefinitions.FIELDS_ELEMENT);
-        IEnumerable<XElement> hellenicHeaderFields = hellenicHeaderFieldsElement.Elements(HellenicXMLDefinitions.FIELD_ELEMENT);
+        XElement messageFieldsElement = messageElement.Element(HellenicXMLDefinitions.FIELDS_ELEMENT);
+        IEnumerable<XElement> messageFields = messageFieldsElement.Elements(HellenicXMLDefinitions.FIELD_ELEMENT);
 
-        // Default constructor
-        foreach (var field in hellenicHeaderFields)
+        // Default constructor should initialize all overridden fields
+        foreach (XElement field in messageFields)
         {
-            string fieldName = field.Attribute(HellenicXMLDefinitions.NAME_ATTRIBUTE).Value;
-            string fieldNamePascal = GeneratorUtils.SnakeToPascal(fieldName);
-            string fieldValue = messageElement.Attribute(fieldName)?.Value;
-
-            if(fieldValue != null)
+            bool hasOverrideAttribute =
+                field.Attributes().Any(attrib => attrib.Name.LocalName == HellenicXMLDefinitions.OVERRIDE_ATTRIBUTE);
+            if (hasOverrideAttribute)
             {
+                string fieldName = field.Attribute(HellenicXMLDefinitions.NAME_ATTRIBUTE).Value;
+                string fieldNamePascal = GeneratorUtils.SnakeToPascal(fieldName);
+
+                string fieldValue = field.Attribute(HellenicXMLDefinitions.VALUE_ATTRIBUTE).Value;
                 stringBuilder.Append($"\t\t{fieldNamePascal} = {fieldValue};\n");
             }
+
         }
         stringBuilder.Append($"\t{HellenicXMLDefinitions.END_BRACE}\n\n");
 

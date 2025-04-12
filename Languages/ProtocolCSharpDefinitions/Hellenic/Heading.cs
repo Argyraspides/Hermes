@@ -1,6 +1,5 @@
 /// <summary>
-///   The velocity components of the object 
-///   
+///   The velocity components of the object   
 /// </summary>
 partial class Heading : HellenicMessage
 {
@@ -12,9 +11,8 @@ partial class Heading : HellenicMessage
 
 
 	/// <summary>
-	/// Reference frame (0 = Mercury, 1 = Venus, 
-	/// 2 = Earth, 3 = Moon, 4 =  
-	/// Mars ...)   
+	/// Reference frame (0 = Mercury, 1 = Venus, 2 = Earth, 
+	/// 3 = Moon, 4 =  Mars ...)   
 	/// </summary>
 	public byte? ReferenceFrame { get; set; }
 

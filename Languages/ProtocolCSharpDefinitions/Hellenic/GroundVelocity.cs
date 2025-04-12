@@ -1,6 +1,5 @@
 /// <summary>
-///   The velocity components of the object 
-///   
+///   The velocity components of the object   
 /// </summary>
 partial class GroundVelocity : HellenicMessage
 {
