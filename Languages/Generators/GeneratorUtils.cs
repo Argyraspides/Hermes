@@ -22,6 +22,11 @@ public static class GeneratorUtils
 
     public const uint MAX_WORDS_PER_LINE = 10;
     public const uint MAX_XML_INCLUDES = 500;
+    public const char SNAKE_CASE_DELIMITER = '_';
+
+    public const string SUMMARY_COMMENT_START = "/// <summary>\n/// ";
+    public const string SUMMARY_COMMENT_END = "\n/// </summary>";
+    public const string SUMMARY_COMMENT_NEWLINE = "\n/// ";
 
     public static string SnakeToPascal(string str)
     {
@@ -36,7 +41,7 @@ public static class GeneratorUtils
 
         foreach (char c in str)
         {
-            if(c == '_')
+            if(c == SNAKE_CASE_DELIMITER)
             {
                 capitalizeNext = true;
             }
@@ -59,7 +64,7 @@ public static class GeneratorUtils
         }
 
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.Append("/// <summary>\n/// ");
+        stringBuilder.Append(SUMMARY_COMMENT_START);
 
         // https://regexone.com/ is a goated site for this shit
         str = Regex.Replace(str, @"(\n+)|(\s+)", " ");
@@ -71,75 +76,99 @@ public static class GeneratorUtils
             if(currentWordsPerLine++ > MAX_WORDS_PER_LINE)
             {
                 currentWordsPerLine = 0;
-                stringBuilder.Append("\n/// ");
+                stringBuilder.Append(SUMMARY_COMMENT_NEWLINE);
             }
 
             stringBuilder.Append($"{words[i]} ");
         }
 
 
-        stringBuilder.Append("\n/// </summary>");
+        stringBuilder.Append(SUMMARY_COMMENT_END);
         return stringBuilder.ToString();
 
     }
 
-    // Merges the contents of two XML elements together
+    // Merges the contents of two XML elements together, provided they have the same name.
+    // Contents are simply added together
     public static XElement MergeElements(XElement element1, XElement element2)
     {
 
-        if (element1 == null || element2 == null)
+        if(element1 != null && element2 == null)
         {
-            throw new ArgumentNullException();
+            return element1;
         }
-
+        if(element1 == null && element2 != null)
+        {
+            return element2;
+        }
+        if(element1 == null && element2 == null)
+        {
+            throw new ArgumentNullException("Attempting to merge two null XElements! Returning ...");
+        }
         if (element1.Name != element2.Name)
         {
             throw new ArgumentException("Elements must have the same name in order to merge them!");
         }
 
-        XElement result = new XElement(element1.Name);
+        IEnumerable<XElement> innerElements = element1.Descendants().Concat(element2.Descendants());
+        XElement outerElement = new XElement(element1.Name);
 
+        outerElement.Add(innerElements);
 
-        // TODO::ARGYRASPIDES() { FINISH THIS }
-
-
-        return result;
+        return outerElement;
 
     }
 
-    // Recursively fetches all XMLs in an <include> element. The value
-    // inside the element is treated as a relative path from the location of the XML file.
-    // The include must be inside the root element
+    // For any XML document which contains an <include> in the root, recursively
+    // searches all includes for other XMLs (similar to C++'s #include preprocessor directive),
+    // and returns a set of all XML documents that are included
     public static HashSet<XDocument> GetIncludedXMLs(string path)
     {
-
         HashSet<XDocument> includedXMLs = new HashSet<XDocument>();
+        HashSet<string> includedXMLPaths = new HashSet<string>();
+        Queue<string> nextXmlPaths = new Queue<string>();
 
-        XDocument mainXml = XDocument.Load(path);
-        XElement rootElement = mainXml.Root ?? throw new NoNullAllowedException("Could not load main XML, no root element!");
+        string fullPath = Path.GetFullPath(path);
+        nextXmlPaths.Enqueue(fullPath);
 
-        for(int i = 0; i < MAX_XML_INCLUDES; i++)
+        while(nextXmlPaths.Count > 0)
         {
-            var includeElement = rootElement.Element("include");
-            if(includeElement == null) break;
+            string nextXmlPath = nextXmlPaths.Dequeue();
 
-            string nextXmlPath = includeElement.Value;
-
-            XDocument nextXml = XDocument.Load($"{Directory.GetCurrentDirectory()}/{nextXmlPath}");
-
-            if(includedXMLs.Contains(nextXml))
+            if(includedXMLPaths.Contains(nextXmlPath))
             {
-                throw new InvalidOperationException("Detected circular includes!");
+                throw new InvalidOperationException($"Circular includes detected at path: {nextXmlPath}");
+            }
+
+            XDocument nextXml;
+            try
+            {
+                nextXml = XDocument.Load(nextXmlPath);
+            }
+            catch (Exception ex)
+            {
+                throw new ArgumentException($"Unable to load XML at {nextXmlPath}: {ex.Message}", ex);
             }
 
             includedXMLs.Add(nextXml);
-            rootElement = nextXml.Root ?? throw new NoNullAllowedException();
+            includedXMLPaths.Add(nextXmlPath);
 
+            var includeElements = nextXml.Root?.Elements("include");
+            if(includeElements == null)
+            {
+                continue;
+            }
+
+            string baseDir = Path.GetDirectoryName(nextXmlPath);
+            foreach (XElement includeElement in includeElements)
+            {
+                string relativePath = includeElement.Value;
+                string absolutePath = Path.GetFullPath(Path.Combine(baseDir, relativePath));
+                nextXmlPaths.Enqueue(absolutePath);
+            }
         }
 
-
         return includedXMLs;
-
     }
 
 }
