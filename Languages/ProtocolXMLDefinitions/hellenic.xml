@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <hellenic>
-    <!-- Fields that all Hellenic messages should have regardless of type -->
+
+    <!--  These are fields that all Hellenic messages should have, regardless of type. Best implemented as an abstract base class   -->
     <header>
         <fields>
             <field type="uint32_t" name="machine_id">
@@ -15,6 +16,7 @@
             </field>
         </fields>
     </header>
+
     <enums>
         <enum name="MACHINE_TYPE">
             <description>
@@ -46,120 +48,132 @@
                 </entry>
             </entries>
         </enum>
+        <enum name="HELLENIC_COMMAND_RESULT">
+            <description>Status codes for command execution results</description>
+            <entries>
+                <entry value="0" name="SUCCESS"/>
+                <entry value="1" name="IN_PROGRESS"/>
+                <entry value="2" name="FAILED"/>
+                <entry value="3" name="CANCELLED"/>
+                <entry value="4" name="UNSUPPORTED"/>
+                <entry value="5" name="TIMEOUT"/>
+                <entry value="6" name="REJECTED"/>
+            </entries>
+        </enum>
     </enums>
+
     <messages>
-        <message id="0" name="LATITUDE_LONGITUDE">
-            <description>The position of the object expressed in latitude, longitude, and altitude,
-                supporting high-precision planetary and space navigation.
-            </description>
-            <fields>
-                <field type="uint32_t" name="id" override="true" value="0">
-                    <description>Message ID (0 = LATITUDE_LONGITUDE)</description>
-                </field>
-                <field type="float64" name="lat" units="degrees">
-                    <description>Latitude (WGS84 or planetary model)</description>
-                </field>
-                <field type="float64" name="lon" units="degrees">
-                    <description>Longitude (WGS84 or planetary model)</description>
-                </field>
-                <field type="uint8_t" name="reference_frame">
-                    <description>Reference frame (0 = Mercury, 1 = Venus, 2 = Earth, 3 = Moon, 4 =
-                        Mars ...)
-                    </description>
-                </field>
-                <field type="uint64_t" name="time_usec" units="μs">
-                    <description>Timestamp (microseconds since epoch)</description>
-                </field>
-            </fields>
-        </message>
 
-        <message id="1" name="ALTITUDE">
-            <description>The altitude of the object with high precision, applicable to both
-                planetary
-                and deep-space operations.
-            </description>
-            <fields>
-                <field type="uint32_t" name="id" override="true" value="1">
-                    <description>Message ID (1 = ALTITUDE)</description>
-                </field>
-                <field type="float64" name="alt" units="m">
-                    <description>Altitude (Mean Sea Level or reference frame)</description>
-                </field>
-                <field type="float64" name="relative_alt" units="m">
-                    <description>Altitude relative to home/base</description>
-                </field>
-                <field type="uint64_t" name="time_usec" units="μs">
-                    <description>Timestamp (since system boot)</description>
-                </field>
-            </fields>
-        </message>
+        <telemetry>
+            <message id="0" name="LATITUDE_LONGITUDE">
+                <description>The position of the object expressed in latitude, longitude. Part of the core position data.
+                </description>
+                <fields>
+                    <field type="float64" name="lat" units="degrees">
+                        <description>Latitude (WGS84 or planetary model)</description>
+                    </field>
+                    <field type="float64" name="lon" units="degrees">
+                        <description>Longitude (WGS84 or planetary model)</description>
+                    </field>
+                    <field type="uint8_t" name="reference_frame">
+                        <description>Reference frame (0 = Mercury, 1 = Venus, 2 = Earth, 3 = Moon, 4 = Mars ...)
+                        </description>
+                    </field>
+                    <field type="uint64_t" name="time_usec" units="μs">
+                        <description>Timestamp (microseconds epoch or system boot)</description>
+                    </field>
+                </fields>
+            </message>
 
-        <message id="2" name="GROUND_VELOCITY">
-            <description>
-                The velocity components of the object
-            </description>
-            <fields>
-                <field type="uint32_t" name="id" override="true" value="2">
-                    <description>Message ID (2 = GROUND_VELOCITY)</description>
-                </field>
-                <field type="float64" name="vx" units="m/s">
-                    <description>Velocity X (Latitude direction, positive north)</description>
-                </field>
-                <field type="float64" name="vy" units="m/s">
-                    <description>Velocity Y (Longitude direction, positive east)</description>
-                </field>
-                <field type="float64" name="vz" units="m/s">
-                    <description>Velocity Z (Altitude direction, positive up)</description>
-                </field>
-                <field type="uint64_t" name="time_usec" units="μs">
-                    <description>Timestamp (since system boot)</description>
-                </field>
-            </fields>
-        </message>
+            <message id="1" name="ALTITUDE">
+                <description>The altitude of the object. Part of the core position data.</description>
+                <fields>
+                    <field type="float64" name="alt" units="m">
+                        <description>Altitude (Mean Sea Level or reference frame origin)</description>
+                    </field>
+                    <field type="float64" name="relative_alt" units="m">
+                        <description>Altitude relative to home/ground/takeoff location</description>
+                    </field>
+                    <field type="uint64_t" name="time_usec" units="μs">
+                        <description>Timestamp (microseconds epoch or system boot)</description>
+                    </field>
+                </fields>
+            </message>
 
-        <message id="3" name="HEADING">
-            <description>
-                The velocity components of the object
-            </description>
-            <fields>
-                <field type="uint32_t" name="id" override="true" value="3">
-                    <description>Message ID (3 = HEADING)</description>
-                </field>
-                <field type="float64" name="hdg" units="deg">
-                    <description>Heading in degrees</description>
-                </field>
-                <field type="uint8_t" name="reference_frame">
-                    <description>Reference frame (0 = Mercury, 1 = Venus, 2 = Earth, 3 = Moon, 4 =
-                        Mars ...)
-                    </description>
-                </field>
-                <field type="uint64_t" name="time_usec" units="μs">
-                    <description>Timestamp (since system boot)</description>
-                </field>
-            </fields>
-        </message>
+            <message id="2" name="GROUND_VELOCITY">
+                <description>The ground velocity components of the object in NED or ENU frame (consistent frame needed).
+                </description>
+                <fields>
+                    <field type="float64" name="vx" units="m/s">
+                        <description>Velocity X (e.g., North or East depending on chosen frame)</description>
+                    </field>
+                    <field type="float64" name="vy" units="m/s">
+                        <description>Velocity Y (e.g., East or North depending on chosen frame)</description>
+                    </field>
+                    <field type="float64" name="vz" units="m/s">
+                        <description>Velocity Z (Down or Up depending on chosen frame - Hellenic prefers positive Up)</description>
+                    </field>
+                    <field type="uint64_t" name="time_usec" units="μs">
+                        <description>Timestamp (microseconds epoch or system boot)</description>
+                    </field>
+                </fields>
+            </message>
 
-        <message id="4" name="PULSE">
-            <description>
-                System status message indicating the entity is active and functioning.
-                Used for health monitoring and presence detection.
-            </description>
-            <fields>
-                <field type="uint32_t" name="id" override="true" value="4">
-                    <description>Message ID (4 = PULSE)</description>
-                </field>
-                <field type="uint16_t" name="machine_type" enum="MACHINE_TYPE">
-                    <description>Type of machine</description>
-                </field>
-                <field type="string" name="callsign">
-                    <description>Machine identifier or callsign</description>
-                </field>
-                <field type="uint64_t" name="time_usec" units="μs">
-                    <description>Timestamp (microseconds since system boot)</description>
-                </field>
-            </fields>
-        </message>
+            <message id="3" name="HEADING">
+                <description>The compass heading of the object.</description>
+                <fields>
+                    <field type="float64" name="hdg" units="deg">
+                        <description>Heading in degrees [0..360)</description>
+                    </field>
+                    <field type="uint8_t" name="reference_frame">
+                        <description>Reference frame (e.g., Magnetic North, True North - define via enum)</description>
+                    </field>
+                    <field type="uint64_t" name="time_usec" units="μs">
+                        <description>Timestamp (microseconds epoch or system boot)</description>
+                    </field>
+                </fields>
+            </message>
+
+            <message id="4" name="PULSE">
+                <description>
+                    System status message indicating the entity is active and provides basic identification.
+                    Used for health monitoring and presence detection. Akin to a Heartbeat.
+                </description>
+                <fields>
+                    <field type="uint16_t" name="machine_type" enum="MACHINE_TYPE">
+                        <description>Type of machine</description>
+                    </field>
+                    <field type="string" name="callsign">
+                        <description>Machine identifier or callsign (if available)</description>
+                    </field>
+                    <field type="uint64_t" name="time_usec" units="μs">
+                        <description>Timestamp (microseconds epoch or system boot)</description>
+                    </field>
+                </fields>
+            </message>
+        </telemetry>
+
+        <commands>
+        </commands>
+
+        <parameters>
+        </parameters>
+
+        <notifications>
+        </notifications>
+
+        <files>
+        </files>
+
+        <missions>
+        </missions>
+
+        <state>
+        </state>
+
+        <info_requests>
+        </info_requests>
+
     </messages>
-    <commands>
-    </commands>
+
 </hellenic>
