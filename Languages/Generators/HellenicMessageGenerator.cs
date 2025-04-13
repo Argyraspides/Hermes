@@ -496,16 +496,16 @@ public static class HellenicMessageGenerator
 
     }
 
-    private static void GenerateHellenicMessages(XElement headerElement, XElement messagesElement)
+    private static void GenerateHellenicTelemetryMessages(XElement headerElement, XElement telemetryElement)
     {
-        if (headerElement == null || messagesElement == null)
+        if (headerElement == null || telemetryElement == null)
         {
             File.WriteAllText($"{OUTPUT_PATH}/WARNING_MISSING_ELEMENTS.cs", "// WARNING!! Header or messages element is null !!\n");
             return;
         }
 
-        // List of all <message> elements inside the <messages> element
-        IEnumerable<XElement> messageElements = messagesElement.Elements(HellenicXMLDefinitions.MESSAGE_ELEMENT) ?? Enumerable.Empty<XElement>();
+        // List of all <message> elements inside the <telemetry> element
+        IEnumerable<XElement> messageElements = telemetryElement.Elements(HellenicXMLDefinitions.MESSAGE_ELEMENT) ?? Enumerable.Empty<XElement>();
 
         foreach (XElement message in messageElements)
         {
@@ -642,12 +642,12 @@ public static class HellenicMessageGenerator
         }
     }
 
-    private static void GenerateHellenicMessageEnums(XElement messagesElement)
+    private static void GenerateHellenicTelemetryMessageEnums(XElement telemetryElement)
     {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.Append(HellenicXMLDefinitions.HELLENIC_MESSAGE_ENUM_DECLARATION);
 
-        if (messagesElement == null)
+        if (telemetryElement == null)
         {
             stringBuilder.Append("\t// WARNING!! Messages element is null !!\n");
             stringBuilder.Append("\tUndefined = 0\n");
@@ -657,7 +657,7 @@ public static class HellenicMessageGenerator
         }
 
         // List of all <message> elements inside of <messages>
-        IEnumerable<XElement> messages = messagesElement.Elements(HellenicXMLDefinitions.MESSAGE_ELEMENT) ?? Enumerable.Empty<XElement>();
+        IEnumerable<XElement> messages = telemetryElement.Elements(HellenicXMLDefinitions.MESSAGE_ELEMENT) ?? Enumerable.Empty<XElement>();
 
         bool hasMessages = false;
 
@@ -762,16 +762,16 @@ public static class HellenicMessageGenerator
             File.WriteAllText($"{OUTPUT_PATH}/ERROR_MISSING_ENUMS.cs", $"// WARNING!! Enums element not found in XML !!\n");
         }
 
-        // <messages> element
-        XElement messagesElement = root.Element(HellenicXMLDefinitions.MESSAGES_ELEMENT);
-        if (messagesElement == null)
+        // <telemetry> element
+        XElement telemetryElement = root.Element(HellenicXMLDefinitions.MESSAGES_ELEMENT).Element(HellenicXMLDefinitions.TELEMETRY_ELEMENT);
+        if (telemetryElement == null)
         {
             File.WriteAllText($"{OUTPUT_PATH}/ERROR_MISSING_MESSAGES.cs", $"// WARNING!! Messages element not found in XML !!\n");
         }
 
         GenerateHellenicMessageBaseClass(headerElement);
-        GenerateHellenicMessages(headerElement, messagesElement);
+        GenerateHellenicTelemetryMessages(headerElement, telemetryElement);
         GenerateHellenicEnums(enumsElement);
-        GenerateHellenicMessageEnums(messagesElement);
+        GenerateHellenicTelemetryMessageEnums(telemetryElement);
     }
 }
