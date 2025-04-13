@@ -23,8 +23,8 @@ using System.Xml.Linq;
 public static class HellenicMessageGenerator
 {
 
-    public static string OUTPUT_PATH;
-    public static string INPUT_HELLENIC_XML_FILE;
+    private static string OUTPUT_PATH;
+    private static string INPUT_HELLENIC_XML_FILE;
 
     public static string GenerateHellenicMessageFields(XElement messageElement, XElement headerElement)
     {
@@ -384,7 +384,7 @@ public static class HellenicMessageGenerator
         return bodyBuilder.ToString();
     }
 
-    public static string GenerateHellenicMessageConstructor(XElement headerElement, XElement messageElement)
+    private static string GenerateHellenicMessageConstructor(XElement headerElement, XElement messageElement)
     {
         StringBuilder stringBuilder = new StringBuilder();
 
@@ -416,7 +416,7 @@ public static class HellenicMessageGenerator
 
 
 
-    public static void GenerateHellenicMessageBaseClass(XElement hellenicHeader)
+    private static void GenerateHellenicMessageBaseClass(XElement hellenicHeader)
     {
 
         StringBuilder stringBuilder = new StringBuilder();
@@ -496,7 +496,7 @@ public static class HellenicMessageGenerator
 
     }
 
-    public static void GenerateHellenicMessages(XElement headerElement, XElement messagesElement)
+    private static void GenerateHellenicMessages(XElement headerElement, XElement messagesElement)
     {
         if (headerElement == null || messagesElement == null)
         {
@@ -550,7 +550,7 @@ public static class HellenicMessageGenerator
 
     }
 
-    public static void GenerateHellenicEnums(XElement enumsElement)
+    private static void GenerateHellenicEnums(XElement enumsElement)
     {
         if (enumsElement == null)
         {
@@ -642,7 +642,7 @@ public static class HellenicMessageGenerator
         }
     }
 
-    public static void GenerateHellenicMessageEnums(XElement messagesElement)
+    private static void GenerateHellenicMessageEnums(XElement messagesElement)
     {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.Append(HellenicXMLDefinitions.HELLENIC_MESSAGE_ENUM_DECLARATION);
@@ -702,7 +702,7 @@ public static class HellenicMessageGenerator
         File.WriteAllText($"{OUTPUT_PATH}/{HellenicXMLDefinitions.HELLENIC_MESSAGE_ENUM_NAME}.cs", stringBuilder.ToString());
     }
 
-    static void Main(string[] args)
+    public static void Generate(string[] args)
     {
 
         if(args.Length > 2)

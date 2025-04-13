@@ -108,19 +108,56 @@ public static class HellenicXMLDefinitions
 
     // ***************************************************************
     //
-    // MAVLink to Hellenic translator declarations
+    // MAVLink to Hellenic translator strings
     //
     // ***************************************************************
-    public const string TRANSLATOR_DECLARATION = "class MAVLinkToHellenicTranslator\n{\n";
+
+    public const string TRANSLATOR_CLASS_NAME = "MAVLinkToHellenicTranslator";
+
+    public const string TRANSLATOR_CLASS_DECLARATION = $"class {TRANSLATOR_CLASS_NAME}\n{{\n";
 
     public const string MAVLINK_MESSAGE_TYPE = "MAVLink.MAVLinkMessage";
     public const string MAVLINK_MESSAGE_PARAM = "mavlinkMessage";
-    public const string TRANSLATOR_API_DECLARATION =
-        $"\tpublic static List<{HELLENIC_CLASS_NAME}> TranslateMAVLinkMessage({MAVLINK_MESSAGE_TYPE} {MAVLINK_MESSAGE_PARAM})";
+    public const string CONVERSION_VALUE_EXPRESSION_PARAMETER = "value";
+
+    public const string TRANSLATOR_API_DEFINITION =
+        $"\tpublic static List<{HELLENIC_CLASS_NAME}> TranslateMAVLinkMessage({MAVLINK_MESSAGE_TYPE} {MAVLINK_MESSAGE_PARAM})" +
+        $"\n\t{{" +
+        $"\n\t\t// Extract the message ID" +
+        $"\n\t\tuint msgId = {MAVLINK_MESSAGE_PARAM}.msgid;" +
+        $"\n\t\t// Look up the appropriate conversion function" +
+        $"\n\t\tif (MAVLinkIdToConversionFunctionDict.TryGetValue(msgId, out var conversionFunc))" +
+        $"\n\t\t{{" +
+        $"\n\t\t\treturn conversionFunc(mavlinkMessage);" +
+        $"\n\t\t}}\n" +
+        $"\n\t\t// No suitable translation function found" +
+        $"\n\t\tHermesUtils.HermesLogWarning($\"Unable to translate MAVLink message! No suitable translation function found for msgid: {{msgid}}\");" +
+        $"\n\t\treturn new List<HellenicMessage>();\n\t}}\n\n";
+
+    public const string CONVERSION_DICTIONARY_NAME = "MAVLinkIdToConversionFunctionDict";
 
     public const string TRANSLATOR_DICT_DECLARATION =
-        $"\tpublic static Dictionary<uint, Func<{MAVLINK_MESSAGE_TYPE}, List<{HELLENIC_CLASS_NAME}>>>\n\t\tMAVLinkIdToConversionFunctionDict\n\t\t\t=\n\t\t\tnew Dictionary<uint, Func<{MAVLINK_MESSAGE_TYPE}, List<{HELLENIC_CLASS_NAME}>>>()\n\t\t\t{{";
+        $"\tpublic static Dictionary<uint, Func<{MAVLINK_MESSAGE_TYPE}, List<{HELLENIC_CLASS_NAME}>>>\n" +
+        $"\t\t{CONVERSION_DICTIONARY_NAME}\n" +
+        $"\t\t\t=\n" +
+        $"\t\t\tnew Dictionary<uint, Func<{MAVLINK_MESSAGE_TYPE}, List<{HELLENIC_CLASS_NAME}>>>()\n" +
+        $"\t\t\t{{";
 
+    public const string TRANSLATOR_USING_DIRECTIVES =
+        "using System;\n" +
+        "using Godot;\n" +
+        "using System.Collections.Generic;\n" +
+        "using Hermes.Common.HermesUtils;\n";
+
+    // ***************************************************************
+    //
+    // Mappings from default values in the XML to C# equivalents.
+    //
+    // ***************************************************************
+    public static readonly Dictionary<string, string> FunctionMap = new Dictionary<string, string>
+    {
+        ["f_NOW_TIMESTAMP"] = "DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()"
+    };
 
     // ***************************************************************
     //

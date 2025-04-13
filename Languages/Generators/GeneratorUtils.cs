@@ -171,4 +171,15 @@ public static class GeneratorUtils
         return includedXMLs;
     }
 
+    // In the XML files that define mappings from a protocol to Hellenic, some fields cannot be mapped as
+    // Hellenic has extra values that don't correspond to anything in the original protocol. The mappings thus
+    // will contain a default value for that field. Some fields require information that cannot be hardcoded,
+    // e.g., the current time. The default values are prepended with 'f' if they correspond to a function
+    // that must be called by C# to get the default value
+    public static bool IsFunction(string value)
+    {
+        if (string.IsNullOrEmpty(value) || value.Length < 2) throw new ArgumentNullException();
+        return value[0] == 'f' && value[1] == '_';
+    }
+
 }
