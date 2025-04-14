@@ -47,9 +47,14 @@ uniform vec4 limb_color : source_color = vec4(0.3, 0.5, 1.0, 1.0);
 uniform float limb_intensity : hint_range(0.0, 3.0) = 1.5;
 uniform float limb_exponent : hint_range(0.1, 7.0) = 7.0;
 
+// Past this zoom level we won't show the limb effect anymore.
+// At very high zoom levels this messes with the appearance of houses and stuff
+const int MAX_LIMB_ZOOM = 10;
+
 varying vec2 vertex_lat_lon;
 varying vec3 world_pos;
 varying vec3 world_normal;
+varying vec3 camera_position;
 
 // Converts latitude to pixel coordinate on the specific map tile
 // Reference: https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Web_Mercator
@@ -76,10 +81,24 @@ float lon_to_pixel(float lon) {
     return frac_tile * float(tile_width);
 }
 
+// Calculates the amount of "haze" we should apply for a particular
+// pixel. See https://vault-of-shields.vercel.app/On-Hermes/UI-Effects/Atmospheric-Limb
+// for how this works
+float get_limb_intensity()
+{
+	// --- Atmospheric Haze Calculation ---
+    vec3 view_dir = normalize(world_pos - camera_position);
+    float dot_prod = dot(view_dir, normalize(world_normal));
+    float limb_factor = 1.0 - max(0.0, -dot_prod);
+    limb_factor = pow(limb_factor * limb_intensity, limb_exponent);
+	return limb_factor;
+}
+
 void vertex() {
     vertex_lat_lon = UV2;
     world_pos = VERTEX;
     world_normal = NORMAL;
+	camera_position = CAMERA_POSITION_WORLD;
 }
 
 void fragment() {
@@ -94,18 +113,15 @@ void fragment() {
 
     vec4 map_color = texture(map_tile, uv);
 
-    // --- Atmospheric Haze Calculation ---
-    vec3 view_dir = normalize(world_pos - CAMERA_POSITION_WORLD);
+	if(zoom_level < MAX_LIMB_ZOOM)
+	{
+	    	vec3 final_color = mix(map_color.rgb, limb_color.rgb, get_limb_intensity());
+	    	ALBEDO = final_color;
+	}
+	else
+	{
+		ALBEDO = map_color.rgb;
+	}
 
-    float dot_prod = dot(view_dir, normalize(world_normal));
-
-    float limb_factor = 1.0 - max(0.0, -dot_prod);
-    limb_factor = pow(limb_factor * limb_intensity, limb_exponent);
-
-    float final_haze_amount = limb_factor;
-
-    vec3 final_color = mix(map_color.rgb, limb_color.rgb, final_haze_amount);
-
-    ALBEDO = final_color;
     ALPHA = map_color.a;
 }
