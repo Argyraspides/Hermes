@@ -19,7 +19,7 @@ partial class GroundVelocity : HellenicMessage
 
 	/// <summary>
 	/// Velocity Z (Down or Up depending on chosen frame - Hellenic 
-	/// prefers positive Up) 
+	/// prefers positive Up)   
 	/// </summary>
 	public double? Vz { get; set; }
 

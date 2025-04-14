@@ -84,22 +84,22 @@ public static class WGS84EllipsoidMeshGenerator
                 // 3 vertices: bottom-left, bottom-right, top (pole)
                 float[] x =
                 {
-                    (float)MapUtils.LatLonToCartesianX(lat - halfLatRange, lon - halfLonRange),
-                    (float)MapUtils.LatLonToCartesianX(lat - halfLatRange, lon + halfLonRange),
+                    (float)MapUtils.LatLonToCartesianWGS84X(lat - halfLatRange, lon - halfLonRange),
+                    (float)MapUtils.LatLonToCartesianWGS84X(lat - halfLatRange, lon + halfLonRange),
                     0 // Pole
                 };
 
                 float[] y =
                 {
-                    (float)MapUtils.LatLonToCartesianY(lat - halfLatRange),
-                    (float)MapUtils.LatLonToCartesianY(lat - halfLatRange),
+                    (float)MapUtils.LatLonToCartesianWGS84Y(lat - halfLatRange),
+                    (float)MapUtils.LatLonToCartesianWGS84Y(lat - halfLatRange),
                     minorToMajorRatio // North pole, normalized
                 };
 
                 float[] z =
                 {
-                    (float)MapUtils.LatLonToCartesianZ(lat - halfLatRange, lon - halfLonRange),
-                    (float)MapUtils.LatLonToCartesianZ(lat - halfLatRange, lon + halfLonRange),
+                    (float)MapUtils.LatLonToCartesianWGS84Z(lat - halfLatRange, lon - halfLonRange),
+                    (float)MapUtils.LatLonToCartesianWGS84Z(lat - halfLatRange, lon + halfLonRange),
                     0 // Pole
                 };
 
@@ -143,22 +143,22 @@ public static class WGS84EllipsoidMeshGenerator
                 float[] x =
                 {
                     0, // Pole
-                    (float)MapUtils.LatLonToCartesianX(lat + halfLatRange, lon + halfLonRange),
-                    (float)MapUtils.LatLonToCartesianX(lat + halfLatRange, lon - halfLonRange),
+                    (float)MapUtils.LatLonToCartesianWGS84X(lat + halfLatRange, lon + halfLonRange),
+                    (float)MapUtils.LatLonToCartesianWGS84X(lat + halfLatRange, lon - halfLonRange),
                 };
 
                 float[] y =
                 {
                     -minorToMajorRatio, // South pole, normalized
-                    (float)MapUtils.LatLonToCartesianY(lat + halfLatRange),
-                    (float)MapUtils.LatLonToCartesianY(lat + halfLatRange)
+                    (float)MapUtils.LatLonToCartesianWGS84Y(lat + halfLatRange),
+                    (float)MapUtils.LatLonToCartesianWGS84Y(lat + halfLatRange)
                 };
 
                 float[] z =
                 {
                     0, // Pole
-                    (float)MapUtils.LatLonToCartesianZ(lat + halfLatRange, lon + halfLonRange),
-                    (float)MapUtils.LatLonToCartesianZ(lat + halfLatRange, lon - halfLonRange),
+                    (float)MapUtils.LatLonToCartesianWGS84Z(lat + halfLatRange, lon + halfLonRange),
+                    (float)MapUtils.LatLonToCartesianWGS84Z(lat + halfLatRange, lon - halfLonRange),
                 };
 
                 for (int i = 0; i < 3; i++)
@@ -199,26 +199,26 @@ public static class WGS84EllipsoidMeshGenerator
                 // 4 corners: bottom-left, bottom-right, top-right, top-left
                 float[] x =
                 {
-                    (float)MapUtils.LatLonToCartesianX(lat - halfLatRange, lon - halfLonRange),
-                    (float)MapUtils.LatLonToCartesianX(lat - halfLatRange, lon + halfLonRange),
-                    (float)MapUtils.LatLonToCartesianX(lat + halfLatRange, lon + halfLonRange),
-                    (float)MapUtils.LatLonToCartesianX(lat + halfLatRange, lon - halfLonRange)
+                    (float)MapUtils.LatLonToCartesianWGS84X(lat - halfLatRange, lon - halfLonRange),
+                    (float)MapUtils.LatLonToCartesianWGS84X(lat - halfLatRange, lon + halfLonRange),
+                    (float)MapUtils.LatLonToCartesianWGS84X(lat + halfLatRange, lon + halfLonRange),
+                    (float)MapUtils.LatLonToCartesianWGS84X(lat + halfLatRange, lon - halfLonRange)
                 };
 
                 float[] y =
                 {
-                    (float)MapUtils.LatLonToCartesianY(lat - halfLatRange),
-                    (float)MapUtils.LatLonToCartesianY(lat - halfLatRange),
-                    (float)MapUtils.LatLonToCartesianY(lat + halfLatRange),
-                    (float)MapUtils.LatLonToCartesianY(lat + halfLatRange)
+                    (float)MapUtils.LatLonToCartesianWGS84Y(lat - halfLatRange),
+                    (float)MapUtils.LatLonToCartesianWGS84Y(lat - halfLatRange),
+                    (float)MapUtils.LatLonToCartesianWGS84Y(lat + halfLatRange),
+                    (float)MapUtils.LatLonToCartesianWGS84Y(lat + halfLatRange)
                 };
 
                 float[] z =
                 {
-                    (float)MapUtils.LatLonToCartesianZ(lat - halfLatRange, lon - halfLonRange),
-                    (float)MapUtils.LatLonToCartesianZ(lat - halfLatRange, lon + halfLonRange),
-                    (float)MapUtils.LatLonToCartesianZ(lat + halfLatRange, lon + halfLonRange),
-                    (float)MapUtils.LatLonToCartesianZ(lat + halfLatRange, lon - halfLonRange)
+                    (float)MapUtils.LatLonToCartesianWGS84Z(lat - halfLatRange, lon - halfLonRange),
+                    (float)MapUtils.LatLonToCartesianWGS84Z(lat - halfLatRange, lon + halfLonRange),
+                    (float)MapUtils.LatLonToCartesianWGS84Z(lat + halfLatRange, lon + halfLonRange),
+                    (float)MapUtils.LatLonToCartesianWGS84Z(lat + halfLatRange, lon - halfLonRange)
                 };
 
                 // Add the four corners in the same order as before

@@ -71,7 +71,7 @@ public partial class Machine : RigidBody3D
 
         if (location.Lat.HasValue && location.Lon.HasValue)
         {
-            GlobalPosition = MapUtils.LatLonToCartesian(
+            GlobalPosition = MapUtils.LatLonToCartesianWGS84(
                 Mathf.DegToRad((float)location.Lat),
                 Mathf.DegToRad((float)location.Lon));
         }

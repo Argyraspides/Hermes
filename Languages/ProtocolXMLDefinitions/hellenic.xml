@@ -11,7 +11,8 @@
             </field>
             <field type="uint32_t" name="id">
                 <description>The ID of the Hellenic message itself. E.g., An ID of 0 corresponds to
-                    "LatitudeLongitude"</description>
+                    "LatitudeLongitude"
+                </description>
             </field>
         </fields>
     </header>
@@ -47,6 +48,23 @@
                 </entry>
             </entries>
         </enum>
+        <enum name="REFERENCE_FRAME">
+            <description>
+                Reference frames for which planet we are talking about (boohoo Pluto)
+            </description>
+            <entries>
+                <entry value="0" name="MERCURY"/>
+                <entry value="1" name="VENUS"/>
+                <entry value="2" name="EARTH"/>
+                <entry value="3" name="MOON"/>
+                <entry value="4" name="MARS"/>
+                <entry value="5" name="JUPITER"/>
+                <entry value="6" name="SATURN"/>
+                <entry value="7" name="URANUS"/>
+                <entry value="8" name="NEPTUNE"/>
+                <entry value="9" name="PLUTO"/>
+            </entries>
+        </enum>
         <enum name="HELLENIC_COMMAND_RESULT">
             <description>Status codes for command execution results</description>
             <entries>
@@ -65,7 +83,8 @@
 
         <telemetry>
             <message id="0" name="LATITUDE_LONGITUDE">
-                <description>The position of the object expressed in latitude, longitude. Part of the core position data.
+                <description>The position of the object expressed in latitude, longitude. Part of the core position
+                    data.
                 </description>
                 <fields>
                     <field type="uint32_t" name="id" override="true" value="0">
@@ -119,7 +138,8 @@
                         <description>Velocity Y (e.g., East or North depending on chosen frame)</description>
                     </field>
                     <field type="float64" name="vz" units="m/s">
-                        <description>Velocity Z (Down or Up depending on chosen frame - Hellenic prefers positive Up)</description>
+                        <description>Velocity Z (Down or Up depending on chosen frame - Hellenic prefers positive Up)
+                        </description>
                     </field>
                     <field type="uint64_t" name="time_usec" units="μs">
                         <description>Timestamp (microseconds epoch or system boot)</description>

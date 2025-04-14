@@ -25,6 +25,7 @@
         <Content Include="docs\README_Images\MavgenGUIExample.png" />
         <Content Include="docs\Rules\csharp-style-guide.md" />
         <Content Include="docs\Rules\shader-style-guide.md" />
+        <Content Include="Languages\Generators\generate.sh" />
         <Content Include="Languages\ProtocolXMLConversionDefinitions\common_to_hellenic.xml" />
         <Content Include="Languages\ProtocolXMLDefinitions\common.xml" />
         <Content Include="Languages\ProtocolXMLDefinitions\hellenic.xml" />

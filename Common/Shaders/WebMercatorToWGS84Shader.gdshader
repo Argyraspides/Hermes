@@ -103,20 +103,20 @@ void vertex() {
 
 void fragment() {
 
-    // --- Map Projection ---
-    float lat = vertex_lat_lon.y;
-    float lon = vertex_lat_lon.x;
-    float px = lon_to_pixel(lon);
-    float py = lat_to_pixel(lat);
-    vec2 uv = vec2(px / float(tile_width), py / float(tile_height));
-    uv = clamp(uv, 0.0001, 0.9999);
+	// --- Map Projection ---
+	float lat = vertex_lat_lon.y;
+	float lon = vertex_lat_lon.x;
+	float px = lon_to_pixel(lon);
+	float py = lat_to_pixel(lat);
+	vec2 uv = vec2(px / float(tile_width), py / float(tile_height));
+	uv = clamp(uv, 0.0001, 0.9999);
 
-    vec4 map_color = texture(map_tile, uv);
+	vec4 map_color = texture(map_tile, uv);
 
 	if(zoom_level < MAX_LIMB_ZOOM)
 	{
-	    	vec3 final_color = mix(map_color.rgb, limb_color.rgb, get_limb_intensity());
-	    	ALBEDO = final_color;
+		vec3 final_color = mix(map_color.rgb, limb_color.rgb, get_limb_intensity());
+		ALBEDO = final_color;
 	}
 	else
 	{

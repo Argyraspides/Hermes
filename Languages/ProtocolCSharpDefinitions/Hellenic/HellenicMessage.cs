@@ -19,7 +19,7 @@ public abstract partial class HellenicMessage : RefCounted
 
 	/// <summary>
 	/// The ID of the Hellenic message itself. E.g., An ID of 
-	/// 0 corresponds to  "LatitudeLongitude" 
+	/// 0 corresponds to  "LatitudeLongitude"   
 	/// </summary>
 	public uint? Id { get; protected set; }
 

@@ -1,6 +1,6 @@
 /// <summary>
 /// The position of the object expressed in latitude, longitude. Part of 
-/// the core position data.   
+/// the core position  data.   
 /// </summary>
 partial class LatitudeLongitude : HellenicMessage
 {

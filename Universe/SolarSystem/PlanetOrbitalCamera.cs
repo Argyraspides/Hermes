@@ -256,7 +256,7 @@ public partial class PlanetOrbitalCamera : Camera3D
         m_currentLat = Mathf.LerpAngle(m_currentLat, m_targetLat, m_cameraPanSmoothing.Y);
         m_currentLon = Mathf.LerpAngle(m_currentLon, m_targetLon, m_cameraPanSmoothing.X);
 
-        Position = MapUtils.LatLonToCartesian(m_currentLat, m_currentLon, m_currentAltitude);
+        Position = MapUtils.LatLonToCartesianWGS84(m_currentLat, m_currentLon, m_currentAltitude);
         LookAt(Vector3.Zero, Vector3.Up);
 
         m_currentLat = (m_currentLat < -Math.PI) ?  Math.PI : m_currentLat;

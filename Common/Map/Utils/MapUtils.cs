@@ -317,6 +317,16 @@ public static class MapUtils
         );
     }
 
+    public static Vector3 LatLonToCartesian(double lat, double lon, PlanetShapeType shape)
+    {
+        switch (shape)
+        {
+            case PlanetShapeType.WGS84_ELLIPSOID:
+                return LatLonToCartesianWGS84(lat, lon);
+        }
+        throw new InvalidOperationException("Unknown planet shape type!");
+    }
+
     /// <summary>
     /// Converts latitude and longitude from radians to actual Cartesian coordinates
     /// in kilometers in a Earth-Centered, Earth-Fixed (ECEF) system based on the WGS84 ellipsoid.
@@ -330,7 +340,7 @@ public static class MapUtils
     /// <param name="lat">Latitude in radians, range [-π/2, π/2]</param>
     /// <param name="lon">Longitude in radians, range [-π, π]</param>
     /// <returns>Cartesian coordinates in kilometers as a Vector3</returns>
-    public static Vector3 LatLonToCartesian(double lat, double lon)
+    public static Vector3 LatLonToCartesianWGS84(double lat, double lon)
     {
         lat -= Math.PI / 2.0;
         lon += Math.PI;
@@ -365,7 +375,7 @@ public static class MapUtils
     /// <param name="lat">Latitude in radians, range [-π/2, π/2]</param>
     /// <param name="lon">Longitude in radians, range [-π, π]</param>
     /// <returns>Normalized X coordinate</returns>
-    public static double LatLonToCartesianX(double lat, double lon)
+    public static double LatLonToCartesianWGS84X(double lat, double lon)
     {
         lat -= Math.PI / 2.0;
         lon += Math.PI;
@@ -385,7 +395,7 @@ public static class MapUtils
     /// </summary>
     /// <param name="lat">Latitude in radians, range [-π/2, π/2]</param>
     /// <returns>Normalized Y coordinate</returns>
-    public static double LatLonToCartesianY(double lat)
+    public static double LatLonToCartesianWGS84Y(double lat)
     {
         lat -= Math.PI / 2.0;
         double minorToMajorRatio = SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM /
@@ -408,7 +418,7 @@ public static class MapUtils
     /// <param name="lat">Latitude in radians, range [-π/2, π/2]</param>
     /// <param name="lon">Longitude in radians, range [-π, π]</param>
     /// <returns>Normalized Z coordinate</returns>
-    public static double LatLonToCartesianZ(double lat, double lon)
+    public static double LatLonToCartesianWGS84Z(double lat, double lon)
     {
         lat -= Math.PI / 2.0;
         lon += Math.PI;
@@ -433,7 +443,7 @@ public static class MapUtils
     /// <param name="lon">Longitude in radians, range [-π, π]</param>
     /// <param name="alt">Altitude in kilometers from the WGS84 ellipsoid surface</param>
     /// <returns>Cartesian coordinates in kilometers as a Vector3</returns>
-    public static Vector3 LatLonToCartesian(double lat, double lon, double alt)
+    public static Vector3 LatLonToCartesianWGS84(double lat, double lon, double alt)
     {
         lat -= Math.PI / 2.0;
         lon += Math.PI;
