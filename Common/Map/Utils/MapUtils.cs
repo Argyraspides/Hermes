@@ -317,11 +317,11 @@ public static class MapUtils
         );
     }
 
-    public static Vector3 LatLonToCartesian(double lat, double lon, PlanetShapeType shape)
+    public static Vector3 LatLonToCartesian(double lat, double lon, ReferenceFrame reference)
     {
-        switch (shape)
+        switch (reference)
         {
-            case PlanetShapeType.WGS84_ELLIPSOID:
+            case ReferenceFrame.Earth:
                 return LatLonToCartesianWGS84(lat, lon);
         }
         throw new InvalidOperationException("Unknown planet shape type!");
