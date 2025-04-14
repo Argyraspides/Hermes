@@ -38,7 +38,7 @@ using Hermes.Common.Meshes.MeshGenerators;
 ///
 ///
 /// </summary>
-public partial class TerrainQuadTreeTraverser : Node
+public partial class TerrainQuadTreeTraverser
 {
     // True if we can perform the DFS search to determine which nodes should be culled, and cull them.
     // Accessible by the TerrainQuadTree.

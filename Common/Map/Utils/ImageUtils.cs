@@ -83,6 +83,7 @@ public static class ImageUtils
         ImageType imageType = GetImageFormat(rawMapData);
 
         Image image = new Image();
+        image.SetName("ImageUtils.ByteArrayToImageTexture");
 
         if (imageType == ImageType.JPEG)
         {
@@ -100,6 +101,7 @@ public static class ImageUtils
         }
 
         ImageTexture texture = new ImageTexture();
+        texture.SetName("ImageUtils.ByteArrayToImageTexture");
         texture.SetImage(image);
         return texture;
     }

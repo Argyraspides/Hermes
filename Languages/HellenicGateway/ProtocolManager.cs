@@ -57,6 +57,7 @@ public partial class ProtocolManager : Node
 
     public override void _ExitTree()
     {
+        base._ExitTree();
         foreach (IProtocolAdapter protocolAdapter in m_protocolAdapters)
         {
             protocolAdapter.Stop();

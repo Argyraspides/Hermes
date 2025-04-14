@@ -31,6 +31,8 @@ public static class HellenicXMLDefinitions
     public const string MESSAGES_ELEMENT = "messages";
     public const string MESSAGE_ELEMENT = "message";
 
+    public const string TELEMETRY_ELEMENT = "telemetry";
+
 
     public const string FIELDS_ELEMENT = "fields";
     public const string FIELD_ELEMENT = "field";

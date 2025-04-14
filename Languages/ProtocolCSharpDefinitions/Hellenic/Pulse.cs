@@ -1,6 +1,7 @@
 /// <summary>
 ///   System status message indicating the entity is active and 
-/// functioning.  Used for health monitoring and presence detection.   
+/// provides basic identification.  Used for health monitoring and presence detection. Akin 
+/// to a Heartbeat.   
 /// </summary>
 partial class Pulse : HellenicMessage
 {
@@ -12,13 +13,13 @@ partial class Pulse : HellenicMessage
 
 
 	/// <summary>
-	/// Machine identifier or callsign 
+	/// Machine identifier or callsign (if available) 
 	/// </summary>
 	public string? Callsign { get; set; }
 
 
 	/// <summary>
-	/// Timestamp (microseconds since system boot) 
+	/// Timestamp (microseconds epoch or system boot) 
 	/// </summary>
 	public ulong? TimeUsec { get; set; }
 

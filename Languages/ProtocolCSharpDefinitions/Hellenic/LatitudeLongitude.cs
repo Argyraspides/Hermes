@@ -1,6 +1,6 @@
 /// <summary>
-/// The position of the object expressed in latitude, longitude, and altitude, 
-///  supporting high-precision planetary and space navigation.   
+/// The position of the object expressed in latitude, longitude. Part of 
+/// the core position data.   
 /// </summary>
 partial class LatitudeLongitude : HellenicMessage
 {
@@ -19,13 +19,13 @@ partial class LatitudeLongitude : HellenicMessage
 
 	/// <summary>
 	/// Reference frame (0 = Mercury, 1 = Venus, 2 = Earth, 
-	/// 3 = Moon, 4 =  Mars ...)   
+	/// 3 = Moon, 4 = Mars ...)   
 	/// </summary>
 	public byte? ReferenceFrame { get; set; }
 
 
 	/// <summary>
-	/// Timestamp (microseconds since epoch) 
+	/// Timestamp (microseconds epoch or system boot) 
 	/// </summary>
 	public ulong? TimeUsec { get; set; }
 

@@ -1,24 +1,23 @@
 /// <summary>
-/// The altitude of the object with high precision, applicable to both 
-///  planetary  and deep-space operations.   
+/// The altitude of the object. Part of the core position data. 
 /// </summary>
 partial class Altitude : HellenicMessage
 {
 
 	/// <summary>
-	/// Altitude (Mean Sea Level or reference frame) 
+	/// Altitude (Mean Sea Level or reference frame origin) 
 	/// </summary>
 	public double? Alt { get; set; }
 
 
 	/// <summary>
-	/// Altitude relative to home/base 
+	/// Altitude relative to home/ground/takeoff location 
 	/// </summary>
 	public double? RelativeAlt { get; set; }
 
 
 	/// <summary>
-	/// Timestamp (since system boot) 
+	/// Timestamp (microseconds epoch or system boot) 
 	/// </summary>
 	public ulong? TimeUsec { get; set; }
 

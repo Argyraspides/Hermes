@@ -1,7 +1,6 @@
 <?xml version="1.0"?>
 <hellenic>
 
-    <!--  These are fields that all Hellenic messages should have, regardless of type. Best implemented as an abstract base class   -->
     <header>
         <fields>
             <field type="uint32_t" name="machine_id">
@@ -69,6 +68,9 @@
                 <description>The position of the object expressed in latitude, longitude. Part of the core position data.
                 </description>
                 <fields>
+                    <field type="uint32_t" name="id" override="true" value="0">
+                        <description>Message ID (0 = LATITUDE_LONGITUDE)</description>
+                    </field>
                     <field type="float64" name="lat" units="degrees">
                         <description>Latitude (WGS84 or planetary model)</description>
                     </field>
@@ -88,6 +90,9 @@
             <message id="1" name="ALTITUDE">
                 <description>The altitude of the object. Part of the core position data.</description>
                 <fields>
+                    <field type="uint32_t" name="id" override="true" value="1">
+                        <description>Message ID (1 = ALTITUDE)</description>
+                    </field>
                     <field type="float64" name="alt" units="m">
                         <description>Altitude (Mean Sea Level or reference frame origin)</description>
                     </field>
@@ -104,6 +109,9 @@
                 <description>The ground velocity components of the object in NED or ENU frame (consistent frame needed).
                 </description>
                 <fields>
+                    <field type="uint32_t" name="id" override="true" value="2">
+                        <description>Message ID (2 = GROUND_VELOCITY)</description>
+                    </field>
                     <field type="float64" name="vx" units="m/s">
                         <description>Velocity X (e.g., North or East depending on chosen frame)</description>
                     </field>
@@ -122,6 +130,9 @@
             <message id="3" name="HEADING">
                 <description>The compass heading of the object.</description>
                 <fields>
+                    <field type="uint32_t" name="id" override="true" value="3">
+                        <description>Message ID (3 = HEADING)</description>
+                    </field>
                     <field type="float64" name="hdg" units="deg">
                         <description>Heading in degrees [0..360)</description>
                     </field>
@@ -140,6 +151,9 @@
                     Used for health monitoring and presence detection. Akin to a Heartbeat.
                 </description>
                 <fields>
+                    <field type="uint32_t" name="id" override="true" value="4">
+                        <description>Message ID (4 = PULSE)</description>
+                    </field>
                     <field type="uint16_t" name="machine_type" enum="MACHINE_TYPE">
                         <description>Type of machine</description>
                     </field>

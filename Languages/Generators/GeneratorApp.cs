@@ -1,3 +1,6 @@
+using System;
+using System.Linq;
+
 namespace Hermes.Languages.Generators;
 
 
@@ -35,6 +38,7 @@ public class GeneratorApp
 
     private static void PrintOptions()
     {
+        Console.WriteLine(new string('*', 75));
 
         Console.ForegroundColor = ConsoleColor.Red;
 
@@ -46,7 +50,7 @@ public class GeneratorApp
         Console.Write(
             $"\t\t dotnet run {GEN_HELLENIC_MESSAGES_FLAG} " +
             $"../ProtocolXMLDefinitions/hellenic.xml " +
-            $"../ProtocolCSharpDefinitions/Hellenic");
+            $"../ProtocolCSharpDefinitions/Hellenic\n\n");
 
 
         Console.WriteLine(new string('*', 75));
@@ -56,10 +60,12 @@ public class GeneratorApp
         Console.Write(
             $"\t\t dotnet run {GEN_HELLENIC_TRANSLATOR_FLAG} " +
             $"../ProtocolXMLDefinitions/hellenic.xml " +
-            $"../ProtocolXMLDefinitions/common.xml" +
-            $"../ProtocolXMLConversionDefinitions/common_to_hellenic.xml" +
-            $"../ProtocolConverters/ToHellenic"
+            $"../ProtocolXMLDefinitions/common.xml " +
+            $"../ProtocolXMLConversionDefinitions/common_to_hellenic.xml " +
+            $"../ProtocolConverters/ToHellenic\n\n"
             );
+
+        Console.WriteLine(new string('*', 75));
 
         Console.ResetColor();
     }

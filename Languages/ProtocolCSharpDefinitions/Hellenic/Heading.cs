@@ -1,24 +1,23 @@
 /// <summary>
-///   The velocity components of the object   
+/// The compass heading of the object. 
 /// </summary>
 partial class Heading : HellenicMessage
 {
 
 	/// <summary>
-	/// Heading in degrees 
+	/// Heading in degrees [0..360) 
 	/// </summary>
 	public double? Hdg { get; set; }
 
 
 	/// <summary>
-	/// Reference frame (0 = Mercury, 1 = Venus, 2 = Earth, 
-	/// 3 = Moon, 4 =  Mars ...)   
+	/// Reference frame (e.g., Magnetic North, True North - define via enum) 
 	/// </summary>
 	public byte? ReferenceFrame { get; set; }
 
 
 	/// <summary>
-	/// Timestamp (since system boot) 
+	/// Timestamp (microseconds epoch or system boot) 
 	/// </summary>
 	public ulong? TimeUsec { get; set; }
 

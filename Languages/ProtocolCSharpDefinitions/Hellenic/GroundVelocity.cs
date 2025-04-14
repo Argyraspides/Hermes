@@ -1,29 +1,31 @@
 /// <summary>
-///   The velocity components of the object   
+/// The ground velocity components of the object in NED or ENU 
+/// frame (consistent frame needed).   
 /// </summary>
 partial class GroundVelocity : HellenicMessage
 {
 
 	/// <summary>
-	/// Velocity X (Latitude direction, positive north) 
+	/// Velocity X (e.g., North or East depending on chosen frame) 
 	/// </summary>
 	public double? Vx { get; set; }
 
 
 	/// <summary>
-	/// Velocity Y (Longitude direction, positive east) 
+	/// Velocity Y (e.g., East or North depending on chosen frame) 
 	/// </summary>
 	public double? Vy { get; set; }
 
 
 	/// <summary>
-	/// Velocity Z (Altitude direction, positive up) 
+	/// Velocity Z (Down or Up depending on chosen frame - Hellenic 
+	/// prefers positive Up) 
 	/// </summary>
 	public double? Vz { get; set; }
 
 
 	/// <summary>
-	/// Timestamp (since system boot) 
+	/// Timestamp (microseconds epoch or system boot) 
 	/// </summary>
 	public ulong? TimeUsec { get; set; }
 

@@ -28,7 +28,7 @@ using System.Threading.Tasks;
 using Hermes.Common.Map.Provider.Bing;
 using Hermes.Common.Map.Querying.Bing;
 
-public partial class MapAPI : Node
+public partial class MapAPI
 {
     private BingMapProvider m_mapProvider;
 

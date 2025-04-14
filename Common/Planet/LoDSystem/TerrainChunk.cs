@@ -132,6 +132,7 @@ public partial class TerrainChunk : Node3D
         if (!string.IsNullOrEmpty(SHADER_PATH))
         {
             var shaderMat = new ShaderMaterial { Shader = ResourceLoader.Load<Shader>(SHADER_PATH) };
+            shaderMat.SetName("TerrainChunkShaderMaterial");
             shaderMat.SetShaderParameter("map_tile", texture2D);
             shaderMat.SetShaderParameter("zoom_level", MapTile.ZoomLevel);
             shaderMat.SetShaderParameter("tile_width", MapTile.Width);
@@ -150,6 +151,7 @@ public partial class TerrainChunk : Node3D
         {
             GD.PrintErr("Shader material path is null or empty! Using default shader.");
             var standardShader = new StandardMaterial3D();
+            standardShader.SetName("TerrainChunkStandardShader");
             if (HermesUtils.IsValid(TerrainChunkMesh))
             {
                 TerrainChunkMesh.MaterialOverride = standardShader;

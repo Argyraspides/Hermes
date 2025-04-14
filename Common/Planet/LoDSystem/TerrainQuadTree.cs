@@ -198,8 +198,8 @@ public sealed partial class TerrainQuadTree : Node3D
 
     public override void _ExitTree()
     {
-        m_QuadTreeTraverser.StopUpdateThread();
         base._ExitTree();
+        m_QuadTreeTraverser.StopUpdateThread();
     }
 
     public override void _Notification(int what)
@@ -292,7 +292,11 @@ public sealed partial class TerrainQuadTree : Node3D
         if (!HermesUtils.IsValid(node.Chunk.MeshInstance))
         {
             ArrayMesh meshSegment = GenerateMeshForNode(node);
-            node.Chunk.MeshInstance = new MeshInstance3D { Mesh = meshSegment };
+            meshSegment.SetName("TerrainChunkMeshSegment");
+
+            var newChunkMesh = new MeshInstance3D { Mesh = meshSegment };
+            newChunkMesh.SetName("TerrainChunkMesh");
+            node.Chunk.MeshInstance = newChunkMesh;
 
             node.Chunk.SetPositionAndSize();        // Set the position of the chunk itself
             node.Position = node.Chunk.Position;    // Set the position of the node (copy chunk position)
@@ -487,6 +491,9 @@ public sealed partial class TerrainQuadTree : Node3D
         double childCenterLon = MapUtils.ComputeCenterLongitude(lonTileCoo, zoomLevel);
 
         var childChunk = new TerrainChunk(new MapTile((float)childCenterLat, (float)childCenterLon, zoomLevel));
-        return new TerrainQuadTreeNode(childChunk, zoomLevel);
+        childChunk.SetName("TerrainChunk");
+        var terrainQuadTreeNode = new TerrainQuadTreeNode(childChunk, zoomLevel);
+        terrainQuadTreeNode.SetName("TerrainQuadTreeNode");
+        return terrainQuadTreeNode;
     }
 }
