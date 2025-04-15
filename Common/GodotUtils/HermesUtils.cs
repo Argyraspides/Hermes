@@ -31,36 +31,6 @@ public static class HermesUtils
                && !node.IsQueuedForDeletion();
     }
 
-    /// <summary>
-    /// Determines whether the mouse pointer is in contact with a CollisionObject3D
-    /// </summary>
-    /// <param name="viewport">The viewport that the camera is in</param>
-    /// <param name="objectToCheck">Collision object to check for contact with the mouse</param>
-    /// <param name="layer">The layer that the collision object is on</param>
-    /// <returns></returns>
-    public static bool MouseHovering(Viewport viewport, CollisionObject3D objectToCheck, uint layer)
-    {
-        if (viewport == null || objectToCheck == null)
-        {
-            throw new ArgumentNullException("Cant determine if mouse event is clicked if the viewport or object to check is null!");
-        }
-
-        Camera3D camera = viewport.GetCamera3D();
-        Vector2 mousePos = viewport.GetMousePosition();
-
-        var rayOrigin = camera.ProjectRayOrigin(mousePos);
-        var rayEnd = rayOrigin + camera.ProjectRayNormal(mousePos) * MAX_RAYCAST_DISTANCE_CHECK;
-
-        PhysicsRayQueryParameters3D query = PhysicsRayQueryParameters3D.Create(rayOrigin, rayEnd);
-        query.CollideWithAreas = false;
-        query.CollisionMask = layer;
-
-        PhysicsDirectSpaceState3D spaceState = objectToCheck.GetWorld3D().DirectSpaceState;
-        Godot.Collections.Dictionary result = spaceState.IntersectRay(query);
-
-        return (result.Count > 0) && (result["collider"].Obj == objectToCheck);
-    }
-
     public static Godot.Collections.Dictionary MouseRaycast(Viewport viewport, uint layer)
     {
         if (viewport == null)
@@ -77,7 +47,7 @@ public static class HermesUtils
         PhysicsRayQueryParameters3D query = PhysicsRayQueryParameters3D.Create(rayOrigin, rayEnd);
         query.CollideWithAreas = false;
         query.CollisionMask = layer;
-        // TODO::ARGYRASPIDES() But why? Why does this work. Gotta learn about the space state more ....
+
         PhysicsDirectSpaceState3D spaceState = camera.GetWorld3D().DirectSpaceState;
         Godot.Collections.Dictionary result = spaceState.IntersectRay(query);
 
