@@ -35,6 +35,9 @@ using HermesUtils;
 public partial class TerrainChunk : Node3D
 {
     private readonly string SHADER_PATH;
+
+    public ReferenceFrame ReferenceFrame { get; private set; }
+
     public MapTile MapTile { get; private set; }
 
     /// <summary>
@@ -72,12 +75,17 @@ public partial class TerrainChunk : Node3D
     public TerrainChunk(
         MapTile mapTile,
         MeshInstance3D terrainChunkMesh = null,
-        ShaderMaterial shaderMaterial = null
-    )
+        ShaderMaterial shaderMaterial = null,
+        ReferenceFrame referenceFrame = ReferenceFrame.Earth)
     {
         if (mapTile == null)
         {
             throw new ArgumentNullException("Cannot create a TerrainChunk with a null map tile");
+        }
+
+        if (referenceFrame == null)
+        {
+            throw new ArgumentNullException("Cannot create a TerrainChunk with a null reference frame!");
         }
 
         MapTile = mapTile;
@@ -93,6 +101,8 @@ public partial class TerrainChunk : Node3D
 
         TerrainChunkMesh = terrainChunkMesh;
         ShaderMaterial = shaderMaterial;
+
+        ReferenceFrame = referenceFrame;
     }
 
     public async void Load()
@@ -189,8 +199,7 @@ public partial class TerrainChunk : Node3D
             throw new ArgumentNullException("Cannot set position of a terrain chunk with a null map tile");
         }
 
-        // TODO::ARGYRASPIDES() { Change this up so it is planet independent! }
-        GlobalPosition = MapUtils.LatLonToCartesianNormalized(MapTile.Latitude, MapTile.Longitude);
+        GlobalPosition = MapUtils.LatLonToCartesianNormalized(MapTile.Latitude, MapTile.Longitude, ReferenceFrame);
         Transform = Transform.Scaled(
                 new Vector3(
                     SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM,

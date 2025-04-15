@@ -295,7 +295,7 @@ public static class MapUtils
     /// <param name="lat">Latitude in radians, range [-π/2, π/2]</param>
     /// <param name="lon">Longitude in radians, range [-π, π]</param>
     /// <returns>Normalized Cartesian coordinates as a Vector3</returns>
-    public static Vector3 LatLonToCartesianNormalized(double lat, double lon)
+    public static Vector3 LatLonToCartesianNormalizedWGS84(double lat, double lon)
     {
         lat -= Math.PI / 2.0d;
         lon += Math.PI;
@@ -323,6 +323,16 @@ public static class MapUtils
         {
             case ReferenceFrame.Earth:
                 return LatLonToCartesianWGS84(lat, lon);
+        }
+        throw new InvalidOperationException("Unknown planet shape type!");
+    }
+
+    public static Vector3 LatLonToCartesianNormalized(double lat, double lon, ReferenceFrame referenceFrame)
+    {
+        switch (referenceFrame)
+        {
+            case ReferenceFrame.Earth:
+                return LatLonToCartesianNormalizedWGS84(lat, lon);
         }
         throw new InvalidOperationException("Unknown planet shape type!");
     }

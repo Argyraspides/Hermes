@@ -54,6 +54,7 @@ public partial class MachineManager : Node
             double timeElapsed = Time.GetUnixTimeFromSystem() - machine.LastUpdateTimeUnix;
             if (machine.MachineId.HasValue && timeElapsed > MACHINE_STALE_TIME_S)
             {
+                machine.QueueFree();
                 m_Machines.Remove(machine.MachineId.Value);
                 EmitSignal(SignalName.MachineDisconnected, machine);
             }

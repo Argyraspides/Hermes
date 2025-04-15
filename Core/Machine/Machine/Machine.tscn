@@ -2,21 +2,21 @@
 
 [ext_resource type="Script" path="res://Core/Machine/Machine/Machine.cs" id="1_ot6hr"]
 
-[sub_resource type="SphereShape3D" id="SphereShape3D_eo4ee"]
+[sub_resource type="SphereShape3D" id="SphereShape3D_s6h0i"]
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tin1h"]
-albedo_color = Color(0.365815, 0.00167148, 0.745275, 1)
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_qajj0"]
+albedo_color = Color(0.72781, 0, 0.237544, 1)
 
-[sub_resource type="SphereMesh" id="SphereMesh_70ktl"]
+[sub_resource type="SphereMesh" id="SphereMesh_wvbap"]
+material = SubResource("StandardMaterial3D_qajj0")
 
 [node name="Machine" type="RigidBody3D"]
 script = ExtResource("1_ot6hr")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 0, 0, 0)
-shape = SubResource("SphereShape3D_eo4ee")
+transform = Transform3D(50, 0, 0, 0, 50, 0, 0, 0, 50, 0, 0, 0)
+shape = SubResource("SphereShape3D_s6h0i")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-transform = Transform3D(100, 0, 0, 0, 100, 0, 0, 0, 100, 0, 0, 0)
-material_override = SubResource("StandardMaterial3D_tin1h")
-mesh = SubResource("SphereMesh_70ktl")
+transform = Transform3D(50, 0, 0, 0, 50, 0, 0, 0, 50, 0, 0, 0)
+mesh = SubResource("SphereMesh_wvbap")
