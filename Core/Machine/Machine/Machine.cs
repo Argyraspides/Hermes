@@ -102,7 +102,7 @@ public partial class Machine : RigidBody3D
             mouseEvent.ButtonIndex == MouseButton.Left)
         {
             bool xd = false;
-            if (HermesUtils.Clicked(GetViewport(), this, CollisionLayer))
+            if (HermesUtils.MouseHovering(GetViewport(), this, CollisionLayer))
             {
                 Console.WriteLine("Object clicked!");
             }

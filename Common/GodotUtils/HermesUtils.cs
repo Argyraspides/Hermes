@@ -38,7 +38,7 @@ public static class HermesUtils
     /// <param name="objectToCheck">Collision object to check for contact with the mouse</param>
     /// <param name="layer">The layer that the collision object is on</param>
     /// <returns></returns>
-    public static bool Clicked(Viewport viewport, CollisionObject3D objectToCheck, uint layer)
+    public static bool MouseHovering(Viewport viewport, CollisionObject3D objectToCheck, uint layer)
     {
         if (viewport == null || objectToCheck == null)
         {
