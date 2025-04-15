@@ -4,11 +4,11 @@
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_s6h0i"]
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_qajj0"]
-albedo_color = Color(0.72781, 0, 0.237544, 1)
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_itnsw"]
+albedo_color = Color(0.798656, 0.00050595, 0.800319, 1)
 
 [sub_resource type="SphereMesh" id="SphereMesh_wvbap"]
-material = SubResource("StandardMaterial3D_qajj0")
+material = SubResource("StandardMaterial3D_itnsw")
 
 [node name="Machine" type="RigidBody3D"]
 script = ExtResource("1_ot6hr")

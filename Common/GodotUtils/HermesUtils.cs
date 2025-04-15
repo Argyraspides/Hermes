@@ -9,9 +9,9 @@ namespace Hermes.Common.HermesUtils;
 /// </summary>
 public static class HermesUtils
 {
-    private static bool m_infoLoggingEnabled = false;
-    private static bool m_warningLoggingEnabled = false;
-    private static bool m_errorLoggingEnabled = false;
+    private static bool m_infoLoggingEnabled = true;
+    private static bool m_warningLoggingEnabled = true;
+    private static bool m_errorLoggingEnabled = true;
 
     private const float MAX_RAYCAST_DISTANCE_CHECK = 2500;
 
@@ -58,10 +58,30 @@ public static class HermesUtils
         PhysicsDirectSpaceState3D spaceState = objectToCheck.GetWorld3D().DirectSpaceState;
         Godot.Collections.Dictionary result = spaceState.IntersectRay(query);
 
-        GD.Print(result);
-
         return (result.Count > 0) && (result["collider"].Obj == objectToCheck);
+    }
 
+    public static Godot.Collections.Dictionary MouseRaycast(Viewport viewport, uint layer)
+    {
+        if (viewport == null)
+        {
+            throw new ArgumentNullException("Cannot perform raycast if the viewport is null!");
+        }
+
+        Camera3D camera = viewport.GetCamera3D();
+        Vector2 mousePos = viewport.GetMousePosition();
+
+        var rayOrigin = camera.ProjectRayOrigin(mousePos);
+        var rayEnd = rayOrigin + camera.ProjectRayNormal(mousePos) * MAX_RAYCAST_DISTANCE_CHECK;
+
+        PhysicsRayQueryParameters3D query = PhysicsRayQueryParameters3D.Create(rayOrigin, rayEnd);
+        query.CollideWithAreas = false;
+        query.CollisionMask = layer;
+        // TODO::ARGYRASPIDES() But why? Why does this work. Gotta learn about the space state more ....
+        PhysicsDirectSpaceState3D spaceState = camera.GetWorld3D().DirectSpaceState;
+        Godot.Collections.Dictionary result = spaceState.IntersectRay(query);
+
+        return result;
     }
 
     public static void HermesLogInfo(string message)

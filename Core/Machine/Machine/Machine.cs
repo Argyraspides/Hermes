@@ -36,6 +36,7 @@ public partial class Machine : RigidBody3D
 
     private Dictionary<uint, HellenicMessage> m_hellenicMessages = new Dictionary<uint, HellenicMessage>();
     private HashSet<Capability> m_capabilities = new HashSet<Capability>();
+    private MeshInstance3D m_mesh;
 
     // Last time this vehicle was updated in the Unix timestamp
     public double LastUpdateTimeUnix { get; private set; } = 0;
@@ -45,6 +46,8 @@ public partial class Machine : RigidBody3D
         UpdateMessages(message);
         UpdateIdentity(message);
         UpdatePosition(message);
+        //StandardMaterial3D mat = (StandardMaterial3D)m_mesh.Mesh.SurfaceGetMaterial(0);
+        //mat.AlbedoColor = new Color(1.0f, 0.0f, 0.0f);
     }
 
     private void UpdateMessages(HellenicMessage message)
@@ -73,11 +76,10 @@ public partial class Machine : RigidBody3D
 
         if (location.Lat.HasValue && location.Lon.HasValue)
         {
-            Vector3 v = MapUtils.LatLonToCartesian(
+            GlobalPosition = MapUtils.LatLonToCartesian(
                 Mathf.DegToRad((float)location.Lat),
                 Mathf.DegToRad((float)location.Lon),
                 (ReferenceFrame)location.ReferenceFrame);
-            GlobalPosition = v * 2;
         }
     }
 
@@ -88,24 +90,15 @@ public partial class Machine : RigidBody3D
 
     public override void _Ready()
     {
-        // Keep these
         InputRayPickable = true;
-        CollisionLayer = 1;
-        CollisionMask = 1;
+        m_mesh = GetNode<MeshInstance3D>("MeshInstance3D");
     }
 
-    public override void _UnhandledInput(InputEvent @event)
+    public void OnMouseHover()
     {
-        base._UnhandledInput(@event);
-        if (@event is InputEventMouseButton mouseEvent &&
-            mouseEvent.Pressed &&
-            mouseEvent.ButtonIndex == MouseButton.Left)
-        {
-            bool xd = false;
-            if (HermesUtils.MouseHovering(GetViewport(), this, CollisionLayer))
-            {
-                Console.WriteLine("Object clicked!");
-            }
-        }
+        StandardMaterial3D mat = (StandardMaterial3D)m_mesh.Mesh.SurfaceGetMaterial(0);
+        mat.AlbedoColor = new Color(0.0f, 0.0f, 1.0f);
     }
+
+
 }

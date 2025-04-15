@@ -24,6 +24,7 @@
 
 */
 
+using Hermes.Common.HermesUtils;
 using Hermes.Core.Machine;
 using Hermes.Universe.Autoloads.EventBus;
 
@@ -158,6 +159,11 @@ public partial class PlanetOrbitalCamera : Camera3D
         {
             HandleCameraZooming(mouseEvent);
         }
+
+        if (@event is InputEventMouseMotion mouseMotion)
+        {
+            HandleMouseSelection();
+        }
     }
 
     // Ensure you have "Emulate Touch From Mouse" enabled in Godot.
@@ -194,6 +200,21 @@ public partial class PlanetOrbitalCamera : Camera3D
 
         DetermineZoomSpeed();
         m_targetAltitude += u ? -m_cameraZoomSpeed : m_cameraZoomSpeed;
+    }
+
+    private void HandleMouseSelection()
+    {
+        // TODO::ARGYRASPIDES() { DONT HARDCODE THE LAYER!!!!!!!!!!!!!! }
+        Godot.Collections.Dictionary raycastResult = HermesUtils.MouseRaycast(GetViewport(), 1);
+        if (raycastResult.Count > 0)
+        {
+            var hitObject = raycastResult["collider"].Obj as Node;
+            if (hitObject != null)
+            {
+                // TODO::ARGYRASPIDES() { Not sure if I like this lol. How do we guarantee this function exists??????? }
+                hitObject.Call("OnMouseHover");
+            }
+        }
     }
 
     private void DetermineZoomSpeed()
