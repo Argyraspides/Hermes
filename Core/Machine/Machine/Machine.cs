@@ -35,9 +35,10 @@ public partial class Machine : RigidBody3D, Selectable3D
     public MachineType MachineType { get; private set; } = MachineType.Unknown;
     public uint? MachineId { get; private set; }
 
+    public bool Selected { get; private set; } = false;
+
     private Dictionary<uint, HellenicMessage> m_hellenicMessages = new Dictionary<uint, HellenicMessage>();
     private HashSet<Capability> m_capabilities = new HashSet<Capability>();
-    private MeshInstance3D m_mesh;
 
     // Last time this vehicle was updated in the Unix timestamp
     public double LastUpdateTimeUnix { get; private set; } = 0;
@@ -93,21 +94,16 @@ public partial class Machine : RigidBody3D, Selectable3D
     {
         InputRayPickable = true;
         CollisionLayer = HermesSettings.SELECTABLE_LAYER;
-        m_mesh = GetNode<MeshInstance3D>("MeshInstance3D");
     }
 
     public void OnMouseEntered()
     {
         Console.WriteLine("OnMouseEntered");
-        StandardMaterial3D mat = (StandardMaterial3D)m_mesh.Mesh.SurfaceGetMaterial(0);
-        mat.AlbedoColor = new Color(0.0f, 0.0f, 1.0f);
     }
 
     public void OnMouseExited()
     {
         Console.WriteLine("OnMouseExited");
-        StandardMaterial3D mat = (StandardMaterial3D)m_mesh.Mesh.SurfaceGetMaterial(0);
-        mat.AlbedoColor = new Color(1.0f, 0.0f, 0.0f);
     }
 
     public void OnMouseClicked(MouseButton button)
