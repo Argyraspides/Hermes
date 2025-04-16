@@ -19,19 +19,26 @@
 
 using Godot;
 using System;
+using Hermes.Core.StateManagers;
 
 namespace Hermes.Universe.SolarSystem
 {
     public partial class SolarSystem : Node3D
     {
-        private readonly Vector2I M_MINIMUM_SCREEN_SIZE = new Vector2I(1280, 720);
 
         StaticBody3D earth;
+        InputManager inputManager;
 
         public override void _Ready()
         {
             earth = GetNode<StaticBody3D>("Earth");
-            DisplayServer.WindowSetMinSize(M_MINIMUM_SCREEN_SIZE);
+            inputManager = GetNode<InputManager>("InputManager");
+
+            // TODO::ARGYRASPIDES() { We shouldn't be doing this in the solar system lol }
+            DisplayServer.WindowSetMinSize(
+                new Vector2I(
+                    HermesSettings.MINIMUM_SCREEN_WIDTH,
+                    HermesSettings.MINIMUM_SCREEN_HEIGHT));
         }
 
     }

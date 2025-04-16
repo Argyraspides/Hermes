@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://bnaccj7r33kqb"]
+[gd_scene load_steps=11 format=3 uid="uid://bnaccj7r33kqb"]
 
 [ext_resource type="Script" path="res://Universe/SolarSystem/SolarSystem.cs" id="1_ks12t"]
 [ext_resource type="Texture2D" uid="uid://dw16otbm13s3h" path="res://Universe/SolarSystem/Assets/ESO_-_Milky_Way.jpg" id="1_nxqmc"]
@@ -6,6 +6,7 @@
 [ext_resource type="Script" path="res://Core/Machine/MachineManager/MachineManager.cs" id="2_p4i7y"]
 [ext_resource type="PackedScene" uid="uid://u6dcfgabkcf3" path="res://Universe/SolarSystem/Planets/Earth/earth.tscn" id="3_bobqk"]
 [ext_resource type="Script" path="res://Universe/SolarSystem/PlanetOrbitalCamera.cs" id="3_jsn1l"]
+[ext_resource type="Script" path="res://Core/StateManagers/InputManager.cs" id="4_pcbpi"]
 
 [sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_enyp5"]
 panorama = ExtResource("1_nxqmc")
@@ -34,6 +35,9 @@ script = ExtResource("2_l7c1n")
 
 [node name="MachineManager" type="Node" parent="."]
 script = ExtResource("2_p4i7y")
+
+[node name="InputManager" type="Node" parent="."]
+script = ExtResource("4_pcbpi")
 
 [node name="Backdrop" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_sabak")

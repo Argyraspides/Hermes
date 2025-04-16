@@ -1,5 +1,6 @@
 using System;
 using Godot;
+using Hermes.Core.StateManagers;
 
 namespace Hermes.Common.HermesUtils;
 
@@ -31,7 +32,7 @@ public static class HermesUtils
                && !node.IsQueuedForDeletion();
     }
 
-    public static Godot.Collections.Dictionary MouseRaycast(Viewport viewport, uint layer)
+    public static Godot.Collections.Dictionary MouseRaycast(Viewport viewport)
     {
         if (viewport == null)
         {
@@ -46,12 +47,10 @@ public static class HermesUtils
 
         PhysicsRayQueryParameters3D query = PhysicsRayQueryParameters3D.Create(rayOrigin, rayEnd);
         query.CollideWithAreas = false;
-        query.CollisionMask = layer;
+        query.CollisionMask = HermesSettings.SELECTABLE_LAYER;
 
         PhysicsDirectSpaceState3D spaceState = camera.GetWorld3D().DirectSpaceState;
-        Godot.Collections.Dictionary result = spaceState.IntersectRay(query);
-
-        return result;
+        return spaceState.IntersectRay(query);
     }
 
     public static void HermesLogInfo(string message)
