@@ -21,6 +21,7 @@ using System;
 using Hermes.Common.HermesUtils;
 using Hermes.Core.Machine.Capabilities;
 using Hermes.Core.StateManagers;
+using Hermes.Universe.Autoloads.EventBus;
 
 namespace Hermes.Core.Machine;
 
@@ -35,7 +36,9 @@ public partial class Machine : RigidBody3D, Selectable3D
     public MachineType MachineType { get; private set; } = MachineType.Unknown;
     public uint? MachineId { get; private set; }
 
-    public bool Selected { get; private set; } = false;
+    // TODO::ARGYRASPIDES() { "Selected" should not be in the vehicle class. Should make like a selection class with its own
+    // capabilities for how things should be selected and do stuff there. Here now for testing }
+    public bool Selected { get; set; } = false;
 
     private Dictionary<uint, HellenicMessage> m_hellenicMessages = new Dictionary<uint, HellenicMessage>();
     private HashSet<Capability> m_capabilities = new HashSet<Capability>();

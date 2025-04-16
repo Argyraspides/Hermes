@@ -97,6 +97,14 @@ public partial class MachineCard : Control
         m_compassDisplay.HeadingDeg = headingMsg.Hdg;
     }
 
+    private void UpdateBackground()
+    {
+        if (Machine.Selected)
+        {
+            m_colorRect.Color = Colors.Blue;
+        }
+    }
+
 
     private void OnMouseEntered()
     {
@@ -117,15 +125,15 @@ public partial class MachineCard : Control
         UpdateMachineName();
         UpdateMachineTypeIcon();
         UpdateAltitude();
+        UpdateBackground();
     }
 
     public override void _GuiInput(InputEvent @event)
     {
-        if (@event is InputEventMouseButton mouseEvent
-            && mouseEvent.ButtonIndex == MouseButton.Left
-            && mouseEvent.Pressed)
+        if (@event is InputEventMouseButton mouseEvent && mouseEvent.ButtonIndex == MouseButton.Left && !mouseEvent.IsReleased())
         {
             EmitSignal(SignalName.MachineCardClicked, Machine);
+            Machine.Selected = !Machine.Selected;
         }
     }
 
