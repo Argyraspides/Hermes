@@ -108,6 +108,7 @@ public partial class PlanetOrbitalCamera : Camera3D
         OrbitalCameraLatLonChanged += GlobalEventBus.Instance.PlanetaryEventBus.OnPlanetOrbitalCameraLatLonChanged;
 
         GetTree().Root.Ready += OnSceneTreeReady;
+        PositionCamera();
     }
 
     public override void _Process(double delta)
