@@ -26,19 +26,19 @@ public static class SolarSystemConstants
     // Semi *major* axis length of the Earth in meters and kilometers
     // using the WGS84 ellipsoid standard
     public const float EARTH_EQUATORIAL_RADIUS_M = 6_378_137;
-    public const float EARTH_POLAR_RADIUS_M = 6_378.137f;
+    public const float EARTH_EQUATORIAL_RADIUS_KM = 6_378.137f;
 
     // Semi *minor* axis length of the Earth in meters and kilometers
     // using the WGS84 ellipsoid standard
-    public const float EARTH_POLAR_RADIUS_LEN_M = 6_356_752.314245f;
+    public const float EARTH_POLAR_RADIUS_M = 6_356_752.314245f;
     public const float EARTH_POLAR_RADIUS_KM = 6_356.752314245f;
 
     // First eccentricity squared with the WGS84 ellipsoid
     // Calculated as: (a² - b²) / a², where a is semi-major axis and b is semi-minor axis
     public const double EARTH_ECCENTRICITY_SQUARED =
-        ((EARTH_POLAR_RADIUS_M * EARTH_POLAR_RADIUS_M) -
+        ((EARTH_EQUATORIAL_RADIUS_KM * EARTH_EQUATORIAL_RADIUS_KM) -
          (EARTH_POLAR_RADIUS_KM * EARTH_POLAR_RADIUS_KM)) /
-        (EARTH_POLAR_RADIUS_M * EARTH_POLAR_RADIUS_M);
+        (EARTH_EQUATORIAL_RADIUS_KM * EARTH_EQUATORIAL_RADIUS_KM);
 
     // MERCURY
     // Mercury is nearly spherical

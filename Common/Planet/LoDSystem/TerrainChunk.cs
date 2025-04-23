@@ -31,12 +31,12 @@ using HermesUtils;
 /// Represents a single chunk of planetary terrain in a quadtree structure.
 /// Handles loading and display of map tiles from a Web Mercator projection, reprojecting them
 /// onto an ellipsoidal surface. Each chunk knows its position (lat/lon in radians) and coverage area.
+///
+/// The reference frame of the TerrainChunk is determined by the underlying map tile
 /// </summary>
 public partial class TerrainChunk : Node3D
 {
     private readonly string SHADER_PATH;
-
-    public ReferenceFrame ReferenceFrame { get; private set; }
 
     public MapTile MapTile { get; private set; }
 
@@ -75,17 +75,11 @@ public partial class TerrainChunk : Node3D
     public TerrainChunk(
         MapTile mapTile,
         MeshInstance3D terrainChunkMesh = null,
-        ShaderMaterial shaderMaterial = null,
-        ReferenceFrame referenceFrame = ReferenceFrame.Earth)
+        ShaderMaterial shaderMaterial = null)
     {
         if (mapTile == null)
         {
             throw new ArgumentNullException("Cannot create a TerrainChunk with a null map tile");
-        }
-
-        if (referenceFrame == null)
-        {
-            throw new ArgumentNullException("Cannot create a TerrainChunk with a null reference frame!");
         }
 
         MapTile = mapTile;
@@ -101,8 +95,6 @@ public partial class TerrainChunk : Node3D
 
         TerrainChunkMesh = terrainChunkMesh;
         ShaderMaterial = shaderMaterial;
-
-        ReferenceFrame = referenceFrame;
     }
 
     public async void Load()
@@ -197,7 +189,7 @@ public partial class TerrainChunk : Node3D
         GlobalPosition = MapUtils.LatLonToCartesianNormalized(MapTile.Latitude, MapTile.Longitude, MapTile.MapTileType);
 
         // Semi major & semi minor axis respectively
-        var axisLengths = MapUtils.GetAxisLengths(ReferenceFrame);
+        var axisLengths = MapUtils.GetPlanetSemiMajorAxis(MapTile.MapTileType);
 
         Transform = Transform.Scaled(
                 new Vector3(

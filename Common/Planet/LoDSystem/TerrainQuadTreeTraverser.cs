@@ -57,6 +57,8 @@ public partial class TerrainQuadTreeTraverser
     private Thread m_cullQuadTreeThread;
     private volatile bool m_isRunning = false;
 
+    private const int THREAD_JOIN_TIMEOUT_MS = 1000;
+
     public TerrainQuadTreeTraverser(TerrainQuadTree terrainQuadTree, ManualResetEventSlim canUpdateQuadTree)
     {
         m_terrainQuadTree = terrainQuadTree ?? throw new ArgumentNullException(nameof(terrainQuadTree));
@@ -109,7 +111,7 @@ public partial class TerrainQuadTreeTraverser
             }
             catch (Exception ex)
             {
-                GD.PrintErr($"Error in quadtree update thread: {ex}");
+                HermesUtils.HermesLogError($"Error in quadtree update thread: {ex}");
             }
         }
     }
@@ -119,12 +121,12 @@ public partial class TerrainQuadTreeTraverser
         m_isRunning = false;
         if (m_updateQuadTreeThread != null && m_updateQuadTreeThread.IsAlive)
         {
-            m_updateQuadTreeThread.Join(1000);
+            m_updateQuadTreeThread.Join(THREAD_JOIN_TIMEOUT_MS);
         }
 
         if (m_cullQuadTreeThread != null && m_cullQuadTreeThread.IsAlive)
         {
-            m_cullQuadTreeThread.Join(1000);
+            m_cullQuadTreeThread.Join(THREAD_JOIN_TIMEOUT_MS);
         }
 
         m_canPerformCulling.Dispose();
@@ -291,27 +293,5 @@ public partial class TerrainQuadTreeTraverser
                 CullUnusedNodes(terrainQuadTreeNode);
             }
         }
-    }
-
-    /// <summary>
-    /// Generates a mesh for the TerrainChunk of the corresponding quadtree node. This is used for spherical
-    /// planets whose surface is represented with meshes.
-    /// </summary>
-    /// <param name="node"> Node for which we want to generate a mesh for its terrain chunk </param>
-    /// <returns>Returns an ArrayMesh representing the mesh of the TerrainChunk</returns>
-    private ArrayMesh GenerateMeshForNode(TerrainQuadTreeNode node)
-    {
-        // TODO::ARGYRASPIDES() { This is specifically for the earth. The terrain quad tree should know
-        // about what kind of planet it is dealing with, and MapUtils needs to be changed to determine what to do based
-        // on planet type }
-        ArrayMesh meshSegment =
-            WGS84EllipsoidMeshGenerator
-                .CreateEllipsoidMeshSegment(
-                    (float)node.Chunk.MapTile.Latitude,
-                    (float)node.Chunk.MapTile.Longitude,
-                    (float)node.Chunk.MapTile.LatitudeRange,
-                    (float)node.Chunk.MapTile.LongitudeRange
-                );
-        return meshSegment;
     }
 }

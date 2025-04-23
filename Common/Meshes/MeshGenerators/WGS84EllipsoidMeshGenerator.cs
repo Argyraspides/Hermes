@@ -76,7 +76,7 @@ public static class WGS84EllipsoidMeshGenerator
 
             // Calculate the minor-to-major axis ratio
             float minorToMajorRatio = (float)(SolarSystemConstants.EARTH_POLAR_RADIUS_KM /
-                                              SolarSystemConstants.EARTH_POLAR_RADIUS_M);
+                                              SolarSystemConstants.EARTH_EQUATORIAL_RADIUS_KM);
 
             //=== CASE 1: North Pole segment (triangle)
             if (touchesNorthPole)

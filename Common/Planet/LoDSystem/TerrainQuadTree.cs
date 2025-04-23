@@ -16,6 +16,7 @@
 
 */
 
+using System.Data;
 using System.Threading;
 
 namespace Hermes.Common.Planet.LoDSystem;
@@ -91,6 +92,7 @@ public sealed partial class TerrainQuadTree : Node3D
     // merge back in, since the parent of the node we are about to merge into was previously turned off, we will turn it back on
     public ConcurrentQueue<TerrainQuadTreeNode> InvisibilityQueueNodes = new ConcurrentQueue<TerrainQuadTreeNode>();
     public ConcurrentQueue<TerrainQuadTreeNode> VisibilityQueueNodes = new ConcurrentQueue<TerrainQuadTreeNode>();
+
     // If we hit x% of the maximum allowed amount of nodes, we will begin culling unused nodes in the quadtree
     public float MaxNodesCleanupThresholdPercent { get; private set; } = 0.90F;
 
@@ -112,7 +114,8 @@ public sealed partial class TerrainQuadTree : Node3D
     // This is the offset used to determine the draw order (children should be drawn after parents)
     private const float CHUNK_SORT_OFFSET = 10.0f;
 
-    // TODO(Argyrsapides, 22/02/2025): Make this a configurable curve or something
+    // TODO(Argyrsapides, 22/02/2025) { Make this a configurable curve or something based on planet type. Should probably
+    // reside in MapUtils }
     private readonly double[] m_baseAltitudeThresholds = new double[]
     {
         156000.0f, 78000.0f, 39000.0f, 19500.0f, 9750.0f, 4875.0f, 2437.5f, 1218.75f, 609.375f, 304.6875f, 152.34f,
@@ -437,14 +440,40 @@ public sealed partial class TerrainQuadTree : Node3D
 
     private ArrayMesh GenerateMeshForNode(TerrainQuadTreeNode node)
     {
-        ArrayMesh meshSegment =
-            WGS84EllipsoidMeshGenerator
-                .CreateEllipsoidMeshSegment(
+
+        ArrayMesh meshSegment;
+
+        switch (TileType)
+        {
+            case MapTileType.WEB_MERCATOR_WGS84:
+                meshSegment = WGS84EllipsoidMeshGenerator
+                    .CreateEllipsoidMeshSegment(
+                        (float)node.Chunk.MapTile.Latitude,
+                        (float)node.Chunk.MapTile.Longitude,
+                        (float)node.Chunk.MapTile.LatitudeRange,
+                        (float)node.Chunk.MapTile.LongitudeRange
+                    );
+                break;
+
+            case MapTileType.WEB_MERCATOR_EARTH:
+                meshSegment = WebMercatorMeshGenerator.CreateMeshSegment(
                     (float)node.Chunk.MapTile.Latitude,
                     (float)node.Chunk.MapTile.Longitude,
                     (float)node.Chunk.MapTile.LatitudeRange,
                     (float)node.Chunk.MapTile.LongitudeRange
                 );
+                break;
+
+            default:
+                meshSegment = null;
+                break;
+        }
+
+        if(!HermesUtils.IsValid(meshSegment))
+        {
+            throw new NoNullAllowedException("The terrain quad tree must have a valid map tile type!");
+        }
+
         return meshSegment;
     }
 
