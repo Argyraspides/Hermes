@@ -18,6 +18,8 @@
 */
 
 
+using Hermes.Common.Map.Types;
+
 namespace Hermes.Common.Map.Utils;
 
 using System;
@@ -327,11 +329,11 @@ public static class MapUtils
         throw new InvalidOperationException("Unknown planet shape type!");
     }
 
-    public static Vector3 LatLonToCartesianNormalized(double lat, double lon, ReferenceFrame referenceFrame)
+    public static Vector3 LatLonToCartesianNormalized(double lat, double lon, MapTileType tileType)
     {
-        switch (referenceFrame)
+        switch (tileType)
         {
-            case ReferenceFrame.Earth:
+            case MapTileType.WEB_MERCATOR_WGS84:
                 return LatLonToCartesianNormalizedWGS84(lat, lon);
         }
         throw new InvalidOperationException("Unknown planet shape type!");

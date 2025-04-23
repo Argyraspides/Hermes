@@ -194,7 +194,7 @@ public partial class TerrainChunk : Node3D
             throw new ArgumentNullException("Cannot set position of a terrain chunk with a null map tile");
         }
 
-        GlobalPosition = MapUtils.LatLonToCartesianNormalized(MapTile.Latitude, MapTile.Longitude, ReferenceFrame);
+        GlobalPosition = MapUtils.LatLonToCartesianNormalized(MapTile.Latitude, MapTile.Longitude, MapTile.MapTileType);
 
         // Semi major & semi minor axis respectively
         var axisLengths = MapUtils.GetAxisLengths(ReferenceFrame);
@@ -209,9 +209,6 @@ public partial class TerrainChunk : Node3D
                     (float)axisLengths.Item1,
                     (float)axisLengths.Item1
                 ));
-
-        // TODO::ARGYRASPIDE() { This is such a stupid solution ... we shouldn't need to do this. Fix it up ASAP! }
-        // TerrainChunkMesh.Transform = TerrainChunkMesh.Transform.Scaled(new Vector3(1.003f, 1.003f, 1.003f));
     }
 
 }

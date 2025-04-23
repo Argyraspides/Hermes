@@ -29,8 +29,8 @@ using System;
 public class MapTile : HermesResource
 {
     // Tile dimensions
-    public int Width { get; protected set; }
-    public int Height { get; protected set; }
+    public int Width { get; protected set; } = 256;
+    public int Height { get; protected set; } = 256;
 
     // Geographic coordinates and ranges
     public double Latitude { get; protected set; }
@@ -41,16 +41,16 @@ public class MapTile : HermesResource
     public double LongitudeRange { get; protected set; }
 
     // Tile metadata
-    public int ZoomLevel { get; protected set; }
-    public MapType MapType { get; protected set; }
-    public ImageType MapImageType { get; protected set; }
-    public Texture2D Texture2D { get; protected set; }
+    public int ZoomLevel { get; protected set; } = 12;
+    public MapType MapType { get; protected set; } = MapType.SATELLITE;
+    public ImageType MapImageType { get; protected set; } = ImageType.PNG;
+    public Texture2D Texture2D { get; protected set; } = null;
 
     // If the map tile is a street view map tile/hybrid, the names of various places
     // will show up, hence a map tile must have a language field
-    public HumanLanguage Language { get; protected set; }
+    public HumanLanguage Language { get; protected set; } = HumanLanguage.en;
 
-    public MapTileType MapTileType { get; protected set; }
+    public MapTileType MapTileType { get; protected set; } = MapTileType.WEB_MERCATOR_WGS84;
 
     public MapTile()
     {
@@ -69,31 +69,15 @@ public class MapTile : HermesResource
         LongitudeRange = MapUtils.TileToLonRange(ZoomLevel);
 
         AutoDetermineFields(Latitude, Longitude, ZoomLevel);
-        InitializeDefaultFields();
     }
 
-    public MapTile(double latitude, double longitude, int zoomLevel)
+    public MapTile(double latitude, double longitude, int zoomLevel, MapTileType tileType = MapTileType.WEB_MERCATOR_WGS84)
     {
         Latitude = latitude;
         Longitude = longitude;
         ZoomLevel = zoomLevel;
 
         AutoDetermineFields(Latitude, Longitude, ZoomLevel);
-        InitializeDefaultFields();
-    }
-
-    private void InitializeDefaultFields()
-    {
-        // Default to standard map types
-        MapType = MapType.SATELLITE;
-        MapImageType = ImageType.PNG;
-        Texture2D = null;
-        Language = HumanLanguage.en;
-        MapTileType = MapTileType.WEB_MERCATOR_EARTH;
-
-        // Initialize with common web mercator tile dimensions
-        Width = 256;
-        Height = 256;
     }
 
     private void AutoDetermineFields(double latitude, double longitude, int zoomLevel)

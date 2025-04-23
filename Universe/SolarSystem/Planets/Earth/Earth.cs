@@ -16,6 +16,8 @@ Y8,        88   d8""""""""8b    88    d8""""""""8b
 
 */
 
+using Hermes.Common.Map.Types;
+
 namespace Hermes.Universe.SolarSystem.Planets.Earth;
 
 using Godot;
@@ -44,7 +46,7 @@ public partial class Earth : Planet
     {
         InitializeCamera();
 
-        m_terrainQuadTree = new TerrainQuadTree(m_planetOrbitalCamera);
+        m_terrainQuadTree = new TerrainQuadTree(m_planetOrbitalCamera, MapTileType.WEB_MERCATOR_WGS84);
         AddChild(m_terrainQuadTree);
         m_terrainQuadTree.Name = "EarthTerrainQuadTree";
         m_terrainQuadTree.InitializeQuadTree(m_defaultZoomLevel);

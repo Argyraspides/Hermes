@@ -126,7 +126,9 @@ public sealed partial class TerrainQuadTree : Node3D
     // when the game is closing and nodes in the scene tree may be invalid
     private bool m_destructorActivated = false;
 
-    public TerrainQuadTree(PlanetOrbitalCamera camera, int maxNodes = 7500, int minDepth = 6, int maxDepth = 20)
+    private MapTileType TileType;
+
+    public TerrainQuadTree(PlanetOrbitalCamera camera, MapTileType tileType, int maxNodes = 7500, int minDepth = 6, int maxDepth = 20)
     {
         if (maxDepth > MAX_DEPTH_LIMIT || maxDepth < MIN_DEPTH_LIMIT)
         {
@@ -143,10 +145,17 @@ public sealed partial class TerrainQuadTree : Node3D
             throw new ArgumentException("maxNodes must be positive");
         }
 
+        if (tileType == MapTileType.UNKNOWN)
+        {
+            throw new ArgumentException("Cannot make a LoD system with an unknown map tile type!");
+        }
+
         m_camera = camera ?? throw new ArgumentNullException(nameof(camera));
         MaxNodes = maxNodes;
         MinDepth = minDepth;
         MaxDepth = maxDepth;
+        TileType = tileType;
+
 
         InitializeAltitudeThresholds();
     }
@@ -490,7 +499,7 @@ public sealed partial class TerrainQuadTree : Node3D
         double childCenterLat = MapUtils.ComputeCenterLatitude(latTileCoo, zoomLevel);
         double childCenterLon = MapUtils.ComputeCenterLongitude(lonTileCoo, zoomLevel);
 
-        var childChunk = new TerrainChunk(new MapTile((float)childCenterLat, (float)childCenterLon, zoomLevel));
+        var childChunk = new TerrainChunk(new MapTile((float)childCenterLat, (float)childCenterLon, zoomLevel, TileType));
         childChunk.SetName("TerrainChunk");
         var terrainQuadTreeNode = new TerrainQuadTreeNode(childChunk, zoomLevel);
         terrainQuadTreeNode.SetName("TerrainQuadTreeNode");
