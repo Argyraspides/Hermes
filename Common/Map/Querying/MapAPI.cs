@@ -17,6 +17,7 @@
 
 */
 
+using System;
 using Hermes.Common.Map.Types;
 using Hermes.Common.Map.Utils;
 using Hermes.Common.Types;
@@ -28,8 +29,10 @@ using System.Threading.Tasks;
 using Hermes.Common.Map.Provider.Bing;
 using Hermes.Common.Map.Querying.Bing;
 
-public partial class MapAPI
+public class MapAPI
 {
+
+    private const string DEFAULT_API_VERSION_BING = "523";
     private BingMapProvider m_mapProvider;
 
     public MapAPI()
@@ -45,38 +48,53 @@ public partial class MapAPI
         float longitude,
         int zoom,
         MapType mapType,
-        ImageType mapImageType
+        ImageType mapImageType,
+        MapTileType mapTileType
     )
     {
+        switch (mapTileType)
+        {
+            case MapTileType.WEB_MERCATOR_WGS84:
+            case MapTileType.WEB_MERCATOR_EARTH:
+                return await RequestBingWebMercatorMapTile(
+                    latitude,
+                    longitude,
+                    zoom,
+                    mapType,
+                    mapImageType
+                );
+            default:
+                return null;
+        }
+    }
+
+
+    public async Task<MapTile> RequestBingWebMercatorMapTile(
+        float latitude,
+        float longitude,
+        int zoom,
+        MapType mapType,
+        ImageType mapImageType)
+    {
+
+        // Bings API has a load balancer so we choose a random server here to prevent overloading any
+        // individual one
+        int serverInstance =
+            new Random().Next(
+                BingMapTileQueryParameters.MINIMUM_SERVER_INSTANCE,
+                BingMapTileQueryParameters.MAXIMUM_SERVER_INSTANCE
+            );
+
         BingMapTileQueryParameters bingQueryParameters = new BingMapTileQueryParameters(
-            0,
+            serverInstance,
             mapType,
             MapUtils.LatLonAndZoomToQuadKey(latitude, longitude, zoom),
             mapImageType,
-            "523",
+            DEFAULT_API_VERSION_BING,
             HumanLanguage.en
         );
 
         return await m_mapProvider.RequestMapTileAsync(bingQueryParameters);
     }
 
-    public async Task<byte[]> RequestRawMapTileAsync(
-        float latitude,
-        float longitude,
-        int zoom,
-        MapType mapType,
-        ImageType mapImageType
-    )
-    {
-        BingMapTileQueryParameters bingQueryParameters = new BingMapTileQueryParameters(
-            0,
-            mapType,
-            MapUtils.LatLonAndZoomToQuadKey(latitude, longitude, zoom),
-            mapImageType,
-            "523",
-            HumanLanguage.en
-        );
-
-        return await m_mapProvider.RequestRawMapTileAsync(bingQueryParameters);
-    }
 }

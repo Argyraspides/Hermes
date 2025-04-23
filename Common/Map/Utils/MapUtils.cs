@@ -482,6 +482,41 @@ public static class MapUtils
         );
     }
 
+    /// <summary>
+    /// Assuming lat/lon of (0,0) is null island, returns the 2D coordinate in cartesian space of where
+    /// the lat/lon should be located in the game world.
+    ///
+    /// Input assumptions:
+    /// - Latitude range: [-π/2, π/2] (South Pole to North Pole)
+    /// - Longitude range: [-π, π] (180°W to 180°E)
+    /// - Null island (0,0) lies on the +ve Y-axis in the Godot coordinate system
+    /// - Increasing longitude corresponds to eastward movement (+ve X-axis)
+    /// - Web mercator projection
+    ///
+    /// </summary>
+    /// <param name="lat">Input latitude in radians [-π/2, π/2] </param>
+    /// <param name="lon">Input longitude in radians [-π, π] </param>
+    /// <returns>Location of the lat/lon coordinate in 2D cartesian space, units of kilometers</returns>
+    public static Vector2 LatLonToCartesianWebMercator(double lat, double lon)
+    {
+        if (lat < MIN_LATITUDE_LEVEL_WEB_MERCATOR || lat > MAX_LATITUDE_LEVEL_WEB_MERCATOR)
+        {
+            throw new ArgumentOutOfRangeException("Latitude outside the proper range for a web mercator projection!");
+        }
+
+        // For longitude: direct linear mapping (convert from [-π,π] to [0,2π] first)
+        // Then scale by Earth's radius and center
+        lon += Math.PI;
+        double x = lon * SolarSystemConstants.EARTH_EQUATORIAL_RADIUS_KM;
+
+        // For latitude: Web Mercator formula
+        // y = R * ln(tan(π/4 + φ/2)) where φ is latitude
+        double y = SolarSystemConstants.EARTH_EQUATORIAL_RADIUS_KM *
+                   Math.Log(Math.Tan(Math.PI/4 + lat/2));
+
+        return new Vector2((float)x, (float)y);
+    }
+
     public static (double, double) GetPlanetSemiMajorAxis(PlanetShapeType planetType)
     {
         switch (planetType)

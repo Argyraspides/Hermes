@@ -27,6 +27,10 @@ using System.Collections.Generic;
 
 public class BingMapTileQueryParameters : IQueryParameters
 {
+
+    public const int MINIMUM_SERVER_INSTANCE = 0;
+    public const int MAXIMUM_SERVER_INSTANCE = 3;
+
     public BingMapTileQueryParameters(
         int serverInstance,
         MapType mapType,

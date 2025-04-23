@@ -168,7 +168,8 @@ public partial class TerrainChunk : Node3D
             (float)MapTile.Longitude,
             MapTile.ZoomLevel,
             MapTile.MapType,
-            MapTile.MapImageType
+            MapTile.MapImageType,
+            MapTile.MapTileType
         );
 
         if (mapTile == null)
