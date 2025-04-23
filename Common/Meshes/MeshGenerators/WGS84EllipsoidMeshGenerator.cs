@@ -75,8 +75,8 @@ public static class WGS84EllipsoidMeshGenerator
             bool touchesSouthPole = (lat - halfLatRange) <= (-Mathf.Pi / 2.0f);
 
             // Calculate the minor-to-major axis ratio
-            float minorToMajorRatio = (float)(SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM /
-                                              SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM);
+            float minorToMajorRatio = (float)(SolarSystemConstants.EARTH_POLAR_RADIUS_KM /
+                                              SolarSystemConstants.EARTH_POLAR_RADIUS_M);
 
             //=== CASE 1: North Pole segment (triangle)
             if (touchesNorthPole)

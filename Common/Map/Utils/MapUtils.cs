@@ -303,8 +303,8 @@ public static class MapUtils
         double a = 1;
         double b = 1;
         double c =
-            SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM /
-            SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
+            SolarSystemConstants.EARTH_POLAR_RADIUS_KM /
+            SolarSystemConstants.EARTH_POLAR_RADIUS_M;
 
         double zCoo = a * Math.Sin(lat) * Math.Cos(lon);
         double xCoo = b * Math.Sin(lat) * Math.Sin(lon);
@@ -355,9 +355,9 @@ public static class MapUtils
         lat -= Math.PI / 2.0;
         lon += Math.PI;
 
-        double a = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
+        double a = SolarSystemConstants.EARTH_POLAR_RADIUS_M;
         double b = a;
-        double c = SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM;
+        double c = SolarSystemConstants.EARTH_POLAR_RADIUS_KM;
 
         double zCoo = a * Math.Sin(lat) * Math.Cos(lon);
         double xCoo = b * Math.Sin(lat) * Math.Sin(lon);
@@ -408,8 +408,8 @@ public static class MapUtils
     public static double LatLonToCartesianWGS84Y(double lat)
     {
         lat -= Math.PI / 2.0;
-        double minorToMajorRatio = SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM /
-                                   SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
+        double minorToMajorRatio = SolarSystemConstants.EARTH_POLAR_RADIUS_KM /
+                                   SolarSystemConstants.EARTH_POLAR_RADIUS_M;
         return minorToMajorRatio * Math.Cos(lat);
     }
 
@@ -458,9 +458,9 @@ public static class MapUtils
         lat -= Math.PI / 2.0;
         lon += Math.PI;
 
-        double a = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
-        double b = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
-        double c = SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM;
+        double a = SolarSystemConstants.EARTH_POLAR_RADIUS_M;
+        double b = SolarSystemConstants.EARTH_POLAR_RADIUS_M;
+        double c = SolarSystemConstants.EARTH_POLAR_RADIUS_KM;
 
         double zCoo = a * Math.Sin(lat) * Math.Cos(lon);
         double xCoo = b * Math.Sin(lat) * Math.Sin(lon);
@@ -488,7 +488,7 @@ public static class MapUtils
                 return (SolarSystemConstants.BLANK_PLANET_SEMI_MAJOR_AXIS_LEN_KM, SolarSystemConstants.BLANK_PLANET_SEMI_MINOR_AXIS_LEN_KM);
 
             case PlanetShapeType.WGS84_ELLIPSOID:
-                return (SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM, SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM);
+                return (SolarSystemConstants.EARTH_POLAR_RADIUS_M, SolarSystemConstants.EARTH_POLAR_RADIUS_KM);
 
             case PlanetShapeType.MERCURY:
                 return (SolarSystemConstants.MERCURY_SEMI_MAJOR_AXIS_LEN_KM, SolarSystemConstants.MERCURY_SEMI_MINOR_AXIS_LEN_KM);
@@ -534,6 +534,28 @@ public static class MapUtils
     {
         double range = (radius / sphereCircum) * TWO_PI;
         return (range, range);
+    }
+
+    public static (double, double) GetAxisLengths(ReferenceFrame referenceFrame)
+    {
+        if (referenceFrame == null)
+        {
+            throw new ArgumentNullException("Cannot get axis length of a null reference frame");
+        }
+
+        double semiMinor = -1, semiMajor = -1;
+
+        switch (referenceFrame)
+        {
+            case ReferenceFrame.Earth:
+                semiMajor = SolarSystemConstants.EARTH_POLAR_RADIUS_M;
+                semiMinor = SolarSystemConstants.EARTH_POLAR_RADIUS_KM;
+                break;
+        }
+
+
+        return (semiMajor, semiMinor);
+
     }
 
 

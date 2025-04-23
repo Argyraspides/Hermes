@@ -89,7 +89,7 @@ public class MapTile : HermesResource
         MapImageType = ImageType.PNG;
         Texture2D = null;
         Language = HumanLanguage.en;
-        MapTileType = MapTileType.WEB_MERCATOR;
+        MapTileType = MapTileType.WEB_MERCATOR_EARTH;
 
         // Initialize with common web mercator tile dimensions
         Width = 256;

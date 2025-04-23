@@ -89,7 +89,7 @@ public partial class TerrainChunk : Node3D
         }
 
         MapTile = mapTile;
-        if (mapTile.MapTileType == MapTileType.WEB_MERCATOR)
+        if (mapTile.MapTileType == MapTileType.WEB_MERCATOR_WGS84)
         {
             SHADER_PATH = "res://Common/Shaders/WebMercatorToWGS84Shader.gdshader";
         }
@@ -125,11 +125,6 @@ public partial class TerrainChunk : Node3D
         }
     }
 
-    public void ToggleVisible(bool visible)
-    {
-        TerrainChunkMesh.Visible = visible;
-    }
-
     /// <summary>
     /// Applies a texture to the terrain chunk's mesh and configures shader parameters
     /// for Web Mercator to WGS84 reprojection. The shader transforms the flat map
@@ -159,7 +154,7 @@ public partial class TerrainChunk : Node3D
         }
         else
         {
-            GD.PrintErr("Shader material path is null or empty! Using default shader.");
+            HermesUtils.HermesLogWarning("Shader material path is null or empty! Using default shader.");
             var standardShader = new StandardMaterial3D();
             standardShader.SetName("TerrainChunkStandardShader");
             if (HermesUtils.IsValid(TerrainChunkMesh))
@@ -200,18 +195,23 @@ public partial class TerrainChunk : Node3D
         }
 
         GlobalPosition = MapUtils.LatLonToCartesianNormalized(MapTile.Latitude, MapTile.Longitude, ReferenceFrame);
+
+        // Semi major & semi minor axis respectively
+        var axisLengths = MapUtils.GetAxisLengths(ReferenceFrame);
+
         Transform = Transform.Scaled(
                 new Vector3(
-                    SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM,
+                    (float)axisLengths.Item1,
                     // We scale 'y' by the semi major axis, since the underlying normalized mesh has its semi-minor
                     // axis represented as a fraction of the semi-major axis. To get back the true value then,
                     // we multiply by the semi-major axis. The other axes are given values of '1' for the semi-major axis,
-                    // so again, we multiply by the same to get the true value on the Earth's scale.
-                    SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM,
-                    SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM
+                    // so again, we multiply by the same to get the true value on the Planets scale.
+                    (float)axisLengths.Item1,
+                    (float)axisLengths.Item1
                 ));
 
         // TODO::ARGYRASPIDE() { This is such a stupid solution ... we shouldn't need to do this. Fix it up ASAP! }
-        TerrainChunkMesh.Transform = TerrainChunkMesh.Transform.Scaled(new Vector3(1.003f, 1.003f, 1.003f));
+        // TerrainChunkMesh.Transform = TerrainChunkMesh.Transform.Scaled(new Vector3(1.003f, 1.003f, 1.003f));
     }
+
 }

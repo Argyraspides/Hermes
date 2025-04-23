@@ -20,22 +20,25 @@
 
 public static class SolarSystemConstants
 {
+
+    // TODO::ARGYRASPIDES() { Change these to be polar/equatorial instead of major/minor for planetary lingo consistency lol }
+
     // Semi *major* axis length of the Earth in meters and kilometers
     // using the WGS84 ellipsoid standard
-    public const float EARTH_SEMI_MAJOR_AXIS_LEN_M = 6_378_137;
-    public const float EARTH_SEMI_MAJOR_AXIS_LEN_KM = 6_378.137f;
+    public const float EARTH_EQUATORIAL_RADIUS_M = 6_378_137;
+    public const float EARTH_POLAR_RADIUS_M = 6_378.137f;
 
     // Semi *minor* axis length of the Earth in meters and kilometers
     // using the WGS84 ellipsoid standard
-    public const float EARTH_SEMI_MINOR_AXIS_LEN_M = 6_356_752.314245f;
-    public const float EARTH_SEMI_MINOR_AXIS_LEN_KM = 6_356.752314245f;
+    public const float EARTH_POLAR_RADIUS_LEN_M = 6_356_752.314245f;
+    public const float EARTH_POLAR_RADIUS_KM = 6_356.752314245f;
 
     // First eccentricity squared with the WGS84 ellipsoid
     // Calculated as: (a² - b²) / a², where a is semi-major axis and b is semi-minor axis
     public const double EARTH_ECCENTRICITY_SQUARED =
-        ((EARTH_SEMI_MAJOR_AXIS_LEN_KM * EARTH_SEMI_MAJOR_AXIS_LEN_KM) -
-         (EARTH_SEMI_MINOR_AXIS_LEN_KM * EARTH_SEMI_MINOR_AXIS_LEN_KM)) /
-        (EARTH_SEMI_MAJOR_AXIS_LEN_KM * EARTH_SEMI_MAJOR_AXIS_LEN_KM);
+        ((EARTH_POLAR_RADIUS_M * EARTH_POLAR_RADIUS_M) -
+         (EARTH_POLAR_RADIUS_KM * EARTH_POLAR_RADIUS_KM)) /
+        (EARTH_POLAR_RADIUS_M * EARTH_POLAR_RADIUS_M);
 
     // MERCURY
     // Mercury is nearly spherical

@@ -36,8 +36,8 @@ public partial class Earth : Planet
     {
         m_planetID = PlanetID.EARTH;
         m_planetShapeType = PlanetShapeType.WGS84_ELLIPSOID;
-        m_semiMajorAxisKm = SolarSystemConstants.EARTH_SEMI_MAJOR_AXIS_LEN_KM;
-        m_semiMinorAxisKm = SolarSystemConstants.EARTH_SEMI_MINOR_AXIS_LEN_KM;
+        m_semiMajorAxisKm = SolarSystemConstants.EARTH_POLAR_RADIUS_M;
+        m_semiMinorAxisKm = SolarSystemConstants.EARTH_POLAR_RADIUS_KM;
     }
 
     protected override void InitializePlanetSurface(int zoomLevel)

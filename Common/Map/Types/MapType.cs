@@ -30,6 +30,14 @@ public enum MapType
 
 public enum MapTileType
 {
-    WEB_MERCATOR,
+    WEB_MERCATOR_EARTH,
+    WEB_MERCATOR_WGS84,
+    MERCURY,
+    VENUS,
+    MARS,
+    JUPITER,
+    SATURN,
+    URANUS,
+    NEPTUNE,
     UNKNOWN
 }
