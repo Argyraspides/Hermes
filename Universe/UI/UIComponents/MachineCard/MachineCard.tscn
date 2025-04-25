@@ -1,28 +1,20 @@
-[gd_scene load_steps=4 format=3 uid="uid://boeeonhq3s5og"]
+[gd_scene load_steps=5 format=3 uid="uid://boeeonhq3s5og"]
 
+[ext_resource type="Theme" uid="uid://dll7gj5amwt4g" path="res://Universe/UI/Themes/DefaultHermesTheme.tres" id="1_i4l85"]
 [ext_resource type="Script" path="res://Universe/UI/UIComponents/MachineCard/MachineCard.cs" id="1_kr3c1"]
 [ext_resource type="PackedScene" uid="uid://caexyoqtj5mgq" path="res://Universe/UI/UIComponents/CompassDisplay/CompassDisplay.tscn" id="1_kvnjl"]
 [ext_resource type="Texture2D" uid="uid://c45q553312b50" path="res://Common/Assets/QuestionMark.png" id="2_khkcl"]
 
-[node name="MachineCard" type="Control"]
+[node name="MachineCard" type="Button"]
 custom_minimum_size = Vector2(500, 225)
-layout_mode = 3
+anchors_preset = -1
 anchor_right = 0.3
 anchor_bottom = 0.2
 offset_right = 0.47998
-offset_bottom = -0.12001
+offset_bottom = 9.0
+theme = ExtResource("1_i4l85")
+toggle_mode = true
 script = ExtResource("1_kr3c1")
-
-[node name="ColorRect" type="ColorRect" parent="."]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-size_flags_horizontal = 3
-mouse_filter = 1
-color = Color(0.0392157, 0.0392157, 0.0392157, 1)
 
 [node name="MachineNameBox" type="HBoxContainer" parent="."]
 clip_contents = true

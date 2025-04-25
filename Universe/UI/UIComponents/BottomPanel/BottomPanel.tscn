@@ -1,0 +1,53 @@
+[gd_scene load_steps=4 format=3 uid="uid://q4ggeswaera3"]
+
+[ext_resource type="Theme" uid="uid://dll7gj5amwt4g" path="res://Universe/UI/Themes/DefaultHermesTheme.tres" id="1_3j13u"]
+[ext_resource type="Script" path="res://Universe/UI/UIComponents/BottomPanel/BottomPanel.cs" id="2_g4v84"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_xhs7t"]
+
+[node name="BottomPanel" type="VBoxContainer"]
+anchors_preset = -1
+anchor_top = 0.737
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 0.039978
+grow_horizontal = 2
+grow_vertical = 0
+theme = ExtResource("1_3j13u")
+theme_override_constants/separation = 0
+script = ExtResource("2_g4v84")
+
+[node name="CollapsePanelButton" type="Button" parent="."]
+custom_minimum_size = Vector2(21, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_force_pass_scroll_events = false
+theme_override_font_sizes/font_size = 15
+theme_override_styles/focus = SubResource("StyleBoxEmpty_xhs7t")
+text = "▼"
+
+[node name="ControlAndTelemetryPanels" type="HBoxContainer" parent="."]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 0
+
+[node name="ControlPanel" type="PanelContainer" parent="ControlAndTelemetryPanels"]
+custom_minimum_size = Vector2(0, 250)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ControlPanelLabel" type="RichTextLabel" parent="ControlAndTelemetryPanels/ControlPanel"]
+layout_mode = 2
+text = "	CONTROL PANEL"
+
+[node name="SeparatorBar" type="ColorRect" parent="ControlAndTelemetryPanels"]
+custom_minimum_size = Vector2(1, 0)
+layout_mode = 2
+
+[node name="TelemetryPanel" type="PanelContainer" parent="ControlAndTelemetryPanels"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TelemetryPanelLabel" type="RichTextLabel" parent="ControlAndTelemetryPanels/TelemetryPanel"]
+layout_mode = 2
+text = "	TELEMETRY PANEL"

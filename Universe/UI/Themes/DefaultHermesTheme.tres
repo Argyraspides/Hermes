@@ -1,11 +1,14 @@
-[gd_resource type="Theme" load_steps=5 format=3 uid="uid://dll7gj5amwt4g"]
+[gd_resource type="Theme" load_steps=6 format=3 uid="uid://dll7gj5amwt4g"]
 
 [ext_resource type="FontFile" uid="uid://d0uk35ukjlilv" path="res://Universe/UI/Fonts/Jura/Jura-Regular.ttf" id="1_xjlxu"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_x3ms7"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bhxji"]
-bg_color = Color(0.0705882, 0.0705882, 0.0705882, 1)
+bg_color = Color(0, 0, 0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kmv1p"]
+bg_color = Color(0.294118, 0.0431373, 0.356863, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7cffr"]
 bg_color = Color(0.0705882, 0.0705882, 0.0705882, 1)
@@ -17,5 +20,6 @@ Button/colors/font_color = Color(1, 1, 1, 1)
 Button/fonts/font = ExtResource("1_xjlxu")
 Button/styles/focus = SubResource("StyleBoxEmpty_x3ms7")
 Button/styles/normal = SubResource("StyleBoxFlat_bhxji")
+Button/styles/pressed = SubResource("StyleBoxFlat_kmv1p")
 Label/fonts/font = ExtResource("1_xjlxu")
 PanelContainer/styles/panel = SubResource("StyleBoxFlat_7cffr")

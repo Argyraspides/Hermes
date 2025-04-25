@@ -17,14 +17,22 @@ public partial class ZoomButtons : VBoxContainer
         m_zoomInButton.ButtonDown += GlobalEventBus.Instance.UIEventBus.OnZoomInButtonClicked;
         m_zoomOutButton.ButtonDown += GlobalEventBus.Instance.UIEventBus.OnZoomOutButtonClicked;
 
+        GetTree().Root.SizeChanged += OnWindowResized;
+        PositionButtons();
     }
 
-    public override void _Process(double delta)
-	{
+    private void OnWindowResized()
+    {
+        PositionButtons();
+    }
+
+    private void PositionButtons()
+    {
         Vector2I screenSize = GetTree().GetRoot().GetWindow().Size;
         GlobalPosition = new Vector2I(
             screenSize.X - 10 - (int)Size.X,
-            screenSize.Y - 100 - (int)Size.Y
+            10
         );
     }
+
 }

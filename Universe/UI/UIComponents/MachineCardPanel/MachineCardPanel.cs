@@ -58,6 +58,6 @@ public partial class MachineCardPanel : Control
     public void OnCollapsePanelButtonPressed()
     {
         m_panelBackground.Visible = !m_panelBackground.Visible;
-        m_collapsePanelButton.Text = m_panelBackground.Visible ? "<" : ">";
+        m_collapsePanelButton.Text = m_panelBackground.Visible ? "\u25c4" : "\u25ba";
     }
 }

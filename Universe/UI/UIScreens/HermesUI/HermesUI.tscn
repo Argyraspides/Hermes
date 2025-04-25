@@ -1,10 +1,11 @@
-[gd_scene load_steps=9 format=3 uid="uid://f06dwapi82bi"]
+[gd_scene load_steps=10 format=3 uid="uid://f06dwapi82bi"]
 
 [ext_resource type="Theme" uid="uid://dll7gj5amwt4g" path="res://Universe/UI/Themes/DefaultHermesTheme.tres" id="1_qefca"]
 [ext_resource type="PackedScene" uid="uid://b3vyff8oebx32" path="res://Universe/UI/UIComponents/MachineCardPanel/MachineCardPanel.tscn" id="2_upbs8"]
 [ext_resource type="Script" path="res://Universe/UI/UIComponents/CameraLatLonLabel.cs" id="3_2u04b"]
 [ext_resource type="PackedScene" uid="uid://bnaccj7r33kqb" path="res://Universe/SolarSystem/SolarSystem.tscn" id="3_hjwp2"]
 [ext_resource type="Script" path="res://Universe/UI/UIComponents/CameraDistanceLabel.cs" id="4_3o2og"]
+[ext_resource type="PackedScene" uid="uid://q4ggeswaera3" path="res://Universe/UI/UIComponents/BottomPanel/BottomPanel.tscn" id="4_kg5c2"]
 [ext_resource type="Script" path="res://Universe/UI/UIScreens/HermesUI/ZoomButtons.cs" id="6_salkb"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_5q0bj"]
@@ -56,26 +57,29 @@ stretch = true
 
 [node name="SubViewport" type="SubViewport" parent="MainUI/HBoxContainer/VBoxContainer/SubViewportContainer"]
 handle_input_locally = false
-size = Vector2i(1899, 1030)
+size = Vector2i(1899, 761)
 render_target_update_mode = 4
 
 [node name="SolarSystem" parent="MainUI/HBoxContainer/VBoxContainer/SubViewportContainer/SubViewport" instance=ExtResource("3_hjwp2")]
 
-[node name="BottomPanel" type="PanelContainer" parent="MainUI/HBoxContainer/VBoxContainer"]
+[node name="BottomPanel" parent="MainUI/HBoxContainer/VBoxContainer" instance=ExtResource("4_kg5c2")]
+layout_mode = 2
+
+[node name="CameraInfoPanel" type="PanelContainer" parent="MainUI/HBoxContainer/VBoxContainer"]
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 size_flags_vertical = 8
 mouse_filter = 2
 mouse_force_pass_scroll_events = false
 
-[node name="CameraInfoBar" type="HBoxContainer" parent="MainUI/HBoxContainer/VBoxContainer/BottomPanel"]
+[node name="CameraInfoBar" type="HBoxContainer" parent="MainUI/HBoxContainer/VBoxContainer/CameraInfoPanel"]
 custom_minimum_size = Vector2(650, 0)
 layout_direction = 3
 layout_mode = 2
 size_flags_horizontal = 8
 mouse_filter = 2
 
-[node name="CameraLatLonLabel" type="RichTextLabel" parent="MainUI/HBoxContainer/VBoxContainer/BottomPanel/CameraInfoBar"]
+[node name="CameraLatLonLabel" type="RichTextLabel" parent="MainUI/HBoxContainer/VBoxContainer/CameraInfoPanel/CameraInfoBar"]
 layout_direction = 3
 layout_mode = 2
 size_flags_horizontal = 3
@@ -87,7 +91,7 @@ text = "[center]11.234568°S, 89.167689°E  [/center]"
 fit_content = true
 script = ExtResource("3_2u04b")
 
-[node name="CameraDistanceLabel" type="RichTextLabel" parent="MainUI/HBoxContainer/VBoxContainer/BottomPanel/CameraInfoBar"]
+[node name="CameraDistanceLabel" type="RichTextLabel" parent="MainUI/HBoxContainer/VBoxContainer/CameraInfoPanel/CameraInfoBar"]
 layout_direction = 3
 layout_mode = 2
 size_flags_horizontal = 3
@@ -100,14 +104,19 @@ fit_content = true
 script = ExtResource("4_3o2og")
 
 [node name="ZoomButtons" type="VBoxContainer" parent="MainUI"]
-layout_direction = 1
-layout_mode = 2
-offset_left = 1870.0
-offset_top = 814.0
-offset_right = 1920.0
-offset_bottom = 972.0
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -50.0
+offset_top = -79.0
+offset_bottom = 79.0
+grow_horizontal = 0
+grow_vertical = 2
 size_flags_horizontal = 8
-size_flags_vertical = 10
+size_flags_vertical = 8
 mouse_filter = 2
 script = ExtResource("6_salkb")
 

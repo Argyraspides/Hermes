@@ -1,4 +1,5 @@
 using System;
+using Hermes.Common.HermesUtils;
 using Hermes.Universe.Autoloads.EventBus;
 
 namespace Hermes.Universe.UI.UIComponents.MachineCard;
@@ -9,14 +10,13 @@ using Godot;
 using Hermes.Core.Machine;
 
 
-public partial class MachineCard : Control
+public partial class MachineCard : Button
 {
     [Signal]
     public delegate void MachineCardClickedEventHandler(Machine machine);
 
     public Machine Machine { get; set; }
 
-    private ColorRect                       m_colorRect;
     private HBoxContainer                   m_machineNameBox;
     private TextureRect                     m_machineTypeIcon;
     private RichTextLabel                   m_machineNameLabel;
@@ -30,16 +30,16 @@ public partial class MachineCard : Control
         InitializeComponents();
         SetMinimumSize();
 
-        MouseEntered += OnMouseEntered;
-        MouseExited += OnMouseExited;
-
-        // TODO::ARGYRASPIDES() { This might be better than having the global event bus need to know of the whereabouts of all the UI components ... }
         MachineCardClicked += GlobalEventBus.Instance.UIEventBus.OnMachineCardClicked;
+
+        ToggleMode = true;
+
+        Pressed += OnButtonPressed;
+
     }
 
     private void InitializeComponents()
     {
-        m_colorRect = GetNode<ColorRect>("ColorRect");
         m_machineNameBox = GetNode<HBoxContainer>("MachineNameBox");
         m_machineTypeIcon = m_machineNameBox.GetNode<TextureRect>("MachineTypeIcon");
         var textCenterContainer = m_machineNameBox.GetNode<CenterContainer>("TextCenterContainer");
@@ -97,26 +97,10 @@ public partial class MachineCard : Control
         m_compassDisplay.HeadingDeg = headingMsg.Hdg;
     }
 
-    private void UpdateBackground()
+    private void OnButtonPressed()
     {
-        if (Machine.Selected)
-        {
-            m_colorRect.Color = Colors.Blue;
-        }
-    }
-
-
-    private void OnMouseEntered()
-    {
-        MouseDefaultCursorShape = CursorShape.PointingHand;
-        // m_colorRect.Color = new Color(0.05f, 0.05f, 0.05f, 1.0f);
-        m_colorRect.Color = Colors.DarkGray * 0.1f;
-    }
-
-    private void OnMouseExited()
-    {
-        MouseDefaultCursorShape = CursorShape.Arrow;
-        m_colorRect.Color = Colors.Black;
+        EmitSignal(SignalName.MachineCardClicked, Machine);
+        Machine.Selected = !Machine.Selected;
     }
 
     public override void _Process(double delta)
@@ -125,16 +109,6 @@ public partial class MachineCard : Control
         UpdateMachineName();
         UpdateMachineTypeIcon();
         UpdateAltitude();
-        UpdateBackground();
-    }
-
-    public override void _GuiInput(InputEvent @event)
-    {
-        if (@event is InputEventMouseButton mouseEvent && mouseEvent.ButtonIndex == MouseButton.Left && !mouseEvent.IsReleased())
-        {
-            EmitSignal(SignalName.MachineCardClicked, Machine);
-            Machine.Selected = !Machine.Selected;
-        }
     }
 
 }
