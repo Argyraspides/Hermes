@@ -6,13 +6,14 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Godot;
+using Hermes.Common.Networking.UDP;
 
 namespace Hermes.Common.Communications.WorldListener.MAVLink;
 
 // See: https://mavlink.io/en/guide/serialization.html
 public class MAVLinkUDPListener
 {
-    private Dictionary<IPEndPoint, UdpClient> m_udpClients;
+    private Dictionary<uint, IPEndPoint> m_udpEndpoints;
 
     // MAVLink.MAVLinkMessage is auto generated code. Ensure you've auto-generated the MAVLink headers
     private ConcurrentQueue<global::MAVLink.MAVLinkMessage> m_messageQueue;
@@ -25,7 +26,8 @@ public class MAVLinkUDPListener
 
     public MAVLinkUDPListener(params IPEndPoint[] endPoints)
     {
-        m_udpClients = new Dictionary<IPEndPoint, UdpClient>();
+
+        m_udpEndpoints = new Dictionary<uint, IPEndPoint>();
 
         // MAVLink.MAVLinkMessage is auto generated code. Ensure you've auto-generated the MAVLink headers
         m_messageQueue = new ConcurrentQueue<global::MAVLink.MAVLinkMessage>();
@@ -34,7 +36,8 @@ public class MAVLinkUDPListener
 
         foreach (IPEndPoint endPoint in endPoints)
         {
-            m_udpClients.Add(endPoint, new UdpClient(endPoint));
+            uint id = HermesUdpClient.RegisterUdpClient(endPoint);
+            m_udpEndpoints.Add(id, endPoint);
         }
     }
 
@@ -54,24 +57,25 @@ public class MAVLinkUDPListener
         return rawPacket[0] == global::MAVLink.MAVLINK_STX || rawPacket[0] == global::MAVLink.MAVLINK_STX_MAVLINK1;
     }
 
+    private static string GetEndpointKey(IPEndPoint ipEndpoint)
+    {
+        return $"{ipEndpoint.Address}:{ipEndpoint.Port}";
+    }
+
     private async void StartListening(object pCancellationToken)
     {
         CancellationToken cancellationToken = (CancellationToken)pCancellationToken;
         while (!cancellationToken.IsCancellationRequested)
         {
-            foreach (var udpClient in m_udpClients.Values)
+            foreach (var endpoint in m_udpEndpoints)
             {
-                UdpReceiveResult dat;
-                try
-                {
-                    dat = await udpClient.ReceiveAsync(cancellationToken);
-                }
-                catch (OperationCanceledException)
-                {
-                    return;
-                }
+                byte[] dat;
 
-                if (!IsMAVLinkPacket(dat.Buffer))
+                uint id = endpoint.Key;
+                IPEndPoint ipEndPoint = endpoint.Value;
+                dat = await HermesUdpClient.ReceiveAsync(id, ipEndPoint);
+
+                if (!IsMAVLinkPacket(dat))
                 {
                     continue;
                 }
@@ -80,7 +84,7 @@ public class MAVLinkUDPListener
                 {
                     m_messageQueue.TryDequeue(out _);
                 }
-                m_messageQueue.Enqueue(new global::MAVLink.MAVLinkMessage(dat.Buffer));
+                m_messageQueue.Enqueue(new global::MAVLink.MAVLinkMessage(dat));
                 MAVLinkMessageReceived?.Invoke();
             }
         }
@@ -90,10 +94,9 @@ public class MAVLinkUDPListener
     {
         m_cancellationTokenSource.Cancel();
 
-        foreach (var udpClient in m_udpClients.Values)
+        foreach (var endpoints in m_udpEndpoints)
         {
-            udpClient.Close();
-            udpClient.Dispose();
+            HermesUdpClient.DeregisterUdpClient(endpoints.Key, endpoints.Value);
         }
 
         m_udpListenerThread.Join();
