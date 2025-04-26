@@ -17,18 +17,18 @@
 
 */
 
-using System;
-using Hermes.Common.HermesUtils;
-using Hermes.Core.Machine.Capabilities;
-using Hermes.Core.StateManagers;
-using Hermes.Universe.Autoloads.EventBus;
+
 
 namespace Hermes.Core.Machine;
 
 using Godot;
 using System.Collections.Generic;
 using Hermes.Common.Map.Utils;
-
+using System;
+using Hermes.Common.HermesUtils;
+using Hermes.Core.Machine.Capabilities;
+using Hermes.Core.StateManagers;
+using Hermes.Universe.Autoloads.EventBus;
 
 
 public partial class Machine : RigidBody3D, Selectable3D

@@ -54,7 +54,7 @@ public partial class MachineCard : Button
     {
         // MachineCard's are meant to be used in the MachineCardPanel
         // Set minimum size to ensure the panel resizes accordingly
-        CustomMinimumSize = new Vector2(GetViewport().GetWindow().Size.X * 0.3f, 225);
+        CustomMinimumSize = new Vector2(GetViewport().GetWindow().Size.X * 0.25f, 225);
     }
 
     private void UpdateMachineTypeIcon()

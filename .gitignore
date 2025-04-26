@@ -34,3 +34,7 @@ Languages/ConcreteConversions
 # Auto-generated folders when you run the generator scripts
 Languages/Generators/bin
 Languages/Generators/obj
+
+# UI Assets
+
+Universe/UI/Assets

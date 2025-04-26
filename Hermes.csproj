@@ -49,6 +49,7 @@
     <ItemGroup>
         <Folder Include="Languages\ProtocolConverters\" />
         <Folder Include="Languages\ProtocolCSharpDefinitions\MAVLinkCommon\" />
+        <Folder Include="Universe\UI\Assets\" />
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
