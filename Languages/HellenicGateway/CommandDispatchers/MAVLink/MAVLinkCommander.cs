@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Hermes.Common.HermesUtils;
+using Hermes.Common.Networking.UDP;
 using Hermes.Core.Machine;
 
 namespace Hermes.Languages.HellenicGateway.CommandDispatchers.MAVLink;
@@ -26,11 +27,17 @@ public class MAVLinkCommander
     private global::MAVLink.MavlinkParse mavlinkParser = new global::MAVLink.MavlinkParse();
     // TODO::ARGYRASPIDES() { Figure out how you're gonna manage different links coz its not always gonna be UDP lol }
     private UdpClient sender;
-    private UdpClient receiver;
+
+    private uint receiverId;
+    private IPEndPoint receiverEndPoint;
+
     public MAVLinkCommander()
     {
         sender = new UdpClient(HERMES_UDP_SRC_PORT);
-        receiver = new UdpClient(MAVLINK_UDP_RECIEVE_PORT);
+
+        receiverEndPoint = new IPEndPoint(IPAddress.Any, MAVLINK_UDP_RECIEVE_PORT);
+        receiverId = HermesUdpClient.RegisterUdpClient(receiverEndPoint);
+
     }
 
     ~MAVLinkCommander()
@@ -38,8 +45,7 @@ public class MAVLinkCommander
         sender.Close();
         sender.Dispose();
 
-        receiver.Close();
-        receiver.Dispose();
+        HermesUdpClient.DeregisterUdpClient(receiverId, receiverEndPoint);
     }
 
     public async Task SendMAVLinkTakeoffCommand(Machine machine, double altitude, double pitch = 0.0d, double yaw = 0.0d)
@@ -241,8 +247,8 @@ public class MAVLinkCommander
 
         while(DateTime.Now < future)
         {
-            var dat = await receiver.ReceiveAsync();
-            using (MemoryStream stream = new MemoryStream(dat.Buffer))
+            byte[] dat = await HermesUdpClient.ReceiveAsync(receiverId, receiverEndPoint);
+            using (MemoryStream stream = new MemoryStream(dat))
             {
                 global::MAVLink.MAVLinkMessage message = mavlinkParser.ReadPacket(stream);
 
