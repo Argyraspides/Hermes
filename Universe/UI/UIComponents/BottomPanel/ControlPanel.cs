@@ -10,6 +10,8 @@ public partial class ControlPanel : PanelContainer
 
     Dictionary<uint, Machine> m_machines = new Dictionary<uint, Machine>();
 
+    MAVLinkCommandFactory m_commandFactory = new MAVLinkCommandFactory();
+
     private ColorRect m_leftSpacer;
     private ColorRect m_rightSpacer;
 
@@ -21,26 +23,25 @@ public partial class ControlPanel : PanelContainer
 	public override void _Ready()
     {
 
-        m_leftSpacer = GetNode<ColorRect>("VBoxContainer/ControlPanelControls/LeftSpacer");
-        m_rightSpacer = GetNode<ColorRect>("VBoxContainer/ControlPanelControls/RightSpacer");
         m_takeoffButton =
-            GetNode<TextureButton>("ControlPanel/VBoxContainer/ControlPanelControls/MarginContainer/TakeoffControlComponent/TakeoffButton/TextureButton");
+            GetNode<TextureButton>
+                ("VBoxContainer/ControlPanelControls/MarginContainer/TakeoffControlComponent/TakeoffButton/TextureButton");
 
-        m_takeoffAltitudeSlider =
-            GetNode<VSlider>(
-                "ControlPanel/VBoxContainer/ControlPanelControls/MarginContainer/TakeoffControlComponent/AltitudeSliderComponent/SliderCenterContainer/VSlider");
+        //m_takeoffAltitudeSlider =
+         //   GetNode<VSlider>
+         //   ("ControlPanel/VBoxContainer/ControlPanelControls/MarginContainer/TakeoffControlComponent/AltitudeSliderComponent/SliderCenterContainer/VSlider");
 
-        m_confirmationSlider =
-            GetNode<HSlider>(
-                "ControlAndTelemetryPanels/ControlPanel/VBoxContainer/VBoxContainer/ConfirmationSliderMargin/ConfirmationSlider/HSlider");
+       // m_confirmationSlider =
+       //     GetNode<HSlider>
+       //         ("ControlAndTelemetryPanels/ControlPanel/VBoxContainer/VBoxContainer/ConfirmationSliderMargin/ConfirmationSlider/HSlider");
 
 
-        m_takeoffAltitudeSlider.MinValue = 0;
-        m_takeoffAltitudeSlider.MaxValue = 15;
+        //m_takeoffAltitudeSlider.MinValue = 0;
+        //m_takeoffAltitudeSlider.MaxValue = 15;
 
         GlobalEventBus.Instance.UIEventBus.MachineCardClicked += OnMachineCardClicked;
         m_takeoffButton.Pressed += OnTakeoffButtonPressed;
-        m_confirmationSlider.DragEnded += OnConfirmationSliderSlided;
+        //m_confirmationSlider.DragEnded += OnConfirmationSliderSlided;
 
     }
 
@@ -54,7 +55,7 @@ public partial class ControlPanel : PanelContainer
         {
             if (machine.Value.MachineType == MachineType.Quadcopter)
             {
-                double altitudeMeters = m_takeoffAltitudeSlider.Value;
+                m_commandFactory.TakeoffQuadcopter(machine.Value, 15);
             }
         }
     }

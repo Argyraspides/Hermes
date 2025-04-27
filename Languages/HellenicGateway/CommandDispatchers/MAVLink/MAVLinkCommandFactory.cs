@@ -1,3 +1,4 @@
+using System;
 using Hermes.Common.HermesUtils;
 using Hermes.Core.Machine;
 

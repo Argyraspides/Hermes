@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -34,7 +36,7 @@ public static class HermesUdpClient
     private static ConcurrentDictionary<string, UdpClient> udpClients = new ConcurrentDictionary<string, UdpClient>();
 
     // Map the IP endpoints to the buffers for each of the UdpClients
-    private static ConcurrentDictionary<string, byte[][]> buffers = new ConcurrentDictionary<string, byte[][]>();
+    private static ConcurrentDictionary<string, UdpReceiveResult[]> buffers = new ConcurrentDictionary<string, UdpReceiveResult[]>();
 
     // Map the subscriber IDs to their own buffer pointers (combination of ID and IPEndpoint, as one subscriber may want to listen to
     // multiple endpoints thus each read will have its own pointer)
@@ -43,22 +45,34 @@ public static class HermesUdpClient
     // Map the ip endpoint key to the index position of the "write head"
     private static ConcurrentDictionary<string, uint> writeBufferPointers = new ConcurrentDictionary<string, uint>();
 
+    private static object m_registrationLock = new object();
+
 
     public static uint RegisterUdpClient(IPEndPoint ipEndpoint)
     {
-
         // Atomically get and increment our ID first to prevent race conditions
         // (in this case we would give two threads the same ID)
         uint id = Interlocked.Increment(ref nextId) - 1;
 
-        string endpointKey = GetEndpointKey(ipEndpoint);
-        string bufferPointerKey = GetBufferPointerKey(id, ipEndpoint);
+        lock (m_registrationLock)
+        {
 
-        udpClients.GetOrAdd(endpointKey, key => new UdpClient(ipEndpoint));
-        writeBufferPointers.GetOrAdd(endpointKey, key => 0);
+            string endpointKey = GetEndpointKey(ipEndpoint);
+            string bufferPointerKey = GetBufferPointerKey(id, ipEndpoint);
 
-        readBufferPointers.GetOrAdd(bufferPointerKey, 0);
-        buffers.GetOrAdd(endpointKey, new byte[MAX_BUFFER_SIZE][]);
+            if (!udpClients.TryGetValue(endpointKey, out var existingClient)) // Use var pattern for clarity
+            {
+
+                if (udpClients.TryAdd(endpointKey, new UdpClient(ipEndpoint)))
+                {
+                    writeBufferPointers.TryAdd(endpointKey, 0);
+                    buffers.TryAdd(endpointKey, new UdpReceiveResult[MAX_BUFFER_SIZE]);
+                }
+
+            }
+
+            readBufferPointers.GetOrAdd(bufferPointerKey, 0);
+        }
 
         return id;
     }
@@ -82,10 +96,16 @@ public static class HermesUdpClient
         }
     }
 
-    public static async Task<byte[]> ReceiveAsync(uint id, IPEndPoint ipEndpoint)
+    public static async Task<UdpReceiveResult> ReceiveAsync(uint id, IPEndPoint ipEndpoint)
     {
         string endpointKey = GetEndpointKey(ipEndpoint);
         string bufferPointerKey = GetBufferPointerKey(id, ipEndpoint);
+
+        if (string.IsNullOrEmpty(endpointKey) || string.IsNullOrEmpty(bufferPointerKey))
+        {
+            throw new NoNullAllowedException("No endpoint key or buffer pointer");
+        }
+
         if (!udpClients.TryGetValue(endpointKey, out UdpClient client))
         {
             throw new KeyNotFoundException($"Cannot find UdpClient associated with IP Endpoint: {endpointKey}");
@@ -102,8 +122,8 @@ public static class HermesUdpClient
             throw new KeyNotFoundException($"Cannot find buffer for UdpClient with IP endpoint: {endpointKey}");
         }
 
-        var dat = await client.ReceiveAsync();
-        AddToBuffer(endpointKey, dat.Buffer);
+        UdpReceiveResult dat = await client.ReceiveAsync();
+        AddToBuffer(endpointKey, dat);
 
         uint currentReadPosition = 0;
         readBufferPointers.AddOrUpdate(
@@ -120,6 +140,12 @@ public static class HermesUdpClient
 
     private static string GetEndpointKey(IPEndPoint ipEndpoint)
     {
+        /*
+         * TODO::ARGYRASPIDES() {
+         *  handle cases for special IP addresses. E.g., if someone asks for endpoint key
+         *  127.0.0.1:14550 and someone else does 0.0.0.0:14550, we will get a socket error
+         *  since the latter is implicitly listening for the former
+         */
         return $"{ipEndpoint.Address}:{ipEndpoint.Port}";
     }
 
@@ -128,7 +154,7 @@ public static class HermesUdpClient
         return $"{GetEndpointKey(ipEndpoint)}:ID::{id}";
     }
 
-    private static void AddToBuffer(string endpointKey, byte[] buffer)
+    private static void AddToBuffer(string endpointKey, UdpReceiveResult res)
     {
         uint writePosition = 0;
 
@@ -141,7 +167,7 @@ public static class HermesUdpClient
             }
         );
 
-        buffers[endpointKey][writePosition] = buffer;
+        buffers[endpointKey][writePosition] = res;
     }
 
 }

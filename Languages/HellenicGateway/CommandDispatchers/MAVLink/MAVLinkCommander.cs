@@ -20,7 +20,7 @@ public class MAVLinkCommander
 
     private byte GCS_MAVLINK_ID = 255;
 
-    private int MAVLINK_UDP_RECIEVE_PORT = 14550;
+    private int MAVLINK_UDP_RECIEVE_PORT = 14445;
     private int MAVLINK_UDP_DST_CMD_PORT = 14580;
     private int HERMES_UDP_SRC_PORT = 11777;
 
@@ -35,7 +35,7 @@ public class MAVLinkCommander
     {
         sender = new UdpClient(HERMES_UDP_SRC_PORT);
 
-        receiverEndPoint = new IPEndPoint(IPAddress.Any, MAVLINK_UDP_RECIEVE_PORT);
+        receiverEndPoint = IPEndPoint.Parse($"127.0.0.1:{MAVLINK_UDP_RECIEVE_PORT}");
         receiverId = HermesUdpClient.RegisterUdpClient(receiverEndPoint);
 
     }
@@ -50,8 +50,14 @@ public class MAVLinkCommander
 
     public async Task SendMAVLinkTakeoffCommand(Machine machine, double altitude, double pitch = 0.0d, double yaw = 0.0d)
     {
+        if (machine == null)
+        {
+            HermesUtils.HermesLogError($"Cannot send takeoff command -- null vehilce.");
+            return;
+        }
 
        HellenicMessage msg = machine.GetHellenicMessage(HellenicMessageType.LatitudeLongitude);
+
        if (msg == null || msg is not LatitudeLongitude latlon)
        {
            HermesUtils.HermesLogError($"Cannot send takeoff command -- vehicle lat/lon unknown. MachineID: {(machine?.MachineId?.ToString() ?? "null")}");
@@ -233,6 +239,13 @@ public class MAVLinkCommander
 
     public async Task<bool> AwaitMAVLinkAcknowledgement(Machine machine, global::MAVLink.MAV_CMD cmd)
     {
+
+        if (machine == null)
+        {
+            HermesUtils.HermesLogError($"Cannot await for an acknowledgement of a null vehicle.");
+            return false;
+        }
+
         if (!machine.MachineId.HasValue)
         {
             HermesUtils.HermesLogError("Cannot wait for an acknowledgement of a vehicle without an ID");
@@ -247,12 +260,12 @@ public class MAVLinkCommander
 
         while(DateTime.Now < future)
         {
-            byte[] dat = await HermesUdpClient.ReceiveAsync(receiverId, receiverEndPoint);
-            using (MemoryStream stream = new MemoryStream(dat))
+            var dat = await HermesUdpClient.ReceiveAsync(receiverId, receiverEndPoint);
+            using (MemoryStream stream = new MemoryStream(dat.Buffer))
             {
                 global::MAVLink.MAVLinkMessage message = mavlinkParser.ReadPacket(stream);
 
-                if (message.msgid != (uint)global::MAVLink.MAVLINK_MSG_ID.COMMAND_ACK) continue;
+                if (message == null || message.msgid != (uint)global::MAVLink.MAVLINK_MSG_ID.COMMAND_ACK) continue;
 
                 global::MAVLink.mavlink_command_ack_t ack = message.ToStructure<global::MAVLink.mavlink_command_ack_t>();
 

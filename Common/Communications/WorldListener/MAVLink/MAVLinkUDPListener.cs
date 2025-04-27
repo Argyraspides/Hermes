@@ -69,13 +69,12 @@ public class MAVLinkUDPListener
         {
             foreach (var endpoint in m_udpEndpoints)
             {
-                byte[] dat;
 
                 uint id = endpoint.Key;
                 IPEndPoint ipEndPoint = endpoint.Value;
-                dat = await HermesUdpClient.ReceiveAsync(id, ipEndPoint);
+                var dat = await HermesUdpClient.ReceiveAsync(id, ipEndPoint);
 
-                if (!IsMAVLinkPacket(dat))
+                if (!IsMAVLinkPacket(dat.Buffer))
                 {
                     continue;
                 }
@@ -84,8 +83,16 @@ public class MAVLinkUDPListener
                 {
                     m_messageQueue.TryDequeue(out _);
                 }
-                m_messageQueue.Enqueue(new global::MAVLink.MAVLinkMessage(dat));
-                MAVLinkMessageReceived?.Invoke();
+
+                try
+                {
+                    m_messageQueue.Enqueue(new global::MAVLink.MAVLinkMessage(dat.Buffer));
+                    MAVLinkMessageReceived?.Invoke();
+                }
+                catch (IndexOutOfRangeException ex)
+                {
+                    HermesUtils.HermesUtils.HermesLogWarning("MAVLink message given to us is fucked. Still don't know why. Fix this shit up ASAP");
+                }
             }
         }
     }
