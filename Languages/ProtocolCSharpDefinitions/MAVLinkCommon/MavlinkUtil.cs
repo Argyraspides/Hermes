@@ -29,13 +29,12 @@ public static class MavlinkUtil
         else
             return ByteArrayToStructureGC<TMavlinkPacket>(bytearray, startoffset);
     }
-
     public static TMavlinkPacket ByteArrayToStructureBigEndian<TMavlinkPacket>(this byte[] bytearray,
         int startoffset = 6) where TMavlinkPacket : struct
     {
         object newPacket = new TMavlinkPacket();
         ByteArrayToStructureEndian(bytearray, ref newPacket, startoffset);
-        return (TMavlinkPacket)newPacket;
+        return (TMavlinkPacket) newPacket;
     }
 
     public static void ByteArrayToStructure(byte[] bytearray, ref object obj, int startoffset, int payloadlength = 0)
@@ -68,7 +67,7 @@ public static class MavlinkUtil
         }
         finally
         {
-            if (iptr != IntPtr.Zero)
+            if(iptr != IntPtr.Zero)
                 Marshal.FreeHGlobal(iptr);
         }
     }
@@ -92,11 +91,11 @@ public static class MavlinkUtil
             Console.WriteLine("ByteArrayToStructure FAIL " + ex.Message);
         }
 
-        var obj = Marshal.PtrToStructure(i, typeof(TMavlinkPacket));
+        var obj = Marshal.PtrToStructure(i, typeof (TMavlinkPacket));
 
         Marshal.FreeHGlobal(i);
 
-        return (TMavlinkPacket)obj;
+        return (TMavlinkPacket) obj;
     }
 
     public static byte[] trim_payload(ref byte[] payload)
@@ -106,12 +105,10 @@ public static class MavlinkUtil
         {
             length--;
         }
-
         if (length != payload.Length)
             Array.Resize(ref payload, length);
         return payload;
     }
-
     public static T ReadUsingPointer<T>(byte[] data, int startoffset) where T : struct
     {
         if (data == null || data.Length < (startoffset))
@@ -120,7 +117,7 @@ public static class MavlinkUtil
         {
             fixed (byte* p = &data[startoffset])
             {
-                return (T)Marshal.PtrToStructure(new IntPtr(p), typeof(T));
+                return (T) Marshal.PtrToStructure(new IntPtr(p), typeof (T));
             }
         }
     }
@@ -130,7 +127,7 @@ public static class MavlinkUtil
         GCHandle gch = GCHandle.Alloc(bytearray, GCHandleType.Pinned);
         try
         {
-            return (T)Marshal.PtrToStructure(new IntPtr(gch.AddrOfPinnedObject().ToInt64() + startoffset), typeof(T));
+            return (T) Marshal.PtrToStructure(new IntPtr(gch.AddrOfPinnedObject().ToInt64() + startoffset), typeof (T));
         }
         finally
         {
@@ -140,9 +137,10 @@ public static class MavlinkUtil
 
     public static void ByteArrayToStructureEndian(byte[] bytearray, ref object obj, int startoffset)
     {
+
         int len = Marshal.SizeOf(obj);
         IntPtr i = Marshal.AllocHGlobal(len);
-        byte[] temparray = (byte[])bytearray.Clone();
+        byte[] temparray = (byte[]) bytearray.Clone();
 
         // create structure from ptr
         obj = Marshal.PtrToStructure(i, obj.GetType());
@@ -173,6 +171,7 @@ public static class MavlinkUtil
 
                 reversestartoffset += ((Array)fieldValue).Length * elementsize;
             }
+
         }
 
         try
@@ -188,10 +187,11 @@ public static class MavlinkUtil
         obj = Marshal.PtrToStructure(i, obj.GetType());
 
         Marshal.FreeHGlobal(i);
+
     }
 
     /// <summary>
-    /// Convert a struct to an array of bytes, struct fields being represented in
+    /// Convert a struct to an array of bytes, struct fields being represented in 
     /// little endian (LSB first)
     /// </summary>
     /// <remarks>Note - assumes little endian host order</remarks>
@@ -207,9 +207,9 @@ public static class MavlinkUtil
                     var attributes = a.GetCustomAttributes(typeof(MarshalAsAttribute), false);
                     if (attributes.Length > 0)
                     {
-                        MarshalAsAttribute marshal = (MarshalAsAttribute)attributes[0];
+                        MarshalAsAttribute marshal = (MarshalAsAttribute) attributes[0];
                         int sizeConst = marshal.SizeConst;
-                        var data = ((byte[])a.GetValue(obj));
+                        var data = ((byte[]) a.GetValue(obj));
                         if (data == null)
                         {
                             data = new byte[sizeConst];
@@ -223,8 +223,7 @@ public static class MavlinkUtil
 
                     return false;
                 }).ToList();
-        }
-        catch { }
+        } catch {}
 
         int len = Marshal.SizeOf(obj);
         byte[] arr = new byte[len];
@@ -236,7 +235,7 @@ public static class MavlinkUtil
     }
 
     /// <summary>
-    /// Convert a struct to an array of bytes, struct fields being represented in
+    /// Convert a struct to an array of bytes, struct fields being represented in 
     /// big endian (MSB first)
     /// </summary>
     public static byte[] StructureToByteArrayBigEndian(params object[] list)
@@ -268,78 +267,77 @@ public static class MavlinkUtil
             switch (typeCode)
             {
                 case TypeCode.Single: // float
-                    {
-                        temp = BitConverter.GetBytes((Single)fieldValue);
-                        Array.Reverse(temp);
-                        Array.Copy(temp, 0, data, offset, sizeof(Single));
-                        break;
-                    }
+                {
+                    temp = BitConverter.GetBytes((Single) fieldValue);
+                    Array.Reverse(temp);
+                    Array.Copy(temp, 0, data, offset, sizeof (Single));
+                    break;
+                }
                 case TypeCode.Int32:
-                    {
-                        temp = BitConverter.GetBytes((Int32)fieldValue);
-                        Array.Reverse(temp);
-                        Array.Copy(temp, 0, data, offset, sizeof(Int32));
-                        break;
-                    }
+                {
+                    temp = BitConverter.GetBytes((Int32) fieldValue);
+                    Array.Reverse(temp);
+                    Array.Copy(temp, 0, data, offset, sizeof (Int32));
+                    break;
+                }
                 case TypeCode.UInt32:
-                    {
-                        temp = BitConverter.GetBytes((UInt32)fieldValue);
-                        Array.Reverse(temp);
-                        Array.Copy(temp, 0, data, offset, sizeof(UInt32));
-                        break;
-                    }
+                {
+                    temp = BitConverter.GetBytes((UInt32) fieldValue);
+                    Array.Reverse(temp);
+                    Array.Copy(temp, 0, data, offset, sizeof (UInt32));
+                    break;
+                }
                 case TypeCode.Int16:
-                    {
-                        temp = BitConverter.GetBytes((Int16)fieldValue);
-                        Array.Reverse(temp);
-                        Array.Copy(temp, 0, data, offset, sizeof(Int16));
-                        break;
-                    }
+                {
+                    temp = BitConverter.GetBytes((Int16) fieldValue);
+                    Array.Reverse(temp);
+                    Array.Copy(temp, 0, data, offset, sizeof (Int16));
+                    break;
+                }
                 case TypeCode.UInt16:
-                    {
-                        temp = BitConverter.GetBytes((UInt16)fieldValue);
-                        Array.Reverse(temp);
-                        Array.Copy(temp, 0, data, offset, sizeof(UInt16));
-                        break;
-                    }
+                {
+                    temp = BitConverter.GetBytes((UInt16) fieldValue);
+                    Array.Reverse(temp);
+                    Array.Copy(temp, 0, data, offset, sizeof (UInt16));
+                    break;
+                }
                 case TypeCode.Int64:
-                    {
-                        temp = BitConverter.GetBytes((Int64)fieldValue);
-                        Array.Reverse(temp);
-                        Array.Copy(temp, 0, data, offset, sizeof(Int64));
-                        break;
-                    }
+                {
+                    temp = BitConverter.GetBytes((Int64) fieldValue);
+                    Array.Reverse(temp);
+                    Array.Copy(temp, 0, data, offset, sizeof (Int64));
+                    break;
+                }
                 case TypeCode.UInt64:
-                    {
-                        temp = BitConverter.GetBytes((UInt64)fieldValue);
-                        Array.Reverse(temp);
-                        Array.Copy(temp, 0, data, offset, sizeof(UInt64));
-                        break;
-                    }
+                {
+                    temp = BitConverter.GetBytes((UInt64) fieldValue);
+                    Array.Reverse(temp);
+                    Array.Copy(temp, 0, data, offset, sizeof (UInt64));
+                    break;
+                }
                 case TypeCode.Double:
-                    {
-                        temp = BitConverter.GetBytes((Double)fieldValue);
-                        Array.Reverse(temp);
-                        Array.Copy(temp, 0, data, offset, sizeof(Double));
-                        break;
-                    }
+                {
+                    temp = BitConverter.GetBytes((Double) fieldValue);
+                    Array.Reverse(temp);
+                    Array.Copy(temp, 0, data, offset, sizeof (Double));
+                    break;
+                }
                 case TypeCode.Byte:
-                    {
-                        data[offset] = (Byte)fieldValue;
-                        break;
-                    }
+                {
+                    data[offset] = (Byte) fieldValue;
+                    break;
+                }
                 default:
-                    {
-                        //System.Diagnostics.Debug.Fail("No conversion provided for this type : " + typeCode.ToString());
-                        break;
-                    }
+                {
+                    //System.Diagnostics.Debug.Fail("No conversion provided for this type : " + typeCode.ToString());
+                    break;
+                }
             }
-
             ; // switch
             if (typeCode == TypeCode.Object)
             {
-                int length = ((byte[])fieldValue).Length;
-                Array.Copy(((byte[])fieldValue), 0, data, offset, length);
+                int length = ((byte[]) fieldValue).Length;
+                Array.Copy(((byte[]) fieldValue), 0, data, offset, length);
                 offset += length;
             }
             else

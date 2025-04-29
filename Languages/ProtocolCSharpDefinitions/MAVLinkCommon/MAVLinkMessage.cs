@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 
 public partial class MAVLink
 {
@@ -32,8 +33,7 @@ public partial class MAVLink
 
         public uint msgid { get; internal set; }
 
-        public bool ismavlink2
-        {
+        public bool ismavlink2 {
             get
             {
                 if (buffer != null && buffer.Length > 0)
@@ -49,7 +49,6 @@ public partial class MAVLink
         }
 
         object _data;
-
         public object data
         {
             get
@@ -74,8 +73,7 @@ public partial class MAVLink
                         // fill in the data of the object
                         if (ismavlink2)
                         {
-                            MavlinkUtil.ByteArrayToStructure(buffer, ref _data, MAVLINK_NUM_HEADER_BYTES,
-                                payloadlength);
+                            MavlinkUtil.ByteArrayToStructure(buffer, ref _data, MAVLINK_NUM_HEADER_BYTES, payloadlength);
                         }
                         else
                         {
@@ -143,7 +141,7 @@ public partial class MAVLink
             this.rxtime = DateTime.MinValue;
         }
 
-        public MAVLinkMessage(byte[] buffer) : this(buffer, DateTime.UtcNow)
+        public MAVLinkMessage(byte[] buffer): this(buffer, DateTime.UtcNow)
         {
         }
 
@@ -165,7 +163,6 @@ public partial class MAVLink
                 {
                     return;
                 }
-
                 header = buffer[0];
                 payloadlength = buffer[1];
                 incompat_flags = buffer[2];
@@ -173,12 +170,12 @@ public partial class MAVLink
                 seq = buffer[4];
                 sysid = buffer[5];
                 compid = buffer[6];
-                msgid = (uint)((buffer[9] << 16) + (buffer[8] << 8) + buffer[7]);
+                msgid = (uint) ((buffer[9] << 16) + (buffer[8] << 8) + buffer[7]);
 
                 var crc1 = MAVLINK_CORE_HEADER_LEN + payloadlength + 1;
                 var crc2 = MAVLINK_CORE_HEADER_LEN + payloadlength + 2;
 
-                crc16 = (ushort)((buffer[crc2] << 8) + buffer[crc1]);
+                crc16 = (ushort) ((buffer[crc2] << 8) + buffer[crc1]);
 
                 if ((incompat_flags & MAVLINK_IFLAG_SIGNED) > 0)
                 {
@@ -193,7 +190,6 @@ public partial class MAVLink
                 {
                     return;
                 }
-
                 header = buffer[0];
                 payloadlength = buffer[1];
                 seq = buffer[2];
@@ -204,7 +200,7 @@ public partial class MAVLink
                 var crc1 = MAVLINK_CORE_HEADER_MAVLINK1_LEN + payloadlength + 1;
                 var crc2 = MAVLINK_CORE_HEADER_MAVLINK1_LEN + payloadlength + 2;
 
-                crc16 = (ushort)((buffer[crc2] << 8) + buffer[crc1]);
+                crc16 = (ushort) ((buffer[crc2] << 8) + buffer[crc1]);
             }
         }
 

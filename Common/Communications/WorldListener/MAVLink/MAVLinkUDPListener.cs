@@ -47,7 +47,6 @@ public class MAVLinkUDPListener
         m_udpListenerThread.Start(m_cancellationTokenSource.Token);
     }
 
-    // TODO::ARGYRASPIDES() { See if you can offload this to the MAVLink library. OK for now. }
     public bool IsMAVLinkPacket(byte[] rawPacket)
     {
         if (rawPacket == null || rawPacket.Length < 1)
@@ -55,11 +54,6 @@ public class MAVLinkUDPListener
             return false;
         }
         return rawPacket[0] == global::MAVLink.MAVLINK_STX || rawPacket[0] == global::MAVLink.MAVLINK_STX_MAVLINK1;
-    }
-
-    private static string GetEndpointKey(IPEndPoint ipEndpoint)
-    {
-        return $"{ipEndpoint.Address}:{ipEndpoint.Port}";
     }
 
     private async void StartListening(object pCancellationToken)
@@ -74,11 +68,6 @@ public class MAVLinkUDPListener
                 IPEndPoint ipEndPoint = endpoint.Value;
                 var dat = await HermesUdpClient.ReceiveAsync(id, ipEndPoint);
 
-                if (!IsMAVLinkPacket(dat.Buffer))
-                {
-                    continue;
-                }
-
                 if (m_messageQueue.Count >= m_maxMessageBufferSize)
                 {
                     m_messageQueue.TryDequeue(out _);
@@ -91,7 +80,7 @@ public class MAVLinkUDPListener
                 }
                 catch (IndexOutOfRangeException ex)
                 {
-                    HermesUtils.HermesUtils.HermesLogWarning("MAVLink message given to us is fucked. Still don't know why. Fix this shit up ASAP");
+                    HermesUtils.HermesUtils.HermesLogWarning("Received truncated MAVLink message!");
                 }
             }
         }

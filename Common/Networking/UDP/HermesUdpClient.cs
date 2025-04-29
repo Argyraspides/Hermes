@@ -63,7 +63,9 @@ public static class HermesUdpClient
             if (!udpClients.TryGetValue(endpointKey, out var existingClient)) // Use var pattern for clarity
             {
 
-                if (udpClients.TryAdd(endpointKey, new UdpClient(ipEndpoint)))
+                UdpClient c = new UdpClient(ipEndpoint);
+                c.Client.ReceiveBufferSize = int.MaxValue / 2;
+                if (udpClients.TryAdd(endpointKey, c))
                 {
                     writeBufferPointers.TryAdd(endpointKey, 0);
                     buffers.TryAdd(endpointKey, new UdpReceiveResult[MAX_BUFFER_SIZE]);
@@ -123,6 +125,17 @@ public static class HermesUdpClient
         }
 
         UdpReceiveResult dat = await client.ReceiveAsync();
+
+        if (dat.Buffer[7] == 31 && dat.Buffer.Length < 44)
+        {
+            HermesUtils.HermesUtils.HermesLogInfo("GOTCHA BITCH");
+        }
+
+        if (dat.Buffer[7] == 31 && dat.Buffer.Length > 40)
+        {
+            HermesUtils.HermesUtils.HermesLogInfo("AS YOU SHOULD BE BITCH");
+        }
+
         AddToBuffer(endpointKey, dat);
 
         uint currentReadPosition = 0;

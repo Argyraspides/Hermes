@@ -5,13 +5,12 @@ using System.Security.Cryptography;
 
 public partial class MAVLink
 {
-    public static string GetUnit(string fieldname, Type packetype = null, string name = "",
-        uint msgid = UInt32.MaxValue)
+    public static string GetUnit(string fieldname, Type packetype = null, string name="", uint msgid = UInt32.MaxValue)
     {
         try
         {
             message_info msginfo = new message_info();
-            if (packetype != null)
+            if(packetype != null)
                 msginfo = MAVLink.MAVLINK_MESSAGE_INFOS.First(a => a.type == packetype);
             if (msgid != UInt32.MaxValue)
                 msginfo = MAVLink.MAVLINK_MESSAGE_INFOS.First(a => a.msgid == msgid);
@@ -20,7 +19,7 @@ public partial class MAVLink
 
             if (msginfo.name == "")
                 return "";
-
+            
             var typeofthing = msginfo.type.GetField(fieldname);
             if (typeofthing != null)
             {
@@ -78,7 +77,7 @@ public partial class MAVLink
             {
                 timeout = 0;
 
-                if ((BaseStream.Position + count) > BaseStream.Length)
+                if((BaseStream.Position + count) > BaseStream.Length)
                     throw new EndOfStreamException("End of data");
             }
 
@@ -115,7 +114,6 @@ public partial class MAVLink
                 {
                     throw new TimeoutException("Timeout waiting for data");
                 }
-
                 System.Threading.Thread.Sleep(1);
             }
         }
@@ -169,8 +167,7 @@ public partial class MAVLink
             var headerlengthstx = headerlength + 1;
 
             // read header
-            try
-            {
+            try {
                 ReadWithTimeout(BaseStream, buffer, 1, headerlength);
             }
             catch (EndOfStreamException)
@@ -219,7 +216,7 @@ public partial class MAVLink
 
             // check crc
             if ((message.crc16 >> 8) != (crc >> 8) ||
-                (message.crc16 & 0xff) != (crc & 0xff))
+                      (message.crc16 & 0xff) != (crc & 0xff))
             {
                 badCRC++;
                 // crc fail
@@ -229,8 +226,7 @@ public partial class MAVLink
             return message;
         }
 
-        public byte[] GenerateMAVLinkPacket10(MAVLINK_MSG_ID messageType, object indata, byte sysid = 255,
-            byte compid = (byte)MAV_COMPONENT.MAV_COMP_ID_MISSIONPLANNER, int sequence = -1)
+        public byte[] GenerateMAVLinkPacket10(MAVLINK_MSG_ID messageType, object indata, byte sysid = 255, byte compid = (byte)MAV_COMPONENT.MAV_COMP_ID_MISSIONPLANNER, int sequence = -1)
         {
             byte[] data;
 
@@ -273,8 +269,7 @@ public partial class MAVLink
             return packet;
         }
 
-        public byte[] GenerateMAVLinkPacket20(MAVLINK_MSG_ID messageType, object indata, bool sign = false,
-            byte sysid = 255, byte compid = (byte)MAV_COMPONENT.MAV_COMP_ID_MISSIONPLANNER, int sequence = -1)
+        public byte[] GenerateMAVLinkPacket20(MAVLINK_MSG_ID messageType, object indata, bool sign = false, byte sysid = 255, byte compid= (byte)MAV_COMPONENT.MAV_COMP_ID_MISSIONPLANNER, int sequence = -1)
         {
             byte[] data;
 
@@ -290,10 +285,10 @@ public partial class MAVLink
 
             packet[0] = MAVLINK_STX;
             packet[1] = (byte)data.Length;
-            packet[2] = 0; //incompat  signing
+            packet[2] = 0;//incompat  signing
             if (sign)
                 packet[2] |= MAVLINK_IFLAG_SIGNED;
-            packet[3] = 0; //compat
+            packet[3] = 0;//compat
             packet[4] = (byte)packetcount;
             if (sequence != -1)
                 packet[4] = (byte)sequence;
@@ -350,12 +345,12 @@ public partial class MAVLink
                 Array.Copy(timebytes, 0, sig, 1, 6); // timestamp
 
                 //Console.WriteLine("gen linkid {0}, time {1} {2} {3} {4} {5} {6} {7}", sig[0], sig[1], sig[2], sig[3], sig[4], sig[5], sig[6], timestamp);
-
+                
                 if (signingKey == null || signingKey.Length != 32)
                 {
                     signingKey = new byte[32];
                 }
-
+                
                 using (SHA256CryptoServiceProvider signit = new SHA256CryptoServiceProvider())
                 {
                     MemoryStream ms = new MemoryStream();
