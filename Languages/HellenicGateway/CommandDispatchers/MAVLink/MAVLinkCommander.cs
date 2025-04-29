@@ -165,6 +165,7 @@ public class MAVLinkCommander
                 HermesUtils.HermesLogSuccess($"Successfully performed arm command for machine #{machine.MachineId}");
                 return true;
             }
+            HermesUtils.HermesLogInfo($"Timed out waiting for ARM_DISARM command acknowledgement of machine #{machine.MachineId}. Attempt #{i + 1} of {MAX_RETRIES - 1} attempts.");
         }
 
         HermesUtils.HermesLogError($"Unable to send MAVLink COMPONENT_ARM_DISARM command after {MAX_RETRIES} attempts. MachineID: {machine.MachineId}, ForceArm: {forceArm}");
@@ -236,6 +237,8 @@ public class MAVLinkCommander
                 HermesUtils.HermesLogSuccess($"Successfully performed land command for machine #{machine.MachineId}");
                 return true;
             }
+            HermesUtils.HermesLogInfo($"Timed out waiting for LAND command acknowledgement of machine #{machine.MachineId}. Attempt #{i + 1} of {MAX_RETRIES - 1} attempts.");
+
         }
 
         HermesUtils.HermesLogError($"Unable to send MAVLink LAND command after {MAX_RETRIES} attempts. MachineID: {machine.MachineId}, AbortAlt: {abortAlt}m");
@@ -302,10 +305,6 @@ public class MAVLinkCommander
         if (receivedInProgress)
         {
             HermesUtils.HermesLogError($"Command {cmd} for MachineID: {machine.MachineId} timed out while in progress after {IN_PROGRESS_WAIT_TIME_MS}ms");
-        }
-        else
-        {
-            HermesUtils.HermesLogError($"Command {cmd} for MachineID: {machine.MachineId} timed out waiting for acknowledgment after {MAX_NORMAL_WAIT_TIME_MS}ms");
         }
 
         return false;
