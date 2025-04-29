@@ -13,6 +13,8 @@ public static class HermesUtils
     private static bool m_infoLoggingEnabled = true;
     private static bool m_warningLoggingEnabled = true;
     private static bool m_errorLoggingEnabled = true;
+    private static bool m_successLoggingEnabled = true;
+    private static bool m_bullshitLoggingEnabled = false;
 
     private const float MAX_RAYCAST_DISTANCE_CHECK = 2500;
 
@@ -51,6 +53,24 @@ public static class HermesUtils
 
         PhysicsDirectSpaceState3D spaceState = camera.GetWorld3D().DirectSpaceState;
         return spaceState.IntersectRay(query);
+    }
+
+    public static void HermesLogBullshit(string message)
+    {
+        if (!m_bullshitLoggingEnabled) return;
+        Console.ForegroundColor = ConsoleColor.Cyan;
+        Console.Write($"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")} ");
+        Console.WriteLine(message);
+        Console.ResetColor();
+    }
+
+    public static void HermesLogSuccess(string message)
+    {
+        if(!m_successLoggingEnabled) return;
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.Write($"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")} ");
+        Console.WriteLine(message);
+        Console.ResetColor();
     }
 
     public static void HermesLogInfo(string message)

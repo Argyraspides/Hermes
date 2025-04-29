@@ -80,7 +80,7 @@ public class MAVLinkUDPListener
                 }
                 catch (IndexOutOfRangeException ex)
                 {
-                    HermesUtils.HermesUtils.HermesLogWarning("Received truncated MAVLink message!");
+                    HermesUtils.HermesUtils.HermesLogBullshit("Received truncated MAVLink message!");
                 }
             }
         }

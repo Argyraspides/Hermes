@@ -28,7 +28,7 @@ namespace Hermes.Common.Networking.UDP;
 /// </summary>
 public static class HermesUdpClient
 {
-    private const uint MAX_BUFFER_SIZE = 4096;
+    private const uint MAX_BUFFER_SIZE = (1 << 9); // 2^9
 
     private static uint nextId = 0;
 
@@ -103,38 +103,9 @@ public static class HermesUdpClient
         string endpointKey = GetEndpointKey(ipEndpoint);
         string bufferPointerKey = GetBufferPointerKey(id, ipEndpoint);
 
-        if (string.IsNullOrEmpty(endpointKey) || string.IsNullOrEmpty(bufferPointerKey))
-        {
-            throw new NoNullAllowedException("No endpoint key or buffer pointer");
-        }
+        ValidateKeys(endpointKey, bufferPointerKey);
 
-        if (!udpClients.TryGetValue(endpointKey, out UdpClient client))
-        {
-            throw new KeyNotFoundException($"Cannot find UdpClient associated with IP Endpoint: {endpointKey}");
-        }
-
-        if (!readBufferPointers.TryGetValue(bufferPointerKey, out _))
-        {
-            throw new KeyNotFoundException(
-                $"Cannot find buffer pointer for subscriber with ID: {id} and IP endpoint: {endpointKey}");
-        }
-
-        if (!buffers.TryGetValue(endpointKey, out _))
-        {
-            throw new KeyNotFoundException($"Cannot find buffer for UdpClient with IP endpoint: {endpointKey}");
-        }
-
-        UdpReceiveResult dat = await client.ReceiveAsync();
-
-        if (dat.Buffer[7] == 31 && dat.Buffer.Length < 44)
-        {
-            HermesUtils.HermesUtils.HermesLogInfo("GOTCHA BITCH");
-        }
-
-        if (dat.Buffer[7] == 31 && dat.Buffer.Length > 40)
-        {
-            HermesUtils.HermesUtils.HermesLogInfo("AS YOU SHOULD BE BITCH");
-        }
+        UdpReceiveResult dat = await udpClients[endpointKey].ReceiveAsync();
 
         AddToBuffer(endpointKey, dat);
 
@@ -149,6 +120,40 @@ public static class HermesUdpClient
         );
 
         return buffers[endpointKey][currentReadPosition];
+    }
+
+    public static byte[] Receive(uint id, IPEndPoint ipEndpoint)
+    {
+        string endpointKey = GetEndpointKey(ipEndpoint);
+        string bufferPointerKey = GetBufferPointerKey(id, ipEndpoint);
+        ValidateKeys(endpointKey, bufferPointerKey);
+        byte[] dat = udpClients[endpointKey].Receive(ref ipEndpoint);
+        return dat;
+    }
+
+    private static void ValidateKeys(string endpointKey, string bufferPointerKey)
+    {
+        if (string.IsNullOrEmpty(endpointKey) || string.IsNullOrEmpty(bufferPointerKey))
+        {
+            throw new NoNullAllowedException("No endpoint key or buffer pointer");
+        }
+
+        if (!udpClients.TryGetValue(endpointKey, out _))
+        {
+            throw new KeyNotFoundException($"Cannot find UdpClient associated with IP Endpoint: {endpointKey}");
+        }
+
+        if (!readBufferPointers.TryGetValue(bufferPointerKey, out _))
+        {
+            throw new KeyNotFoundException(
+                $"Cannot find buffer pointer for subscriber with buffer pointer key: {bufferPointerKey} and IP endpoint: {endpointKey}");
+        }
+
+        if (!buffers.TryGetValue(endpointKey, out _))
+        {
+            throw new KeyNotFoundException($"Cannot find buffer for UdpClient with IP endpoint: {endpointKey}");
+        }
+
     }
 
     private static string GetEndpointKey(IPEndPoint ipEndpoint)

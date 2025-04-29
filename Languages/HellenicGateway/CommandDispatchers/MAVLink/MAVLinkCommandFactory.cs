@@ -35,7 +35,9 @@ public class MAVLinkCommandFactory
             return;
         }
 
-        await m_mavLinkCommander.SendMAVLinkArmCommand(machine);
+        // Abandon if arming fails
+        if (!await m_mavLinkCommander.SendMAVLinkArmCommand(machine)) return;
+
         await m_mavLinkCommander.SendMAVLinkTakeoffCommand(machine, altitude);
     }
 

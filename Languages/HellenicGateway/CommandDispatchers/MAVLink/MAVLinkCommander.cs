@@ -48,12 +48,12 @@ public class MAVLinkCommander
         HermesUdpClient.DeregisterUdpClient(receiverId, receiverEndPoint);
     }
 
-    public async Task SendMAVLinkTakeoffCommand(Machine machine, double altitude, double pitch = 0.0d, double yaw = 0.0d)
+    public async Task<bool> SendMAVLinkTakeoffCommand(Machine machine, double altitude, double pitch = 0.0d, double yaw = 0.0d)
     {
         if (machine == null)
         {
             HermesUtils.HermesLogError($"Cannot send takeoff command -- null vehilce.");
-            return;
+            return false;
         }
 
        HellenicMessage msg = machine.GetHellenicMessage(HellenicMessageType.LatitudeLongitude);
@@ -61,19 +61,19 @@ public class MAVLinkCommander
        if (msg == null || msg is not LatitudeLongitude latlon)
        {
            HermesUtils.HermesLogError($"Cannot send takeoff command -- vehicle lat/lon unknown. MachineID: {(machine?.MachineId?.ToString() ?? "null")}");
-           return;
+           return false;
        }
 
        if (!latlon.Lat.HasValue || !latlon.Lon.HasValue)
        {
            HermesUtils.HermesLogError($"Cannot send takeoff command -- vehicle lat/lon unknown. MachineID: {machine.MachineId}");
-           return;
+           return false;
        }
 
        if (!machine.MachineId.HasValue)
        {
            HermesUtils.HermesLogError("Cannot send takeoff command -- vehicle machineId unknown");
-           return;
+           return false;
        }
 
        int lat = (int)(latlon.Lat.Value * LAT_LON_SCALE_FACTOR);
@@ -100,7 +100,7 @@ public class MAVLinkCommander
             };
 
             byte[] packet = mavlinkParser.GenerateMAVLinkPacket20(
-                global::MAVLink.MAVLINK_MSG_ID.COMMAND_LONG,
+                global::MAVLink.MAVLINK_MSG_ID.COMMAND_INT,
                 mavlinkCommand,
                 false,
                 GCS_MAVLINK_ID,
@@ -112,20 +112,22 @@ public class MAVLinkCommander
             bool success = await AwaitMAVLinkAcknowledgement(machine, global::MAVLink.MAV_CMD.TAKEOFF);
             if (success)
             {
-                return;
+                HermesUtils.HermesLogSuccess($"Successfully performed take off command for machine #{machine.MachineId}");
+                return true;
             }
        }
 
        HermesUtils.HermesLogError($"Unable to send MAVLink TAKEOFF command after {MAX_RETRIES} attempts. MachineID: {machine.MachineId}, Alt: {altitude}m");
+       return false;
     }
 
-    public async Task SendMAVLinkArmCommand(Machine machine, bool forceArm = false)
+    public async Task<bool> SendMAVLinkArmCommand(Machine machine, bool forceArm = false)
     {
 
         if (machine == null || !machine.MachineId.HasValue)
         {
             HermesUtils.HermesLogError($"Cannot send ARM command to null vehicle/vehicle without an ID. MachineID: {(machine?.MachineId?.ToString() ?? "null")}");
-            return;
+            return false;
         }
 
         for (int i = 0; i < MAX_RETRIES; i++)
@@ -160,15 +162,16 @@ public class MAVLinkCommander
             bool success = await AwaitMAVLinkAcknowledgement(machine, global::MAVLink.MAV_CMD.COMPONENT_ARM_DISARM);
             if (success)
             {
-                return;
+                HermesUtils.HermesLogSuccess($"Successfully performed arm command for machine #{machine.MachineId}");
+                return true;
             }
         }
 
         HermesUtils.HermesLogError($"Unable to send MAVLink COMPONENT_ARM_DISARM command after {MAX_RETRIES} attempts. MachineID: {machine.MachineId}, ForceArm: {forceArm}");
-
+        return false;
     }
 
-    public async Task SendMAVLinkLandCommand(
+    public async Task<bool> SendMAVLinkLandCommand(
         Machine machine,
         double abortAlt = 0.0d,
         global::MAVLink.PRECISION_LAND_MODE landmode = 0,
@@ -180,19 +183,19 @@ public class MAVLinkCommander
         if (msg == null || msg is not LatitudeLongitude latlon)
         {
             HermesUtils.HermesLogError($"Cannot send land command -- vehicle lat/lon unknown. MachineID: {(machine?.MachineId?.ToString() ?? "null")}");
-            return;
+            return false;
         }
 
         if (!latlon.Lat.HasValue || !latlon.Lon.HasValue)
         {
             HermesUtils.HermesLogError($"Cannot send land command -- vehicle lat/lon unknown. MachineID: {machine.MachineId}");
-            return;
+            return false;
         }
 
         if (!machine.MachineId.HasValue)
         {
             HermesUtils.HermesLogError("Cannot send land command -- vehicle machineId unknown");
-            return;
+            return false;
         }
 
         int lat = (int)(latlon.Lat.Value * LAT_LON_SCALE_FACTOR);
@@ -230,11 +233,13 @@ public class MAVLinkCommander
             bool success = await AwaitMAVLinkAcknowledgement(machine, global::MAVLink.MAV_CMD.LAND);
             if (success)
             {
-                return;
+                HermesUtils.HermesLogSuccess($"Successfully performed land command for machine #{machine.MachineId}");
+                return true;
             }
         }
 
         HermesUtils.HermesLogError($"Unable to send MAVLink LAND command after {MAX_RETRIES} attempts. MachineID: {machine.MachineId}, AbortAlt: {abortAlt}m");
+        return false;
     }
 
     public async Task<bool> AwaitMAVLinkAcknowledgement(Machine machine, global::MAVLink.MAV_CMD cmd)
