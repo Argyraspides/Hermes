@@ -155,10 +155,12 @@ public static class HermesUdpClient
     private static void AddToBuffer(string endpointKey, UdpReceiveResult res)
     {
 
-        uint writePosition = writeBufferPointers.AddOrUpdate(
+        uint writePosition = 0;
+        writeBufferPointers.AddOrUpdate(
             endpointKey,
             0,
             (key, currentValue) => {
+                writePosition = currentValue;
                 return (currentValue + 1) % MAX_BUFFER_SIZE;
             }
         );
