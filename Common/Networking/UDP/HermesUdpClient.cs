@@ -24,6 +24,8 @@ namespace Hermes.Common.Networking.UDP;
 ///
 /// byte[] data = await HermesUdpClient.ReceiveAsync(myId, new IPEndpoint.Parse("127.0.0.1", 14550));
 ///
+/// When you're done, make sure to call "DeregisterUdpClient"
+///
 ///
 /// </summary>
 public static class HermesUdpClient

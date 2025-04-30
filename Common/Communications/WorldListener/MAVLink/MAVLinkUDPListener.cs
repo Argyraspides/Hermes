@@ -47,15 +47,6 @@ public class MAVLinkUDPListener
         m_udpListenerThread.Start(m_cancellationTokenSource.Token);
     }
 
-    public bool IsMAVLinkPacket(byte[] rawPacket)
-    {
-        if (rawPacket == null || rawPacket.Length < 1)
-        {
-            return false;
-        }
-        return rawPacket[0] == global::MAVLink.MAVLINK_STX || rawPacket[0] == global::MAVLink.MAVLINK_STX_MAVLINK1;
-    }
-
     private async void StartListening(object pCancellationToken)
     {
         CancellationToken cancellationToken = (CancellationToken)pCancellationToken;
