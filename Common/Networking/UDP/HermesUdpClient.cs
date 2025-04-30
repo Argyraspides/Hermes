@@ -46,9 +46,6 @@ public static class HermesUdpClient
     // Map the ip endpoint key to the index position of the "write head"
     private static ConcurrentDictionary<string, uint> writeBufferPointers = new ConcurrentDictionary<string, uint>();
 
-    private static object m_registrationLock = new object();
-
-
     public static uint RegisterUdpClient(IPEndPoint ipEndpoint)
     {
         string endpointKey = GetEndpointKey(ipEndpoint);
