@@ -1,11 +1,9 @@
-[gd_scene load_steps=8 format=3 uid="uid://q4ggeswaera3"]
+[gd_scene load_steps=6 format=3 uid="uid://q4ggeswaera3"]
 
 [ext_resource type="Theme" uid="uid://dll7gj5amwt4g" path="res://Universe/UI/Themes/DefaultHermesTheme.tres" id="1_3j13u"]
 [ext_resource type="Script" path="res://Universe/UI/UIComponents/BottomPanel/BottomPanel.cs" id="2_g4v84"]
 [ext_resource type="Script" path="res://Universe/UI/UIComponents/BottomPanel/ControlPanel.cs" id="3_7cm6w"]
-[ext_resource type="Texture2D" uid="uid://delj6borpw6lp" path="res://Universe/UI/Assets/TakeoffIcon.png" id="4_d44rq"]
 [ext_resource type="FontFile" uid="uid://bugofbrks3g4k" path="res://Universe/UI/Fonts/Jura/Jura-Bold.ttf" id="4_i64nm"]
-[ext_resource type="Texture2D" uid="uid://mx7spy572shf" path="res://Universe/UI/Assets/TakeoffIconPressed.png" id="5_phm6a"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_xhs7t"]
 
@@ -91,67 +89,10 @@ layout_mode = 2
 size_flags_vertical = 3
 alignment = 1
 
-[node name="MarginContainer" type="MarginContainer" parent="ControlAndTelemetryPanels/ControlPanel/VBoxContainer/ControlPanelControls"]
+[node name="ControlPanelMarginContainer" type="MarginContainer" parent="ControlAndTelemetryPanels/ControlPanel/VBoxContainer/ControlPanelControls"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/margin_left = 50
-
-[node name="TakeoffControlComponent" type="HBoxContainer" parent="ControlAndTelemetryPanels/ControlPanel/VBoxContainer/ControlPanelControls/MarginContainer"]
-custom_minimum_size = Vector2(150, 150)
-layout_mode = 2
-size_flags_horizontal = 2
-size_flags_vertical = 4
-
-[node name="TakeoffButton" type="VBoxContainer" parent="ControlAndTelemetryPanels/ControlPanel/VBoxContainer/ControlPanelControls/MarginContainer/TakeoffControlComponent"]
-layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="TextureButton" type="TextureButton" parent="ControlAndTelemetryPanels/ControlPanel/VBoxContainer/ControlPanelControls/MarginContainer/TakeoffControlComponent/TakeoffButton"]
-layout_mode = 2
-size_flags_vertical = 3
-toggle_mode = true
-texture_normal = ExtResource("4_d44rq")
-texture_pressed = ExtResource("5_phm6a")
-ignore_texture_size = true
-stretch_mode = 0
-
-[node name="RichTextLabel" type="RichTextLabel" parent="ControlAndTelemetryPanels/ControlPanel/VBoxContainer/ControlPanelControls/MarginContainer/TakeoffControlComponent/TakeoffButton"]
-layout_mode = 2
-size_flags_vertical = 3
-size_flags_stretch_ratio = 0.5
-bbcode_enabled = true
-text = "[center]TAKEOFF[/center]"
-
-[node name="AltitudeSliderComponent" type="VBoxContainer" parent="ControlAndTelemetryPanels/ControlPanel/VBoxContainer/ControlPanelControls/MarginContainer/TakeoffControlComponent"]
-custom_minimum_size = Vector2(0, 200)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_stretch_ratio = 0.38
-
-[node name="MaxAltLabel" type="RichTextLabel" parent="ControlAndTelemetryPanels/ControlPanel/VBoxContainer/ControlPanelControls/MarginContainer/TakeoffControlComponent/AltitudeSliderComponent"]
-layout_mode = 2
-size_flags_vertical = 3
-size_flags_stretch_ratio = 0.2
-theme_override_font_sizes/normal_font_size = 12
-bbcode_enabled = true
-text = "[center]50m"
-
-[node name="SliderCenterContainer" type="HBoxContainer" parent="ControlAndTelemetryPanels/ControlPanel/VBoxContainer/ControlPanelControls/MarginContainer/TakeoffControlComponent/AltitudeSliderComponent"]
-layout_mode = 2
-size_flags_vertical = 3
-alignment = 1
-
-[node name="VSlider" type="VSlider" parent="ControlAndTelemetryPanels/ControlPanel/VBoxContainer/ControlPanelControls/MarginContainer/TakeoffControlComponent/AltitudeSliderComponent/SliderCenterContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="MinAltLabel" type="RichTextLabel" parent="ControlAndTelemetryPanels/ControlPanel/VBoxContainer/ControlPanelControls/MarginContainer/TakeoffControlComponent/AltitudeSliderComponent"]
-layout_mode = 2
-size_flags_vertical = 3
-size_flags_stretch_ratio = 0.2
-theme_override_font_sizes/normal_font_size = 12
-bbcode_enabled = true
-text = "[center]0m"
 
 [node name="SeparatorBar" type="ColorRect" parent="ControlAndTelemetryPanels"]
 custom_minimum_size = Vector2(1, 0)

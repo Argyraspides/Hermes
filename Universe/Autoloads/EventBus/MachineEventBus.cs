@@ -18,6 +18,8 @@
 */
 
 
+using Hermes.Core.Machine.Machine;
+
 namespace Hermes.Universe.Autoloads.EventBus;
 
 using Godot;

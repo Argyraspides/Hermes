@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Godot;
 using Hermes.Core.Machine;
+using Hermes.Core.Machine.Machine;
 using Hermes.Universe.Autoloads;
 using GlobalEventBus = Hermes.Universe.Autoloads.EventBus.GlobalEventBus;
 

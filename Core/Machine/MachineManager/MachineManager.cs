@@ -25,17 +25,18 @@ namespace Hermes.Core.Machine;
 
 using Godot;
 using System.Collections.Generic;
+using Core.Machine;
 using Hermes.Universe.Autoloads.EventBus;
 
 public partial class MachineManager : Node
 {
     [Signal]
-    public delegate void NewMachineConnectedEventHandler(Machine machine);
+    public delegate void NewMachineConnectedEventHandler(Core.Machine.Machine.Machine machine);
 
     [Signal]
-    public delegate void MachineDisconnectedEventHandler(Machine machine);
+    public delegate void MachineDisconnectedEventHandler(Core.Machine.Machine.Machine machine);
 
-    private Dictionary<uint, Machine> m_Machines = new Dictionary<uint, Machine>();
+    private Dictionary<uint, Core.Machine.Machine.Machine> m_Machines = new Dictionary<uint, Core.Machine.Machine.Machine>();
 
     private readonly int MACHINE_STALE_TIME_S = 5;
 
@@ -50,7 +51,7 @@ public partial class MachineManager : Node
 
     public override void _Process(double delta)
     {
-        foreach (Machine machine in m_Machines.Values)
+        foreach (Core.Machine.Machine.Machine machine in m_Machines.Values)
         {
             double timeElapsed = Time.GetUnixTimeFromSystem() - machine.LastUpdateTimeUnix;
             if (machine.MachineId.HasValue && timeElapsed > MACHINE_STALE_TIME_S)
@@ -70,13 +71,13 @@ public partial class MachineManager : Node
         if (!m_Machines.ContainsKey(message.MachineId.Value))
         {
             var machineCardScene = GD.Load<PackedScene>("res://Core/Machine/Machine/Machine.tscn");
-            var machineCardInstance = machineCardScene.Instantiate<Machine>();
+            var machineCardInstance = machineCardScene.Instantiate<Core.Machine.Machine.Machine>();
             m_Machines[message.MachineId.Value] = machineCardInstance;
             AddChild(m_Machines[message.MachineId.Value]);
             HermesUtils.HermesLogInfo($"Machine with ID {message.MachineId.Value} has connected.");
             EmitSignal(SignalName.NewMachineConnected, m_Machines[message.MachineId.Value]);
         }
-        Machine machine = m_Machines[message.MachineId.Value];
+        Core.Machine.Machine.Machine machine = m_Machines[message.MachineId.Value];
         machine.Update(message);
     }
 

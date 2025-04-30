@@ -1,5 +1,6 @@
 using Hermes.Common.HermesUtils;
 using Hermes.Core.Machine;
+using Hermes.Core.Machine.Machine;
 using Hermes.Languages.HellenicGateway.CommandDispatchers.MAVLink;
 
 namespace Hermes.Languages.HellenicGateway.CommandDispatchers.Hellenic;

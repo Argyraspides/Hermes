@@ -1,0 +1,67 @@
+[gd_scene load_steps=4 format=3 uid="uid://cl5gknpbm0yil"]
+
+[ext_resource type="Script" path="res://Universe/UI/UIComponents/MachineControl/TakeoffControlComponent.cs" id="1_tik6v"]
+[ext_resource type="Texture2D" uid="uid://u54t0wxch7pt" path="res://Universe/UI/Assets/TakeoffQuadcopter.png" id="2_nbn0d"]
+[ext_resource type="Texture2D" uid="uid://0x1dnpt3ovyq" path="res://Universe/UI/Assets/TakeoffQuadcopterSelected.png" id="3_qm6ws"]
+
+[node name="TakeoffControlComponent" type="HBoxContainer"]
+anchors_preset = -1
+anchor_right = 0.078
+anchor_bottom = 0.185
+offset_right = -149.76
+offset_bottom = -199.8
+size_flags_horizontal = 2
+size_flags_vertical = 4
+script = ExtResource("1_tik6v")
+
+[node name="TakeoffButtonContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="TakeoffButton" type="TextureButton" parent="TakeoffButtonContainer"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+size_flags_vertical = 3
+toggle_mode = true
+texture_normal = ExtResource("2_nbn0d")
+texture_pressed = ExtResource("3_qm6ws")
+ignore_texture_size = true
+stretch_mode = 4
+
+[node name="TakeoffButtonLabel" type="RichTextLabel" parent="TakeoffButtonContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.5
+bbcode_enabled = true
+text = "[center]TAKEOFF[/center]"
+
+[node name="AltitudeSliderComponent" type="VBoxContainer" parent="."]
+custom_minimum_size = Vector2(50, 200)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.38
+
+[node name="MaxAltLabel" type="LineEdit" parent="AltitudeSliderComponent"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.2
+theme_override_font_sizes/font_size = 15
+text = "50m"
+alignment = 1
+
+[node name="SliderCenterContainer" type="HBoxContainer" parent="AltitudeSliderComponent"]
+layout_mode = 2
+size_flags_vertical = 3
+alignment = 1
+
+[node name="AltitudeSlider" type="VSlider" parent="AltitudeSliderComponent/SliderCenterContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="CurrentAltLabel" type="RichTextLabel" parent="AltitudeSliderComponent"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.2
+theme_override_font_sizes/normal_font_size = 15
+bbcode_enabled = true
+text = "[center]0m"

@@ -71,6 +71,10 @@ public class MAVLinkUDPListener
                 }
                 catch (IndexOutOfRangeException ex)
                 {
+                    // IMPORTANT:
+                    //  There is a bug where immediately after sending a command, a set of four different telemetry messages
+                    //  (with MAVLink message IDs of 31, 83, 141, and 30) arrive at the UDP socket truncated and full one after another.
+                    //  I literally have no idea why. It doesn't pose any issue as MAVLink telemetry messages are sent in like a machine gun
                     HermesUtils.HermesUtils.HermesLogBullshit("Received truncated MAVLink message!");
                 }
             }

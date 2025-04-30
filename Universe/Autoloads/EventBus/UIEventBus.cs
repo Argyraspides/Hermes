@@ -1,5 +1,6 @@
 using Godot;
 using Hermes.Core.Machine;
+using Hermes.Core.Machine.Machine;
 
 namespace Hermes.Universe.Autoloads.EventBus;
 

@@ -1,5 +1,6 @@
 using System;
 using Hermes.Common.HermesUtils;
+using Hermes.Core.Machine.Machine;
 using Hermes.Universe.Autoloads.EventBus;
 
 namespace Hermes.Universe.UI.UIComponents.MachineCard;
@@ -33,8 +34,7 @@ public partial class MachineCard : Button
         MachineCardClicked += GlobalEventBus.Instance.UIEventBus.OnMachineCardClicked;
 
         ToggleMode = true;
-
-        Pressed += OnButtonPressed;
+        Toggled += OnButtonToggled;
 
     }
 
@@ -97,10 +97,9 @@ public partial class MachineCard : Button
         m_compassDisplay.HeadingDeg = headingMsg.Hdg;
     }
 
-    private void OnButtonPressed()
+    private void OnButtonToggled(bool pressed)
     {
         EmitSignal(SignalName.MachineCardClicked, Machine);
-        Machine.Selected = !Machine.Selected;
     }
 
     public override void _Process(double delta)

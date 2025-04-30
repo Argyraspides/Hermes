@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 using Hermes.Common.HermesUtils;
 using Hermes.Common.Networking.UDP;
 using Hermes.Core.Machine;
+using Hermes.Core.Machine.Machine;
 
 namespace Hermes.Languages.HellenicGateway.CommandDispatchers.MAVLink;
 
-public class MAVLinkCommander
+public class MAVLinkCommander : IDisposable
 {
 
     private const double LAT_LON_SCALE_FACTOR = 1e7;
@@ -42,10 +43,7 @@ public class MAVLinkCommander
 
     ~MAVLinkCommander()
     {
-        sender.Close();
-        sender.Dispose();
-
-        HermesUdpClient.DeregisterUdpClient(receiverId, receiverEndPoint);
+        Dispose(false);
     }
 
     public async Task<bool> SendMAVLinkTakeoffCommand(Machine machine, double altitude, double pitch = 0.0d, double yaw = 0.0d)
@@ -311,4 +309,23 @@ public class MAVLinkCommander
     }
 
 
+    private void ReleaseUnmanagedResources()
+    {
+        HermesUdpClient.DeregisterUdpClient(receiverId, receiverEndPoint);
+    }
+
+    private void Dispose(bool manualDispose)
+    {
+        ReleaseUnmanagedResources();
+        if (manualDispose)
+        {
+            sender?.Dispose();
+        }
+    }
+
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+        Dispose(true);
+    }
 }

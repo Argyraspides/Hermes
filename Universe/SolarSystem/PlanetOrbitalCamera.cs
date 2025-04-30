@@ -26,6 +26,7 @@
 
 using Hermes.Common.HermesUtils;
 using Hermes.Core.Machine;
+using Hermes.Core.Machine.Machine;
 using Hermes.Universe.Autoloads.EventBus;
 
 namespace Hermes.Universe.SolarSystem;

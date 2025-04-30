@@ -18,15 +18,16 @@
 */
 
 
+using Hermes.Core.Machine.Machine.Capabilities;
 
-namespace Hermes.Core.Machine;
+namespace Hermes.Core.Machine.Machine;
 
 using Godot;
 using System.Collections.Generic;
 using Hermes.Common.Map.Utils;
 using System;
 using Hermes.Common.HermesUtils;
-using Hermes.Core.Machine.Capabilities;
+using Core.Machine.Machine.Capabilities;
 using Hermes.Core.StateManagers;
 using Hermes.Universe.Autoloads.EventBus;
 

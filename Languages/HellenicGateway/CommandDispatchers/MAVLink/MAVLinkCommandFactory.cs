@@ -1,10 +1,11 @@
 using System;
 using Hermes.Common.HermesUtils;
 using Hermes.Core.Machine;
+using Hermes.Core.Machine.Machine;
 
 namespace Hermes.Languages.HellenicGateway.CommandDispatchers.MAVLink;
 
-public class MAVLinkCommandFactory
+public class MAVLinkCommandFactory : IDisposable
 {
     private MAVLinkCommander m_mavLinkCommander = new MAVLinkCommander();
 
@@ -46,5 +47,8 @@ public class MAVLinkCommandFactory
         await m_mavLinkCommander.SendMAVLinkLandCommand(machine, abortAltitude);
     }
 
-
+    public void Dispose()
+    {
+        m_mavLinkCommander?.Dispose();
+    }
 }
