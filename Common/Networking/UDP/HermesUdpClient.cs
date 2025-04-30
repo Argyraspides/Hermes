@@ -60,17 +60,13 @@ public static class HermesUdpClient
             string endpointKey = GetEndpointKey(ipEndpoint);
             string bufferPointerKey = GetBufferPointerKey(id, ipEndpoint);
 
-            if (!udpClients.TryGetValue(endpointKey, out var existingClient)) // Use var pattern for clarity
+            if (!udpClients.TryGetValue(endpointKey, out _))
             {
-
-                UdpClient c = new UdpClient(ipEndpoint);
-                c.Client.ReceiveBufferSize = int.MaxValue / 2;
-                if (udpClients.TryAdd(endpointKey, c))
+                if (udpClients.TryAdd(endpointKey, new UdpClient(ipEndpoint)))
                 {
                     writeBufferPointers.TryAdd(endpointKey, 0);
                     buffers.TryAdd(endpointKey, new UdpReceiveResult[MAX_BUFFER_SIZE]);
                 }
-
             }
 
             readBufferPointers.GetOrAdd(bufferPointerKey, 0);
