@@ -28,7 +28,7 @@ namespace Hermes.Common.Networking.UDP;
 /// </summary>
 public static class HermesUdpClient
 {
-    private const uint MAX_BUFFER_SIZE = (1 << 9); // 2^9
+    private const uint MAX_BUFFER_SIZE = 512;
 
     private static uint nextId = 0;
 
@@ -50,15 +50,10 @@ public static class HermesUdpClient
 
     public static uint RegisterUdpClient(IPEndPoint ipEndpoint)
     {
-        // Atomically get and increment our ID first to prevent race conditions
-        // (in this case we would give two threads the same ID)
-        uint id = Interlocked.Increment(ref nextId) - 1;
-
         lock (m_registrationLock)
         {
-
             string endpointKey = GetEndpointKey(ipEndpoint);
-            string bufferPointerKey = GetBufferPointerKey(id, ipEndpoint);
+            string bufferPointerKey = GetBufferPointerKey(nextId, ipEndpoint);
 
             if (!udpClients.TryGetValue(endpointKey, out _))
             {
@@ -70,9 +65,10 @@ public static class HermesUdpClient
             }
 
             readBufferPointers.GetOrAdd(bufferPointerKey, 0);
-        }
 
-        return id;
+            uint returnId = nextId++;
+            return returnId;
+        }
     }
 
     public static void DeregisterUdpClient(uint id, IPEndPoint endpoint)
@@ -126,6 +122,7 @@ public static class HermesUdpClient
         byte[] dat = udpClients[endpointKey].Receive(ref ipEndpoint);
         return dat;
     }
+
 
     private static void ValidateKeys(string endpointKey, string bufferPointerKey)
     {
