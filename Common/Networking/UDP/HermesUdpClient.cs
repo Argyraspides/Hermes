@@ -28,6 +28,7 @@ namespace Hermes.Common.Networking.UDP;
 /// </summary>
 public static class HermesUdpClient
 {
+
     private const uint MAX_BUFFER_SIZE = 512;
 
     private static uint nextId = 0;
@@ -50,25 +51,22 @@ public static class HermesUdpClient
 
     public static uint RegisterUdpClient(IPEndPoint ipEndpoint)
     {
-        lock (m_registrationLock)
+        string endpointKey = GetEndpointKey(ipEndpoint);
+        string bufferPointerKey = GetBufferPointerKey(nextId, ipEndpoint);
+
+        if (!udpClients.TryGetValue(endpointKey, out _))
         {
-            string endpointKey = GetEndpointKey(ipEndpoint);
-            string bufferPointerKey = GetBufferPointerKey(nextId, ipEndpoint);
-
-            if (!udpClients.TryGetValue(endpointKey, out _))
+            if (udpClients.TryAdd(endpointKey, new UdpClient(ipEndpoint)))
             {
-                if (udpClients.TryAdd(endpointKey, new UdpClient(ipEndpoint)))
-                {
-                    writeBufferPointers.TryAdd(endpointKey, 0);
-                    buffers.TryAdd(endpointKey, new UdpReceiveResult[MAX_BUFFER_SIZE]);
-                }
+                writeBufferPointers.TryAdd(endpointKey, 0);
+                buffers.TryAdd(endpointKey, new UdpReceiveResult[MAX_BUFFER_SIZE]);
             }
-
-            readBufferPointers.GetOrAdd(bufferPointerKey, 0);
-
-            uint returnId = nextId++;
-            return returnId;
         }
+
+        readBufferPointers.GetOrAdd(bufferPointerKey, 0);
+
+        return Interlocked.Increment(ref nextId) - 1;
+
     }
 
     public static void DeregisterUdpClient(uint id, IPEndPoint endpoint)
@@ -114,16 +112,6 @@ public static class HermesUdpClient
         return buffers[endpointKey][currentReadPosition];
     }
 
-    public static byte[] Receive(uint id, IPEndPoint ipEndpoint)
-    {
-        string endpointKey = GetEndpointKey(ipEndpoint);
-        string bufferPointerKey = GetBufferPointerKey(id, ipEndpoint);
-        ValidateKeys(endpointKey, bufferPointerKey);
-        byte[] dat = udpClients[endpointKey].Receive(ref ipEndpoint);
-        return dat;
-    }
-
-
     private static void ValidateKeys(string endpointKey, string bufferPointerKey)
     {
         if (string.IsNullOrEmpty(endpointKey) || string.IsNullOrEmpty(bufferPointerKey))
@@ -151,13 +139,15 @@ public static class HermesUdpClient
 
     private static string GetEndpointKey(IPEndPoint ipEndpoint)
     {
-        /*
-         * TODO::ARGYRASPIDES() {
-         *  handle cases for special IP addresses. E.g., if someone asks for endpoint key
-         *  127.0.0.1:14550 and someone else does 0.0.0.0:14550, we will get a socket error
-         *  since the latter is implicitly listening for the former
-         */
-        return $"{ipEndpoint.Address}:{ipEndpoint.Port}";
+        // Normalize special addresses like 0.0.0.0 or ::0
+        string address = ipEndpoint.Address.ToString();
+        if (ipEndpoint.Address.Equals(IPAddress.Any) ||
+            ipEndpoint.Address.Equals(IPAddress.IPv6Any))
+        {
+            address = "Any";
+        }
+
+        return $"{address}:{ipEndpoint.Port}";
     }
 
     private static string GetBufferPointerKey(uint id, IPEndPoint ipEndpoint)
@@ -167,13 +157,11 @@ public static class HermesUdpClient
 
     private static void AddToBuffer(string endpointKey, UdpReceiveResult res)
     {
-        uint writePosition = 0;
 
-        writeBufferPointers.AddOrUpdate(
+        uint writePosition = writeBufferPointers.AddOrUpdate(
             endpointKey,
             0,
             (key, currentValue) => {
-                writePosition = currentValue;
                 return (currentValue + 1) % MAX_BUFFER_SIZE;
             }
         );
