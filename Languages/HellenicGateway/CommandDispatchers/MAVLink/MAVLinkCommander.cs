@@ -287,13 +287,13 @@ public class MAVLinkCommander : IDisposable
             if (success)
             {
                 HermesUtils.HermesLogSuccess(
-                    $"Successfully performed arm command for machine #{machine.MachineId}");
+                    $"Successfully performed LAND command for machine #{machine.MachineId}");
                 successCallback?.Invoke(true);
             }
             else if (attempts < MAX_RETRIES)
             {
                 HermesUtils.HermesLogWarning(
-                    $"Unable to send MAVLink COMPONENT_ARM_DISARM command after {attempts} attempts. MachineID: {machine.MachineId}. Retrying ...");
+                    $"Unable to send MAVLink LAND command after {attempts} attempts. MachineID: {machine.MachineId}. Retrying ...");
                 attempts++;
                 byte[] packet = mavlinkParser.GenerateMAVLinkPacket20(
                     global::MAVLink.MAVLINK_MSG_ID.COMMAND_LONG,
@@ -309,7 +309,7 @@ public class MAVLinkCommander : IDisposable
             else if (attempts >= MAX_RETRIES)
             {
                 HermesUtils.HermesLogWarning(
-                    $"Unable to send MAVLink COMPONENT_ARM_DISARM command after the max number of attempts. MachineID: {machine.MachineId}. Aborting ...");
+                    $"Unable to send MAVLink LAND command after the max number of attempts. MachineID: {machine.MachineId}. Aborting ...");
                 successCallback?.Invoke(false);
             }
         };
@@ -323,11 +323,13 @@ public class MAVLinkCommander : IDisposable
         if (machine == null)
         {
             HermesUtils.HermesLogError($"Cannot await for an acknowledgement of a null vehicle.");
+            return;
         }
 
         if (!machine.MachineId.HasValue)
         {
             HermesUtils.HermesLogError("Cannot wait for an acknowledgement of a vehicle without an ID");
+            return;
         }
 
         ConcurrentBoolean receivedInProgress = new ConcurrentBoolean(false);
