@@ -111,7 +111,7 @@ public class MAVLinkCommander : IDisposable
             if (success)
             {
                 HermesUtils.HermesLogSuccess(
-                    $"Successfully performed arm command for machine #{machine.MachineId}");
+                    $"Successfully performed TAKEOFF command for machine #{machine.MachineId}");
                 successCallback?.Invoke(true);
             }
             else if (attempts < MAX_RETRIES)
@@ -183,7 +183,7 @@ public class MAVLinkCommander : IDisposable
             if (success)
             {
                 HermesUtils.HermesLogSuccess(
-                    $"Successfully performed arm command for machine #{machine.MachineId}");
+                    $"Successfully performed ARM command for machine #{machine.MachineId}");
                 successCallback?.Invoke(true);
             }
             else if (attempts < MAX_RETRIES)
@@ -378,8 +378,7 @@ public class MAVLinkCommander : IDisposable
                         commandSuccess.Set(true);
                         ackCallback?.Invoke(true);
                     }
-
-                    if (ack.result == (byte)global::MAVLink.MAV_RESULT.IN_PROGRESS && !receivedInProgress.Value)
+                    else if (ack.result == (byte)global::MAVLink.MAV_RESULT.IN_PROGRESS && !receivedInProgress.Value)
                     {
                         receivedInProgress.Set(true);
                     }
