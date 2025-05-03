@@ -11,7 +11,7 @@ public class HellenicCommander : IDisposable
 {
     private MAVLinkCommandFactory m_mavLinkCommandFactory = new MAVLinkCommandFactory();
 
-    public async Task TakeoffQuadcopter(Machine machine, double altitude)
+    public void TakeoffQuadcopter(Machine machine, double altitude)
     {
         if (machine == null)
         {
@@ -32,6 +32,30 @@ public class HellenicCommander : IDisposable
             case (uint) Protocols.Mavlink:
                  m_mavLinkCommandFactory.TakeoffQuadcopter(machine, altitude);
                  break;
+        }
+    }
+
+    public void LandQuadcopter(Machine machine)
+    {
+        if (machine == null)
+        {
+            HermesUtils.HermesLogError("Cannot send land command to a null machine!");
+            return;
+        }
+
+        Pulse pulse = (Pulse) machine.GetHellenicMessage(HellenicMessageType.Pulse);
+
+        if (!pulse.OriginalProtocol.HasValue)
+        {
+            HermesUtils.HermesLogError("Cannot send land command to a machine with unknown protocol");
+            return;
+        }
+
+        switch (pulse.OriginalProtocol.Value)
+        {
+            case (uint) Protocols.Mavlink:
+                m_mavLinkCommandFactory.LandQuadcopter(machine);
+                break;
         }
     }
 

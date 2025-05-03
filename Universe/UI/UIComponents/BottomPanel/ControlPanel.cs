@@ -16,16 +16,16 @@ public partial class ControlPanel : PanelContainer
 
     private Dictionary<uint, Machine> m_machines = new Dictionary<uint, Machine>();
 
-    private MarginContainer m_controlPanelContainer;
+    private HBoxContainer m_controlPanelBar;
 
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
     {
         GlobalEventBus.Instance.UIEventBus.MachineCardClicked += OnMachineCardClicked;
 
-        m_controlPanelContainer =
-            GetNode<MarginContainer>(
-                "VBoxContainer/ControlPanelControls/ControlPanelMarginContainer");
+        m_controlPanelBar =
+            GetNode<HBoxContainer>(
+                "VBoxContainer/ControlPanelControls/ControlPanelMarginContainer/ControlPanelBar");
     }
 
 	public override void _Process(double delta)
@@ -87,6 +87,9 @@ public partial class ControlPanel : PanelContainer
                 case Capability.Takeoff:
                     LoadTakeoffComponent();
                     break;
+                case Capability.Landing:
+                    LoadLandComponent();
+                    break;
             }
         }
 
@@ -103,12 +106,26 @@ public partial class ControlPanel : PanelContainer
         takeoffComponentInstance.SetMachines(m_machines);
         takeoffComponentInstance.Name = "TakeoffControlComponent";
 
-        m_controlPanelContainer.AddChild(takeoffComponentInstance);
+        m_controlPanelBar.AddChild(takeoffComponentInstance);
+    }
+
+    private void LoadLandComponent()
+    {
+        var landComponent =
+            GD.Load<PackedScene>("res://Universe/UI/UIComponents/MachineControl/LandControlComponent.tscn");
+
+        LandControlComponent landControlComponentInstance =
+            landComponent.Instantiate<LandControlComponent>();
+
+        landControlComponentInstance.SetMachines(m_machines);
+        landControlComponentInstance.Name = "TakeoffControlComponent";
+
+        m_controlPanelBar.AddChild(landControlComponentInstance);
     }
 
     private void UnloadAllControlComponents()
     {
-        var children = m_controlPanelContainer.GetChildren();
+        var children = m_controlPanelBar.GetChildren();
         foreach (var child in children)
         {
             child.QueueFree();
