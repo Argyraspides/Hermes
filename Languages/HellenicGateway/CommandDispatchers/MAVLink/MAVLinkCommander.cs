@@ -14,6 +14,14 @@ using Hermes.Core.Machine.Machine;
 
 namespace Hermes.Languages.HellenicGateway.CommandDispatchers.MAVLink;
 
+/*
+ * TODO::ARGYRASPIDES() {
+ *      there is some duplicate code here (awaiting for ack with retries has repetitive logic
+ *      in each of the send mavlink command functions).
+ *      fix that up please.
+ *  }
+ *
+ */
 public class MAVLinkCommander : IDisposable
 {
     private const double LAT_LON_SCALE_FACTOR = 1e7;
