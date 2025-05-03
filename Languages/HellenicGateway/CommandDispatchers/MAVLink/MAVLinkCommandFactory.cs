@@ -36,6 +36,8 @@ public class MAVLinkCommandFactory : IDisposable
             return;
         }
 
+        // TODO::ARGYRASPIDES() { Eh ... if we only need to string together a few dependent commands thats fine but this can easily turn into a nested nightmare.
+        //  find a better way to do it .... }
         m_mavLinkCommander.SendMAVLinkArmCommand(machine, false, (armSuccess) =>
         {
             if (armSuccess)

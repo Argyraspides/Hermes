@@ -14,14 +14,6 @@ using Hermes.Core.Machine.Machine;
 
 namespace Hermes.Languages.HellenicGateway.CommandDispatchers.MAVLink;
 
-/*
- * TODO::ARGYRASPIDES() {
- *      there is some duplicate code here (awaiting for ack with retries has repetitive logic
- *      in each of the send mavlink command functions).
- *      fix that up please.
- *  }
- *
- */
 public class MAVLinkCommander : IDisposable
 {
     private const double LAT_LON_SCALE_FACTOR = 1e7;
@@ -113,38 +105,12 @@ public class MAVLinkCommander : IDisposable
             attempts
         );
 
-        Action<bool> ackAction = null;
-        ackAction = (success) =>
-        {
-            if (success)
-            {
-                HermesUtils.HermesLogSuccess(
-                    $"Successfully performed TAKEOFF command for machine #{machine.MachineId}");
-                successCallback?.Invoke(true);
-            }
-            else if (attempts < MAX_RETRIES)
-            {
-                HermesUtils.HermesLogWarning(
-                    $"Unable to send MAVLink TAKEOFF command after {attempts} attempts. MachineID: {machine.MachineId}, altitude: {altitude}. Retrying ...");
-                attempts++;
-                byte[] packet = mavlinkParser.GenerateMAVLinkPacket20(
-                    global::MAVLink.MAVLINK_MSG_ID.COMMAND_INT,
-                    mavlinkCommand,
-                    false,
-                    GCS_MAVLINK_ID,
-                    (byte)global::MAVLink.MAV_COMPONENT.MAV_COMP_ID_MISSIONPLANNER,
-                    attempts
-                );
-                sender.Send(packet, packet.Length, new IPEndPoint(IPAddress.Loopback, MAVLINK_UDP_DST_CMD_PORT));
-                AwaitMAVLinkAcknowledgement(machine, global::MAVLink.MAV_CMD.TAKEOFF, ackAction);
-            }
-            else if (attempts >= MAX_RETRIES)
-            {
-                HermesUtils.HermesLogWarning(
-                    $"Unable to send MAVLink COMPONENT_ARM_DISARM command after the max number of attempts. MachineID: {machine.MachineId}, altitude: {altitude}. Aborting ...");
-                successCallback?.Invoke(false);
-            }
-        };
+        Action<bool> ackAction = GenerateAckAction(
+            mavlinkCommand,
+            global::MAVLink.MAV_CMD.TAKEOFF,
+            global::MAVLink.MAVLINK_MSG_ID.COMMAND_INT,
+            machine,
+            successCallback);
 
         sender.Send(packet, packet.Length, new IPEndPoint(IPAddress.Loopback, MAVLINK_UDP_DST_CMD_PORT));
         AwaitMAVLinkAcknowledgement(machine, global::MAVLink.MAV_CMD.TAKEOFF, ackAction);
@@ -185,38 +151,12 @@ public class MAVLinkCommander : IDisposable
             attempts
         );
 
-        Action<bool> ackAction = null;
-        ackAction = (success) =>
-        {
-            if (success)
-            {
-                HermesUtils.HermesLogSuccess(
-                    $"Successfully performed ARM command for machine #{machine.MachineId}");
-                successCallback?.Invoke(true);
-            }
-            else if (attempts < MAX_RETRIES)
-            {
-                HermesUtils.HermesLogWarning(
-                    $"Unable to send MAVLink COMPONENT_ARM_DISARM command after {attempts} attempts. MachineID: {machine.MachineId}, ForceArm: {forceArm}. Retrying ...");
-                attempts++;
-                byte[] packet = mavlinkParser.GenerateMAVLinkPacket20(
-                    global::MAVLink.MAVLINK_MSG_ID.COMMAND_LONG,
-                    mavlinkCommand,
-                    false,
-                    GCS_MAVLINK_ID,
-                    (byte)global::MAVLink.MAV_COMPONENT.MAV_COMP_ID_MISSIONPLANNER,
-                    attempts
-                );
-                sender.Send(packet, packet.Length, new IPEndPoint(IPAddress.Loopback, MAVLINK_UDP_DST_CMD_PORT));
-                AwaitMAVLinkAcknowledgement(machine, global::MAVLink.MAV_CMD.COMPONENT_ARM_DISARM, ackAction);
-            }
-            else if (attempts >= MAX_RETRIES)
-            {
-                HermesUtils.HermesLogWarning(
-                    $"Unable to send MAVLink COMPONENT_ARM_DISARM command after the max number of attempts. MachineID: {machine.MachineId}, ForceArm: {forceArm}. Aborting ...");
-                successCallback?.Invoke(false);
-            }
-        };
+        Action<bool> ackAction = GenerateAckAction(
+            mavlinkCommand,
+            global::MAVLink.MAV_CMD.COMPONENT_ARM_DISARM,
+            global::MAVLink.MAVLINK_MSG_ID.COMMAND_LONG,
+            machine,
+            successCallback);
 
         sender.Send(packet, packet.Length, new IPEndPoint(IPAddress.Loopback, MAVLINK_UDP_DST_CMD_PORT));
         AwaitMAVLinkAcknowledgement(machine, global::MAVLink.MAV_CMD.COMPONENT_ARM_DISARM, ackAction);
@@ -281,38 +221,12 @@ public class MAVLinkCommander : IDisposable
             attempts
         );
 
-        Action<bool> ackAction = null;
-        ackAction = (success) =>
-        {
-            if (success)
-            {
-                HermesUtils.HermesLogSuccess(
-                    $"Successfully performed LAND command for machine #{machine.MachineId}");
-                successCallback?.Invoke(true);
-            }
-            else if (attempts < MAX_RETRIES)
-            {
-                HermesUtils.HermesLogWarning(
-                    $"Unable to send MAVLink LAND command after {attempts} attempts. MachineID: {machine.MachineId}. Retrying ...");
-                attempts++;
-                byte[] packet = mavlinkParser.GenerateMAVLinkPacket20(
-                    global::MAVLink.MAVLINK_MSG_ID.COMMAND_LONG,
-                    mavlinkCommand,
-                    false,
-                    GCS_MAVLINK_ID,
-                    (byte)global::MAVLink.MAV_COMPONENT.MAV_COMP_ID_MISSIONPLANNER,
-                    attempts
-                );
-                sender.Send(packet, packet.Length, new IPEndPoint(IPAddress.Loopback, MAVLINK_UDP_DST_CMD_PORT));
-                AwaitMAVLinkAcknowledgement(machine, global::MAVLink.MAV_CMD.LAND, ackAction);
-            }
-            else if (attempts >= MAX_RETRIES)
-            {
-                HermesUtils.HermesLogWarning(
-                    $"Unable to send MAVLink LAND command after the max number of attempts. MachineID: {machine.MachineId}. Aborting ...");
-                successCallback?.Invoke(false);
-            }
-        };
+        Action<bool> ackAction = GenerateAckAction(
+            mavlinkCommand,
+            global::MAVLink.MAV_CMD.LAND,
+            global::MAVLink.MAVLINK_MSG_ID.COMMAND_LONG,
+            machine,
+            successCallback);
 
         sender.Send(packet, packet.Length, new IPEndPoint(IPAddress.Loopback, MAVLINK_UDP_DST_CMD_PORT));
         AwaitMAVLinkAcknowledgement(machine, global::MAVLink.MAV_CMD.LAND, ackAction);
@@ -401,9 +315,72 @@ public class MAVLinkCommander : IDisposable
             }
         };
 
+        // TODO::ARGYRASPIDES()
+        //  { parameratize this receiver endpoint (no hardcoded ip) }
         IPEndPoint receiverEndPoint = IPEndPoint.Parse($"127.0.0.1:{MAVLINK_UDP_RECIEVE_PORT}");
         string subKey = HermesUDPListener.RegisterUdpClient(receiverEndPoint, listenForAck);
         listenForAck.Invoke(subKey);
+    }
+
+    private Action<bool> GenerateAckAction(
+        object mavlinkCommandStruct /* command int or long! */,
+        global::MAVLink.MAV_CMD mavCommand,
+        global::MAVLink.MAVLINK_MSG_ID commandType,
+        Machine machine, Action<bool> successCallback)
+    {
+        if (mavlinkCommandStruct == null)
+        {
+            HermesUtils.HermesLogError(
+                "In MAVLinkCommander.GenerateAckAction: Cannot send a MAVLink command with a null command struct!");
+            return null;
+        }
+
+        if (commandType != global::MAVLink.MAVLINK_MSG_ID.COMMAND_INT && commandType != global::MAVLink.MAVLINK_MSG_ID.COMMAND_LONG)
+        {
+            HermesUtils.HermesLogError(
+                "In MAVLinkCommander.GenerateAckAction: Command must be of type COMMAND_INT or COMMAND_LONG!");
+            return null;
+        }
+
+        int attempts = 0;
+
+        Action<bool> ackAction = null;
+        ackAction = (success) =>
+        {
+            if (success)
+            {
+                HermesUtils.HermesLogSuccess(
+                    $"Successfully performed {mavCommand.ToString()} command for machine #{machine.MachineId}");
+                successCallback?.Invoke(true);
+            }
+            else if (attempts < MAX_RETRIES)
+            {
+                HermesUtils.HermesLogWarning(
+                    $"Unable to send MAVLink {mavCommand.ToString()} command after {attempts} attempts. MachineID: {machine.MachineId}. Retrying ...");
+                attempts++;
+                byte[] packet = mavlinkParser.GenerateMAVLinkPacket20(
+                    commandType,
+                    mavlinkCommandStruct,
+                    false,
+                    GCS_MAVLINK_ID,
+                    (byte)global::MAVLink.MAV_COMPONENT
+                        .MAV_COMP_ID_MISSIONPLANNER, // TODO::ARGYRASPIDES() { Determine if this ever needs to change .... }
+                    attempts
+                );
+                sender.Send(packet, packet.Length,
+                    new IPEndPoint(IPAddress.Loopback,
+                        MAVLINK_UDP_DST_CMD_PORT)); // TODO::ARGYRASPIDES() { Change IPEndpoint to be parameterized }
+                AwaitMAVLinkAcknowledgement(machine, mavCommand, ackAction);
+            }
+            else if (attempts >= MAX_RETRIES)
+            {
+                HermesUtils.HermesLogWarning(
+                    $"Unable to send MAVLink {mavCommand.ToString()} command after the max number of attempts. MachineID: {machine.MachineId}. Aborting ...");
+                successCallback?.Invoke(false);
+            }
+        };
+
+        return ackAction;
     }
 
     private void Dispose(bool manualDispose)
