@@ -36,7 +36,7 @@ public class MAVLinkUDPListener
 
         foreach (IPEndPoint endPoint in endPoints)
         {
-            uint id = HermesUdpClient.RegisterUdpClient(endPoint);
+            uint id = HermesUDPListener.RegisterUdpClient(endPoint);
             m_udpEndpoints.Add(id, endPoint);
         }
     }
@@ -47,7 +47,7 @@ public class MAVLinkUDPListener
         m_udpListenerThread.Start(m_cancellationTokenSource.Token);
     }
 
-    private async void StartListening(object pCancellationToken)
+    private void StartListening(object pCancellationToken)
     {
         CancellationToken cancellationToken = (CancellationToken)pCancellationToken;
         while (!cancellationToken.IsCancellationRequested)
@@ -57,7 +57,12 @@ public class MAVLinkUDPListener
 
                 uint id = endpoint.Key;
                 IPEndPoint ipEndPoint = endpoint.Value;
-                var dat = await HermesUdpClient.ReceiveAsync(id, ipEndPoint);
+                var dat = HermesUDPListener.Receive(id, ipEndPoint);
+
+                if (dat.Buffer.IsEmpty())
+                {
+                    continue;
+                }
 
                 if (m_messageQueue.Count >= m_maxMessageBufferSize)
                 {

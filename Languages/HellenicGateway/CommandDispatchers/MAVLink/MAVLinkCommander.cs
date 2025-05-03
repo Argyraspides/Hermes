@@ -3,6 +3,7 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
+using Godot;
 using Hermes.Common.HermesUtils;
 using Hermes.Common.Networking.UDP;
 using Hermes.Core.Machine;
@@ -37,7 +38,7 @@ public class MAVLinkCommander : IDisposable
         sender = new UdpClient(HERMES_UDP_SRC_PORT);
 
         receiverEndPoint = IPEndPoint.Parse($"127.0.0.1:{MAVLINK_UDP_RECIEVE_PORT}");
-        receiverId = HermesUdpClient.RegisterUdpClient(receiverEndPoint);
+        receiverId = HermesUDPListener.RegisterUdpClient(receiverEndPoint);
 
     }
 
@@ -107,7 +108,7 @@ public class MAVLinkCommander : IDisposable
             );
 
             sender.Send(packet, packet.Length, new IPEndPoint(IPAddress.Loopback, MAVLINK_UDP_DST_CMD_PORT));
-            bool success = await AwaitMAVLinkAcknowledgement(machine, global::MAVLink.MAV_CMD.TAKEOFF);
+            bool success = AwaitMAVLinkAcknowledgement(machine, global::MAVLink.MAV_CMD.TAKEOFF);
             if (success)
             {
                 HermesUtils.HermesLogSuccess($"Successfully performed take off command for machine #{machine.MachineId}");
@@ -157,7 +158,7 @@ public class MAVLinkCommander : IDisposable
 
             sender.Send(packet, packet.Length, new IPEndPoint(IPAddress.Loopback, MAVLINK_UDP_DST_CMD_PORT));
 
-            bool success = await AwaitMAVLinkAcknowledgement(machine, global::MAVLink.MAV_CMD.COMPONENT_ARM_DISARM);
+            bool success = AwaitMAVLinkAcknowledgement(machine, global::MAVLink.MAV_CMD.COMPONENT_ARM_DISARM);
             if (success)
             {
                 HermesUtils.HermesLogSuccess($"Successfully performed arm command for machine #{machine.MachineId}");
@@ -229,7 +230,7 @@ public class MAVLinkCommander : IDisposable
             );
 
             sender.Send(packet, packet.Length, new IPEndPoint(IPAddress.Loopback, MAVLINK_UDP_DST_CMD_PORT));
-            bool success = await AwaitMAVLinkAcknowledgement(machine, global::MAVLink.MAV_CMD.LAND);
+            bool success = AwaitMAVLinkAcknowledgement(machine, global::MAVLink.MAV_CMD.LAND);
             if (success)
             {
                 HermesUtils.HermesLogSuccess($"Successfully performed land command for machine #{machine.MachineId}");
@@ -243,7 +244,7 @@ public class MAVLinkCommander : IDisposable
         return false;
     }
 
-    public async Task<bool> AwaitMAVLinkAcknowledgement(Machine machine, global::MAVLink.MAV_CMD cmd)
+    public bool AwaitMAVLinkAcknowledgement(Machine machine, global::MAVLink.MAV_CMD cmd)
     {
 
         if (machine == null)
@@ -266,7 +267,9 @@ public class MAVLinkCommander : IDisposable
 
         while(DateTime.Now < future)
         {
-            var dat = await HermesUdpClient.ReceiveAsync(receiverId, receiverEndPoint);
+            var dat =  HermesUDPListener.Receive(receiverId, receiverEndPoint);
+            if (dat.Buffer.IsEmpty()) continue;
+
             using (MemoryStream stream = new MemoryStream(dat.Buffer))
             {
                 global::MAVLink.MAVLinkMessage message = mavlinkParser.ReadPacket(stream);
@@ -311,7 +314,7 @@ public class MAVLinkCommander : IDisposable
 
     private void ReleaseUnmanagedResources()
     {
-        HermesUdpClient.DeregisterUdpClient(receiverId, receiverEndPoint);
+        HermesUDPListener.DeregisterUdpClient(receiverId, receiverEndPoint);
     }
 
     private void Dispose(bool manualDispose)
