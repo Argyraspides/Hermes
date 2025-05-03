@@ -13,11 +13,13 @@ namespace Hermes.Common.Communications.WorldListener.MAVLink;
 // See: https://mavlink.io/en/guide/serialization.html
 public class MAVLinkUDPListener
 {
-    private Dictionary<uint, IPEndPoint> m_udpEndpoints;
+    private Dictionary<string, IPEndPoint> m_udpEndpoints;
 
     // MAVLink.MAVLinkMessage is auto generated code. Ensure you've auto-generated the MAVLink headers
     private ConcurrentQueue<global::MAVLink.MAVLinkMessage> m_messageQueue;
     public event Action MAVLinkMessageReceived;
+
+    public event Action<string> HermesUDPDatagramReceived;
 
     private int m_maxMessageBufferSize = 45;
 
@@ -27,7 +29,7 @@ public class MAVLinkUDPListener
     public MAVLinkUDPListener(params IPEndPoint[] endPoints)
     {
 
-        m_udpEndpoints = new Dictionary<uint, IPEndPoint>();
+        m_udpEndpoints = new Dictionary<string, IPEndPoint>();
 
         // MAVLink.MAVLinkMessage is auto generated code. Ensure you've auto-generated the MAVLink headers
         m_messageQueue = new ConcurrentQueue<global::MAVLink.MAVLinkMessage>();
@@ -36,7 +38,7 @@ public class MAVLinkUDPListener
 
         foreach (IPEndPoint endPoint in endPoints)
         {
-            uint id = HermesUDPListener.RegisterUdpClient(endPoint);
+            string id = HermesUDPListener.RegisterUdpClient(endPoint, HermesUDPDatagramReceived);
             m_udpEndpoints.Add(id, endPoint);
         }
     }
@@ -55,9 +57,7 @@ public class MAVLinkUDPListener
             foreach (var endpoint in m_udpEndpoints)
             {
 
-                uint id = endpoint.Key;
-                IPEndPoint ipEndPoint = endpoint.Value;
-                var dat = HermesUDPListener.Receive(id, ipEndPoint);
+                var dat = HermesUDPListener.Receive(endpoint.Key);
 
                 if (dat.Buffer.IsEmpty())
                 {
@@ -90,9 +90,9 @@ public class MAVLinkUDPListener
     {
         m_cancellationTokenSource.Cancel();
 
-        foreach (var endpoints in m_udpEndpoints)
+        foreach (var subs in m_udpEndpoints)
         {
-            HermesUdpClient.DeregisterUdpClient(endpoints.Key, endpoints.Value);
+            HermesUDPListener.DeregisterUdpClient(subs.Key);
         }
 
         m_udpListenerThread.Join();

@@ -27,7 +27,7 @@ public class MAVLinkCommandFactory : IDisposable
     }
 
 
-    public async void TakeoffQuadcopter(Machine machine, double altitude)
+    public void TakeoffQuadcopter(Machine machine, double altitude)
     {
         if (!MachineValid(machine)) return;
         if (machine.MachineType != MachineType.Quadcopter)
@@ -36,15 +36,18 @@ public class MAVLinkCommandFactory : IDisposable
             return;
         }
 
-        // Abandon if arming fails
-        if (!await m_mavLinkCommander.SendMAVLinkArmCommand(machine)) return;
-
-        await m_mavLinkCommander.SendMAVLinkTakeoffCommand(machine, altitude);
+        m_mavLinkCommander.SendMAVLinkArmCommand(machine, false, (armSuccess) =>
+        {
+            if (armSuccess)
+            {
+                m_mavLinkCommander.SendMAVLinkTakeoffCommand(machine, altitude);
+            }
+        });
     }
 
-    public async void LandQuadcopter(Machine machine, double abortAltitude = 0.0)
+    public void LandQuadcopter(Machine machine, double abortAltitude = 0.0)
     {
-        await m_mavLinkCommander.SendMAVLinkLandCommand(machine, abortAltitude);
+        m_mavLinkCommander.SendMAVLinkLandCommand(machine, abortAltitude);
     }
 
     public void Dispose()

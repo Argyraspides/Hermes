@@ -8,6 +8,12 @@ using System.Threading;
 
 namespace Hermes.Common.Networking.UDP;
 
+/*
+ * TODO::ARGYRASPIDES() {
+ *      Come up with a hashing function to convert IP:Port and IP:Port:SubID into unique uint's
+ *      to make retrieval much faster in the ConcurrentDictionaries
+ *  }
+ */
 public class HermesUDPListener
 {
     private const uint MAX_BUFFER_SIZE = 512;
@@ -22,6 +28,10 @@ public class HermesUDPListener
     private static ConcurrentDictionary<string, ConcurrentQueue<UdpReceiveResult>> buffers
         = new ConcurrentDictionary<string, ConcurrentQueue<UdpReceiveResult>>();
 
+    // IP:Port:SubID -> Callback
+    private static ConcurrentDictionary<string, Action<string>> subCallbacks =
+        new ConcurrentDictionary<string, Action<string>>();
+
     private static Thread listenerThread;
     private static CancellationTokenSource cancellationTokenSource;
 
@@ -35,27 +45,30 @@ public class HermesUDPListener
         listenerThread.Start();
     }
 
-    public static uint RegisterUdpClient(IPEndPoint ipEndpoint)
+    public static string RegisterUdpClient(IPEndPoint ipEndpoint, Action<string> callback)
     {
         lock (registrationLock)
         {
             string epKey = GetEndpointKey(ipEndpoint);
             string subKey = GetSubKey(nextId, ipEndpoint);
 
-            udpClients.GetOrAdd(epKey, client => { return new UdpClient(ipEndpoint); });
+            udpClients.GetOrAdd(epKey, (_) => { return new UdpClient(ipEndpoint); });
             buffers.GetOrAdd(subKey, new ConcurrentQueue<UdpReceiveResult>());
+            subCallbacks.GetOrAdd(subKey, callback);
+            nextId++;
 
-            return nextId++;
+            return subKey;
         }
     }
 
-    public static void DeregisterUdpClient(uint id, IPEndPoint endpoint)
+    public static void DeregisterUdpClient(string subKey)
     {
-        string subKey = GetSubKey(id, endpoint);
         buffers.TryRemove(subKey, out _);
+        subCallbacks.TryRemove(subKey, out _);
 
+        string[] parts = subKey.Split(':');
+        string endpointKey = $"{parts[0]}:{parts[1]}";
         // Number of subscribers with same endpoint
-        string endpointKey = GetEndpointKey(endpoint);
         int subsLeft = buffers.Keys.Where(key => key.Contains(endpointKey)).Count();
 
         if (subsLeft == 0)
@@ -64,13 +77,12 @@ public class HermesUDPListener
         }
     }
 
-    public static UdpReceiveResult Receive(uint id, IPEndPoint ipEndpoint)
+    public static UdpReceiveResult Receive(string subKey)
     {
-        string subKey = GetSubKey(id, ipEndpoint);
-
         if (!buffers.TryGetValue(subKey, out ConcurrentQueue<UdpReceiveResult> buff))
         {
-            throw new KeyNotFoundException($"Unable to find subscriber with ID of {subKey}");
+            HermesUtils.HermesUtils.HermesLogError($"Unable to find subscriber with ID of {subKey}!");
+            return new UdpReceiveResult();
         }
 
         buff.TryDequeue(out UdpReceiveResult res);
@@ -101,7 +113,7 @@ public class HermesUDPListener
         {
             foreach (KeyValuePair<string, UdpClient> client in udpClients)
             {
-                UdpReceiveResult data = await client.Value.ReceiveAsync();
+                UdpReceiveResult data = await client.Value.ReceiveAsync(ct);
 
                 foreach (KeyValuePair<string, ConcurrentQueue<UdpReceiveResult>> buff in buffers)
                 {
@@ -113,6 +125,10 @@ public class HermesUDPListener
                     }
 
                     buff.Value.Enqueue(data);
+
+                    // Let subscriber know udp message has been received
+                    subCallbacks.TryGetValue(buff.Key, out Action<string> subCallback);
+                    subCallback?.Invoke(buff.Key);
                 }
             }
         }
@@ -120,6 +136,9 @@ public class HermesUDPListener
 
     public static void Dispose()
     {
+
+        HermesUtils.HermesUtils.HermesLogInfo("Destroying HermesUDPListener ...");
+
         cancellationTokenSource.Cancel();
         listenerThread.Join();
 
@@ -128,5 +147,8 @@ public class HermesUDPListener
             client.Close();
             client.Dispose();
         }
+
+        HermesUtils.HermesUtils.HermesLogInfo("Finished destroying HermesUDPListener!");
+
     }
 }
