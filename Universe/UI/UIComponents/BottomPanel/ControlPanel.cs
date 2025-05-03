@@ -43,11 +43,11 @@ public partial class ControlPanel : PanelContainer
         if (m_machines.ContainsKey(machine.MachineId.Value))
         {
             m_machines.Remove(machine.MachineId.Value);
-            RefreshControlComponents();
-            return;
         }
-
-        m_machines[machine.MachineId.Value] = machine;
+        else
+        {
+            m_machines[machine.MachineId.Value] = machine;
+        }
 
         RefreshControlComponents();
 
@@ -56,15 +56,24 @@ public partial class ControlPanel : PanelContainer
     private void RefreshControlComponents()
     {
 
-        IEnumerable<Capability> allCapabilities = new List<Capability>();
+        if (m_machines.Count == 0)
+        {
+            UnloadAllControlComponents();
+            return;
+        }
+
+        IEnumerable<Capability> sharedCapabilities = new List<Capability>(MachineUtils.GetCapabilities(m_machines.First().Value));
 
         foreach (var machine in m_machines)
         {
             IEnumerable<Capability> capabilities = MachineUtils.GetCapabilities(machine.Value);
-            allCapabilities = allCapabilities.Concat(capabilities);
+            IEnumerable<Capability> shared =
+                capabilities.Where(capability => sharedCapabilities.Contains(capability));
+
+            sharedCapabilities = sharedCapabilities.Concat(shared);
         }
 
-        IEnumerable<Capability> sharedCapabilities = allCapabilities.Distinct();
+        sharedCapabilities = sharedCapabilities.Distinct();
 
         if (sharedCapabilities.Count() == 0)
         {

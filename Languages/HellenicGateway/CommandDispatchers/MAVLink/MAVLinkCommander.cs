@@ -35,7 +35,7 @@ public class MAVLinkCommander : IDisposable
 
     public MAVLinkCommander()
     {
-        sender = new UdpClient(HERMES_UDP_SRC_PORT);
+        sender = new UdpClient();
     }
 
     ~MAVLinkCommander()

@@ -138,7 +138,7 @@ public partial class TakeoffControlComponent : HBoxContainer
 
     public void SetMachines(Dictionary<uint, Machine> machines)
     {
-        m_machines = machines;
+        m_machines = new Dictionary<uint, Machine>(machines);
     }
 
 }

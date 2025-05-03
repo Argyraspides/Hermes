@@ -57,7 +57,7 @@ stretch = true
 
 [node name="SubViewport" type="SubViewport" parent="MainUI/HBoxContainer/VBoxContainer/SubViewportContainer"]
 handle_input_locally = false
-size = Vector2i(1899, 752)
+size = Vector2i(1899, 761)
 render_target_update_mode = 4
 
 [node name="SolarSystem" parent="MainUI/HBoxContainer/VBoxContainer/SubViewportContainer/SubViewport" instance=ExtResource("3_hjwp2")]
