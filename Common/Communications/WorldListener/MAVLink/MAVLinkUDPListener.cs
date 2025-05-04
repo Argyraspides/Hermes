@@ -19,13 +19,11 @@ public class MAVLinkUDPListener
     private ConcurrentQueue<global::MAVLink.MAVLinkMessage> m_messageQueue;
     public event Action MAVLinkMessageReceived;
 
-    public event Action<ulong> HermesUDPDatagramReceived;
-
     private int m_maxMessageBufferSize = 45;
 
-    Thread m_udpListenerThread;
     private CancellationTokenSource m_cancellationTokenSource;
 
+    // TODO::ARGYRASPIDES() { Make it not immediately start listening on startup }
     public MAVLinkUDPListener(params IPEndPoint[] endPoints)
     {
 
@@ -38,25 +36,22 @@ public class MAVLinkUDPListener
 
         foreach (IPEndPoint endPoint in endPoints)
         {
-            ulong id = HermesUDPListener.RegisterUdpClient(endPoint, HermesUDPDatagramReceived);
+            ulong id = HermesUDPListener.RegisterUdpClient(endPoint,  GetDatagramHandlerFunc(m_cancellationTokenSource.Token));
             m_udpEndpoints.Add(id, endPoint);
         }
     }
 
-    public void StartListeningThread()
+    private Action<ulong> GetDatagramHandlerFunc(CancellationToken token)
     {
-        m_udpListenerThread = new Thread(StartListening) { IsBackground = true };
-        m_udpListenerThread.Start(m_cancellationTokenSource.Token);
-    }
-
-    private void StartListening(object pCancellationToken)
-    {
-        CancellationToken cancellationToken = (CancellationToken)pCancellationToken;
-        while (!cancellationToken.IsCancellationRequested)
+        Action<ulong> action = (subKey) =>
         {
+            if (token.IsCancellationRequested)
+            {
+                HermesUDPListener.DeregisterUdpClient(subKey);
+                return;
+            }
             foreach (var endpoint in m_udpEndpoints)
             {
-
                 var dat = HermesUDPListener.Receive(endpoint.Key);
 
                 if (dat.Buffer.IsEmpty())
@@ -83,19 +78,13 @@ public class MAVLinkUDPListener
                     HermesUtils.HermesUtils.HermesLogBullshit("Received truncated MAVLink message!");
                 }
             }
-        }
+        };
+        return action;
     }
 
     public void StopListening()
     {
         m_cancellationTokenSource.Cancel();
-
-        foreach (var subs in m_udpEndpoints)
-        {
-            HermesUDPListener.DeregisterUdpClient(subs.Key);
-        }
-
-        m_udpListenerThread.Join();
     }
 
     public global::MAVLink.MAVLinkMessage GetNextMessage()

@@ -57,7 +57,6 @@ public class MAVLinkAdapter : IProtocolAdapter
     public void Start()
     {
         m_messageQueue = new ConcurrentQueue<HellenicMessage>();
-        m_udpListener.StartListeningThread();
         m_udpListener.MAVLinkMessageReceived += OnMAVLinkMessageReceived;
     }
 
