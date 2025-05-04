@@ -131,7 +131,7 @@ public sealed partial class TerrainQuadTree : Node3D
 
     private MapTileType TileType;
 
-    public TerrainQuadTree(PlanetOrbitalCamera camera, MapTileType tileType, int maxNodes = 7500, int minDepth = 6, int maxDepth = 20)
+    public TerrainQuadTree(PlanetOrbitalCamera camera, MapTileType tileType, int maxNodes = 7500, int minDepth = 2, int maxDepth = 20)
     {
         if (maxDepth > MAX_DEPTH_LIMIT || maxDepth < MIN_DEPTH_LIMIT)
         {

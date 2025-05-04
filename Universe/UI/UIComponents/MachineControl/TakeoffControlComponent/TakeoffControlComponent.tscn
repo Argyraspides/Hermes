@@ -1,6 +1,7 @@
-[gd_scene load_steps=4 format=3 uid="uid://cl5gknpbm0yil"]
+[gd_scene load_steps=5 format=3 uid="uid://cl5gknpbm0yil"]
 
 [ext_resource type="Script" path="res://Universe/UI/UIComponents/MachineControl/TakeoffControlComponent/TakeoffControlComponent.cs" id="1_tik6v"]
+[ext_resource type="Theme" uid="uid://dll7gj5amwt4g" path="res://Universe/UI/Themes/DefaultHermesTheme.tres" id="1_tpn5c"]
 [ext_resource type="Texture2D" uid="uid://u54t0wxch7pt" path="res://Universe/UI/Assets/TakeoffQuadcopter.png" id="2_nbn0d"]
 [ext_resource type="Texture2D" uid="uid://0x1dnpt3ovyq" path="res://Universe/UI/Assets/TakeoffQuadcopterSelected.png" id="3_qm6ws"]
 
@@ -10,10 +11,12 @@ anchor_right = 0.087
 anchor_bottom = 0.185
 offset_right = -0.0400085
 offset_bottom = 0.199997
+theme = ExtResource("1_tpn5c")
 script = ExtResource("1_tik6v")
 
 [node name="TakeoffButtonContainer" type="VBoxContainer" parent="."]
-custom_minimum_size = Vector2(100, 200)
+clip_contents = true
+custom_minimum_size = Vector2(60, 200)
 layout_mode = 2
 size_flags_horizontal = 3
 
@@ -24,12 +27,13 @@ toggle_mode = true
 texture_normal = ExtResource("2_nbn0d")
 texture_pressed = ExtResource("3_qm6ws")
 ignore_texture_size = true
-stretch_mode = 4
+stretch_mode = 5
 
 [node name="TakeoffButtonLabel" type="RichTextLabel" parent="TakeoffButtonContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 size_flags_stretch_ratio = 0.5
+theme_override_font_sizes/normal_font_size = 15
 bbcode_enabled = true
 text = "[center]TAKEOFF[/center]"
 

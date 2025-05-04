@@ -28,7 +28,7 @@ public partial class LandControlComponent : HBoxContainer
         m_landButton = GetNode<TextureButton> ("LandButtonContainer/LandButton");
 
         m_landButtonContainer = GetNode<VBoxContainer>("LandButtonContainer");
-        m_landButtonContainer.CustomMinimumSize = new Vector2(100, UIConstants.CONTROL_PANEL_MAX_HEIGHT);
+        // m_landButtonContainer.CustomMinimumSize = new Vector2(100, UIConstants.CONTROL_PANEL_MAX_HEIGHT);
 
         m_commander = new HellenicCommander();
     }

@@ -39,10 +39,10 @@ public partial class TakeoffControlComponent : HBoxContainer
         GlobalEventBus.Instance.UIEventBus.ConfirmationSliderConfirmed += OnConfirmationSliderConfirmed;
 
         m_takeoffButtonContainer = GetNode<VBoxContainer>("TakeoffButtonContainer");
-        m_takeoffButtonContainer.CustomMinimumSize = new Vector2(100, UIConstants.CONTROL_PANEL_MAX_HEIGHT);
+        // m_takeoffButtonContainer.CustomMinimumSize = new Vector2(100, UIConstants.CONTROL_PANEL_MAX_HEIGHT);
 
         m_altitudeSliderComponent = GetNode<VBoxContainer>("AltitudeSliderComponent");
-        m_altitudeSliderComponent.CustomMinimumSize = new Vector2(50, UIConstants.CONTROL_PANEL_MAX_HEIGHT);
+        // m_altitudeSliderComponent.CustomMinimumSize = new Vector2(50, UIConstants.CONTROL_PANEL_MAX_HEIGHT);
 
         m_takeoffButton = GetNode<TextureButton> ("TakeoffButtonContainer/TakeoffButton");
 

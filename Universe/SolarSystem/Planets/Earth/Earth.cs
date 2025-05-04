@@ -30,7 +30,7 @@ public partial class Earth : Planet
 
     public override void _Ready()
     {
-        m_defaultZoomLevel = 6;
+        m_defaultZoomLevel = 2;
         base._Ready();
     }
 

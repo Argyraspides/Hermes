@@ -72,6 +72,14 @@ public partial class ControlPanel : PanelContainer
             IEnumerable<Capability> shared =
                 capabilities.Where(capability => sharedCapabilities.Contains(capability));
 
+            // If a machine has zero capabilities then no selected vehicle has any capabilities common with
+            // everyone else
+            if (shared.Count() == 0)
+            {
+                UnloadAllControlComponents();
+                return;
+            }
+
             sharedCapabilities = sharedCapabilities.Concat(shared);
         }
 

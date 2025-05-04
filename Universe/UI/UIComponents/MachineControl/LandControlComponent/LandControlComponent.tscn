@@ -1,5 +1,6 @@
-[gd_scene load_steps=4 format=3 uid="uid://r6m2qssqaeb2"]
+[gd_scene load_steps=5 format=3 uid="uid://r6m2qssqaeb2"]
 
+[ext_resource type="Theme" uid="uid://dll7gj5amwt4g" path="res://Universe/UI/Themes/DefaultHermesTheme.tres" id="1_5v4fu"]
 [ext_resource type="Script" path="res://Universe/UI/UIComponents/MachineControl/LandControlComponent/LandControlComponent.cs" id="1_eggoi"]
 [ext_resource type="Texture2D" uid="uid://3wbpmgjksp7o" path="res://Universe/UI/Assets/LandQuadcopter.png" id="2_v7ip0"]
 [ext_resource type="Texture2D" uid="uid://b85qsgpfc46n3" path="res://Universe/UI/Assets/LandQuadcopterSelected.png" id="3_kla1p"]
@@ -10,10 +11,11 @@ anchor_right = 0.052
 anchor_bottom = 0.185
 offset_right = 0.159996
 offset_bottom = -195.8
+theme = ExtResource("1_5v4fu")
 script = ExtResource("1_eggoi")
 
 [node name="LandButtonContainer" type="VBoxContainer" parent="."]
-custom_minimum_size = Vector2(100, 200)
+custom_minimum_size = Vector2(60, 200)
 layout_mode = 2
 size_flags_horizontal = 3
 
@@ -24,11 +26,12 @@ toggle_mode = true
 texture_normal = ExtResource("2_v7ip0")
 texture_pressed = ExtResource("3_kla1p")
 ignore_texture_size = true
-stretch_mode = 4
+stretch_mode = 5
 
 [node name="LandButtonLabel" type="RichTextLabel" parent="LandButtonContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 size_flags_stretch_ratio = 0.5
+theme_override_font_sizes/normal_font_size = 15
 bbcode_enabled = true
 text = "[center]LAND[/center]"
