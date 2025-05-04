@@ -31,4 +31,12 @@ public partial class UIEventBus : Node
         EmitSignal(SignalName.ZoomOutButtonClicked);
     }
 
+
+    [Signal]
+    public delegate void ConfirmationSliderConfirmedEventHandler();
+    public void OnConfirmationSliderConfirmed()
+    {
+        EmitSignal(SignalName.ConfirmationSliderConfirmed);
+    }
+
 }

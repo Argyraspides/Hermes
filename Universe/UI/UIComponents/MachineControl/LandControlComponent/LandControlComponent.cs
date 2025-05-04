@@ -23,9 +23,9 @@ public partial class LandControlComponent : HBoxContainer
 	{
 
         GlobalEventBus.Instance.UIEventBus.MachineCardClicked += OnMachineCardClicked;
+        GlobalEventBus.Instance.UIEventBus.ConfirmationSliderConfirmed += OnConfirmationSliderConfirmed;
 
         m_landButton = GetNode<TextureButton> ("LandButtonContainer/LandButton");
-        m_landButton.Pressed += OnLandButtonPressed;
 
         m_landButtonContainer = GetNode<VBoxContainer>("LandButtonContainer");
         m_landButtonContainer.CustomMinimumSize = new Vector2(100, UIConstants.CONTROL_PANEL_MAX_HEIGHT);
@@ -68,6 +68,23 @@ public partial class LandControlComponent : HBoxContainer
 
     }
 
+    private void OnConfirmationSliderConfirmed()
+    {
+        /* TODO::ARGYRASPIDES() {
+         *      Make a filter here based on what machines we have? We should not hardcode a quadcopter ...
+         *  }
+         */
+        if (!m_landButton.IsPressed()) return;
+
+        foreach (Machine machine in m_machines.Values)
+        {
+            m_commander.LandQuadcopter(machine);
+        }
+
+        m_landButton.SetPressed(false);
+
+    }
+
     private void OnMachineCardClicked(Machine machine)
     {
         if (!HermesUtils.IsValid(machine) || !machine.MachineId.HasValue || m_machines == null)
@@ -86,18 +103,6 @@ public partial class LandControlComponent : HBoxContainer
 
         SetMachineIcon();
 
-    }
-
-    private void OnLandButtonPressed()
-    {
-        /* TODO::ARGYRASPIDES() {
-         *      Make a filter here based on what machines we have? We should not hardcode a quadcopter ...
-         *  }
-         */
-        foreach (Machine machine in m_machines.Values)
-        {
-            m_commander.LandQuadcopter(machine);
-        }
     }
 
     public void SetMachines(Dictionary<uint, Machine> machines)

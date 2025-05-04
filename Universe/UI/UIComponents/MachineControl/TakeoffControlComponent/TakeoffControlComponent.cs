@@ -36,6 +36,7 @@ public partial class TakeoffControlComponent : HBoxContainer
 	{
 
         GlobalEventBus.Instance.UIEventBus.MachineCardClicked += OnMachineCardClicked;
+        GlobalEventBus.Instance.UIEventBus.ConfirmationSliderConfirmed += OnConfirmationSliderConfirmed;
 
         m_takeoffButtonContainer = GetNode<VBoxContainer>("TakeoffButtonContainer");
         m_takeoffButtonContainer.CustomMinimumSize = new Vector2(100, UIConstants.CONTROL_PANEL_MAX_HEIGHT);
@@ -44,7 +45,6 @@ public partial class TakeoffControlComponent : HBoxContainer
         m_altitudeSliderComponent.CustomMinimumSize = new Vector2(50, UIConstants.CONTROL_PANEL_MAX_HEIGHT);
 
         m_takeoffButton = GetNode<TextureButton> ("TakeoffButtonContainer/TakeoffButton");
-        m_takeoffButton.Pressed += OnTakeoffButtonPressed;
 
         m_altitudeSlider = GetNode<VSlider> ("AltitudeSliderComponent/SliderCenterContainer/AltitudeSlider");
         m_altitudeSlider.MaxValue = DEFAULT_MAX_TAKEOFF_ALTITUDE;
@@ -86,7 +86,7 @@ public partial class TakeoffControlComponent : HBoxContainer
         {
             m_currentMaxTakeoffAltitude = Convert.ToDouble(m_maxAltitudeLabel.Text.Replace("m", ""));
             if (s.Last() != 'm') m_maxAltitudeLabel.Text += 'm';
-            
+
             m_altitudeSlider.MaxValue = m_currentMaxTakeoffAltitude;
         }
         catch (FormatException _) // Not a valid double
@@ -145,16 +145,21 @@ public partial class TakeoffControlComponent : HBoxContainer
 
     }
 
-    private void OnTakeoffButtonPressed()
+    private void OnConfirmationSliderConfirmed()
     {
         /* TODO::ARGYRASPIDES() {
          *      Make a filter here based on what machines we have? We should not hardcode a quadcopter ...
          *  }
          */
+        if (!m_takeoffButton.IsPressed()) return;
+
         foreach (Machine machine in m_machines.Values)
         {
             m_commander.TakeoffQuadcopter(machine, m_altitudeSlider.Value);
         }
+
+        m_takeoffButton.SetPressed(false);
+
     }
 
     public void SetMachines(Dictionary<uint, Machine> machines)
