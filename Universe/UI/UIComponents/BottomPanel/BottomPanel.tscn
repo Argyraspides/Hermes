@@ -58,8 +58,10 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_fonts/bold_font = ExtResource("4_i64nm")
+theme_override_font_sizes/normal_font_size = 20
+theme_override_font_sizes/bold_font_size = 20
 bbcode_enabled = true
-text = "[b] CONTROL"
+text = "[b]CONTROL"
 
 [node name="ConfirmationSliderMargin" type="MarginContainer" parent="ControlAndTelemetryPanels/ControlPanel/VBoxContainer/VBoxContainer"]
 layout_mode = 2
@@ -109,8 +111,10 @@ color = Color(0.0705882, 0.0705882, 0.0705882, 1)
 layout_mode = 2
 size_flags_vertical = 3
 size_flags_stretch_ratio = 0.15
+theme_override_font_sizes/normal_font_size = 20
+theme_override_font_sizes/bold_font_size = 20
 bbcode_enabled = true
-text = "   TELEMETRY"
+text = "   [b]TELEMETRY"
 
 [node name="TelemetryPanelTelemetry" type="HBoxContainer" parent="ControlAndTelemetryPanels/TelemetryPanel/VBoxContainer"]
 layout_mode = 2

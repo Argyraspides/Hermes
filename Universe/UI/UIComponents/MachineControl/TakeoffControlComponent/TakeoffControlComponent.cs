@@ -55,18 +55,19 @@ public partial class TakeoffControlComponent : HBoxContainer
 
         m_commander = new HellenicCommander();
     }
-
     public override void _ExitTree()
     {
         GlobalEventBus.Instance.UIEventBus.MachineCardClicked -= OnMachineCardClicked;
         m_commander.Dispose();
     }
-
+    public void SetMachines(Dictionary<uint, Machine> machines)
+    {
+        m_machines = new Dictionary<uint, Machine>(machines);
+    }
     private void OnAltitudeSliderSliding(double val)
     {
         m_currentAltitudeLabel.Text = $"[center]{val}m";
     }
-
     private void OnMaxAltitudeUpdated(string s)
     {
         /* TODO::ARGYRASPIDES() {
@@ -92,7 +93,6 @@ public partial class TakeoffControlComponent : HBoxContainer
         }
 
     }
-
     private void SetMachineIcon()
     {
         string normalIconPath = "res://Universe/UI/Assets/TakeoffIcon2.png";
@@ -121,7 +121,6 @@ public partial class TakeoffControlComponent : HBoxContainer
         m_takeoffButton.TexturePressed = GD.Load<Texture2D>(pressedIconPath);
 
     }
-
     private void OnMachineCardClicked(Machine machine)
     {
         if (!HermesUtils.IsValid(machine) || !machine.MachineId.HasValue || m_machines == null)
@@ -141,7 +140,6 @@ public partial class TakeoffControlComponent : HBoxContainer
         SetMachineIcon();
 
     }
-
     private void OnConfirmationSliderConfirmed()
     {
         /* TODO::ARGYRASPIDES() {
@@ -157,11 +155,6 @@ public partial class TakeoffControlComponent : HBoxContainer
 
         m_takeoffButton.SetPressed(false);
 
-    }
-
-    public void SetMachines(Dictionary<uint, Machine> machines)
-    {
-        m_machines = new Dictionary<uint, Machine>(machines);
     }
 
 }

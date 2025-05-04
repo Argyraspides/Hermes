@@ -10,13 +10,13 @@ using Hermes.Universe.UI.UIComponents;
 
 public partial class LandControlComponent : HBoxContainer
 {
-    private HellenicCommander m_commander;
+    private HellenicCommander           m_commander;
 
-    private Dictionary<uint, Machine> m_machines;
+    private Dictionary<uint, Machine>   m_machines;
 
-    private TextureButton m_landButton;
+    private TextureButton               m_landButton;
 
-    private VBoxContainer m_landButtonContainer;
+    private VBoxContainer               m_landButtonContainer;
 
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
@@ -31,11 +31,14 @@ public partial class LandControlComponent : HBoxContainer
 
         m_commander = new HellenicCommander();
     }
-
     public override void _ExitTree()
     {
         GlobalEventBus.Instance.UIEventBus.MachineCardClicked -= OnMachineCardClicked;
         m_commander.Dispose();
+    }
+    public void SetMachines(Dictionary<uint, Machine> machines)
+    {
+        m_machines = new Dictionary<uint, Machine>(machines);
     }
 
     private void SetMachineIcon()
@@ -66,7 +69,6 @@ public partial class LandControlComponent : HBoxContainer
         m_landButton.TexturePressed = GD.Load<Texture2D>(pressedIconPath);
 
     }
-
     private void OnConfirmationSliderConfirmed()
     {
         /* TODO::ARGYRASPIDES() {
@@ -83,7 +85,6 @@ public partial class LandControlComponent : HBoxContainer
         m_landButton.SetPressed(false);
 
     }
-
     private void OnMachineCardClicked(Machine machine)
     {
         if (!HermesUtils.IsValid(machine) || !machine.MachineId.HasValue || m_machines == null)
@@ -104,8 +105,4 @@ public partial class LandControlComponent : HBoxContainer
 
     }
 
-    public void SetMachines(Dictionary<uint, Machine> machines)
-    {
-        m_machines = new Dictionary<uint, Machine>(machines);
-    }
 }
