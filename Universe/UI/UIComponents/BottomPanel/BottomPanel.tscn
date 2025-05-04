@@ -1,9 +1,10 @@
-[gd_scene load_steps=6 format=3 uid="uid://q4ggeswaera3"]
+[gd_scene load_steps=7 format=3 uid="uid://q4ggeswaera3"]
 
 [ext_resource type="Theme" uid="uid://dll7gj5amwt4g" path="res://Universe/UI/Themes/DefaultHermesTheme.tres" id="1_3j13u"]
 [ext_resource type="Script" path="res://Universe/UI/UIComponents/BottomPanel/BottomPanel.cs" id="2_g4v84"]
 [ext_resource type="Script" path="res://Universe/UI/UIComponents/BottomPanel/ControlPanel.cs" id="3_7cm6w"]
 [ext_resource type="FontFile" uid="uid://bugofbrks3g4k" path="res://Universe/UI/Fonts/Jura/Jura-Bold.ttf" id="4_i64nm"]
+[ext_resource type="PackedScene" uid="uid://c704rbv2hvotv" path="res://Universe/UI/UIComponents/MachineControl/ConfirmationSlider/ConfirmationSlider.tscn" id="5_qau8o"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_xhs7t"]
 
@@ -67,22 +68,10 @@ size_flags_stretch_ratio = 0.25
 theme_override_constants/margin_top = 5
 theme_override_constants/margin_right = 15
 
-[node name="ConfirmationSlider" type="VBoxContainer" parent="ControlAndTelemetryPanels/ControlPanel/VBoxContainer/VBoxContainer/ConfirmationSliderMargin"]
+[node name="ConfirmationSlider" parent="ControlAndTelemetryPanels/ControlPanel/VBoxContainer/VBoxContainer/ConfirmationSliderMargin" instance=ExtResource("5_qau8o")]
+custom_minimum_size = Vector2(200, 50)
 layout_mode = 2
-size_flags_horizontal = 3
-size_flags_stretch_ratio = 0.25
-
-[node name="ConfirmationSliderLabel" type="RichTextLabel" parent="ControlAndTelemetryPanels/ControlPanel/VBoxContainer/VBoxContainer/ConfirmationSliderMargin/ConfirmationSlider"]
-layout_mode = 2
-size_flags_vertical = 3
-bbcode_enabled = true
-text = "[center]CONFIRM[/center]"
-
-[node name="HSlider" type="HSlider" parent="ControlAndTelemetryPanels/ControlPanel/VBoxContainer/VBoxContainer/ConfirmationSliderMargin/ConfirmationSlider"]
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 1
-size_flags_stretch_ratio = 0.25
+alignment = 1
 
 [node name="ControlPanelControls" type="HBoxContainer" parent="ControlAndTelemetryPanels/ControlPanel/VBoxContainer"]
 layout_mode = 2
