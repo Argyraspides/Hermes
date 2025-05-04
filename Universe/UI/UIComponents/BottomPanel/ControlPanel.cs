@@ -12,6 +12,14 @@ using Hermes.Languages.HellenicGateway.CommandDispatchers.MAVLink;
 using Hermes.Universe.Autoloads.EventBus;
 using Hermes.Universe.UI.UIComponents;
 
+/*
+ * TODO::ARGYRASPIDES() {
+ *      when doing like screen resizes down to 720p, the control panel can literally only fit like two buttons. This is kind of a problem,
+ *      though i'll have to test out how screen scaling and stuff works. On my screen at least this means at lower resolutions its gonna be a problem
+ *      but we'll see. Think about this later
+ *  }
+ */
+
 public partial class ControlPanel : PanelContainer
 {
 
