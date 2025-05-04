@@ -1,14 +1,15 @@
 [gd_scene load_steps=4 format=3 uid="uid://r6m2qssqaeb2"]
 
-[ext_resource type="Script" path="res://Universe/UI/UIComponents/MachineControl/LandControlComponent.cs" id="1_eggoi"]
+[ext_resource type="Script" path="res://Universe/UI/UIComponents/MachineControl/LandControlComponent/LandControlComponent.cs" id="1_eggoi"]
 [ext_resource type="Texture2D" uid="uid://3wbpmgjksp7o" path="res://Universe/UI/Assets/LandQuadcopter.png" id="2_v7ip0"]
 [ext_resource type="Texture2D" uid="uid://b85qsgpfc46n3" path="res://Universe/UI/Assets/LandQuadcopterSelected.png" id="3_kla1p"]
 
 [node name="LandControlComponent" type="HBoxContainer"]
-offset_right = -149.76
-offset_bottom = -199.8
-size_flags_horizontal = 2
-size_flags_vertical = 4
+anchors_preset = -1
+anchor_right = 0.052
+anchor_bottom = 0.185
+offset_right = 0.159996
+offset_bottom = -195.8
 script = ExtResource("1_eggoi")
 
 [node name="LandButtonContainer" type="VBoxContainer" parent="."]
@@ -17,7 +18,6 @@ layout_mode = 2
 size_flags_horizontal = 3
 
 [node name="LandButton" type="TextureButton" parent="LandButtonContainer"]
-custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 size_flags_vertical = 3
 toggle_mode = true

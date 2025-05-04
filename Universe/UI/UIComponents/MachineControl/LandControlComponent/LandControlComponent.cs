@@ -6,6 +6,7 @@ using Hermes.Common.HermesUtils;
 using Hermes.Core.Machine.Machine;
 using Hermes.Languages.HellenicGateway.CommandDispatchers.Hellenic;
 using Hermes.Universe.Autoloads.EventBus;
+using Hermes.Universe.UI.UIComponents;
 
 public partial class LandControlComponent : HBoxContainer
 {
@@ -15,6 +16,8 @@ public partial class LandControlComponent : HBoxContainer
 
     private TextureButton m_landButton;
 
+    private VBoxContainer m_landButtonContainer;
+
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
@@ -23,6 +26,9 @@ public partial class LandControlComponent : HBoxContainer
 
         m_landButton = GetNode<TextureButton> ("LandButtonContainer/LandButton");
         m_landButton.Pressed += OnLandButtonPressed;
+
+        m_landButtonContainer = GetNode<VBoxContainer>("LandButtonContainer");
+        m_landButtonContainer.CustomMinimumSize = new Vector2(100, UIConstants.CONTROL_PANEL_MAX_HEIGHT);
 
         m_commander = new HellenicCommander();
     }
@@ -64,7 +70,7 @@ public partial class LandControlComponent : HBoxContainer
 
     private void OnMachineCardClicked(Machine machine)
     {
-        if (!HermesUtils.IsValid(machine) || !machine.MachineId.HasValue)
+        if (!HermesUtils.IsValid(machine) || !machine.MachineId.HasValue || m_machines == null)
         {
             return;
         }

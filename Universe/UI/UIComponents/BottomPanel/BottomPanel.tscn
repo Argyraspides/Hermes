@@ -95,7 +95,9 @@ size_flags_horizontal = 3
 theme_override_constants/margin_left = 50
 
 [node name="ControlPanelBar" type="HBoxContainer" parent="ControlAndTelemetryPanels/ControlPanel/VBoxContainer/ControlPanelControls/ControlPanelMarginContainer"]
+custom_minimum_size = Vector2(0, 200)
 layout_mode = 2
+theme_override_constants/separation = 50
 
 [node name="SeparatorBar" type="ColorRect" parent="ControlAndTelemetryPanels"]
 custom_minimum_size = Vector2(1, 0)

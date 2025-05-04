@@ -7,32 +7,41 @@ using Hermes.Core.Machine;
 using Hermes.Core.Machine.Machine;
 using Hermes.Languages.HellenicGateway.CommandDispatchers.Hellenic;
 using Hermes.Universe.Autoloads.EventBus;
+using Hermes.Universe.UI.UIComponents;
 
 public partial class TakeoffControlComponent : HBoxContainer
 {
 
-    private HellenicCommander m_commander;
+    private HellenicCommander           m_commander;
 
-    private Dictionary<uint, Machine> m_machines;
+    private Dictionary<uint, Machine>   m_machines;
 
-    private TextureButton m_takeoffButton;
+    private TextureButton               m_takeoffButton;
 
-    private VSlider m_altitudeSlider;
+    private VSlider                     m_altitudeSlider;
 
-    private LineEdit m_maxAltitudeLabel;
+    private LineEdit                    m_maxAltitudeLabel;
 
-    private RichTextLabel m_currentAltitudeLabel;
+    private RichTextLabel               m_currentAltitudeLabel;
+
+    private VBoxContainer               m_takeoffButtonContainer;
+
+    private VBoxContainer               m_altitudeSliderComponent;
 
 
     private const double DEFAULT_MAX_TAKEOFF_ALTITUDE = 50;
     private double m_currentMaxTakeoffAltitude = DEFAULT_MAX_TAKEOFF_ALTITUDE;
 
-
-	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
 
         GlobalEventBus.Instance.UIEventBus.MachineCardClicked += OnMachineCardClicked;
+
+        m_takeoffButtonContainer = GetNode<VBoxContainer>("TakeoffButtonContainer");
+        m_takeoffButtonContainer.CustomMinimumSize = new Vector2(100, UIConstants.CONTROL_PANEL_MAX_HEIGHT);
+
+        m_altitudeSliderComponent = GetNode<VBoxContainer>("AltitudeSliderComponent");
+        m_altitudeSliderComponent.CustomMinimumSize = new Vector2(50, UIConstants.CONTROL_PANEL_MAX_HEIGHT);
 
         m_takeoffButton = GetNode<TextureButton> ("TakeoffButtonContainer/TakeoffButton");
         m_takeoffButton.Pressed += OnTakeoffButtonPressed;
@@ -44,7 +53,8 @@ public partial class TakeoffControlComponent : HBoxContainer
         m_currentAltitudeLabel = GetNode<RichTextLabel> ("AltitudeSliderComponent/CurrentAltLabel");
 
         m_maxAltitudeLabel = GetNode<LineEdit> ("AltitudeSliderComponent/MaxAltLabel");
-        m_maxAltitudeLabel.TextChanged += OnMaxAltitudeUpdated;
+        m_maxAltitudeLabel.TextSubmitted += OnMaxAltitudeUpdated;
+        m_maxAltitudeLabel.FocusExited += () => { OnMaxAltitudeUpdated(m_maxAltitudeLabel.Text); };
 
         m_commander = new HellenicCommander();
     }
@@ -62,17 +72,28 @@ public partial class TakeoffControlComponent : HBoxContainer
 
     private void OnMaxAltitudeUpdated(string s)
     {
+        /* TODO::ARGYRASPIDES() {
+                think about how you're going to standardize units ... right now everything is hardcoded to SI units
+            }
+        */
         if (string.IsNullOrEmpty(s))
         {
             m_maxAltitudeLabel.Text = $"{DEFAULT_MAX_TAKEOFF_ALTITUDE}m";
-        }
-        else if (s.Last() != 'm')
-        {
-            m_maxAltitudeLabel.Text += 'm';
+            return;
         }
 
-        m_currentMaxTakeoffAltitude = Convert.ToDouble(m_maxAltitudeLabel.Text.Replace("m", ""));
-        m_altitudeSlider.MaxValue = m_currentMaxTakeoffAltitude;
+        try
+        {
+            m_currentMaxTakeoffAltitude = Convert.ToDouble(m_maxAltitudeLabel.Text.Replace("m", ""));
+            if (s.Last() != 'm') m_maxAltitudeLabel.Text += 'm';
+            
+            m_altitudeSlider.MaxValue = m_currentMaxTakeoffAltitude;
+        }
+        catch (FormatException _) // Not a valid double
+        {
+            m_maxAltitudeLabel.Text = $"{DEFAULT_MAX_TAKEOFF_ALTITUDE}m";
+        }
+
     }
 
     private void SetMachineIcon()
@@ -106,7 +127,7 @@ public partial class TakeoffControlComponent : HBoxContainer
 
     private void OnMachineCardClicked(Machine machine)
     {
-        if (!HermesUtils.IsValid(machine) || !machine.MachineId.HasValue)
+        if (!HermesUtils.IsValid(machine) || !machine.MachineId.HasValue || m_machines == null)
         {
             return;
         }

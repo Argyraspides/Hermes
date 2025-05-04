@@ -10,6 +10,7 @@ using Hermes.Core.Machine.Machine.Capabilities;
 using Hermes.Languages.HellenicGateway.CommandDispatchers.Hellenic;
 using Hermes.Languages.HellenicGateway.CommandDispatchers.MAVLink;
 using Hermes.Universe.Autoloads.EventBus;
+using Hermes.Universe.UI.UIComponents;
 
 public partial class ControlPanel : PanelContainer
 {
@@ -26,16 +27,17 @@ public partial class ControlPanel : PanelContainer
         m_controlPanelBar =
             GetNode<HBoxContainer>(
                 "VBoxContainer/ControlPanelControls/ControlPanelMarginContainer/ControlPanelBar");
-    }
+        m_controlPanelBar.CustomMinimumSize = new Vector2(
+                m_controlPanelBar.CustomMinimumSize.X,
+                UIConstants.CONTROL_PANEL_MAX_HEIGHT
+            );
 
-	public override void _Process(double delta)
-	{
-	}
+    }
 
     private void OnMachineCardClicked(Machine machine)
     {
 
-        if (!HermesUtils.IsValid(machine) || !machine.MachineId.HasValue)
+        if (!HermesUtils.IsValid(machine) || !machine.MachineId.HasValue || m_machines == null)
         {
             return;
         }
@@ -98,7 +100,7 @@ public partial class ControlPanel : PanelContainer
     private void LoadTakeoffComponent()
     {
         var takeoffComponent =
-            GD.Load<PackedScene>("res://Universe/UI/UIComponents/MachineControl/TakeoffControlComponent.tscn");
+            GD.Load<PackedScene>("res://Universe/UI/UIComponents/MachineControl/TakeoffControlComponent/TakeoffControlComponent.tscn");
 
         TakeoffControlComponent takeoffComponentInstance =
             takeoffComponent.Instantiate<TakeoffControlComponent>();
@@ -112,7 +114,7 @@ public partial class ControlPanel : PanelContainer
     private void LoadLandComponent()
     {
         var landComponent =
-            GD.Load<PackedScene>("res://Universe/UI/UIComponents/MachineControl/LandControlComponent.tscn");
+            GD.Load<PackedScene>("res://Universe/UI/UIComponents/MachineControl/LandControlComponent/LandControlComponent.tscn");
 
         LandControlComponent landControlComponentInstance =
             landComponent.Instantiate<LandControlComponent>();
