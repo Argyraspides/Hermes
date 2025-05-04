@@ -255,7 +255,7 @@ public class MAVLinkCommander : IDisposable
 
         var future = DateTime.Now.Add(initialTimeout);
 
-        Action<string> listenForAck = (subKey) =>
+        Action<ulong> listenForAck = (subKey) =>
         {
             // We've already won
             if (commandSuccess.Value)
@@ -318,7 +318,7 @@ public class MAVLinkCommander : IDisposable
         // TODO::ARGYRASPIDES()
         //  { parameratize this receiver endpoint (no hardcoded ip) }
         IPEndPoint receiverEndPoint = IPEndPoint.Parse($"127.0.0.1:{MAVLINK_UDP_RECIEVE_PORT}");
-        string subKey = HermesUDPListener.RegisterUdpClient(receiverEndPoint, listenForAck);
+        ulong subKey = HermesUDPListener.RegisterUdpClient(receiverEndPoint, listenForAck);
         listenForAck.Invoke(subKey);
     }
 

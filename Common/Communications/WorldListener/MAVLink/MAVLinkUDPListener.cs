@@ -13,13 +13,13 @@ namespace Hermes.Common.Communications.WorldListener.MAVLink;
 // See: https://mavlink.io/en/guide/serialization.html
 public class MAVLinkUDPListener
 {
-    private Dictionary<string, IPEndPoint> m_udpEndpoints;
+    private Dictionary<ulong, IPEndPoint> m_udpEndpoints;
 
     // MAVLink.MAVLinkMessage is auto generated code. Ensure you've auto-generated the MAVLink headers
     private ConcurrentQueue<global::MAVLink.MAVLinkMessage> m_messageQueue;
     public event Action MAVLinkMessageReceived;
 
-    public event Action<string> HermesUDPDatagramReceived;
+    public event Action<ulong> HermesUDPDatagramReceived;
 
     private int m_maxMessageBufferSize = 45;
 
@@ -29,7 +29,7 @@ public class MAVLinkUDPListener
     public MAVLinkUDPListener(params IPEndPoint[] endPoints)
     {
 
-        m_udpEndpoints = new Dictionary<string, IPEndPoint>();
+        m_udpEndpoints = new Dictionary<ulong, IPEndPoint>();
 
         // MAVLink.MAVLinkMessage is auto generated code. Ensure you've auto-generated the MAVLink headers
         m_messageQueue = new ConcurrentQueue<global::MAVLink.MAVLinkMessage>();
@@ -38,7 +38,7 @@ public class MAVLinkUDPListener
 
         foreach (IPEndPoint endPoint in endPoints)
         {
-            string id = HermesUDPListener.RegisterUdpClient(endPoint, HermesUDPDatagramReceived);
+            ulong id = HermesUDPListener.RegisterUdpClient(endPoint, HermesUDPDatagramReceived);
             m_udpEndpoints.Add(id, endPoint);
         }
     }
