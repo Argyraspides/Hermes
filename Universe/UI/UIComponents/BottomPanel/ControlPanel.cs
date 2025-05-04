@@ -14,10 +14,16 @@ using Hermes.Universe.UI.UIComponents;
 
 /*
  * TODO::ARGYRASPIDES() {
- *      when doing like screen resizes down to 720p, the control panel can literally only fit like two buttons. This is kind of a problem,
- *      though i'll have to test out how screen scaling and stuff works. On my screen at least this means at lower resolutions its gonna be a problem
- *      but we'll see. Think about this later
+ *  when doing like screen resizes down to 720p, the control panel can literally only fit like two buttons. This is kind of a problem,
+ *  though i'll have to test out how screen scaling and stuff works. On my screen at least this means at lower resolutions its gonna be a problem
+ *  but we'll see. Think about this later
  *  }
+ *   TODO::ARGYRASPIDES() {
+ *   Make sure to explicitly set the colors and stuff for the different components using the UI constants ...
+ *   though in future idk how sustainable this is, as the godot editor is super powerful for rapid iteration. Well I guess I could use
+ *   Godot editor for tinkering, use the "run specific scene" feature for rapid iteration and then settle on something final by
+ *   having it all defined in C#. Think about this later as well
+ *   }
  */
 
 public partial class ControlPanel : PanelContainer
