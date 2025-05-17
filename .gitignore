@@ -13,9 +13,9 @@ Common/Communications/Protocols/MAVLink/MAVLinkDefinitionGeneration/MAVLinkDefin
 .vscode/
 
 # Large asset folders
-Universe/SolarSystem/Assets
-Universe/SolarSystem/Planets/Earth/Assets
-Universe/UI/Fonts
+Core/SolarSystem/Assets
+Core/SolarSystem/Planets/Earth/Assets
+Core/UI/Fonts
 Common/Assets
 
 # Build folder for releases
@@ -37,4 +37,4 @@ Languages/Generators/obj
 
 # UI Assets
 
-Universe/UI/Assets
+Core/UI/Assets

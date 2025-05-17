@@ -1,3 +1,3 @@
-[submodule "Languages/submodules/mavlink"]
-	path = Languages/submodules/mavlink
+[submodule "Core/Languages/submodules/mavlink"]
+	path = Core/Languages/submodules/mavlink
 	url = https://github.com/mavlink/mavlink.git

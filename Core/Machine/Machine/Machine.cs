@@ -29,7 +29,7 @@ using System;
 using Hermes.Common.HermesUtils;
 using Core.Machine.Machine.Capabilities;
 using Hermes.Core.StateManagers;
-using Hermes.Universe.Autoloads.EventBus;
+using Hermes.Core.Autoloads.EventBus;
 
 
 public partial class Machine : RigidBody3D, Selectable3D

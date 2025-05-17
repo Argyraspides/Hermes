@@ -18,6 +18,7 @@
 */
 
 using Hermes.Common.Map.Utils;
+using Hermes.Core.SolarSystem.Values;
 
 namespace Hermes.Common.Meshes.MeshGenerators;
 

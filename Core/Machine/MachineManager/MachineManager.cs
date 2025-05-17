@@ -26,7 +26,7 @@ namespace Hermes.Core.Machine;
 using Godot;
 using System.Collections.Generic;
 using Core.Machine;
-using Hermes.Universe.Autoloads.EventBus;
+using Hermes.Core.Autoloads.EventBus;
 
 public partial class MachineManager : Node
 {
@@ -43,10 +43,10 @@ public partial class MachineManager : Node
     public override void _Ready()
     {
 
-        GlobalEventBus.Instance.ProtocolEventBus.HellenicMessageReceived += OnHellenicMessageReceived;
+        Autoloads.EventBus.GlobalEventBus.Instance.ProtocolEventBus.HellenicMessageReceived += OnHellenicMessageReceived;
 
-        NewMachineConnected += GlobalEventBus.Instance.MachineEventBus.OnNewMachineConnected;
-        MachineDisconnected += GlobalEventBus.Instance.MachineEventBus.OnMachineDisconnected;
+        NewMachineConnected += Autoloads.EventBus.GlobalEventBus.Instance.MachineEventBus.OnNewMachineConnected;
+        MachineDisconnected += Autoloads.EventBus.GlobalEventBus.Instance.MachineEventBus.OnMachineDisconnected;
     }
 
     public override void _Process(double delta)

@@ -28,7 +28,7 @@ using Hermes.Common.Map.Types;
 using Hermes.Common.Map.Utils;
 using HermesUtils;
 using Hermes.Common.Meshes.MeshGenerators;
-using Hermes.Universe.SolarSystem;
+using Hermes.Core.SolarSystem;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
@@ -122,7 +122,7 @@ public sealed partial class TerrainQuadTree : Node3D
         76.17f, 38.08f, 19.04f, 9.52f, 4.76f, 2.38f, 1.2f, 0.6f, 0.35f
     };
 
-    private readonly PlanetOrbitalCamera m_camera;
+    private readonly Core.SolarSystem.PlanetOrbitalCamera m_camera;
     private TerrainQuadTreeTraverser m_QuadTreeTraverser;
 
     // True if the TerrainQuadTree is about to be destroyed. Used as we don't want to update our current node count
@@ -131,7 +131,7 @@ public sealed partial class TerrainQuadTree : Node3D
 
     private MapTileType TileType;
 
-    public TerrainQuadTree(PlanetOrbitalCamera camera, MapTileType tileType, int maxNodes = 7500, int minDepth = 2, int maxDepth = 20)
+    public TerrainQuadTree(Core.SolarSystem.PlanetOrbitalCamera camera, MapTileType tileType, int maxNodes = 7500, int minDepth = 2, int maxDepth = 20)
     {
         if (maxDepth > MAX_DEPTH_LIMIT || maxDepth < MIN_DEPTH_LIMIT)
         {
