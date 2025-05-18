@@ -26,10 +26,8 @@ export_presets.cfg
 PythonVenv/.venv
 
 # Auto-generated code folders
-Languages/DialectConverters
-Languages/ConcreteDialects
-Languages/submodules
-Languages/ConcreteConversions
+Core/Languages/ProtocolCSharpDefinitions
+Core/Languages/submodules
 
 # Auto-generated folders when you run the generator scripts
 Languages/Generators/bin

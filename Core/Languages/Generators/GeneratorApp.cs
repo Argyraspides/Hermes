@@ -13,7 +13,6 @@ public class GeneratorApp
 {
 
     private static string GEN_HELLENIC_MESSAGES_FLAG = "--generateHellenicMessages";
-    private static string GEN_HELLENIC_TRANSLATOR_FLAG = "--generateMAVLinkToHellenicTranslator";
 
     static void Main(string[] args)
     {
@@ -27,11 +26,6 @@ public class GeneratorApp
         {
             args = args.Skip(1).ToArray();
             HellenicMessageGenerator.Generate(args);
-        }
-        else if (args[0] == GEN_HELLENIC_TRANSLATOR_FLAG)
-        {
-            args = args.Skip(1).ToArray();
-            MAVLinkToHellenicGenerator.Generate(args);
         }
     }
 
@@ -51,19 +45,6 @@ public class GeneratorApp
             $"\t\t dotnet run {GEN_HELLENIC_MESSAGES_FLAG} " +
             $"../ProtocolXMLDefinitions/hellenic.xml " +
             $"../ProtocolCSharpDefinitions/Hellenic\n\n");
-
-
-        Console.WriteLine(new string('*', 75));
-
-
-        Console.Write("TO GENERATE MAVLINK TO HELLENIC TRANSLATOR:\n\n");
-        Console.Write(
-            $"\t\t dotnet run {GEN_HELLENIC_TRANSLATOR_FLAG} " +
-            $"../ProtocolXMLDefinitions/hellenic.xml " +
-            $"../ProtocolXMLDefinitions/common.xml " +
-            $"../ProtocolXMLConversionDefinitions/common_to_hellenic.xml " +
-            $"../ProtocolConverters/ToHellenic\n\n"
-            );
 
         Console.WriteLine(new string('*', 75));
 

@@ -14,11 +14,11 @@
         <Content Include="Common\Assets\Triangle.svg.import" />
         <Content Include="Common\Shaders\WebMercatorToWGS84Shader.gdshader"/>
         <Content Include="Core\Languages\Generators\generate.sh" />
-        <Content Include="Core\Languages\ProtocolXMLConversionDefinitions\common_to_hellenic.xml" />
         <Content Include="Core\Languages\ProtocolXMLDefinitions\common.xml" />
         <Content Include="Core\Languages\ProtocolXMLDefinitions\hellenic.xml" />
         <Content Include="Core\Languages\ProtocolXMLDefinitions\minimal.xml" />
         <Content Include="Core\Languages\ProtocolXMLDefinitions\standard.xml" />
+        <Content Include="Core\Languages\scripts\generate_cs_mavlink_messages.sh" />
         <Content Include="Core\Machine\Assets\Images\BoatIcon.png" />
         <Content Include="Core\Machine\Assets\Images\BoatIcon.png.import" />
         <Content Include="Core\Machine\Assets\Images\JetIcon.png" />
@@ -379,7 +379,7 @@
         <Content Include="docs\Rules\shader-style-guide.md" />
     </ItemGroup>
     <ItemGroup>
-        <Compile Remove="**/submodules/**/*.cs"/>
+        <Compile Remove="**/submodules/**/*.cs" />
     </ItemGroup>
     <ItemGroup>
         <Folder Include="Core\UI\Assets\" />
