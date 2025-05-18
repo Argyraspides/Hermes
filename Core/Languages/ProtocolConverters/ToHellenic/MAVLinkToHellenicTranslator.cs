@@ -12,7 +12,7 @@ Example usage:
 MAVLink.MAVLinkMessage mavlinkMsg = new MAVLink.MAVLinkMessage(rawBytes);
 List<HellenicMessage> hellenicMessages = MAVLinkToHellenicTranslator.TranslateMAVLinkMessage(mavlinkMsg);
 */
-class MAVLinkToHellenicTranslator
+public static class MAVLinkToHellenicTranslator
 {
 	public static List<HellenicMessage> TranslateMAVLinkMessage(MAVLink.MAVLinkMessage mavlinkMessage)
 	{
