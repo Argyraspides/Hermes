@@ -20,12 +20,11 @@
 
 using Hermes.Common.HermesUtils;
 using Hermes.Common.Map.Utils;
-
 namespace Hermes.Core.Machine;
 
 using Godot;
 using System.Collections.Generic;
-using Core.Machine;
+using Hermes.Core.Machine.CapabilityEngine;
 using Hermes.Core.Autoloads.EventBus;
 
 public partial class MachineManager : Node
@@ -35,6 +34,8 @@ public partial class MachineManager : Node
 
     [Signal]
     public delegate void MachineDisconnectedEventHandler(Core.Machine.Machine.Machine machine);
+
+    private CapabilityEngine.CapabilityEngine m_capabilityEngine = new CapabilityEngine.CapabilityEngine();
 
     private Dictionary<uint, Core.Machine.Machine.Machine> m_Machines = new Dictionary<uint, Core.Machine.Machine.Machine>();
 
