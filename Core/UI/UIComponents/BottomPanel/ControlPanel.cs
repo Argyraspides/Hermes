@@ -3,8 +3,8 @@ using System.Linq;
 using Godot;
 using Hermes.Common.HermesUtils;
 using Hermes.Core.Autoloads.EventBus;
+using Hermes.Core.Machine.CapabilityEngine;
 using Hermes.Core.Machine.Machine;
-using Hermes.Core.Machine.Machine.Capabilities;
 
 /*
  * TODO::ARGYRASPIDES() {
@@ -74,21 +74,22 @@ public partial class ControlPanel : PanelContainer
             return;
         }
 
-        IEnumerable<Capability> sharedCapabilities = new List<Capability>(MachineUtils.GetCapabilities(m_machines.First().Value));
+        IEnumerable<Capability> sharedCapabilities = new List<Capability>(m_machines.First().Value.GetCapabilities());
 
-        foreach (var machine in m_machines)
+        foreach (KeyValuePair<uint, Machine.Machine.Machine> machine in m_machines)
         {
-            IEnumerable<Capability> capabilities = MachineUtils.GetCapabilities(machine.Value);
-            IEnumerable<Capability> shared =
-                capabilities.Where(capability => sharedCapabilities.Contains(capability));
+            IEnumerable<Capability> capabilities = machine.Value.GetCapabilities();
 
             // If a machine has zero capabilities then no selected vehicle has any capabilities common with
             // everyone else
-            if (shared.Count() == 0)
+            if (capabilities.Count() == 0)
             {
                 UnloadAllControlComponents();
                 return;
             }
+            IEnumerable<Capability> shared =
+                capabilities.Where(
+                    capability => sharedCapabilities.Contains(capability));
 
             sharedCapabilities = sharedCapabilities.Concat(shared);
         }
@@ -104,10 +105,11 @@ public partial class ControlPanel : PanelContainer
         {
             switch (capability)
             {
-                case Capability.Takeoff:
+                // TODO:: these should be like generic not specific to a multicopter?
+                case Capability.MULTIROTOR_TAKEOFF:
                     LoadTakeoffComponent();
                     break;
-                case Capability.Landing:
+                case Capability.MULTIROTOR_LANDING:
                     LoadLandComponent();
                     break;
             }

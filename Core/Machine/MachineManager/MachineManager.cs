@@ -43,13 +43,13 @@ public partial class MachineManager : Node
 
     public override void _Ready()
     {
-
         Autoloads.EventBus.GlobalEventBus.Instance.ProtocolEventBus.HellenicMessageReceived += OnHellenicMessageReceived;
 
         NewMachineConnected += Autoloads.EventBus.GlobalEventBus.Instance.MachineEventBus.OnNewMachineConnected;
         MachineDisconnected += Autoloads.EventBus.GlobalEventBus.Instance.MachineEventBus.OnMachineDisconnected;
     }
 
+    // todo: try make event based? Dont wanna go through the machine list every frame but eh game loop things ig
     public override void _Process(double delta)
     {
         foreach (Core.Machine.Machine.Machine machine in m_Machines.Values)
@@ -65,9 +65,12 @@ public partial class MachineManager : Node
         }
     }
 
-    void UpdateMachine(HellenicMessage message)
+    Machine.Machine TryAddMachine(HellenicMessage message)
     {
-        if (!message.Id.HasValue || !message.MachineId.HasValue) return;
+        if (!message.Id.HasValue || !message.MachineId.HasValue)
+        {
+            return null;
+        }
 
         if (!m_Machines.ContainsKey(message.MachineId.Value))
         {
@@ -78,12 +81,25 @@ public partial class MachineManager : Node
             HermesUtils.HermesLogInfo($"Machine with ID {message.MachineId.Value} has connected.");
             EmitSignal(SignalName.NewMachineConnected, m_Machines[message.MachineId.Value]);
         }
-        Core.Machine.Machine.Machine machine = m_Machines[message.MachineId.Value];
-        machine.Update(message);
+
+        return m_Machines[message.MachineId.Value];
+    }
+
+    void Update(HellenicMessage message)
+    {
+        Machine.Machine machine = TryAddMachine(message);
+        if (machine == null)
+        {
+            return;
+        }
+
+        // In MachineManagerUpdater.cs
+        UpdateMachine(machine, message);
+        m_capabilityEngine.DetermineCapabilities(machine);
     }
 
     private void OnHellenicMessageReceived(HellenicMessage message)
     {
-        UpdateMachine(message);
+        Update(message);
     }
 }
