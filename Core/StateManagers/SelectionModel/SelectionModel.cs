@@ -9,6 +9,9 @@ namespace Hermes.Core.StateManagers.SelectionModel;
 public partial class SelectionModel : Node
 {
 
+    [Signal]
+    public delegate void FocussedMachineChangedEventHandler(Machine.Machine.Machine machine);
+
     Dictionary<uint, Machine.Machine.Machine> m_selectedMachines = new Dictionary<uint, Machine.Machine.Machine>();
 
     public override void _Ready()
@@ -16,6 +19,9 @@ public partial class SelectionModel : Node
         HermesUtils.HermesLogInitialization("SelectionModel::_Ready()");
         GlobalEventBus.Instance.UIEventBus.MachineSelected += OnMachineClicked;
         GlobalEventBus.Instance.UIEventBus.MachineCardClicked += OnMachineClicked;
+
+        FocussedMachineChanged += GlobalEventBus.Instance.UIEventBus.OnFocussedMachineChanged;
+
     }
 
     private void OnMachineClicked(Machine.Machine.Machine machine)
@@ -36,6 +42,20 @@ public partial class SelectionModel : Node
         {
             m_selectedMachines.TryAdd(machine.MachineId.Value, machine);
             HermesUtils.HermesLogInfo($"Selecting machine: {machine.MachineId.Value}");
+        }
+
+        // We got to one by deselecting other machines, or by simply selecting one when we didnt select any before.
+        // Either way, we now have a focussed machine
+        if (m_selectedMachines.Count == 1)
+        {
+            m_selectedMachines.TryGetValue(machine.MachineId.Value, out Machine.Machine.Machine focussedMachine);
+            EmitSignal(SignalName.FocussedMachineChanged, focussedMachine);
+        }
+        else if (m_selectedMachines.Count == 0)
+        {
+            // Godot doesn't allow signal emissions with null arguments, so pass in machine that has no ID
+            Machine.Machine.Machine nullMachine = new Machine.Machine.Machine();
+            EmitSignal(SignalName.FocussedMachineChanged, nullMachine);
         }
 
     }

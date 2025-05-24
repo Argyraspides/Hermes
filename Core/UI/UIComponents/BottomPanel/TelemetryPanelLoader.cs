@@ -34,7 +34,7 @@ public partial class TelemetryPanel : PanelContainer
     void UpdateTelemetryPanel(Machine machine)
     {
 
-        if (machine == null)
+        if (machine == null || !machine.MachineId.HasValue)
         {
             ClearTelemetryPanel();
         }

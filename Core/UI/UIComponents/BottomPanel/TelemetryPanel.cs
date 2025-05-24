@@ -13,7 +13,7 @@ public partial class TelemetryPanel : PanelContainer
 	public override void _Ready()
 	{
 
-        GlobalEventBus.Instance.UIEventBus.MachineCardClicked += OnMachineCardClicked;
+        GlobalEventBus.Instance.UIEventBus.FocussedMachineChanged += OnFocussedMachineChanged;
 
         m_telemetryPanelGrid = GetNode<GridContainer>("VBoxContainer/TelemetryPanelTelemetry");
         m_telemetryPanelGrid.Columns = m_telemetryPanelColumns;
@@ -34,7 +34,7 @@ public partial class TelemetryPanel : PanelContainer
         UpdateTelemetryPanel(m_machine);
 	}
 
-    private void OnMachineCardClicked(Machine machine)
+    private void OnFocussedMachineChanged(Machine machine)
     {
         m_machine = machine;
     }

@@ -42,4 +42,12 @@ public partial class UIEventBus : Node
         EmitSignal(SignalName.ConfirmationSliderConfirmed);
     }
 
+    [Signal]
+    public delegate void FocussedMachineChangedEventHandler(Machine.Machine.Machine machine);
+
+    public void OnFocussedMachineChanged(Machine.Machine.Machine machine)
+    {
+        EmitSignal(SignalName.FocussedMachineChanged, machine);
+    }
+
 }
