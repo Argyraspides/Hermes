@@ -74,6 +74,6 @@ public partial class Machine : RigidBody3D, Selectable3D
 
     public void OnMouseClicked(MouseButton button)
     {
-        Console.WriteLine("OnMouseClicked");
+        GlobalEventBus.Instance.UIEventBus.OnMachineClicked(this);
     }
 }

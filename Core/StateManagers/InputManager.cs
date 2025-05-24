@@ -11,6 +11,8 @@ public partial class InputManager : Node
 {
     private Selectable3D? m_lastHoveredObject = null;
 
+    private SelectionModel m_selectionModel = new SelectionModel();
+
     public override void _Input(InputEvent @event)
     {
         base._Input(@event);
@@ -27,11 +29,17 @@ public partial class InputManager : Node
 
     private void HandleMouseClick(InputEventMouseButton buttonEvent)
     {
-        if (buttonEvent.IsReleased()) return;
+        if (buttonEvent.IsReleased())
+        {
+            return;
+        }
 
         Godot.Collections.Dictionary raycastResult = HermesUtils.MouseRaycast(GetViewport());
 
-        if(raycastResult.Count == 0) return;
+        if (raycastResult.Count == 0)
+        {
+            return;
+        }
 
         Selectable3D hitObject = raycastResult["collider"].Obj as Selectable3D;
         hitObject?.OnMouseClicked(buttonEvent.ButtonIndex);

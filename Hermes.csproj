@@ -384,7 +384,6 @@
     <ItemGroup>
         <Folder Include="Core\UI\Assets\" />
         <Folder Include="Core\UI\Themes\" />
-        <Folder Include="Core\UI\UIComponents\BottomPanel\" />
         <Folder Include="Core\UI\UIComponents\CompassDisplay\" />
         <Folder Include="Core\UI\UIComponents\MachineCardPanel\" />
         <Folder Include="Core\UI\UIComponents\MachineCard\" />
