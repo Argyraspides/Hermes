@@ -119,8 +119,3 @@ text = "[b]TELEMETRY"
 [node name="TelemetryPanelTelemetry" type="GridContainer" parent="ControlAndTelemetryPanels/TelemetryPanel/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
-
-[node name="RichTextLabel" type="RichTextLabel" parent="ControlAndTelemetryPanels/TelemetryPanel/VBoxContainer/TelemetryPanelTelemetry"]
-layout_mode = 2
-bbcode_enabled = true
-text = "[b]ALT: 20m"

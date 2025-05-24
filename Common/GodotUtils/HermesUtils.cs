@@ -12,6 +12,7 @@ public static class HermesUtils
 {
     private static bool m_infoLoggingEnabled = true;
     private static bool m_warningLoggingEnabled = true;
+    private static bool m_initializationLoggingEnabled = true;
     private static bool m_errorLoggingEnabled = true;
     private static bool m_successLoggingEnabled = true;
     private static bool m_bullshitLoggingEnabled = false;
@@ -79,6 +80,15 @@ public static class HermesUtils
     {
         if(!m_infoLoggingEnabled) return;
         Console.ForegroundColor = ConsoleColor.Blue;
+        Console.Write($"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")} ");
+        Console.WriteLine(message);
+        Console.ResetColor();
+    }
+
+    public static void HermesLogInitialization(string message)
+    {
+        if(!m_initializationLoggingEnabled) return;
+        Console.ForegroundColor = ConsoleColor.DarkMagenta;
         Console.Write($"{DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff")} ");
         Console.WriteLine(message);
         Console.ResetColor();

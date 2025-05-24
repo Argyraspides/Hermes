@@ -6,12 +6,20 @@ namespace Hermes.Core.StateManagers;
 
 using Godot;
 using Hermes.Common.HermesUtils;
+using Hermes.Core.StateManagers;
 
 public partial class InputManager : Node
 {
     private Selectable3D? m_lastHoveredObject = null;
 
-    private SelectionModel m_selectionModel = new SelectionModel();
+    private SelectionModel.SelectionModel m_selectionModel = new SelectionModel.SelectionModel();
+
+    public override void _Ready()
+    {
+        base._Ready();
+        HermesUtils.HermesLogInitialization("InputManager::_Ready()");
+        AddChild(m_selectionModel);
+    }
 
     public override void _Input(InputEvent @event)
     {

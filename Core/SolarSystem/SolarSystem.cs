@@ -26,6 +26,8 @@ namespace Hermes.Core.SolarSystem
     {
 
         StaticBody3D earth;
+
+        // Should this be here??? I dont think so... TODO change it up!!
         InputManager inputManager;
 
         public override void _Ready()

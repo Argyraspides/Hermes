@@ -7,7 +7,7 @@ namespace Hermes.Core.UI.UIComponents.MachineCard;
 public partial class MachineCard : Button
 {
     [Signal]
-    public delegate void MachineCardClickedEventHandler(Machine.Machine.Machine machine);
+    public delegate void MMachineCardClickedEventHandler(Machine.Machine.Machine machine);
 
     public Machine.Machine.Machine Machine { get; set; }
 
@@ -24,7 +24,7 @@ public partial class MachineCard : Button
         InitializeComponents();
         SetMinimumSize();
 
-        MachineCardClicked += GlobalEventBus.Instance.UIEventBus.OnMachineCardClicked;
+        MMachineCardClicked += GlobalEventBus.Instance.UIEventBus.OnMachineCardClicked;
 
         ToggleMode = true;
         Toggled += OnButtonToggled;
@@ -92,7 +92,7 @@ public partial class MachineCard : Button
 
     private void OnButtonToggled(bool pressed)
     {
-        EmitSignal(SignalName.MachineCardClicked, Machine);
+        EmitSignal(SignalName.MMachineCardClicked, Machine);
     }
 
     public override void _Process(double delta)

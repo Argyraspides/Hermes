@@ -3,7 +3,7 @@ using Godot;
 using Hermes.Common.HermesUtils;
 using Hermes.Core.Autoloads.EventBus;
 
-namespace Hermes.Core.StateManagers;
+namespace Hermes.Core.StateManagers.SelectionModel;
 
 
 public partial class SelectionModel : Node
@@ -13,6 +13,7 @@ public partial class SelectionModel : Node
 
     public override void _Ready()
     {
+        HermesUtils.HermesLogInitialization("SelectionModel::_Ready()");
         GlobalEventBus.Instance.UIEventBus.MachineSelected += OnMachineClicked;
         GlobalEventBus.Instance.UIEventBus.MachineCardClicked += OnMachineClicked;
     }
