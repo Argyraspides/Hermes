@@ -1,7 +1,8 @@
-[gd_scene load_steps=5 format=3 uid="uid://c704rbv2hvotv"]
+[gd_scene load_steps=6 format=3 uid="uid://c704rbv2hvotv"]
 
 [ext_resource type="Theme" uid="uid://dll7gj5amwt4g" path="res://Core/UI/Themes/DefaultHermesTheme.tres" id="1_vcx4v"]
 [ext_resource type="Script" path="res://Core/UI/UIComponents/MachineControl/ConfirmationSlider/ConfirmationSlider.cs" id="2_ujij4"]
+[ext_resource type="FontFile" uid="uid://bugofbrks3g4k" path="res://Core/UI/Fonts/Jura/Jura-Bold.ttf" id="3_3l6wd"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_j348n"]
 bg_color = Color(0.207843, 0.207843, 0.207843, 1)
@@ -30,37 +31,33 @@ expand_margin_top = 8.0
 expand_margin_right = 10.0
 expand_margin_bottom = 8.0
 
-[node name="ConfirmationSlider" type="VBoxContainer"]
+[node name="ConfirmationSlider" type="MarginContainer"]
 anchors_preset = -1
-anchor_right = 0.104
-anchor_bottom = 0.033
+anchor_right = 0.1
 offset_right = 0.319992
-offset_bottom = 0.360001
+offset_bottom = 16.0
 pivot_offset = Vector2(0.195, 0)
 size_flags_horizontal = 3
 size_flags_stretch_ratio = 0.25
 theme = ExtResource("1_vcx4v")
-theme_override_constants/separation = 0
 script = ExtResource("2_ujij4")
 
-[node name="MarginContainer" type="MarginContainer" parent="."]
-layout_mode = 2
-theme_override_constants/margin_left = 15
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 15
-
-[node name="HSlider" type="HSlider" parent="MarginContainer"]
+[node name="HSlider" type="HSlider" parent="."]
+custom_minimum_size = Vector2(100, 50)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 1
-size_flags_stretch_ratio = 0.25
 theme_override_styles/slider = SubResource("StyleBoxFlat_j348n")
 theme_override_styles/grabber_area_highlight = SubResource("StyleBoxFlat_143w4")
 
-[node name="RichTextLabel" type="RichTextLabel" parent="MarginContainer"]
+[node name="RichTextLabel" type="RichTextLabel" parent="."]
+custom_minimum_size = Vector2(200, 25)
 layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
 mouse_filter = 2
-theme_override_colors/default_color = Color(0.997481, 0.291044, 0.231823, 1)
-theme_override_font_sizes/normal_font_size = 12
+theme_override_fonts/bold_font = ExtResource("3_3l6wd")
+theme_override_font_sizes/normal_font_size = 17
+theme_override_font_sizes/bold_font_size = 20
 bbcode_enabled = true
-text = "[center]>>> SLIDE TO CONFIRM[/center]"
+text = "[center][b][color=red]>>> CONFIRM"

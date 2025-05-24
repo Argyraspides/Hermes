@@ -9,6 +9,10 @@ namespace Hermes.Core.UI.UIComponents.MachineControl.LandControlComponent;
 
 public partial class LandControlComponent : HBoxContainer
 {
+
+    [Signal]
+    public delegate void LandControlClickedEventHandler(bool clickedState);
+
     private HellenicCommander           m_commander;
 
     private Dictionary<uint, Machine.Machine.Machine>   m_machines;
@@ -24,7 +28,10 @@ public partial class LandControlComponent : HBoxContainer
         GlobalEventBus.Instance.UIEventBus.MachineCardClicked += OnMachineCardClicked;
         GlobalEventBus.Instance.UIEventBus.ConfirmationSliderConfirmed += OnConfirmationSliderConfirmed;
 
+        LandControlClicked += GlobalEventBus.Instance.UIEventBus.OnLandControlClicked;
+
         m_landButton = GetNode<TextureButton> ("LandButtonContainer/LandButton");
+        m_landButton.Pressed += OnLandButtonPressed;
 
         m_landButtonContainer = GetNode<VBoxContainer>("LandButtonContainer");
 
@@ -82,6 +89,7 @@ public partial class LandControlComponent : HBoxContainer
         }
 
         m_landButton.SetPressed(false);
+        EmitSignal(SignalName.LandControlClicked, m_landButton.ButtonPressed);
 
     }
     private void OnMachineCardClicked(Machine.Machine.Machine machine)
@@ -102,6 +110,11 @@ public partial class LandControlComponent : HBoxContainer
 
         SetMachineIcon();
 
+    }
+
+    private void OnLandButtonPressed()
+    {
+        EmitSignal(SignalName.LandControlClicked, m_landButton.ButtonPressed);
     }
 
 }

@@ -11,6 +11,9 @@ namespace Hermes.Core.UI.UIComponents.MachineControl.TakeoffControlComponent;
 public partial class TakeoffControlComponent : HBoxContainer
 {
 
+    [Signal]
+    public delegate void TakeoffControlClickedEventHandler(bool clickedState);
+
     private HellenicCommander           m_commander;
 
     private Dictionary<uint, Machine.Machine.Machine>   m_machines;
@@ -37,10 +40,13 @@ public partial class TakeoffControlComponent : HBoxContainer
         GlobalEventBus.Instance.UIEventBus.MachineCardClicked += OnMachineCardClicked;
         GlobalEventBus.Instance.UIEventBus.ConfirmationSliderConfirmed += OnConfirmationSliderConfirmed;
 
+        TakeoffControlClicked += GlobalEventBus.Instance.UIEventBus.OnTakeoffControlClicked;
+
         m_takeoffButtonContainer = GetNode<VBoxContainer>("TakeoffButtonContainer");
         m_altitudeSliderComponent = GetNode<VBoxContainer>("AltitudeSliderComponent");
 
         m_takeoffButton = GetNode<TextureButton> ("TakeoffButtonContainer/TakeoffButton");
+        m_takeoffButton.Pressed += OnTakeoffButtonPressed;
 
         m_altitudeSlider = GetNode<VSlider> ("AltitudeSliderComponent/SliderCenterContainer/AltitudeSlider");
         m_altitudeSlider.MaxValue = DEFAULT_MAX_TAKEOFF_ALTITUDE;
@@ -153,7 +159,13 @@ public partial class TakeoffControlComponent : HBoxContainer
         }
 
         m_takeoffButton.SetPressed(false);
+        EmitSignal(SignalName.TakeoffControlClicked, m_takeoffButton.ButtonPressed);
 
+    }
+
+    private void OnTakeoffButtonPressed()
+    {
+        EmitSignal(SignalName.TakeoffControlClicked, m_takeoffButton.ButtonPressed);
     }
 
 }

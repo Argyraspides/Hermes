@@ -50,4 +50,19 @@ public partial class UIEventBus : Node
         EmitSignal(SignalName.FocussedMachineChanged, machine);
     }
 
+
+    [Signal]
+    public delegate void TakeoffControlClickedEventHandler(bool clickedState);
+    public void OnTakeoffControlClicked(bool clickedState)
+    {
+        EmitSignal(SignalName.TakeoffControlClicked, clickedState);
+    }
+
+    [Signal]
+    public delegate void LandControlClickedEventHandler(bool clickedState);
+    public void OnLandControlClicked(bool clickedState)
+    {
+        EmitSignal(SignalName.LandControlClicked, clickedState);
+    }
+
 }

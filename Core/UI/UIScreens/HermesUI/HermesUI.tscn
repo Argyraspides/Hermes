@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://f06dwapi82bi"]
+[gd_scene load_steps=12 format=3 uid="uid://f06dwapi82bi"]
 
 [ext_resource type="Theme" uid="uid://dll7gj5amwt4g" path="res://Core/UI/Themes/DefaultHermesTheme.tres" id="1_qefca"]
 [ext_resource type="PackedScene" uid="uid://b3vyff8oebx32" path="res://Core/UI/UIComponents/MachineCardPanel/MachineCardPanel.tscn" id="2_upbs8"]
@@ -7,6 +7,10 @@
 [ext_resource type="Script" path="res://Core/UI/UIComponents/CameraDistanceLabel.cs" id="4_3o2og"]
 [ext_resource type="PackedScene" uid="uid://q4ggeswaera3" path="res://Core/UI/UIComponents/BottomPanel/BottomPanel.tscn" id="4_kg5c2"]
 [ext_resource type="Script" path="res://Core/UI/UIScreens/HermesUI/ZoomButtons.cs" id="6_salkb"]
+[ext_resource type="Script" path="res://Core/UI/UIScreens/HermesUI/UserSelectedAction.cs" id="7_dh264"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kptqj"]
+bg_color = Color(0.0392157, 0.0392157, 0.0392157, 1)
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_5q0bj"]
 
@@ -71,19 +75,19 @@ layout_mode = 2
 size_flags_vertical = 8
 mouse_filter = 2
 mouse_force_pass_scroll_events = false
+theme_override_styles/panel = SubResource("StyleBoxFlat_kptqj")
 
-[node name="CameraInfoBar" type="HBoxContainer" parent="MainUI/HBoxContainer/VBoxContainer/CameraInfoPanel"]
-custom_minimum_size = Vector2(650, 0)
+[node name="InfoBar" type="HBoxContainer" parent="MainUI/HBoxContainer/VBoxContainer/CameraInfoPanel"]
 layout_direction = 3
 layout_mode = 2
-size_flags_horizontal = 8
 mouse_filter = 2
 
-[node name="CameraLatLonLabel" type="RichTextLabel" parent="MainUI/HBoxContainer/VBoxContainer/CameraInfoPanel/CameraInfoBar"]
+[node name="CameraLatLonLabel" type="RichTextLabel" parent="MainUI/HBoxContainer/VBoxContainer/CameraInfoPanel/InfoBar"]
 layout_direction = 3
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
+size_flags_stretch_ratio = 0.33
 mouse_force_pass_scroll_events = false
 theme_override_font_sizes/normal_font_size = 25
 bbcode_enabled = true
@@ -91,17 +95,27 @@ text = "[center]11.234568°S, 89.167689°E  [/center]"
 fit_content = true
 script = ExtResource("3_2u04b")
 
-[node name="CameraDistanceLabel" type="RichTextLabel" parent="MainUI/HBoxContainer/VBoxContainer/CameraInfoPanel/CameraInfoBar"]
+[node name="CameraDistanceLabel" type="RichTextLabel" parent="MainUI/HBoxContainer/VBoxContainer/CameraInfoPanel/InfoBar"]
 layout_direction = 3
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
+size_flags_stretch_ratio = 0.33
 mouse_force_pass_scroll_events = false
 theme_override_font_sizes/normal_font_size = 25
 bbcode_enabled = true
 text = "[center]Camera: 50,000 km[/center]"
 fit_content = true
 script = ExtResource("4_3o2og")
+
+[node name="UserSelectedAction" type="RichTextLabel" parent="MainUI/HBoxContainer/VBoxContainer/CameraInfoPanel/InfoBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+theme_override_font_sizes/normal_font_size = 17
+bbcode_enabled = true
+fit_content = true
+script = ExtResource("7_dh264")
 
 [node name="ZoomButtons" type="VBoxContainer" parent="MainUI"]
 layout_mode = 1

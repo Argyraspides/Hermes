@@ -10,26 +10,7 @@ using Hermes.Core.Machine.Machine;
 public partial class TelemetryPanel : PanelContainer
 {
 
-    private Dictionary<uint, RichTextLabel> m_labels = new Dictionary<uint, RichTextLabel>();
 
-    void LoadTelemetryPanel()
-    {
-        // Altitude
-        RichTextLabel altLabel = new RichTextLabel();
-        altLabel.Text = "[b]ALT: - ";
-        altLabel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-        altLabel.SizeFlagsVertical = SizeFlags.ExpandFill;
-        m_labels[(uint)HellenicMessageType.Altitude] = altLabel;
-        m_telemetryPanelGrid.AddChild(altLabel);
-
-        // Ground speed
-        RichTextLabel gspdLabel = new RichTextLabel();
-        gspdLabel.Text = "[b]GSPD: - ";
-        gspdLabel.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-        gspdLabel.SizeFlagsVertical = SizeFlags.ExpandFill;
-        m_labels[(uint)HellenicMessageType.GroundVelocity] = gspdLabel;
-        m_telemetryPanelGrid.AddChild(gspdLabel);
-    }
 
     void UpdateTelemetryPanel(Machine machine)
     {
@@ -57,7 +38,7 @@ public partial class TelemetryPanel : PanelContainer
                 return;
             }
 
-            altLabel.Text = $"ALT: {alt.Alt.ToString()}";
+            altLabel.Text = $"[b]ALT[/b]: {alt.Alt.ToString()}m";
         }
     }
 
@@ -75,7 +56,7 @@ public partial class TelemetryPanel : PanelContainer
             }
 
             double gspd = Math.Sqrt((gvel.Vx.Value * gvel.Vx.Value) + (gvel.Vy.Value * gvel.Vy.Value));
-            gspdLabel.Text = $"GSPD: {gspd.ToString("F1")}";
+            gspdLabel.Text = $"[b]GSPD[/b]: {gspd.ToString("F1")}m/s";
         }
     }
 

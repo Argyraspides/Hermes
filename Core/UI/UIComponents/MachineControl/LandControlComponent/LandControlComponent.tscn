@@ -15,7 +15,7 @@ theme = ExtResource("1_5v4fu")
 script = ExtResource("1_eggoi")
 
 [node name="LandButtonContainer" type="VBoxContainer" parent="."]
-custom_minimum_size = Vector2(60, 200)
+custom_minimum_size = Vector2(100, 200)
 layout_mode = 2
 size_flags_horizontal = 3
 
@@ -32,6 +32,6 @@ stretch_mode = 5
 layout_mode = 2
 size_flags_vertical = 3
 size_flags_stretch_ratio = 0.5
-theme_override_font_sizes/normal_font_size = 15
+theme_override_font_sizes/normal_font_size = 25
 bbcode_enabled = true
 text = "[center]LAND[/center]"

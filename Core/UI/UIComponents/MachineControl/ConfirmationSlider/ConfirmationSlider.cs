@@ -3,7 +3,7 @@ using Hermes.Core.Autoloads.EventBus;
 
 namespace Hermes.Core.UI.UIComponents.MachineControl.ConfirmationSlider;
 
-public partial class ConfirmationSlider : VBoxContainer
+public partial class ConfirmationSlider : MarginContainer
 {
 
     [Signal]
@@ -15,7 +15,7 @@ public partial class ConfirmationSlider : VBoxContainer
     public override void _Ready()
     {
 
-        m_confirmationSlider = GetNode<HSlider>("MarginContainer/HSlider");
+        m_confirmationSlider = GetNode<HSlider>("HSlider");
         m_confirmationSlider.DragEnded += OnSliderDragged;
 
         ConfirmationSliderConfirmed += GlobalEventBus.Instance.UIEventBus.OnConfirmationSliderConfirmed;

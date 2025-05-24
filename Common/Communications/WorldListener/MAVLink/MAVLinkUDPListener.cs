@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Godot;
 using Hermes.Common.Networking.UDP;
+using Hermes.Common.HermesUtils;
 
 namespace Hermes.Common.Communications.WorldListener.MAVLink;
 

@@ -1,9 +1,25 @@
-[gd_scene load_steps=5 format=3 uid="uid://cl5gknpbm0yil"]
+[gd_scene load_steps=7 format=3 uid="uid://cl5gknpbm0yil"]
 
 [ext_resource type="Script" path="res://Core/UI/UIComponents/MachineControl/TakeoffControlComponent/TakeoffControlComponent.cs" id="1_tik6v"]
 [ext_resource type="Theme" uid="uid://dll7gj5amwt4g" path="res://Core/UI/Themes/DefaultHermesTheme.tres" id="1_tpn5c"]
 [ext_resource type="Texture2D" uid="uid://u54t0wxch7pt" path="res://Core/UI/Assets/TakeoffQuadcopter.png" id="2_nbn0d"]
 [ext_resource type="Texture2D" uid="uid://0x1dnpt3ovyq" path="res://Core/UI/Assets/TakeoffQuadcopterSelected.png" id="3_qm6ws"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_m4i5j"]
+bg_color = Color(0, 0, 0, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+corner_radius_top_left = 1
+corner_radius_top_right = 1
+corner_radius_bottom_right = 1
+corner_radius_bottom_left = 1
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dec8x"]
+bg_color = Color(0.359069, 0.359069, 0.359069, 1)
+expand_margin_left = 3.0
+expand_margin_right = 3.0
 
 [node name="TakeoffControlComponent" type="HBoxContainer"]
 anchors_preset = -1
@@ -16,9 +32,10 @@ script = ExtResource("1_tik6v")
 
 [node name="TakeoffButtonContainer" type="VBoxContainer" parent="."]
 clip_contents = true
-custom_minimum_size = Vector2(60, 200)
+custom_minimum_size = Vector2(100, 200)
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 0
 
 [node name="TakeoffButton" type="TextureButton" parent="TakeoffButtonContainer"]
 layout_mode = 2
@@ -33,7 +50,7 @@ stretch_mode = 5
 layout_mode = 2
 size_flags_vertical = 3
 size_flags_stretch_ratio = 0.5
-theme_override_font_sizes/normal_font_size = 15
+theme_override_font_sizes/normal_font_size = 25
 bbcode_enabled = true
 text = "[center]TAKEOFF[/center]"
 
@@ -47,6 +64,7 @@ layout_mode = 2
 size_flags_vertical = 3
 size_flags_stretch_ratio = 0.2
 theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBoxFlat_m4i5j")
 text = "50m"
 alignment = 1
 
@@ -58,6 +76,7 @@ alignment = 1
 [node name="AltitudeSlider" type="VSlider" parent="AltitudeSliderComponent/SliderCenterContainer"]
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_styles/slider = SubResource("StyleBoxFlat_dec8x")
 
 [node name="CurrentAltLabel" type="RichTextLabel" parent="AltitudeSliderComponent"]
 layout_mode = 2
