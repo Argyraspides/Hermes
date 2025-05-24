@@ -15,13 +15,14 @@ theme = ExtResource("1_5v4fu")
 script = ExtResource("1_eggoi")
 
 [node name="LandButtonContainer" type="VBoxContainer" parent="."]
-custom_minimum_size = Vector2(100, 200)
+custom_minimum_size = Vector2(80, 150)
 layout_mode = 2
 size_flags_horizontal = 3
 
 [node name="LandButton" type="TextureButton" parent="LandButtonContainer"]
 layout_mode = 2
 size_flags_vertical = 3
+mouse_default_cursor_shape = 2
 toggle_mode = true
 texture_normal = ExtResource("2_v7ip0")
 texture_pressed = ExtResource("3_kla1p")
@@ -32,6 +33,6 @@ stretch_mode = 5
 layout_mode = 2
 size_flags_vertical = 3
 size_flags_stretch_ratio = 0.5
-theme_override_font_sizes/normal_font_size = 25
+theme_override_font_sizes/normal_font_size = 20
 bbcode_enabled = true
 text = "[center]LAND[/center]"
