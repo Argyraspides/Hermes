@@ -104,18 +104,29 @@ script = ExtResource("6_y4n2n")
 [node name="VBoxContainer" type="VBoxContainer" parent="ControlAndTelemetryPanels/TelemetryPanel"]
 layout_mode = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="ControlAndTelemetryPanels/TelemetryPanel/VBoxContainer"]
+[node name="TelemetryTextMargin" type="MarginContainer" parent="ControlAndTelemetryPanels/TelemetryPanel/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
-size_flags_stretch_ratio = 0.72
+size_flags_stretch_ratio = 0.25
+theme_override_constants/margin_left = 15
+theme_override_constants/margin_top = 5
 
-[node name="TelemetryLabel" type="RichTextLabel" parent="ControlAndTelemetryPanels/TelemetryPanel/VBoxContainer/MarginContainer"]
+[node name="TelemetryLabel" type="RichTextLabel" parent="ControlAndTelemetryPanels/TelemetryPanel/VBoxContainer/TelemetryTextMargin"]
 layout_mode = 2
+theme_override_fonts/bold_font = ExtResource("4_i64nm")
 theme_override_font_sizes/normal_font_size = 20
 theme_override_font_sizes/bold_font_size = 20
 bbcode_enabled = true
 text = "[b]TELEMETRY"
 
-[node name="TelemetryPanelTelemetry" type="GridContainer" parent="ControlAndTelemetryPanels/TelemetryPanel/VBoxContainer"]
+[node name="TelemetryPanelTelemetryMargin" type="MarginContainer" parent="ControlAndTelemetryPanels/TelemetryPanel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 15
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 15
+theme_override_constants/margin_bottom = 10
+
+[node name="TelemetryPanelTelemetry" type="GridContainer" parent="ControlAndTelemetryPanels/TelemetryPanel/VBoxContainer/TelemetryPanelTelemetryMargin"]
 layout_mode = 2
 size_flags_vertical = 3

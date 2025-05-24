@@ -15,7 +15,7 @@ public partial class TelemetryPanel : PanelContainer
 
         GlobalEventBus.Instance.UIEventBus.FocussedMachineChanged += OnFocussedMachineChanged;
 
-        m_telemetryPanelGrid = GetNode<GridContainer>("VBoxContainer/TelemetryPanelTelemetry");
+        m_telemetryPanelGrid = GetNode<GridContainer>("VBoxContainer/TelemetryPanelTelemetryMargin/TelemetryPanelTelemetry");
         m_telemetryPanelGrid.Columns = m_telemetryPanelColumns;
 
         // In TelemetryPanelLoader.cs

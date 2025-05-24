@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Godot;
 using Hermes.Common.HermesUtils;
 using Hermes.Core.Autoloads.EventBus;
@@ -48,10 +49,10 @@ public partial class SelectionModel : Node
         // Either way, we now have a focussed machine
         if (m_selectedMachines.Count == 1)
         {
-            m_selectedMachines.TryGetValue(machine.MachineId.Value, out Machine.Machine.Machine focussedMachine);
+            Machine.Machine.Machine focussedMachine = m_selectedMachines.First().Value;
             EmitSignal(SignalName.FocussedMachineChanged, focussedMachine);
         }
-        else if (m_selectedMachines.Count == 0)
+        else if (m_selectedMachines.Count == 0 || m_selectedMachines.Count > 1)
         {
             // Godot doesn't allow signal emissions with null arguments, so pass in machine that has no ID
             Machine.Machine.Machine nullMachine = new Machine.Machine.Machine();
