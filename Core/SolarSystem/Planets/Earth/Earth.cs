@@ -29,7 +29,6 @@ public partial class Earth : Planet
 
     public override void _Ready()
     {
-        m_defaultZoomLevel = 2;
         base._Ready();
     }
 
@@ -48,7 +47,7 @@ public partial class Earth : Planet
         m_terrainQuadTree = new TerrainQuadTree(m_planetOrbitalCamera, MapTileType.WEB_MERCATOR_WGS84);
         AddChild(m_terrainQuadTree);
         m_terrainQuadTree.Name = "EarthTerrainQuadTree";
-        m_terrainQuadTree.InitializeQuadTree(m_defaultZoomLevel);
+        m_terrainQuadTree.InitializeQuadTree(6);
     }
 
     private void InitializeCamera()
