@@ -1,8 +1,7 @@
 [gd_scene load_steps=6 format=3 uid="uid://c704rbv2hvotv"]
 
 [ext_resource type="Theme" uid="uid://dll7gj5amwt4g" path="res://Core/UI/Themes/DefaultHermesTheme.tres" id="1_vcx4v"]
-[ext_resource type="Script" path="res://Core/UI/UIComponents/MachineControl/ConfirmationSlider/ConfirmationSlider.cs" id="2_ujij4"]
-[ext_resource type="FontFile" uid="uid://bugofbrks3g4k" path="res://Core/UI/Fonts/Jura/Jura-Bold.ttf" id="3_3l6wd"]
+[ext_resource type="Script" uid="uid://v2xq0oy1bqcy" path="res://Core/UI/UIComponents/MachineControl/ConfirmationSlider/ConfirmationSlider.cs" id="2_ujij4"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_j348n"]
 bg_color = Color(0.207843, 0.207843, 0.207843, 1)
@@ -31,6 +30,9 @@ expand_margin_top = 8.0
 expand_margin_right = 10.0
 expand_margin_bottom = 8.0
 
+[sub_resource type="Resource" id="Resource_oflsm"]
+metadata/__load_path__ = "res://Core/UI/Fonts/Jura/Jura-Bold.ttf"
+
 [node name="ConfirmationSlider" type="MarginContainer"]
 anchors_preset = -1
 anchor_right = 0.1
@@ -56,7 +58,7 @@ layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
 mouse_filter = 2
-theme_override_fonts/bold_font = ExtResource("3_3l6wd")
+theme_override_fonts/bold_font = SubResource("Resource_oflsm")
 theme_override_font_sizes/normal_font_size = 17
 theme_override_font_sizes/bold_font_size = 20
 bbcode_enabled = true

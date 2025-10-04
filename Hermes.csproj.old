@@ -1,6 +1,8 @@
-<Project Sdk="Godot.NET.Sdk/4.4.0">
+<Project Sdk="Godot.NET.Sdk/4.3.0">
     <PropertyGroup>
         <TargetFramework>net8.0</TargetFramework>
+        <TargetFramework Condition=" '$(GodotTargetPlatform)' == 'android' ">net7.0</TargetFramework>
+        <TargetFramework Condition=" '$(GodotTargetPlatform)' == 'ios' ">net8.0</TargetFramework>
         <EnableDynamicLoading>true</EnableDynamicLoading>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <StartAction>Program</StartAction>
@@ -10,7 +12,7 @@
     <ItemGroup>
         <Content Include="Common\Assets\Triangle.svg" />
         <Content Include="Common\Assets\Triangle.svg.import" />
-        <Content Include="Common\Shaders\WebMercatorToWGS84Shader.gdshader" />
+        <Content Include="Common\Shaders\WebMercatorToWGS84Shader.gdshader"/>
         <Content Include="Core\Languages\Generators\generate.sh" />
         <Content Include="Core\Languages\ProtocolXMLDefinitions\common.xml" />
         <Content Include="Core\Languages\ProtocolXMLDefinitions\hellenic.xml" />
@@ -391,6 +393,6 @@
         <Folder Include="Core\UI\UIScreens\HermesUI\" />
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
     </ItemGroup>
 </Project>

@@ -1,9 +1,11 @@
 [gd_scene load_steps=5 format=3 uid="uid://boeeonhq3s5og"]
 
 [ext_resource type="Theme" uid="uid://dll7gj5amwt4g" path="res://Core/UI/Themes/DefaultHermesTheme.tres" id="1_i4l85"]
-[ext_resource type="Script" path="res://Core/UI/UIComponents/MachineCard/MachineCard.cs" id="1_kr3c1"]
+[ext_resource type="Script" uid="uid://bl3mwpsp0nfpd" path="res://Core/UI/UIComponents/MachineCard/MachineCard.cs" id="1_kr3c1"]
 [ext_resource type="PackedScene" uid="uid://caexyoqtj5mgq" path="res://Core/UI/UIComponents/CompassDisplay/CompassDisplay.tscn" id="1_kvnjl"]
-[ext_resource type="Texture2D" uid="uid://c45q553312b50" path="res://Common/Assets/QuestionMark.png" id="2_khkcl"]
+
+[sub_resource type="Resource" id="Resource_jf0gd"]
+metadata/__load_path__ = "res://Common/Assets/QuestionMark.png"
 
 [node name="MachineCard" type="Button"]
 custom_minimum_size = Vector2(500, 225)
@@ -30,7 +32,7 @@ theme_override_constants/separation = 10
 [node name="MachineTypeIcon" type="TextureRect" parent="MachineNameBox"]
 layout_mode = 2
 mouse_filter = 2
-texture = ExtResource("2_khkcl")
+texture = SubResource("Resource_jf0gd")
 expand_mode = 2
 
 [node name="TextCenterContainer" type="CenterContainer" parent="MachineNameBox"]
