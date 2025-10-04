@@ -19,6 +19,7 @@
 
 
 using Hermes.Common.Map.Types;
+using Hermes.Core.SolarSystem.Values;
 
 namespace Hermes.Common.Map.Utils;
 

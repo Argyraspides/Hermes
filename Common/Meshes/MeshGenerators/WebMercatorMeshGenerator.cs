@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 using Hermes.Common.Map.Utils;
+using Hermes.Core.SolarSystem.Values;
 
 namespace Hermes.Common.Meshes.MeshGenerators;
 

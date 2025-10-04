@@ -1,0 +1,136 @@
+[gd_scene load_steps=9 format=3 uid="uid://q4ggeswaera3"]
+
+[ext_resource type="Theme" uid="uid://dll7gj5amwt4g" path="res://Core/UI/Themes/DefaultHermesTheme.tres" id="1_3j13u"]
+[ext_resource type="Script" uid="uid://bov8r1da2hp6k" path="res://Core/UI/UIComponents/BottomPanel/BottomPanel.cs" id="2_g4v84"]
+[ext_resource type="Script" uid="uid://bhgw8kgwaxv62" path="res://Core/UI/UIComponents/BottomPanel/ControlPanel.cs" id="3_7cm6w"]
+[ext_resource type="PackedScene" uid="uid://c704rbv2hvotv" path="res://Core/UI/UIComponents/MachineControl/ConfirmationSlider/ConfirmationSlider.tscn" id="5_qau8o"]
+[ext_resource type="Script" uid="uid://ugkjrdx0oiu7" path="res://Core/UI/UIComponents/BottomPanel/TelemetryPanel.cs" id="6_y4n2n"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_xhs7t"]
+
+[sub_resource type="Resource" id="Resource_dp3ss"]
+metadata/__load_path__ = "res://Core/UI/Fonts/Jura/Jura-Bold.ttf"
+
+[sub_resource type="Resource" id="Resource_ob8rv"]
+metadata/__load_path__ = "res://Core/UI/Fonts/Jura/Jura-Bold.ttf"
+
+[node name="BottomPanel" type="VBoxContainer"]
+anchors_preset = -1
+anchor_top = 0.737
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 0.039978
+grow_horizontal = 2
+grow_vertical = 0
+theme = ExtResource("1_3j13u")
+theme_override_constants/separation = 0
+script = ExtResource("2_g4v84")
+
+[node name="CollapsePanelButton" type="Button" parent="."]
+custom_minimum_size = Vector2(21, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_force_pass_scroll_events = false
+theme_override_font_sizes/font_size = 15
+theme_override_styles/focus = SubResource("StyleBoxEmpty_xhs7t")
+text = "▼"
+
+[node name="ControlAndTelemetryPanels" type="HBoxContainer" parent="."]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 0
+
+[node name="ControlPanel" type="PanelContainer" parent="ControlAndTelemetryPanels"]
+custom_minimum_size = Vector2(0, 250)
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("3_7cm6w")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ControlAndTelemetryPanels/ControlPanel"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="HBoxContainer" parent="ControlAndTelemetryPanels/ControlPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="ControlLabelMargin" type="MarginContainer" parent="ControlAndTelemetryPanels/ControlPanel/VBoxContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 15
+theme_override_constants/margin_top = 5
+
+[node name="ControlPanelLabel" type="RichTextLabel" parent="ControlAndTelemetryPanels/ControlPanel/VBoxContainer/VBoxContainer/ControlLabelMargin"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_fonts/bold_font = SubResource("Resource_dp3ss")
+theme_override_font_sizes/normal_font_size = 20
+theme_override_font_sizes/bold_font_size = 20
+bbcode_enabled = true
+text = "[b]CONTROL"
+
+[node name="ConfirmationSliderMargin" type="MarginContainer" parent="ControlAndTelemetryPanels/ControlPanel/VBoxContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.25
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 25
+
+[node name="ConfirmationSlider" parent="ControlAndTelemetryPanels/ControlPanel/VBoxContainer/VBoxContainer/ConfirmationSliderMargin" instance=ExtResource("5_qau8o")]
+custom_minimum_size = Vector2(200, 50)
+layout_mode = 2
+
+[node name="ControlPanelControls" type="HBoxContainer" parent="ControlAndTelemetryPanels/ControlPanel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+alignment = 1
+
+[node name="ControlPanelMarginContainer" type="MarginContainer" parent="ControlAndTelemetryPanels/ControlPanel/VBoxContainer/ControlPanelControls"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 50
+
+[node name="ControlPanelBar" type="HBoxContainer" parent="ControlAndTelemetryPanels/ControlPanel/VBoxContainer/ControlPanelControls/ControlPanelMarginContainer"]
+custom_minimum_size = Vector2(0, 200)
+layout_mode = 2
+theme_override_constants/separation = 50
+
+[node name="SeparatorBar" type="ColorRect" parent="ControlAndTelemetryPanels"]
+custom_minimum_size = Vector2(1, 0)
+layout_mode = 2
+
+[node name="TelemetryPanel" type="PanelContainer" parent="ControlAndTelemetryPanels"]
+custom_minimum_size = Vector2(0, 250)
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("6_y4n2n")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ControlAndTelemetryPanels/TelemetryPanel"]
+layout_mode = 2
+
+[node name="TelemetryTextMargin" type="MarginContainer" parent="ControlAndTelemetryPanels/TelemetryPanel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.25
+theme_override_constants/margin_left = 15
+theme_override_constants/margin_top = 5
+
+[node name="TelemetryLabel" type="RichTextLabel" parent="ControlAndTelemetryPanels/TelemetryPanel/VBoxContainer/TelemetryTextMargin"]
+layout_mode = 2
+theme_override_fonts/bold_font = SubResource("Resource_ob8rv")
+theme_override_font_sizes/normal_font_size = 20
+theme_override_font_sizes/bold_font_size = 20
+bbcode_enabled = true
+text = "[b]TELEMETRY"
+
+[node name="TelemetryPanelTelemetryMargin" type="MarginContainer" parent="ControlAndTelemetryPanels/TelemetryPanel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 15
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 15
+theme_override_constants/margin_bottom = 10
+
+[node name="TelemetryPanelTelemetry" type="GridContainer" parent="ControlAndTelemetryPanels/TelemetryPanel/VBoxContainer/TelemetryPanelTelemetryMargin"]
+layout_mode = 2
+size_flags_vertical = 3

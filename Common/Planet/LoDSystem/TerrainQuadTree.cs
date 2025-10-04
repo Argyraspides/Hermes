@@ -23,12 +23,11 @@ namespace Hermes.Common.Planet.LoDSystem;
 
 using Godot;
 using System;
-
 using Hermes.Common.Map.Types;
 using Hermes.Common.Map.Utils;
 using HermesUtils;
 using Hermes.Common.Meshes.MeshGenerators;
-using Hermes.Universe.SolarSystem;
+using Hermes.Core.SolarSystem;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 
@@ -67,8 +66,6 @@ public sealed partial class TerrainQuadTree : Node3D
 
     // Current amount of nodes in the scene tree (in total -- not just the quadtree)
     public int CurrentNodeCount { get; private set; }
-    // Mutex to access the root nodes
-    public object RootNodeLock = new object();
 
     private ManualResetEventSlim m_canUpdateQuadTree = new ManualResetEventSlim(false);
 
@@ -122,7 +119,7 @@ public sealed partial class TerrainQuadTree : Node3D
         76.17f, 38.08f, 19.04f, 9.52f, 4.76f, 2.38f, 1.2f, 0.6f, 0.35f
     };
 
-    private readonly PlanetOrbitalCamera m_camera;
+    private readonly Core.SolarSystem.PlanetOrbitalCamera m_camera;
     private TerrainQuadTreeTraverser m_QuadTreeTraverser;
 
     // True if the TerrainQuadTree is about to be destroyed. Used as we don't want to update our current node count
@@ -131,7 +128,8 @@ public sealed partial class TerrainQuadTree : Node3D
 
     private MapTileType TileType;
 
-    public TerrainQuadTree(PlanetOrbitalCamera camera, MapTileType tileType, int maxNodes = 7500, int minDepth = 6, int maxDepth = 20)
+    public TerrainQuadTree(Core.SolarSystem.PlanetOrbitalCamera camera, MapTileType tileType, int maxNodes = 7500,
+        int minDepth = 6, int maxDepth = 20)
     {
         if (maxDepth > MAX_DEPTH_LIMIT || maxDepth < MIN_DEPTH_LIMIT)
         {
@@ -174,8 +172,8 @@ public sealed partial class TerrainQuadTree : Node3D
 
         for (int i = m_baseAltitudeThresholds.Length - 1; i > 1; i--)
         {
-            if (m_baseAltitudeThresholds[i] < m_camera.CurrentAltitude  &&
-                m_baseAltitudeThresholds[i - 1] > m_camera.CurrentAltitude )
+            if (m_baseAltitudeThresholds[i] < m_camera.CurrentAltitude &&
+                m_baseAltitudeThresholds[i - 1] > m_camera.CurrentAltitude)
             {
                 m_camera.CurrentZoomLevel = i;
                 break;
@@ -184,34 +182,31 @@ public sealed partial class TerrainQuadTree : Node3D
 
         if (m_canUpdateQuadTree.IsSet)
         {
-            lock (RootNodeLock)
-            {
-                // If we make the parent nodes of the nodes we are about to split invisible before we actually split them, then
-                // we will momentarily see the gaps between meshes of different zoom levels.
-                // So, first we split, keeping the visibility of both children and parent on,
-                // THEN we turn the visibility of the parent of the node that was just split off.
-                ProcessSplitQueue();
-                ProcessInvisibilityQueue();
+            // If we make the parent nodes of the nodes we are about to split invisible before we actually split them, then
+            // we will momentarily see the gaps between meshes of different zoom levels.
+            // So, first we split, keeping the visibility of both children and parent on,
+            // THEN we turn the visibility of the parent of the node that was just split off.
+            ProcessSplitQueue();
+            ProcessInvisibilityQueue();
 
-                // Similar logic here for order. Previously, the visibility of the parent of the node we just split was turned off.
-                // Now, we are merging the children back into the parent. So, we toggle the visibility of the parent of the node
-                // we are merging into back on before we merge to avoid seeing the gaps momentarily.
-                ProcessVisibilityQueue();
-                ProcessMergeQueue();
-            }
+            // Similar logic here for order. Previously, the visibility of the parent of the node we just split was turned off.
+            // Now, we are merging the children back into the parent. So, we toggle the visibility of the parent of the node
+            // we are merging into back on before we merge to avoid seeing the gaps momentarily.
+            ProcessVisibilityQueue();
+            ProcessMergeQueue();
+        }
 
-            if (SplitQueueNodes.IsEmpty && MergeQueueNodes.IsEmpty)
-            {
-                m_canUpdateQuadTree.Reset();
-                m_QuadTreeTraverser.m_canPerformCulling.Set();
-            }
+        if (SplitQueueNodes.IsEmpty && MergeQueueNodes.IsEmpty)
+        {
+            m_canUpdateQuadTree.Reset();
+            m_QuadTreeTraverser.m_canPerformCulling.Set();
         }
     }
 
     public override void _ExitTree()
     {
         base._ExitTree();
-        m_QuadTreeTraverser.StopUpdateThread();
+        m_QuadTreeTraverser.Stop();
     }
 
     public override void _Notification(int what)
@@ -239,47 +234,47 @@ public sealed partial class TerrainQuadTree : Node3D
         {
             throw new ArgumentException($"zoomLevel must be between {MinDepth} and {MaxDepth}");
         }
+
         m_camera.CurrentZoomLevel = zoomLevel;
 
-        lock (RootNodeLock)
+        Queue<TerrainQuadTreeNode> nodeQueue = new Queue<TerrainQuadTreeNode>();
+        RootNodes = new List<TerrainQuadTreeNode>();
+
+        int nodesPerSide = (1 << zoomLevel); // 2^z
+        int nodesInLevel = nodesPerSide * nodesPerSide; // 4^z
+        for (int i = 0; i < nodesInLevel; i++)
         {
-            Queue<TerrainQuadTreeNode> nodeQueue = new Queue<TerrainQuadTreeNode>();
-            RootNodes = new List<TerrainQuadTreeNode>();
+            int latTileCoo = i / nodesPerSide;
+            int lonTileCoo = i % nodesPerSide;
+            TerrainQuadTreeNode n = CreateNode(latTileCoo, lonTileCoo, MinDepth);
+            n.Name = $"TerrainQuadTreeNode_{latTileCoo}_{lonTileCoo}";
+            RootNodes.Add(n);
+            nodeQueue.Enqueue(RootNodes[i]);
+        }
 
-            int nodesPerSide = (1 << MinDepth); // 2^z
-            int nodesInLevel = nodesPerSide * nodesPerSide; // 4^z
-            for (int i = 0; i < nodesInLevel; i++)
+        for (int zLevel = zoomLevel; zLevel < zoomLevel; zLevel++)
+        {
+            nodesInLevel = 1 << (2 * zLevel); // 4^z
+            for (int n = 0; n < nodesInLevel; n++)
             {
-                int latTileCoo = i / nodesPerSide;
-                int lonTileCoo = i % nodesPerSide;
-                TerrainQuadTreeNode n = CreateNode(latTileCoo, lonTileCoo, MinDepth);
-                n.Name = $"TerrainQuadTreeNode_{latTileCoo}_{lonTileCoo}";
-                RootNodes.Add(n);
-                nodeQueue.Enqueue(RootNodes[i]);
-            }
-
-            for (int zLevel = MinDepth; zLevel < zoomLevel; zLevel++)
-            {
-                nodesInLevel = 1 << (2 * zLevel); // 4^z
-                for (int n = 0; n < nodesInLevel; n++)
+                TerrainQuadTreeNode parentNode = nodeQueue.Dequeue();
+                GenerateChildNodes(parentNode);
+                foreach (var childNode in parentNode.ChildNodes)
                 {
-                    TerrainQuadTreeNode parentNode = nodeQueue.Dequeue();
-                    GenerateChildNodes(parentNode);
-                    foreach (var childNode in parentNode.ChildNodes)
-                    {
-                        childNode.IsDeepest = true;
-                        nodeQueue.Enqueue(childNode);
-                    }
+                    childNode.IsDeepest = true;
+                    nodeQueue.Enqueue(childNode);
                 }
             }
-
-            while (nodeQueue.Count > 0)
-            {
-                TerrainQuadTreeNode node = nodeQueue.Dequeue();
-                AddChild(node);
-                InitializeTerrainNodeMesh(node);
-            }
         }
+
+        while (nodeQueue.Count > 0)
+        {
+            TerrainQuadTreeNode node = nodeQueue.Dequeue();
+            AddChild(node);
+            InitializeTerrainNodeMesh(node);
+        }
+
+        m_QuadTreeTraverser.Start();
     }
 
     /// <summary>
@@ -310,8 +305,8 @@ public sealed partial class TerrainQuadTree : Node3D
             newChunkMesh.SetName("TerrainChunkMesh");
             node.Chunk.MeshInstance = newChunkMesh;
 
-            node.Chunk.SetPositionAndSize();        // Set the position of the chunk itself
-            node.Position = node.Chunk.Position;    // Set the position of the node (copy chunk position)
+            node.Chunk.SetPositionAndSize(); // Set the position of the chunk itself
+            node.Position = node.Chunk.Position; // Set the position of the node (copy chunk position)
 
             node.Chunk.Name = GenerateChunkName(node);
 
@@ -382,7 +377,6 @@ public sealed partial class TerrainQuadTree : Node3D
     }
 
 
-
     /// <summary>
     /// Splits the quad tree nodes by initializing its children. If its children already exists, simply
     /// toggles their visibility on and itself off.
@@ -440,7 +434,6 @@ public sealed partial class TerrainQuadTree : Node3D
 
     private ArrayMesh GenerateMeshForNode(TerrainQuadTreeNode node)
     {
-
         ArrayMesh meshSegment;
 
         switch (TileType)
@@ -469,7 +462,7 @@ public sealed partial class TerrainQuadTree : Node3D
                 break;
         }
 
-        if(!HermesUtils.IsValid(meshSegment))
+        if (!HermesUtils.IsValid(meshSegment))
         {
             throw new NoNullAllowedException("The terrain quad tree must have a valid map tile type!");
         }
@@ -528,7 +521,8 @@ public sealed partial class TerrainQuadTree : Node3D
         double childCenterLat = MapUtils.ComputeCenterLatitude(latTileCoo, zoomLevel);
         double childCenterLon = MapUtils.ComputeCenterLongitude(lonTileCoo, zoomLevel);
 
-        var childChunk = new TerrainChunk(new MapTile((float)childCenterLat, (float)childCenterLon, zoomLevel, TileType));
+        var childChunk =
+            new TerrainChunk(new MapTile((float)childCenterLat, (float)childCenterLon, zoomLevel, TileType));
         childChunk.SetName("TerrainChunk");
         var terrainQuadTreeNode = new TerrainQuadTreeNode(childChunk, zoomLevel);
         terrainQuadTreeNode.SetName("TerrainQuadTreeNode");

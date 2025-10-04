@@ -1,0 +1,57 @@
+[gd_scene load_steps=11 format=3 uid="uid://bnaccj7r33kqb"]
+
+[ext_resource type="Script" uid="uid://jpeualp2vw67" path="res://Core/SolarSystem/SolarSystem.cs" id="1_ks12t"]
+[ext_resource type="Texture2D" uid="uid://dw16otbm13s3h" path="res://Core/SolarSystem/Assets/ESO_-_Milky_Way.jpg" id="1_nxqmc"]
+[ext_resource type="Script" uid="uid://4848mm22hct5" path="res://Core/Languages/HellenicGateway/ProtocolManager.cs" id="2_l7c1n"]
+[ext_resource type="Script" uid="uid://cwbv4flrbknva" path="res://Core/Machine/MachineManager/MachineManager.cs" id="2_p4i7y"]
+[ext_resource type="PackedScene" uid="uid://u6dcfgabkcf3" path="res://Core/SolarSystem/Planets/Earth/earth.tscn" id="3_bobqk"]
+[ext_resource type="Script" uid="uid://bp4m3jd21onle" path="res://Core/SolarSystem/PlanetOrbitalCamera.cs" id="3_jsn1l"]
+[ext_resource type="Script" uid="uid://bamq0homgoklo" path="res://Core/StateManagers/InputManager.cs" id="4_pcbpi"]
+
+[sub_resource type="PanoramaSkyMaterial" id="PanoramaSkyMaterial_enyp5"]
+panorama = ExtResource("1_nxqmc")
+energy_multiplier = 0.5
+
+[sub_resource type="Sky" id="Sky_t515d"]
+sky_material = SubResource("PanoramaSkyMaterial_enyp5")
+
+[sub_resource type="Environment" id="Environment_sabak"]
+background_mode = 2
+background_energy_multiplier = 0.25
+sky = SubResource("Sky_t515d")
+sky_rotation = Vector3(0, 0, 0.785398)
+fog_mode = 1
+fog_density = 1.0
+fog_sky_affect = 0.015
+adjustment_enabled = true
+adjustment_brightness = 1.25
+adjustment_saturation = 2.5
+
+[node name="SolarSystem" type="Node3D"]
+script = ExtResource("1_ks12t")
+
+[node name="ProtocolManager" type="Node" parent="."]
+script = ExtResource("2_l7c1n")
+
+[node name="MachineManager" type="Node" parent="."]
+script = ExtResource("2_p4i7y")
+
+[node name="InputManager" type="Node" parent="."]
+script = ExtResource("4_pcbpi")
+
+[node name="Backdrop" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_sabak")
+
+[node name="Earth" parent="." instance=ExtResource("3_bobqk")]
+
+[node name="EarthOrbitalCamera" type="Camera3D" parent="Earth"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -154.961, 0, 0)
+current = true
+fov = 60.0
+far = 100000.0
+script = ExtResource("3_jsn1l")
+m_cameraPanSpeedMultiplier = Vector2(0.018, 0.018)
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="Earth/EarthOrbitalCamera"]
+transform = Transform3D(0.866025, 0.25, -0.433013, 0, 0.866025, 0.5, 0.5, -0.433013, 0.75, 0, 0, -8000)
+light_energy = 0.6

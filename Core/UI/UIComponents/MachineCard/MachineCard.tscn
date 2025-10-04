@@ -1,0 +1,81 @@
+[gd_scene load_steps=5 format=3 uid="uid://boeeonhq3s5og"]
+
+[ext_resource type="Theme" uid="uid://dll7gj5amwt4g" path="res://Core/UI/Themes/DefaultHermesTheme.tres" id="1_i4l85"]
+[ext_resource type="Script" uid="uid://bl3mwpsp0nfpd" path="res://Core/UI/UIComponents/MachineCard/MachineCard.cs" id="1_kr3c1"]
+[ext_resource type="PackedScene" uid="uid://caexyoqtj5mgq" path="res://Core/UI/UIComponents/CompassDisplay/CompassDisplay.tscn" id="1_kvnjl"]
+
+[sub_resource type="Resource" id="Resource_jf0gd"]
+metadata/__load_path__ = "res://Common/Assets/QuestionMark.png"
+
+[node name="MachineCard" type="Button"]
+custom_minimum_size = Vector2(500, 225)
+anchors_preset = -1
+anchor_right = 0.3
+anchor_bottom = 0.2
+offset_right = 0.47998
+offset_bottom = 9.0
+theme = ExtResource("1_i4l85")
+toggle_mode = true
+script = ExtResource("1_kr3c1")
+
+[node name="MachineNameBox" type="HBoxContainer" parent="."]
+clip_contents = true
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.02
+anchor_top = 0.05
+anchor_right = 1.0
+anchor_bottom = 0.2
+grow_horizontal = 2
+theme_override_constants/separation = 10
+
+[node name="MachineTypeIcon" type="TextureRect" parent="MachineNameBox"]
+layout_mode = 2
+mouse_filter = 2
+texture = SubResource("Resource_jf0gd")
+expand_mode = 2
+
+[node name="TextCenterContainer" type="CenterContainer" parent="MachineNameBox"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="MachineNameLabel" type="RichTextLabel" parent="MachineNameBox/TextCenterContainer"]
+custom_minimum_size = Vector2(250, 15)
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/normal_font_size = 16
+bbcode_enabled = true
+text = "UNKNOWN MACHINE"
+fit_content = true
+
+[node name="TelemetryPanel" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.025
+anchor_top = 0.3
+anchor_right = 1.0
+anchor_bottom = 0.75
+offset_top = 0.0499973
+offset_right = -0.47998
+offset_bottom = 0.0499878
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="CompassDisplay" parent="TelemetryPanel" instance=ExtResource("1_kvnjl")]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 4
+mouse_filter = 2
+
+[node name="TelemetryLabels" type="GridContainer" parent="TelemetryPanel"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="AltitudeLabel" type="RichTextLabel" parent="TelemetryPanel/TelemetryLabels"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 2
+theme_override_font_sizes/normal_font_size = 18
+text = "	ALT:				N/A"

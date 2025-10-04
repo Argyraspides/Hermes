@@ -6,16 +6,13 @@ Hermes.sln.DotSettings.user
 
 /android/
 
-# MAVLink Auto-generated definitions
-Common/Communications/Protocols/MAVLink/MAVLinkDefinitionGeneration/MAVLinkDefinitions
-
 # VSCode folder
 .vscode/
 
 # Large asset folders
-Universe/SolarSystem/Assets
-Universe/SolarSystem/Planets/Earth/Assets
-Universe/UI/Fonts
+Core/SolarSystem/Assets
+Core/SolarSystem/Planets/Earth/Assets
+Core/UI/Fonts
 Common/Assets
 
 # Build folder for releases
@@ -26,11 +23,13 @@ export_presets.cfg
 PythonVenv/.venv
 
 # Auto-generated code folders
-Languages/DialectConverters
-Languages/ConcreteDialects
-Languages/submodules
-Languages/ConcreteConversions
+Core/Languages/ProtocolCSharpDefinitions
+Core/Languages/submodules
 
 # Auto-generated folders when you run the generator scripts
 Languages/Generators/bin
 Languages/Generators/obj
+
+# UI Assets
+
+Core/UI/Assets

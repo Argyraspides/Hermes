@@ -17,80 +17,43 @@
 
 */
 
-using System;
-using Hermes.Common.HermesUtils;
-using Hermes.Core.Machine.Capabilities;
-using Hermes.Core.StateManagers;
-using Hermes.Universe.Autoloads.EventBus;
 
-namespace Hermes.Core.Machine;
+using Hermes.Core.Machine.CapabilityEngine;
+
+namespace Hermes.Core.Machine.Machine;
 
 using Godot;
 using System.Collections.Generic;
 using Hermes.Common.Map.Utils;
-
+using System;
+using Hermes.Common.HermesUtils;
+using Hermes.Core.StateManagers;
+using Hermes.Core.Autoloads.EventBus;
 
 
 public partial class Machine : RigidBody3D, Selectable3D
 {
-    public MachineType MachineType { get; private set; } = MachineType.Unknown;
-    public uint? MachineId { get; private set; }
+    public MachineType MachineType { get; set; } = MachineType.Unknown;
+    public uint? MachineId { get; set; }
 
     // TODO::ARGYRASPIDES() { "Selected" should not be in the vehicle class. Should make like a selection class with its own
     // capabilities for how things should be selected and do stuff there. Here now for testing }
     public bool Selected { get; set; } = false;
 
-    private Dictionary<uint, HellenicMessage> m_hellenicMessages = new Dictionary<uint, HellenicMessage>();
-    private HashSet<Capability> m_capabilities = new HashSet<Capability>();
+    public Dictionary<uint, HellenicMessage> HellenicMessages { get; set; } = new Dictionary<uint, HellenicMessage>();
+    public HashSet<Capability> Capabilities { get; set; } = new HashSet<Capability>();
 
     // Last time this vehicle was updated in the Unix timestamp
-    public double LastUpdateTimeUnix { get; private set; } = 0;
-
-    public void Update(HellenicMessage message)
-    {
-        UpdateMessages(message);
-        UpdateIdentity(message);
-        UpdatePosition(message);
-        //StandardMaterial3D mat = (StandardMaterial3D)m_mesh.Mesh.SurfaceGetMaterial(0);
-        //mat.AlbedoColor = new Color(1.0f, 0.0f, 0.0f);
-    }
-
-    private void UpdateMessages(HellenicMessage message)
-    {
-        if (message == null || !message.Id.HasValue) return;
-
-        LastUpdateTimeUnix = Time.GetUnixTimeFromSystem();
-        m_hellenicMessages[message.Id.Value] = message;
-    }
-
-    private void UpdateIdentity(HellenicMessage message)
-    {
-        if (message is Pulse pulse)
-        {
-            MachineType =
-                pulse.MachineType.HasValue ?
-                    (MachineType)pulse.MachineType.Value : MachineType.Unknown;
-            MachineId = pulse.MachineId;
-        }
-    }
-
-    private void UpdatePosition(HellenicMessage message)
-    {
-        if (message == null || !message.Id.HasValue) return;
-        if (message is not LatitudeLongitude location) return;
-
-        if (location.Lat.HasValue && location.Lon.HasValue)
-        {
-            GlobalPosition = MapUtils.LatLonToCartesian(
-                Mathf.DegToRad((float)location.Lat),
-                Mathf.DegToRad((float)location.Lon),
-                (ReferenceFrame)location.ReferenceFrame);
-        }
-    }
+    public double LastUpdateTimeUnix { get; set; } = 0;
 
     public HellenicMessage GetHellenicMessage(HellenicMessageType messageType)
     {
-        return m_hellenicMessages.TryGetValue((uint)messageType, out var hellenicMessage) ? hellenicMessage : null;
+        return HellenicMessages.TryGetValue((uint)messageType, out var hellenicMessage) ? hellenicMessage : null;
+    }
+
+    public IEnumerable<Capability> GetCapabilities()
+    {
+        return Capabilities;
     }
 
     public override void _Ready()
@@ -111,6 +74,6 @@ public partial class Machine : RigidBody3D, Selectable3D
 
     public void OnMouseClicked(MouseButton button)
     {
-        Console.WriteLine("OnMouseClicked");
+        GlobalEventBus.Instance.UIEventBus.OnMachineClicked(this);
     }
 }

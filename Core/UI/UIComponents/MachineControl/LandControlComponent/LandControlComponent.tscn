@@ -1,0 +1,42 @@
+[gd_scene load_steps=5 format=3 uid="uid://r6m2qssqaeb2"]
+
+[ext_resource type="Theme" uid="uid://dll7gj5amwt4g" path="res://Core/UI/Themes/DefaultHermesTheme.tres" id="1_5v4fu"]
+[ext_resource type="Script" uid="uid://dt7pmnnwjrntc" path="res://Core/UI/UIComponents/MachineControl/LandControlComponent/LandControlComponent.cs" id="1_eggoi"]
+
+[sub_resource type="Resource" id="Resource_vhbsv"]
+metadata/__load_path__ = "res://Core/UI/Assets/LandQuadcopter.png"
+
+[sub_resource type="Resource" id="Resource_g2hly"]
+metadata/__load_path__ = "res://Core/UI/Assets/LandQuadcopterSelected.png"
+
+[node name="LandControlComponent" type="HBoxContainer"]
+anchors_preset = -1
+anchor_right = 0.052
+anchor_bottom = 0.185
+offset_right = 0.159996
+offset_bottom = -195.8
+theme = ExtResource("1_5v4fu")
+script = ExtResource("1_eggoi")
+
+[node name="LandButtonContainer" type="VBoxContainer" parent="."]
+custom_minimum_size = Vector2(80, 150)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="LandButton" type="TextureButton" parent="LandButtonContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_default_cursor_shape = 2
+toggle_mode = true
+texture_normal = SubResource("Resource_vhbsv")
+texture_pressed = SubResource("Resource_g2hly")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="LandButtonLabel" type="RichTextLabel" parent="LandButtonContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.5
+theme_override_font_sizes/normal_font_size = 20
+bbcode_enabled = true
+text = "[center]LAND[/center]"

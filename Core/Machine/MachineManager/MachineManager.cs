@@ -20,37 +20,39 @@
 
 using Hermes.Common.HermesUtils;
 using Hermes.Common.Map.Utils;
-
 namespace Hermes.Core.Machine;
 
 using Godot;
 using System.Collections.Generic;
-using Hermes.Universe.Autoloads.EventBus;
+using Hermes.Core.Machine.CapabilityEngine;
+using Hermes.Core.Autoloads.EventBus;
 
 public partial class MachineManager : Node
 {
     [Signal]
-    public delegate void NewMachineConnectedEventHandler(Machine machine);
+    public delegate void NewMachineConnectedEventHandler(Core.Machine.Machine.Machine machine);
 
     [Signal]
-    public delegate void MachineDisconnectedEventHandler(Machine machine);
+    public delegate void MachineDisconnectedEventHandler(Core.Machine.Machine.Machine machine);
 
-    private Dictionary<uint, Machine> m_Machines = new Dictionary<uint, Machine>();
+    private CapabilityEngine.CapabilityEngine m_capabilityEngine = new CapabilityEngine.CapabilityEngine();
+
+    private Dictionary<uint, Core.Machine.Machine.Machine> m_Machines = new Dictionary<uint, Core.Machine.Machine.Machine>();
 
     private readonly int MACHINE_STALE_TIME_S = 5;
 
     public override void _Ready()
     {
+        Autoloads.EventBus.GlobalEventBus.Instance.ProtocolEventBus.HellenicMessageReceived += OnHellenicMessageReceived;
 
-        GlobalEventBus.Instance.ProtocolEventBus.HellenicMessageReceived += OnHellenicMessageReceived;
-
-        NewMachineConnected += GlobalEventBus.Instance.MachineEventBus.OnNewMachineConnected;
-        MachineDisconnected += GlobalEventBus.Instance.MachineEventBus.OnMachineDisconnected;
+        NewMachineConnected += Autoloads.EventBus.GlobalEventBus.Instance.MachineEventBus.OnNewMachineConnected;
+        MachineDisconnected += Autoloads.EventBus.GlobalEventBus.Instance.MachineEventBus.OnMachineDisconnected;
     }
 
+    // todo: try make event based? Dont wanna go through the machine list every frame but eh game loop things ig
     public override void _Process(double delta)
     {
-        foreach (Machine machine in m_Machines.Values)
+        foreach (Core.Machine.Machine.Machine machine in m_Machines.Values)
         {
             double timeElapsed = Time.GetUnixTimeFromSystem() - machine.LastUpdateTimeUnix;
             if (machine.MachineId.HasValue && timeElapsed > MACHINE_STALE_TIME_S)
@@ -63,25 +65,41 @@ public partial class MachineManager : Node
         }
     }
 
-    void UpdateMachine(HellenicMessage message)
+    Machine.Machine TryAddMachine(HellenicMessage message)
     {
-        if (!message.Id.HasValue || !message.MachineId.HasValue) return;
+        if (!message.Id.HasValue || !message.MachineId.HasValue)
+        {
+            return null;
+        }
 
         if (!m_Machines.ContainsKey(message.MachineId.Value))
         {
             var machineCardScene = GD.Load<PackedScene>("res://Core/Machine/Machine/Machine.tscn");
-            var machineCardInstance = machineCardScene.Instantiate<Machine>();
+            var machineCardInstance = machineCardScene.Instantiate<Core.Machine.Machine.Machine>();
             m_Machines[message.MachineId.Value] = machineCardInstance;
             AddChild(m_Machines[message.MachineId.Value]);
             HermesUtils.HermesLogInfo($"Machine with ID {message.MachineId.Value} has connected.");
             EmitSignal(SignalName.NewMachineConnected, m_Machines[message.MachineId.Value]);
         }
-        Machine machine = m_Machines[message.MachineId.Value];
-        machine.Update(message);
+
+        return m_Machines[message.MachineId.Value];
+    }
+
+    void Update(HellenicMessage message)
+    {
+        Machine.Machine machine = TryAddMachine(message);
+        if (machine == null)
+        {
+            return;
+        }
+
+        // In MachineManagerUpdater.cs
+        UpdateMachine(machine, message);
+        m_capabilityEngine.DetermineCapabilities(machine);
     }
 
     private void OnHellenicMessageReceived(HellenicMessage message)
     {
-        UpdateMachine(message);
+        Update(message);
     }
 }

@@ -6,10 +6,20 @@ namespace Hermes.Core.StateManagers;
 
 using Godot;
 using Hermes.Common.HermesUtils;
+using Hermes.Core.StateManagers;
 
 public partial class InputManager : Node
 {
     private Selectable3D? m_lastHoveredObject = null;
+
+    private SelectionModel.SelectionModel m_selectionModel = new SelectionModel.SelectionModel();
+
+    public override void _Ready()
+    {
+        base._Ready();
+        HermesUtils.HermesLogInitialization("InputManager::_Ready()");
+        AddChild(m_selectionModel);
+    }
 
     public override void _Input(InputEvent @event)
     {
@@ -27,11 +37,17 @@ public partial class InputManager : Node
 
     private void HandleMouseClick(InputEventMouseButton buttonEvent)
     {
-        if (buttonEvent.IsReleased()) return;
+        if (buttonEvent.IsReleased())
+        {
+            return;
+        }
 
         Godot.Collections.Dictionary raycastResult = HermesUtils.MouseRaycast(GetViewport());
 
-        if(raycastResult.Count == 0) return;
+        if (raycastResult.Count == 0)
+        {
+            return;
+        }
 
         Selectable3D hitObject = raycastResult["collider"].Obj as Selectable3D;
         hitObject?.OnMouseClicked(buttonEvent.ButtonIndex);

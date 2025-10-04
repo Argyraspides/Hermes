@@ -1,0 +1,54 @@
+using System;
+using System.Linq;
+
+namespace Hermes.Languages.Generators;
+
+
+// ***************************************************************
+//
+// To run:
+//
+// ***************************************************************
+public class GeneratorApp
+{
+
+    private static string GEN_HELLENIC_MESSAGES_FLAG = "--generateHellenicMessages";
+
+    static void Main(string[] args)
+    {
+        if (args.Length < 3)
+        {
+            PrintOptions();
+            return;
+        }
+
+        if (args[0] == GEN_HELLENIC_MESSAGES_FLAG)
+        {
+            args = args.Skip(1).ToArray();
+            HellenicMessageGenerator.Generate(args);
+        }
+    }
+
+
+    private static void PrintOptions()
+    {
+        Console.WriteLine(new string('*', 75));
+
+        Console.ForegroundColor = ConsoleColor.Red;
+
+        Console.Write("Usage for GeneratorApp:\n");
+        Console.Write("Options:\n\n");
+
+
+        Console.Write("TO GENERATE HELLENIC MESSAGES:\n\n");
+        Console.Write(
+            $"\t\t dotnet run {GEN_HELLENIC_MESSAGES_FLAG} " +
+            $"../ProtocolXMLDefinitions/hellenic.xml " +
+            $"../ProtocolCSharpDefinitions/Hellenic\n\n");
+
+        Console.WriteLine(new string('*', 75));
+
+        Console.ResetColor();
+    }
+
+}

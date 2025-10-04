@@ -17,6 +17,7 @@
 */
 
 using System.Runtime.CompilerServices;
+
 [assembly: InternalsVisibleTo("TerrainQuadTree")]
 
 
@@ -45,7 +46,7 @@ public partial class TerrainQuadTreeTraverser
     internal ManualResetEventSlim m_canPerformCulling = new ManualResetEventSlim(false);
 
     // True if we can perform the DFS search to determine which nodes should be split/merged
-    private ManualResetEventSlim m_canPerformSearch = new ManualResetEventSlim(true);
+    private ManualResetEventSlim m_canPerformSearch = new ManualResetEventSlim(false);
 
     // Injected to us by TerrainQuadTree. We set this once we have culled all nodes and determined
     // which ones should be merged/split, so that the TerrainQuadTree can go ahead and split/merge them
@@ -63,15 +64,14 @@ public partial class TerrainQuadTreeTraverser
     {
         m_terrainQuadTree = terrainQuadTree ?? throw new ArgumentNullException(nameof(terrainQuadTree));
         m_canUpdateQuadTree = canUpdateQuadTree ?? throw new ArgumentNullException(nameof(canUpdateQuadTree));
-        StartUpdateThread();
     }
 
     ~TerrainQuadTreeTraverser()
     {
-        StopUpdateThread();
+        Stop();
     }
 
-    private void StartUpdateThread()
+    public void Start()
     {
         m_updateQuadTreeThread = new Thread(DetermineSplitMergeNodeThreadFunction)
         {
@@ -85,6 +85,7 @@ public partial class TerrainQuadTreeTraverser
 
         m_updateQuadTreeThread.Start();
         m_cullQuadTreeThread.Start();
+        m_canPerformSearch.Set();
         m_isRunning = true;
     }
 
@@ -97,13 +98,10 @@ public partial class TerrainQuadTreeTraverser
             {
                 if (m_terrainQuadTree.RootNodes == null) continue;
 
-                lock (m_terrainQuadTree.RootNodeLock)
+                foreach (var rootNode in m_terrainQuadTree.RootNodes)
                 {
-                    foreach (var rootNode in m_terrainQuadTree.RootNodes)
-                    {
-                        if (!HermesUtils.IsValid(rootNode) || !ExceedsMaxNodeThreshold()) continue;
-                        CullUnusedNodes(rootNode);
-                    }
+                    if (!HermesUtils.IsValid(rootNode) || !ExceedsMaxNodeThreshold()) continue;
+                    CullUnusedNodes(rootNode);
                 }
 
                 m_canPerformCulling.Reset();
@@ -116,7 +114,7 @@ public partial class TerrainQuadTreeTraverser
         }
     }
 
-    public void StopUpdateThread()
+    public void Stop()
     {
         m_isRunning = false;
         if (m_updateQuadTreeThread != null && m_updateQuadTreeThread.IsAlive)
@@ -140,14 +138,11 @@ public partial class TerrainQuadTreeTraverser
             m_canPerformSearch.Wait();
             try
             {
-                if(m_terrainQuadTree.RootNodes == null) continue;
+                if (m_terrainQuadTree.RootNodes == null) continue;
 
-                lock (m_terrainQuadTree.RootNodeLock)
+                foreach (var rootNode in m_terrainQuadTree.RootNodes)
                 {
-                    foreach (var rootNode in m_terrainQuadTree.RootNodes)
-                    {
-                        DetermineSplitMergeNodes(rootNode, null);
-                    }
+                    DetermineSplitMergeNodes(rootNode, null);
                 }
 
                 m_canUpdateQuadTree.Set();
