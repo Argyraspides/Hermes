@@ -19,7 +19,6 @@
 
 
 using Hermes.Common.HermesUtils;
-using Hermes.Common.Map.Utils;
 namespace Hermes.Core.Machine;
 
 using Godot;
@@ -63,10 +62,6 @@ public partial class MachineManager : Node
 
         if (location.Lat.HasValue && location.Lon.HasValue)
         {
-            machine.GlobalPosition = MapUtils.LatLonToCartesian(
-                Mathf.DegToRad((float)location.Lat),
-                Mathf.DegToRad((float)location.Lon),
-                (ReferenceFrame)location.ReferenceFrame);
         }
     }
 
