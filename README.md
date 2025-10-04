@@ -1,3 +1,4 @@
+# IMPORTANT: THE README IS A BIT OUTDATED ... FIXING SOON!!
 <h1 align="center">
 Hermes: Messenger of the Machines
 </h1>
