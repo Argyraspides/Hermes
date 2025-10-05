@@ -3,11 +3,13 @@
 [ext_resource type="Theme" uid="uid://dll7gj5amwt4g" path="res://Core/UI/Themes/DefaultHermesTheme.tres" id="1_qefca"]
 [ext_resource type="PackedScene" uid="uid://b3vyff8oebx32" path="res://Core/UI/UIComponents/MachineCardPanel/MachineCardPanel.tscn" id="2_upbs8"]
 [ext_resource type="Script" uid="uid://qa4wpgh81p8c" path="res://Core/UI/UIComponents/CameraLatLonLabel.cs" id="3_2u04b"]
-[ext_resource type="PackedScene" uid="uid://bnaccj7r33kqb" path="res://Core/SolarSystem/SolarSystem.tscn" id="3_hjwp2"]
 [ext_resource type="Script" uid="uid://c8wvmhumgvl7s" path="res://Core/UI/UIComponents/CameraDistanceLabel.cs" id="4_3o2og"]
 [ext_resource type="PackedScene" uid="uid://q4ggeswaera3" path="res://Core/UI/UIComponents/BottomPanel/BottomPanel.tscn" id="4_kg5c2"]
 [ext_resource type="Script" uid="uid://ddn5v6uqpimau" path="res://Core/UI/UIScreens/HermesUI/ZoomButtons.cs" id="6_salkb"]
 [ext_resource type="Script" uid="uid://dgfgla4b2ntw5" path="res://Core/UI/UIScreens/HermesUI/UserSelectedAction.cs" id="7_dh264"]
+
+[sub_resource type="Resource" id="Resource_g8vjt"]
+metadata/__load_path__ = "res://Core/SolarSystem/SolarSystem.tscn"
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kptqj"]
 bg_color = Color(0.0392157, 0.0392157, 0.0392157, 1)
@@ -64,7 +66,7 @@ handle_input_locally = false
 size = Vector2i(1899, 752)
 render_target_update_mode = 4
 
-[node name="SolarSystem" parent="MainUI/HBoxContainer/VBoxContainer/SubViewportContainer/SubViewport" instance=ExtResource("3_hjwp2")]
+[node name="SolarSystem" parent="MainUI/HBoxContainer/VBoxContainer/SubViewportContainer/SubViewport"]
 
 [node name="BottomPanel" parent="MainUI/HBoxContainer/VBoxContainer" instance=ExtResource("4_kg5c2")]
 layout_mode = 2

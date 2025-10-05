@@ -18,7 +18,7 @@
 */
 
 
-using Hermes.Common.HermesUtils;
+using Daedalus.Logging;
 namespace Hermes.Core.Machine;
 
 using Godot;

@@ -1,4 +1,4 @@
-using Hermes.Common.HermesUtils;
+using Daedalus.Logging;
 using Hermes.Core.Machine;
 using Hermes.Core.Machine.Machine;
 using Hermes.Languages.HellenicGateway.CommandDispatchers.MAVLink;
@@ -13,13 +13,13 @@ public class HellenicCommandFactory
     {
         if (machine == null)
         {
-            HermesUtils.HermesLogError("Cannot send command to a null machine");
+            Logger.LogError(this, "Cannot send command to a null machine");
             return false;
         }
 
         if (!machine.MachineId.HasValue)
         {
-            HermesUtils.HermesLogError("Cannot send takeoff command to a machine with an unknown ID");
+            Logger.LogError(this, "Cannot send takeoff command to a machine with an unknown ID");
             return false;
         }
 

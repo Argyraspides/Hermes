@@ -1,9 +1,9 @@
 using System;
 using System.Threading.Tasks;
-using Hermes.Common.HermesUtils;
 using Hermes.Core.Machine;
 using Hermes.Core.Machine.Machine;
 using Hermes.Languages.HellenicGateway.CommandDispatchers.MAVLink;
+using Daedalus.Logging;
 
 namespace Hermes.Languages.HellenicGateway.CommandDispatchers.Hellenic;
 
@@ -15,7 +15,7 @@ public class HellenicCommander : IDisposable
     {
         if (machine == null)
         {
-            HermesUtils.HermesLogError("Cannot send takeoff command to a null machine!");
+            Logger.LogError(this, "Cannot send takeoff command to a null machine!");
             return;
         }
 
@@ -23,7 +23,7 @@ public class HellenicCommander : IDisposable
 
         if (!pulse.OriginalProtocol.HasValue)
         {
-            HermesUtils.HermesLogError("Cannot send takeoff command to a machine with unknown protocol");
+            Logger.LogError(this, "Cannot send takeoff command to a machine with unknown protocol");
             return;
         }
 
@@ -39,7 +39,7 @@ public class HellenicCommander : IDisposable
     {
         if (machine == null)
         {
-            HermesUtils.HermesLogError("Cannot send land command to a null machine!");
+            Logger.LogError(this, "Cannot send land command to a null machine!");
             return;
         }
 
@@ -47,7 +47,7 @@ public class HellenicCommander : IDisposable
 
         if (!pulse.OriginalProtocol.HasValue)
         {
-            HermesUtils.HermesLogError("Cannot send land command to a machine with unknown protocol");
+            Logger.LogError(this, "Cannot send land command to a machine with unknown protocol");
             return;
         }
 

@@ -5,9 +5,9 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Daedalus.Logging;
 using Godot;
-using Hermes.Common.Networking.UDP;
-using Hermes.Common.HermesUtils;
+using Daedalus.Networking.UDP;
 
 namespace Hermes.Common.Communications.WorldListener.MAVLink;
 
@@ -27,7 +27,7 @@ public class MAVLinkUDPListener
     // TODO::ARGYRASPIDES() { Make it not immediately start listening on startup }
     public MAVLinkUDPListener(params IPEndPoint[] endPoints)
     {
-
+        Logger.RegisterLogging(this, true);
         m_udpEndpoints = new Dictionary<ulong, IPEndPoint>();
 
         // MAVLink.MAVLinkMessage is auto generated code. Ensure you've auto-generated the MAVLink headers
@@ -37,7 +37,7 @@ public class MAVLinkUDPListener
 
         foreach (IPEndPoint endPoint in endPoints)
         {
-            ulong id = HermesUDPListener.RegisterUdpClient(endPoint,  GetDatagramHandlerFunc(m_cancellationTokenSource.Token));
+            ulong id = DaedalusUdpListener.RegisterUdpClient(endPoint,  GetDatagramHandlerFunc(m_cancellationTokenSource.Token));
             m_udpEndpoints.Add(id, endPoint);
         }
     }
@@ -48,12 +48,12 @@ public class MAVLinkUDPListener
         {
             if (token.IsCancellationRequested)
             {
-                HermesUDPListener.DeregisterUdpClient(subKey);
+                DaedalusUdpListener.DeregisterUdpClient(subKey);
                 return;
             }
             foreach (var endpoint in m_udpEndpoints)
             {
-                var dat = HermesUDPListener.Receive(endpoint.Key);
+                var dat = DaedalusUdpListener.Receive(endpoint.Key);
 
                 if (dat.Buffer.IsEmpty())
                 {
@@ -76,7 +76,7 @@ public class MAVLinkUDPListener
                     //  There is a bug where immediately after sending a command, a set of four different telemetry messages
                     //  (with MAVLink message IDs of 31, 83, 141, and 30) arrive at the UDP socket truncated and full one after another.
                     //  I literally have no idea why. It doesn't pose any issue as MAVLink telemetry messages are sent in like a machine gun
-                    HermesUtils.HermesUtils.HermesLogBullshit("Received truncated MAVLink message!");
+                    Logger.LogBullshit(this, "Received truncated MAVLink message!");
                 }
             }
         };

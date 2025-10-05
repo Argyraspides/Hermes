@@ -18,7 +18,7 @@
 */
 
 
-using Hermes.Common.HermesUtils;
+using Daedalus.Logging;
 namespace Hermes.Core.Machine;
 
 using Godot;
@@ -58,7 +58,7 @@ public partial class MachineManager : Node
             {
                 machine.QueueFree();
                 m_Machines.Remove(machine.MachineId.Value);
-                HermesUtils.HermesLogWarning($"Machine with ID {machine.MachineId.Value} has disconnected.");
+                Logger.LogWarning(this, $"Machine with ID {machine.MachineId.Value} has disconnected.");
                 EmitSignal(SignalName.MachineDisconnected, machine);
             }
         }
@@ -77,7 +77,7 @@ public partial class MachineManager : Node
             var machineCardInstance = machineCardScene.Instantiate<Core.Machine.Machine.Machine>();
             m_Machines[message.MachineId.Value] = machineCardInstance;
             AddChild(m_Machines[message.MachineId.Value]);
-            HermesUtils.HermesLogInfo($"Machine with ID {message.MachineId.Value} has connected.");
+            Logger.LogInfo(this, $"Machine with ID {message.MachineId.Value} has connected.");
             EmitSignal(SignalName.NewMachineConnected, m_Machines[message.MachineId.Value]);
         }
 
