@@ -1,13 +1,7 @@
-[gd_scene load_steps=7 format=3 uid="uid://cl5gknpbm0yil"]
+[gd_scene load_steps=5 format=3 uid="uid://cl5gknpbm0yil"]
 
 [ext_resource type="Script" uid="uid://8si8oaimuqwj" path="res://Core/UI/UIComponents/MachineControl/TakeoffControlComponent/TakeoffControlComponent.cs" id="1_tik6v"]
 [ext_resource type="Theme" uid="uid://dll7gj5amwt4g" path="res://Core/UI/Themes/DefaultHermesTheme.tres" id="1_tpn5c"]
-
-[sub_resource type="Resource" id="Resource_327mr"]
-metadata/__load_path__ = "res://Core/UI/Assets/TakeoffQuadcopter.png"
-
-[sub_resource type="Resource" id="Resource_u3h52"]
-metadata/__load_path__ = "res://Core/UI/Assets/TakeoffQuadcopterSelected.png"
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_m4i5j"]
 bg_color = Color(0, 0, 0, 1)
@@ -46,8 +40,6 @@ layout_mode = 2
 size_flags_vertical = 3
 mouse_default_cursor_shape = 2
 toggle_mode = true
-texture_normal = SubResource("Resource_327mr")
-texture_pressed = SubResource("Resource_u3h52")
 ignore_texture_size = true
 stretch_mode = 5
 

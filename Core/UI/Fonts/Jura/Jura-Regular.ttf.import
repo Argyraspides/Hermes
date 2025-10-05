@@ -3,12 +3,11 @@
 importer="font_data_dynamic"
 type="FontFile"
 uid="uid://d0uk35ukjlilv"
-path="res://.godot/imported/Jura-Regular.ttf-9c5835b3ff385ab75ca8ff3a5364de97.fontdata"
+valid=false
 
 [deps]
 
 source_file="res://Core/UI/Fonts/Jura/Jura-Regular.ttf"
-dest_files=["res://.godot/imported/Jura-Regular.ttf-9c5835b3ff385ab75ca8ff3a5364de97.fontdata"]
 
 [params]
 
