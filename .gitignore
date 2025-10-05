@@ -21,8 +21,8 @@ Core/Languages/ProtocolCSharpDefinitions
 Core/Languages/submodules
 
 # Auto-generated folders when you run the generator scripts
-Languages/Generators/bin
-Languages/Generators/obj
+**/bin
+**/obj
 
 # UI Assets
 **/Assets
