@@ -1,3 +1,9 @@
 [submodule "Core/Languages/submodules/mavlink"]
 	path = Core/Languages/submodules/mavlink
 	url = https://github.com/mavlink/mavlink.git
+[submodule "External/Gaia"]
+	path = External/Gaia
+	url = https://github.com/Argyraspides/Gaia.git
+[submodule "External/Daedalus"]
+	path = External/Daedalus
+	url = https://github.com/Argyraspides/Daedalus.git

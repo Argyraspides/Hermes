@@ -3,11 +3,12 @@
 importer="font_data_dynamic"
 type="FontFile"
 uid="uid://ddi0bggbmaxmr"
-valid=false
+path="res://.godot/imported/Equinox Bold.otf-8ccde91b066b51870f4fafea51c6113c.fontdata"
 
 [deps]
 
 source_file="res://Core/UI/Fonts/Equinox/Equinox Bold.otf"
+dest_files=["res://.godot/imported/Equinox Bold.otf-8ccde91b066b51870f4fafea51c6113c.fontdata"]
 
 [params]
 
