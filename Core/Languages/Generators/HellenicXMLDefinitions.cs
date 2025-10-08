@@ -133,7 +133,7 @@ public static class HellenicXMLDefinitions
         $"\n\t\t\treturn conversionFunc(mavlinkMessage);" +
         $"\n\t\t}}\n" +
         $"\n\t\t// No suitable translation function found" +
-        $"\n\t\tHermesUtils.HermesLogWarning($\"Unable to translate MAVLink message! No suitable translation function found for msgid: {{msgid}}\");" +
+        $"\n\t\tLogger.LogWarning(this, $\"Unable to translate MAVLink message! No suitable translation function found for msgid: {{msgid}}\");" +
         $"\n\t\treturn new List<HellenicMessage>();\n\t}}\n\n";
 
     public const string CONVERSION_DICTIONARY_NAME = "MAVLinkIdToConversionFunctionDict";

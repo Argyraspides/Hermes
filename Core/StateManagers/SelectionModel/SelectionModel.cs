@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
-using Hermes.Common.HermesUtils;
+using Daedalus.Logging;
 using Hermes.Core.Autoloads.EventBus;
 
 namespace Hermes.Core.StateManagers.SelectionModel;
@@ -17,7 +17,7 @@ public partial class SelectionModel : Node
 
     public override void _Ready()
     {
-        HermesUtils.HermesLogInitialization("SelectionModel::_Ready()");
+        Logger.LogInfo(this, "SelectionModel::_Ready()");
         GlobalEventBus.Instance.UIEventBus.MachineSelected += OnMachineClicked;
         GlobalEventBus.Instance.UIEventBus.MachineCardClicked += OnMachineClicked;
 
@@ -30,19 +30,19 @@ public partial class SelectionModel : Node
 
         if (machine == null || !machine.MachineId.HasValue)
         {
-            HermesUtils.HermesLogWarning("SelectionModel::OnMachineClicked(): Machine or its ID is null!");
+            Logger.LogWarning(this, "SelectionModel::OnMachineClicked(): Machine or its ID is null!");
             return;
         }
 
         if (m_selectedMachines.ContainsKey(machine.MachineId.Value))
         {
             m_selectedMachines.Remove(machine.MachineId.Value);
-            HermesUtils.HermesLogInfo($"Deselecting machine: {machine.MachineId.Value}");
+            Logger.LogInfo(this, $"Deselecting machine: {machine.MachineId.Value}");
         }
         else
         {
             m_selectedMachines.TryAdd(machine.MachineId.Value, machine);
-            HermesUtils.HermesLogInfo($"Selecting machine: {machine.MachineId.Value}");
+            Logger.LogInfo(this, $"Selecting machine: {machine.MachineId.Value}");
         }
 
         // We got to one by deselecting other machines, or by simply selecting one when we didnt select any before.

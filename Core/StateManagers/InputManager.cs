@@ -5,8 +5,7 @@ using System.Collections.Generic;
 namespace Hermes.Core.StateManagers;
 
 using Godot;
-using Hermes.Common.HermesUtils;
-using Hermes.Core.StateManagers;
+using Daedalus.Logging;
 
 public partial class InputManager : Node
 {
@@ -17,7 +16,7 @@ public partial class InputManager : Node
     public override void _Ready()
     {
         base._Ready();
-        HermesUtils.HermesLogInitialization("InputManager::_Ready()");
+        Logger.LogInfo(this, "InputManager::_Ready()");
         AddChild(m_selectionModel);
     }
 
@@ -37,43 +36,43 @@ public partial class InputManager : Node
 
     private void HandleMouseClick(InputEventMouseButton buttonEvent)
     {
-        if (buttonEvent.IsReleased())
-        {
-            return;
-        }
-
-        Godot.Collections.Dictionary raycastResult = HermesUtils.MouseRaycast(GetViewport());
-
-        if (raycastResult.Count == 0)
-        {
-            return;
-        }
-
-        Selectable3D hitObject = raycastResult["collider"].Obj as Selectable3D;
-        hitObject?.OnMouseClicked(buttonEvent.ButtonIndex);
+//        if (buttonEvent.IsReleased())
+//        {
+//            return;
+//        }
+//
+//        Godot.Collections.Dictionary raycastResult = HermesUtils.MouseRaycast(GetViewport());
+//
+//        if (raycastResult.Count == 0)
+//        {
+//            return;
+//        }
+//
+//        Selectable3D hitObject = raycastResult["collider"].Obj as Selectable3D;
+//        hitObject?.OnMouseClicked(buttonEvent.ButtonIndex);
     }
 
     private void HandleMouseSelection()
     {
-
-        Godot.Collections.Dictionary raycastResult = HermesUtils.MouseRaycast(GetViewport());
-
-        Selectable3D hitObject = null;
-
-        if(raycastResult.Count > 0) hitObject = raycastResult["collider"].Obj as Selectable3D;
-
-        if (hitObject != null)
-        {
-            if(hitObject == m_lastHoveredObject) return;
-
-            m_lastHoveredObject?.OnMouseExited();
-            hitObject.OnMouseEntered();
-            m_lastHoveredObject = hitObject;
-        }
-        else
-        {
-            m_lastHoveredObject?.OnMouseExited();
-            m_lastHoveredObject = null;
-        }
+//
+//        Godot.Collections.Dictionary raycastResult = HermesUtils.MouseRaycast(GetViewport());
+//
+//        Selectable3D hitObject = null;
+//
+//        if(raycastResult.Count > 0) hitObject = raycastResult["collider"].Obj as Selectable3D;
+//
+//        if (hitObject != null)
+//        {
+//            if(hitObject == m_lastHoveredObject) return;
+//
+//            m_lastHoveredObject?.OnMouseExited();
+//            hitObject.OnMouseEntered();
+//            m_lastHoveredObject = hitObject;
+//        }
+//        else
+//        {
+//            m_lastHoveredObject?.OnMouseExited();
+//            m_lastHoveredObject = null;
+//        }
     }
 }

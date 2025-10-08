@@ -1,6 +1,6 @@
 using System;
-using Hermes.Common.HermesUtils;
 using Hermes.Core.Machine;
+using Daedalus.Logging;
 using Hermes.Core.Machine.Machine;
 
 namespace Hermes.Languages.HellenicGateway.CommandDispatchers.MAVLink;
@@ -13,13 +13,13 @@ public class MAVLinkCommandFactory : IDisposable
     {
         if (machine == null)
         {
-            HermesUtils.HermesLogError("Cannot send command to a null machine");
+            Logger.LogError(this, "Cannot send command to a null machine");
             return false;
         }
 
         if (!machine.MachineId.HasValue)
         {
-            HermesUtils.HermesLogError("Cannot send takeoff command to a machine with an unknown ID");
+            Logger.LogError(this, "Cannot send takeoff command to a machine with an unknown ID");
             return false;
         }
 
@@ -32,7 +32,7 @@ public class MAVLinkCommandFactory : IDisposable
         if (!MachineValid(machine)) return;
         if (machine.MachineType != MachineType.Quadcopter)
         {
-            HermesUtils.HermesLogWarning("Cannot send takeoff command to a non-quadcopter machine");
+            Logger.LogWarning(this, "Cannot send takeoff command to a non-quadcopter machine");
             return;
         }
 

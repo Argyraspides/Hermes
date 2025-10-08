@@ -1,7 +1,7 @@
 using System;
 using Godot;
 using System.Collections.Generic;
-using Hermes.Common.HermesUtils;
+using Daedalus.Logging;
 
 
 /*
@@ -25,7 +25,7 @@ public static class MAVLinkToHellenicTranslator
 		}
 
 		// No suitable translation function found
-		//HermesUtils.HermesLogWarning($"Unable to translate MAVLink message! No suitable translation function found for msgid: {msgId}");
+		//Logger.LogWarning(this, $"Unable to translate MAVLink message! No suitable translation function found for msgid: {msgId}");
 		return new List<HellenicMessage>();
 	}
 

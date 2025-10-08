@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
-using Hermes.Common.HermesUtils;
+using Daedalus.GodotUtils;
 using Hermes.Core.Autoloads.EventBus;
 using Hermes.Languages.HellenicGateway.CommandDispatchers.Hellenic;
 
@@ -128,7 +128,7 @@ public partial class TakeoffControlComponent : HBoxContainer
     }
     private void OnMachineCardClicked(Machine.Machine.Machine machine)
     {
-        if (!HermesUtils.IsValid(machine) || !machine.MachineId.HasValue || m_machines == null)
+        if (!GodotUtils.IsValid(machine) || !machine.MachineId.HasValue || m_machines == null)
         {
             return;
         }

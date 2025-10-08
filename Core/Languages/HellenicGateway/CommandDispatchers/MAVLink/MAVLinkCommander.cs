@@ -6,9 +6,9 @@ using System.Net.Sockets;
 using System.Runtime.InteropServices.JavaScript;
 using System.Threading;
 using System.Threading.Tasks;
-using Hermes.Common.HermesUtils;
-using Hermes.Common.Networking.UDP;
-using Hermes.Common.Types;
+using Daedalus.Logging;
+using Daedalus.Types;
+using Daedalus.Networking.UDP;
 using Hermes.Core.Machine;
 using Hermes.Core.Machine.Machine;
 
@@ -48,7 +48,7 @@ public class MAVLinkCommander : IDisposable
     {
         if (machine == null)
         {
-            HermesUtils.HermesLogError($"Cannot send takeoff command -- null vehicle.");
+            Logger.LogError(this, $"Cannot send takeoff command -- null vehicle.");
             return;
         }
 
@@ -56,21 +56,21 @@ public class MAVLinkCommander : IDisposable
 
         if (msg == null || msg is not LatitudeLongitude latlon)
         {
-            HermesUtils.HermesLogError(
+            Logger.LogError(this,
                 $"Cannot send takeoff command -- vehicle lat/lon unknown. MachineID: {(machine?.MachineId?.ToString() ?? "null")}");
             return;
         }
 
         if (!latlon.Lat.HasValue || !latlon.Lon.HasValue)
         {
-            HermesUtils.HermesLogError(
+            Logger.LogError(this,
                 $"Cannot send takeoff command -- vehicle lat/lon unknown. MachineID: {machine.MachineId}");
             return;
         }
 
         if (!machine.MachineId.HasValue)
         {
-            HermesUtils.HermesLogError("Cannot send takeoff command -- vehicle machineId unknown");
+            Logger.LogError(this, "Cannot send takeoff command -- vehicle machineId unknown");
             return;
         }
 
@@ -120,7 +120,7 @@ public class MAVLinkCommander : IDisposable
     {
         if (machine == null || !machine.MachineId.HasValue)
         {
-            HermesUtils.HermesLogError(
+            Logger.LogError(this,
                 $"Cannot send ARM command to null vehicle/vehicle without an ID. MachineID: {(machine?.MachineId?.ToString() ?? "null")}");
             return;
         }
@@ -173,21 +173,21 @@ public class MAVLinkCommander : IDisposable
         HellenicMessage msg = machine.GetHellenicMessage(HellenicMessageType.LatitudeLongitude);
         if (msg == null || msg is not LatitudeLongitude latlon)
         {
-            HermesUtils.HermesLogError(
+            Logger.LogError(this,
                 $"Cannot send land command -- vehicle lat/lon unknown. MachineID: {(machine?.MachineId?.ToString() ?? "null")}");
             return;
         }
 
         if (!latlon.Lat.HasValue || !latlon.Lon.HasValue)
         {
-            HermesUtils.HermesLogError(
+            Logger.LogError(this,
                 $"Cannot send land command -- vehicle lat/lon unknown. MachineID: {machine.MachineId}");
             return;
         }
 
         if (!machine.MachineId.HasValue)
         {
-            HermesUtils.HermesLogError("Cannot send land command -- vehicle machineId unknown");
+            Logger.LogError(this, "Cannot send land command -- vehicle machineId unknown");
             return;
         }
 
@@ -236,13 +236,13 @@ public class MAVLinkCommander : IDisposable
     {
         if (machine == null)
         {
-            HermesUtils.HermesLogError($"Cannot await for an acknowledgement of a null vehicle.");
+            Logger.LogError(this, $"Cannot await for an acknowledgement of a null vehicle.");
             return;
         }
 
         if (!machine.MachineId.HasValue)
         {
-            HermesUtils.HermesLogError("Cannot wait for an acknowledgement of a vehicle without an ID");
+            Logger.LogError(this, "Cannot wait for an acknowledgement of a vehicle without an ID");
             return;
         }
 
@@ -268,7 +268,7 @@ public class MAVLinkCommander : IDisposable
             if ((DateTime.Now > future && !receivedInProgress.Value) ||
                 (DateTime.Now > future && receivedInProgressSet.Value))
             {
-                HermesUDPListener.DeregisterUdpClient(subKey);
+                DaedalusUdpListener.DeregisterUdpClient(subKey);
                 ackCallback?.Invoke(false);
             }
 
@@ -279,7 +279,7 @@ public class MAVLinkCommander : IDisposable
                 receivedInProgressSet.Set(true);
             }
 
-            var dat = HermesUDPListener.Receive(subKey);
+            var dat = DaedalusUdpListener.Receive(subKey);
             if (dat == null || dat.Buffer == null || dat.Buffer.Length == 0) return;
 
             using (MemoryStream stream = new MemoryStream(dat.Buffer))
@@ -298,7 +298,7 @@ public class MAVLinkCommander : IDisposable
                 {
                     if (ack.result == (byte)global::MAVLink.MAV_RESULT.ACCEPTED)
                     {
-                        HermesUDPListener.DeregisterUdpClient(subKey);
+                        DaedalusUdpListener.DeregisterUdpClient(subKey);
                         commandSuccess.Set(true);
                         ackCallback?.Invoke(true);
                     }
@@ -308,7 +308,7 @@ public class MAVLinkCommander : IDisposable
                     }
                     else
                     {
-                        HermesUtils.HermesLogWarning(
+                        Logger.LogWarning(this,
                             $"Command {cmd} for MachineID: {machine.MachineId} returned result: {ack.result}");
                     }
                 }
@@ -318,7 +318,7 @@ public class MAVLinkCommander : IDisposable
         // TODO::ARGYRASPIDES()
         //  { parameratize this receiver endpoint (no hardcoded ip) }
         IPEndPoint receiverEndPoint = IPEndPoint.Parse($"127.0.0.1:{MAVLINK_UDP_RECIEVE_PORT}");
-        ulong subKey = HermesUDPListener.RegisterUdpClient(receiverEndPoint, listenForAck);
+        ulong subKey = DaedalusUdpListener.RegisterUdpClient(receiverEndPoint, listenForAck);
         listenForAck.Invoke(subKey);
     }
 
@@ -330,14 +330,14 @@ public class MAVLinkCommander : IDisposable
     {
         if (mavlinkCommandStruct == null)
         {
-            HermesUtils.HermesLogError(
+            Logger.LogError(this,
                 "In MAVLinkCommander.GenerateAckAction: Cannot send a MAVLink command with a null command struct!");
             return null;
         }
 
         if (commandType != global::MAVLink.MAVLINK_MSG_ID.COMMAND_INT && commandType != global::MAVLink.MAVLINK_MSG_ID.COMMAND_LONG)
         {
-            HermesUtils.HermesLogError(
+            Logger.LogError(this,
                 "In MAVLinkCommander.GenerateAckAction: Command must be of type COMMAND_INT or COMMAND_LONG!");
             return null;
         }
@@ -349,13 +349,13 @@ public class MAVLinkCommander : IDisposable
         {
             if (success)
             {
-                HermesUtils.HermesLogSuccess(
+                Logger.LogSuccess(this,
                     $"Successfully performed {mavCommand.ToString()} command for machine #{machine.MachineId}");
                 successCallback?.Invoke(true);
             }
             else if (attempts < MAX_RETRIES)
             {
-                HermesUtils.HermesLogWarning(
+                Logger.LogWarning(this,
                     $"Unable to send MAVLink {mavCommand.ToString()} command after {attempts} attempts. MachineID: {machine.MachineId}. Retrying ...");
                 attempts++;
                 byte[] packet = mavlinkParser.GenerateMAVLinkPacket20(
@@ -374,7 +374,7 @@ public class MAVLinkCommander : IDisposable
             }
             else if (attempts >= MAX_RETRIES)
             {
-                HermesUtils.HermesLogWarning(
+                Logger.LogWarning(this,
                     $"Unable to send MAVLink {mavCommand.ToString()} command after the max number of attempts. MachineID: {machine.MachineId}. Aborting ...");
                 successCallback?.Invoke(false);
             }

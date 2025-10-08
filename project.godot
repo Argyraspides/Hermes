@@ -12,7 +12,7 @@ config_version=5
 
 config/name="Hermes"
 run/main_scene="res://Core/UI/UIScreens/HermesUI/HermesUI.tscn"
-config/features=PackedStringArray("4.3", "C#", "Mobile")
+config/features=PackedStringArray("4.4", "C#", "Mobile")
 run/max_fps=60
 boot_splash/image="res://docs/Hermes.png"
 config/icon="res://docs/Hermes.png"

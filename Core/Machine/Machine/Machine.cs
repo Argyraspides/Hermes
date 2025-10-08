@@ -25,7 +25,6 @@ namespace Hermes.Core.Machine.Machine;
 using Godot;
 using System.Collections.Generic;
 using System;
-using Hermes.Common.HermesUtils;
 using Hermes.Core.StateManagers;
 using Hermes.Core.Autoloads.EventBus;
 

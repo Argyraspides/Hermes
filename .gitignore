@@ -9,12 +9,6 @@ Hermes.sln.DotSettings.user
 # VSCode folder
 .vscode/
 
-# Large asset folders
-Core/SolarSystem/Assets
-Core/SolarSystem/Planets/Earth/Assets
-Core/UI/Fonts
-Common/Assets
-
 # Build folder for releases
 Build/
 export_presets.cfg
@@ -27,9 +21,9 @@ Core/Languages/ProtocolCSharpDefinitions
 Core/Languages/submodules
 
 # Auto-generated folders when you run the generator scripts
-Languages/Generators/bin
-Languages/Generators/obj
+**/bin
+**/obj
 
 # UI Assets
-
-Core/UI/Assets
+**/Assets
+**/Fonts

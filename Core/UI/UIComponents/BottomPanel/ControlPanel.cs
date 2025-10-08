@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
-using Hermes.Common.HermesUtils;
+using Daedalus.Logging;
+using Daedalus.GodotUtils;
 using Hermes.Core.Autoloads.EventBus;
 using Hermes.Core.Machine.CapabilityEngine;
 using Hermes.Core.Machine.Machine;
@@ -47,7 +48,7 @@ public partial class ControlPanel : PanelContainer
     private void OnMachineCardClicked(Machine.Machine.Machine machine)
     {
 
-        if (!HermesUtils.IsValid(machine) || !machine.MachineId.HasValue || m_machines == null)
+        if (!GodotUtils.IsValid(machine) || !machine.MachineId.HasValue || m_machines == null)
         {
             return;
         }

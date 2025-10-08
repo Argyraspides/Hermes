@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://q4ggeswaera3"]
+[gd_scene load_steps=7 format=3 uid="uid://q4ggeswaera3"]
 
 [ext_resource type="Theme" uid="uid://dll7gj5amwt4g" path="res://Core/UI/Themes/DefaultHermesTheme.tres" id="1_3j13u"]
 [ext_resource type="Script" uid="uid://bov8r1da2hp6k" path="res://Core/UI/UIComponents/BottomPanel/BottomPanel.cs" id="2_g4v84"]
@@ -7,12 +7,6 @@
 [ext_resource type="Script" uid="uid://ugkjrdx0oiu7" path="res://Core/UI/UIComponents/BottomPanel/TelemetryPanel.cs" id="6_y4n2n"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_xhs7t"]
-
-[sub_resource type="Resource" id="Resource_dp3ss"]
-metadata/__load_path__ = "res://Core/UI/Fonts/Jura/Jura-Bold.ttf"
-
-[sub_resource type="Resource" id="Resource_ob8rv"]
-metadata/__load_path__ = "res://Core/UI/Fonts/Jura/Jura-Bold.ttf"
 
 [node name="BottomPanel" type="VBoxContainer"]
 anchors_preset = -1
@@ -63,7 +57,6 @@ custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_fonts/bold_font = SubResource("Resource_dp3ss")
 theme_override_font_sizes/normal_font_size = 20
 theme_override_font_sizes/bold_font_size = 20
 bbcode_enabled = true
@@ -117,7 +110,6 @@ theme_override_constants/margin_top = 5
 
 [node name="TelemetryLabel" type="RichTextLabel" parent="ControlAndTelemetryPanels/TelemetryPanel/VBoxContainer/TelemetryTextMargin"]
 layout_mode = 2
-theme_override_fonts/bold_font = SubResource("Resource_ob8rv")
 theme_override_font_sizes/normal_font_size = 20
 theme_override_font_sizes/bold_font_size = 20
 bbcode_enabled = true
