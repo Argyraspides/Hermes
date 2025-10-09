@@ -17,7 +17,7 @@ for (root, dirs, file_names) in os.walk(os.getcwd()):
 
         package_name_start_idx = full_file_path.rfind("External/")
         cut_path = full_file_path[package_name_start_idx + len("External") + 1:]
-        next_slash_pos = cut_path.rfind("/")
+        next_slash_pos = cut_path.find("/")
 
         if next_slash_pos != -1:
             curr_package_name = cut_path[:next_slash_pos]
