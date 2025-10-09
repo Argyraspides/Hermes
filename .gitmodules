@@ -4,8 +4,8 @@
 [submodule "External/Gaia"]
 	path = External/Gaia
 	url = https://github.com/Argyraspides/Gaia.git
-	ignore = true
+	ignore = dirty
 [submodule "External/Daedalus"]
 	path = External/Daedalus
 	url = https://github.com/Argyraspides/Daedalus.git
-	ignore = true
+	ignore = dirty
