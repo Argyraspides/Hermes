@@ -19,6 +19,7 @@
 
 
 using Daedalus.Logging;
+using Hermes.Core.Autoloads.EventBus;
 namespace Hermes.Core.Machine;
 
 using Godot;
@@ -42,10 +43,10 @@ public partial class MachineManager : Node
 
     public override void _Ready()
     {
-        Autoloads.EventBus.HermesEventBus.Instance.ProtocolEventBus.HellenicMessageReceived += OnHellenicMessageReceived;
+        HermesEventBus.Instance.ProtocolEventBus.HellenicMessageReceived += OnHellenicMessageReceived;
 
-        NewMachineConnected += Autoloads.EventBus.HermesEventBus.Instance.MachineEventBus.OnNewMachineConnected;
-        MachineDisconnected += Autoloads.EventBus.HermesEventBus.Instance.MachineEventBus.OnMachineDisconnected;
+        NewMachineConnected += HermesEventBus.Instance.MachineEventBus.OnNewMachineConnected;
+        MachineDisconnected += HermesEventBus.Instance.MachineEventBus.OnMachineDisconnected;
     }
 
     // todo: try make event based? Dont wanna go through the machine list every frame but eh game loop things ig

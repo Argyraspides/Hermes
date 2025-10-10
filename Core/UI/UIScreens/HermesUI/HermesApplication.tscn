@@ -1,13 +1,14 @@
-[gd_scene load_steps=12 format=3 uid="uid://f06dwapi82bi"]
+[gd_scene load_steps=13 format=3 uid="uid://f06dwapi82bi"]
 
-[ext_resource type="Theme" uid="uid://dll7gj5amwt4g" path="res://External/Gaia/Core/UI/Themes/DefaultTheme.tres" id="1_qefca"]
-[ext_resource type="PackedScene" uid="uid://b3vyff8oebx32" path="res://Core/UI/UIComponents/MachineCardPanel/MachineCardPanel.tscn" id="2_upbs8"]
-[ext_resource type="Script" uid="uid://qa4wpgh81p8c" path="res://Core/UI/UIComponents/CameraLatLonLabel.cs" id="3_2u04b"]
-[ext_resource type="PackedScene" uid="uid://dxf3hyep4y3iu" path="res://External/Gaia/Core/SolarSystem/Scenes/SolarSystem/SolarSystem.tscn" id="3_kemyn"]
-[ext_resource type="Script" uid="uid://c8wvmhumgvl7s" path="res://Core/UI/UIComponents/CameraDistanceLabel.cs" id="4_3o2og"]
-[ext_resource type="PackedScene" uid="uid://q4ggeswaera3" path="res://Core/UI/UIComponents/BottomPanel/BottomPanel.tscn" id="4_kg5c2"]
-[ext_resource type="Script" uid="uid://ddn5v6uqpimau" path="res://Core/UI/UIScreens/HermesUI/ZoomButtons.cs" id="6_salkb"]
-[ext_resource type="Script" uid="uid://dgfgla4b2ntw5" path="res://Core/UI/UIScreens/HermesUI/UserSelectedAction.cs" id="7_dh264"]
+[ext_resource type="Script" uid="uid://cl67yuujqjljq" path="res://Core/HermesApplication.cs" id="1_p22cx"]
+[ext_resource type="Theme" uid="uid://dll7gj5amwt4g" path="res://External/Gaia/Core/UI/Themes/DefaultTheme.tres" id="2_laahp"]
+[ext_resource type="PackedScene" uid="uid://b3vyff8oebx32" path="res://Core/UI/UIComponents/MachineCardPanel/MachineCardPanel.tscn" id="3_peu47"]
+[ext_resource type="PackedScene" uid="uid://dxf3hyep4y3iu" path="res://External/Gaia/Core/SolarSystem/Scenes/SolarSystem/SolarSystem.tscn" id="4_5l8fr"]
+[ext_resource type="PackedScene" uid="uid://q4ggeswaera3" path="res://Core/UI/UIComponents/BottomPanel/BottomPanel.tscn" id="5_4865n"]
+[ext_resource type="Script" uid="uid://qa4wpgh81p8c" path="res://Core/UI/UIComponents/CameraLatLonLabel.cs" id="6_y0y5r"]
+[ext_resource type="Script" uid="uid://c8wvmhumgvl7s" path="res://Core/UI/UIComponents/CameraDistanceLabel.cs" id="7_187op"]
+[ext_resource type="Script" uid="uid://dgfgla4b2ntw5" path="res://Core/UI/UIScreens/HermesUI/UserSelectedAction.cs" id="8_ojn2n"]
+[ext_resource type="Script" uid="uid://ddn5v6uqpimau" path="res://Core/UI/UIScreens/HermesUI/ZoomButtons.cs" id="9_ibgmj"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kptqj"]
 bg_color = Color(0.0392157, 0.0392157, 0.0392157, 1)
@@ -17,7 +18,8 @@ bg_color = Color(0.0392157, 0.0392157, 0.0392157, 1)
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ftcah"]
 bg_color = Color(0.0705882, 0.0705882, 0.0705882, 1)
 
-[node name="HermesUI" type="CanvasLayer"]
+[node name="HermesApplication" type="CanvasLayer"]
+script = ExtResource("1_p22cx")
 
 [node name="MainUI" type="Control" parent="."]
 layout_mode = 3
@@ -30,7 +32,7 @@ size_flags_horizontal = 0
 size_flags_vertical = 0
 mouse_filter = 2
 mouse_force_pass_scroll_events = false
-theme = ExtResource("1_qefca")
+theme = ExtResource("2_laahp")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="MainUI"]
 layout_mode = 1
@@ -43,7 +45,7 @@ mouse_filter = 2
 mouse_force_pass_scroll_events = false
 theme_override_constants/separation = 0
 
-[node name="MachineCardPanel" parent="MainUI/HBoxContainer" instance=ExtResource("2_upbs8")]
+[node name="MachineCardPanel" parent="MainUI/HBoxContainer" instance=ExtResource("3_peu47")]
 layout_mode = 2
 size_flags_horizontal = 1
 size_flags_vertical = 1
@@ -64,9 +66,9 @@ handle_input_locally = false
 size = Vector2i(1899, 752)
 render_target_update_mode = 4
 
-[node name="SolarSystem" parent="MainUI/HBoxContainer/VBoxContainer/SubViewportContainer/SubViewport" instance=ExtResource("3_kemyn")]
+[node name="SolarSystem" parent="MainUI/HBoxContainer/VBoxContainer/SubViewportContainer/SubViewport" instance=ExtResource("4_5l8fr")]
 
-[node name="BottomPanel" parent="MainUI/HBoxContainer/VBoxContainer" instance=ExtResource("4_kg5c2")]
+[node name="BottomPanel" parent="MainUI/HBoxContainer/VBoxContainer" instance=ExtResource("5_4865n")]
 layout_mode = 2
 
 [node name="CameraInfoPanel" type="PanelContainer" parent="MainUI/HBoxContainer/VBoxContainer"]
@@ -93,7 +95,7 @@ theme_override_font_sizes/normal_font_size = 25
 bbcode_enabled = true
 text = "[center]11.234568°S, 89.167689°E  [/center]"
 fit_content = true
-script = ExtResource("3_2u04b")
+script = ExtResource("6_y0y5r")
 
 [node name="CameraDistanceLabel" type="RichTextLabel" parent="MainUI/HBoxContainer/VBoxContainer/CameraInfoPanel/InfoBar"]
 layout_direction = 3
@@ -106,7 +108,7 @@ theme_override_font_sizes/normal_font_size = 25
 bbcode_enabled = true
 text = "[center]Camera: 50,000 km[/center]"
 fit_content = true
-script = ExtResource("4_3o2og")
+script = ExtResource("7_187op")
 
 [node name="UserSelectedAction" type="RichTextLabel" parent="MainUI/HBoxContainer/VBoxContainer/CameraInfoPanel/InfoBar"]
 layout_mode = 2
@@ -115,7 +117,7 @@ size_flags_vertical = 4
 theme_override_font_sizes/normal_font_size = 17
 bbcode_enabled = true
 fit_content = true
-script = ExtResource("7_dh264")
+script = ExtResource("8_ojn2n")
 
 [node name="ZoomButtons" type="VBoxContainer" parent="MainUI"]
 layout_mode = 1
@@ -132,7 +134,7 @@ grow_vertical = 2
 size_flags_horizontal = 8
 size_flags_vertical = 8
 mouse_filter = 2
-script = ExtResource("6_salkb")
+script = ExtResource("9_ibgmj")
 
 [node name="SettingsButton" type="Button" parent="MainUI/ZoomButtons"]
 custom_minimum_size = Vector2(50, 50)
