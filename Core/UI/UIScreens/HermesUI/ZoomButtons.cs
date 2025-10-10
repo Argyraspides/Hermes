@@ -16,8 +16,8 @@ public partial class ZoomButtons : VBoxContainer
         m_zoomInButton = GetNode<Button>("ZoomInButton");
         m_zoomOutButton = GetNode<Button>("ZoomOutButton");
 
-        m_zoomInButton.ButtonDown += GlobalEventBus.Instance.UIEventBus.OnZoomInButtonClicked;
-        m_zoomOutButton.ButtonDown += GlobalEventBus.Instance.UIEventBus.OnZoomOutButtonClicked;
+        m_zoomInButton.ButtonDown += HermesEventBus.Instance.UIEventBus.OnZoomInButtonClicked;
+        m_zoomOutButton.ButtonDown += HermesEventBus.Instance.UIEventBus.OnZoomOutButtonClicked;
 
         GetTree().Root.SizeChanged += OnWindowResized;
         PositionButtons();

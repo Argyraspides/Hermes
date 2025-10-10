@@ -25,10 +25,10 @@ public partial class LandControlComponent : HBoxContainer
     public override void _Ready()
     {
 
-        GlobalEventBus.Instance.UIEventBus.MachineCardClicked += OnMachineCardClicked;
-        GlobalEventBus.Instance.UIEventBus.ConfirmationSliderConfirmed += OnConfirmationSliderConfirmed;
+        HermesEventBus.Instance.UIEventBus.MachineCardClicked += OnMachineCardClicked;
+        HermesEventBus.Instance.UIEventBus.ConfirmationSliderConfirmed += OnConfirmationSliderConfirmed;
 
-        LandControlClicked += GlobalEventBus.Instance.UIEventBus.OnLandControlClicked;
+        LandControlClicked += HermesEventBus.Instance.UIEventBus.OnLandControlClicked;
 
         m_landButton = GetNode<TextureButton> ("LandButtonContainer/LandButton");
         m_landButton.Pressed += OnLandButtonPressed;
@@ -39,7 +39,7 @@ public partial class LandControlComponent : HBoxContainer
     }
     public override void _ExitTree()
     {
-        GlobalEventBus.Instance.UIEventBus.MachineCardClicked -= OnMachineCardClicked;
+        HermesEventBus.Instance.UIEventBus.MachineCardClicked -= OnMachineCardClicked;
         m_commander.Dispose();
     }
     public void SetMachines(Dictionary<uint, Machine.Machine.Machine> machines)

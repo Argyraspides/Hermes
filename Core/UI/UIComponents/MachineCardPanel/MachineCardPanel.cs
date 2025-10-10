@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using Godot;
-using GlobalEventBus = Hermes.Core.Autoloads.EventBus.GlobalEventBus;
+using Hermes.Core.Autoloads.EventBus;
 
 namespace Hermes.Core.UI.UIComponents.MachineCardPanel;
 
@@ -18,8 +18,8 @@ public partial class MachineCardPanel : Control
     // Called when the node enters the scene tree for the first time.
     public override void _Ready()
     {
-        GlobalEventBus.Instance.MachineEventBus.NewMachineConnected += OnNewMachineConnected;
-        GlobalEventBus.Instance.MachineEventBus.MachineDisconnected += OnNewMachineDisconnected;
+        HermesEventBus.Instance.MachineEventBus.NewMachineConnected += OnNewMachineConnected;
+        HermesEventBus.Instance.MachineEventBus.MachineDisconnected += OnNewMachineDisconnected;
 
         m_panelBackground = GetNode<ScrollContainer>("PanelBackground");
 

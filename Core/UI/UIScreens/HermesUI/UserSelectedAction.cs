@@ -10,8 +10,8 @@ public partial class UserSelectedAction : RichTextLabel
     {
         Text = "";
 
-        GlobalEventBus.Instance.UIEventBus.TakeoffControlClicked += OnTakeoffControlClicked;
-        GlobalEventBus.Instance.UIEventBus.LandControlClicked += OnLandControlClicked;
+        HermesEventBus.Instance.UIEventBus.TakeoffControlClicked += OnTakeoffControlClicked;
+        HermesEventBus.Instance.UIEventBus.LandControlClicked += OnLandControlClicked;
     }
 
     private void OnTakeoffControlClicked(bool clickedState)

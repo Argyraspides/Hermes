@@ -72,6 +72,6 @@ public partial class Machine : RigidBody3D, Selectable3D
 
     public void OnMouseClicked(MouseButton button)
     {
-        GlobalEventBus.Instance.UIEventBus.OnMachineClicked(this);
+        HermesEventBus.Instance.UIEventBus.OnMachineClicked(this);
     }
 }

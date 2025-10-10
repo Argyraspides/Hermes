@@ -37,10 +37,10 @@ public partial class TakeoffControlComponent : HBoxContainer
     public override void _Ready()
     {
 
-        GlobalEventBus.Instance.UIEventBus.MachineCardClicked += OnMachineCardClicked;
-        GlobalEventBus.Instance.UIEventBus.ConfirmationSliderConfirmed += OnConfirmationSliderConfirmed;
+        HermesEventBus.Instance.UIEventBus.MachineCardClicked += OnMachineCardClicked;
+        HermesEventBus.Instance.UIEventBus.ConfirmationSliderConfirmed += OnConfirmationSliderConfirmed;
 
-        TakeoffControlClicked += GlobalEventBus.Instance.UIEventBus.OnTakeoffControlClicked;
+        TakeoffControlClicked += HermesEventBus.Instance.UIEventBus.OnTakeoffControlClicked;
 
         m_takeoffButtonContainer = GetNode<VBoxContainer>("TakeoffButtonContainer");
         m_altitudeSliderComponent = GetNode<VBoxContainer>("AltitudeSliderComponent");
@@ -62,7 +62,7 @@ public partial class TakeoffControlComponent : HBoxContainer
     }
     public override void _ExitTree()
     {
-        GlobalEventBus.Instance.UIEventBus.MachineCardClicked -= OnMachineCardClicked;
+        HermesEventBus.Instance.UIEventBus.MachineCardClicked -= OnMachineCardClicked;
         m_commander.Dispose();
     }
     public void SetMachines(Dictionary<uint, Machine.Machine.Machine> machines)
