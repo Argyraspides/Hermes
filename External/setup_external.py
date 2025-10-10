@@ -30,3 +30,5 @@ for (root, dirs, file_names) in os.walk(os.getcwd()):
 
         if "project.godot" in file_name:
             os.rename(full_file_path, full_file_path.replace("project.godot", "project.godot.bak"))
+
+print("Successfully replaced all occurrences of res:// with res://External/PackageName")
