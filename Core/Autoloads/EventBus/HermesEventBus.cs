@@ -32,9 +32,9 @@ namespace Hermes.Core.Autoloads.EventBus;
 /// It is important that any signals that *are* routed through the event bus are kept to a minimum as to avoid
 /// a barrage of signal calls being routed through one place.
 /// </summary>
-public partial class GlobalEventBus : Node
+public partial class HermesEventBus : Node
 {
-    public static GlobalEventBus Instance { get; private set; }
+    public static HermesEventBus Instance { get; private set; }
 
 
     public PlanetaryEventBus PlanetaryEventBus { get; private set; }

@@ -27,7 +27,7 @@ public partial class CameraDistanceLabel : RichTextLabel
     // Called when the node enters the scene tree for the first time.
     public override void _Ready()
     {
-       GlobalEventBus.Instance.PlanetaryEventBus.PlanetOrbitalCameraAltChanged += UpdateCameraAltitudeLabel;
+       HermesEventBus.Instance.PlanetaryEventBus.PlanetOrbitalCameraAltChanged += UpdateCameraAltitudeLabel;
     }
 
     private void UpdateCameraAltitudeLabel(double altitude)

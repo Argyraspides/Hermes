@@ -24,7 +24,7 @@ public partial class MachineCard : Button
         InitializeComponents();
         SetMinimumSize();
 
-        MachineCardClicked += GlobalEventBus.Instance.UIEventBus.OnMachineCardClicked;
+        MachineCardClicked += HermesEventBus.Instance.UIEventBus.OnMachineCardClicked;
 
         ToggleMode = true;
         Toggled += OnButtonToggled;

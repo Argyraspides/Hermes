@@ -42,10 +42,10 @@ public partial class MachineManager : Node
 
     public override void _Ready()
     {
-        Autoloads.EventBus.GlobalEventBus.Instance.ProtocolEventBus.HellenicMessageReceived += OnHellenicMessageReceived;
+        Autoloads.EventBus.HermesEventBus.Instance.ProtocolEventBus.HellenicMessageReceived += OnHellenicMessageReceived;
 
-        NewMachineConnected += Autoloads.EventBus.GlobalEventBus.Instance.MachineEventBus.OnNewMachineConnected;
-        MachineDisconnected += Autoloads.EventBus.GlobalEventBus.Instance.MachineEventBus.OnMachineDisconnected;
+        NewMachineConnected += Autoloads.EventBus.HermesEventBus.Instance.MachineEventBus.OnNewMachineConnected;
+        MachineDisconnected += Autoloads.EventBus.HermesEventBus.Instance.MachineEventBus.OnMachineDisconnected;
     }
 
     // todo: try make event based? Dont wanna go through the machine list every frame but eh game loop things ig

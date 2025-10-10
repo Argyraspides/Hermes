@@ -16,7 +16,7 @@ public partial class TelemetryPanel : PanelContainer
 	public override void _Ready()
 	{
 
-        GlobalEventBus.Instance.UIEventBus.FocussedMachineChanged += OnFocussedMachineChanged;
+        HermesEventBus.Instance.UIEventBus.FocussedMachineChanged += OnFocussedMachineChanged;
 
         m_telemetryPanelGrid = GetNode<GridContainer>("VBoxContainer/TelemetryPanelTelemetryMargin/TelemetryPanelTelemetry");
         m_telemetryPanelGrid.Columns = m_telemetryPanelColumns;

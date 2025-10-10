@@ -19,7 +19,6 @@
 
 
 using Hermes.Core.Autoloads.EventBus;
-using GlobalEventBus = Hermes.Core.Autoloads.EventBus.GlobalEventBus;
 
 namespace Hermes.Languages.HellenicGateway;
 
@@ -53,7 +52,7 @@ public partial class ProtocolManager : Node
             protocolAdapter.Start();
         }
 
-        HellenicMessageReceived += GlobalEventBus.Instance.ProtocolEventBus.OnHellenicMessageReceived;
+        HellenicMessageReceived += HermesEventBus.Instance.ProtocolEventBus.OnHellenicMessageReceived;
     }
 
     public override void _ExitTree()

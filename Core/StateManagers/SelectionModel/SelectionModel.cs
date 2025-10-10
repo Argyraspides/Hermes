@@ -18,10 +18,10 @@ public partial class SelectionModel : Node
     public override void _Ready()
     {
         Logger.LogInfo(this, "SelectionModel::_Ready()");
-        GlobalEventBus.Instance.UIEventBus.MachineSelected += OnMachineClicked;
-        GlobalEventBus.Instance.UIEventBus.MachineCardClicked += OnMachineClicked;
+        HermesEventBus.Instance.UIEventBus.MachineSelected += OnMachineClicked;
+        HermesEventBus.Instance.UIEventBus.MachineCardClicked += OnMachineClicked;
 
-        FocussedMachineChanged += GlobalEventBus.Instance.UIEventBus.OnFocussedMachineChanged;
+        FocussedMachineChanged += HermesEventBus.Instance.UIEventBus.OnFocussedMachineChanged;
 
     }
 

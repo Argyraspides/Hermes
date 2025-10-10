@@ -18,7 +18,7 @@ public partial class ConfirmationSlider : MarginContainer
         m_confirmationSlider = GetNode<HSlider>("HSlider");
         m_confirmationSlider.DragEnded += OnSliderDragged;
 
-        ConfirmationSliderConfirmed += GlobalEventBus.Instance.UIEventBus.OnConfirmationSliderConfirmed;
+        ConfirmationSliderConfirmed += HermesEventBus.Instance.UIEventBus.OnConfirmationSliderConfirmed;
 
     }
 
