@@ -42,8 +42,8 @@ using System.Collections.Generic;
 public class MAVLinkAdapter : IProtocolAdapter
 {
     private MAVLinkUDPListener m_udpListener = new MAVLinkUDPListener(
-        // new IPEndPoint(IPAddress.Parse("127.0.0.1"), KnownWorlds.DEFAULT_MAVLINK_PORT)
-        new IPEndPoint(IPAddress.Parse("127.0.0.1"), 14445)
+        new IPEndPoint(IPAddress.Parse("127.0.0.1"), KnownWorlds.DEFAULT_MAVLINK_PORT)
+        // new IPEndPoint(IPAddress.Parse("127.0.0.1"), 14445)
     );
 
     private ConcurrentQueue<HellenicMessage> m_messageQueue;
