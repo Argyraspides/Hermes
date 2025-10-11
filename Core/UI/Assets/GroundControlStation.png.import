@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://bftp5xrrndty5"
-path="res://.godot/imported/GroundControlStation.png-ff685b4492519cf3a143ec7cfd91885f.ctex"
+path="res://.godot/imported/GroundControlStation.png-664a6e124a7996d62868aa047312dee4.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Core/Machine/Assets/Images/GroundControlStation.png"
-dest_files=["res://.godot/imported/GroundControlStation.png-ff685b4492519cf3a143ec7cfd91885f.ctex"]
+source_file="res://Core/UI/Assets/GroundControlStation.png"
+dest_files=["res://.godot/imported/GroundControlStation.png-664a6e124a7996d62868aa047312dee4.ctex"]
 
 [params]
 
