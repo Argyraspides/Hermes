@@ -54,8 +54,8 @@ public partial class MachineCard : Button
     {
         string iconPath = Machine.MachineType switch
         {
-            MachineType.Quadcopter => "res://Core/Machine/Assets/Images/QuadcopterIcon.png",
-            MachineType.GroundControlStation => "res://Core/Machine/Assets/Images/GroundControlStation.png",
+            MachineType.Quadcopter => "res://Core//UI/Assets/QuadcopterIcon.png",
+            MachineType.GroundControlStation => "res://Core//UI/Assets/GroundControlStation.png",
             _ => string.Empty
         };
 

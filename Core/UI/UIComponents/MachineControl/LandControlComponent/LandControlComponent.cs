@@ -24,8 +24,6 @@ public partial class LandControlComponent : HBoxContainer
     // Called when the node enters the scene tree for the first time.
     public override void _Ready()
     {
-
-        HermesEventBus.Instance.UIEventBus.MachineCardClicked += OnMachineCardClicked;
         HermesEventBus.Instance.UIEventBus.ConfirmationSliderConfirmed += OnConfirmationSliderConfirmed;
 
         LandControlClicked += HermesEventBus.Instance.UIEventBus.OnLandControlClicked;
@@ -36,10 +34,11 @@ public partial class LandControlComponent : HBoxContainer
         m_landButtonContainer = GetNode<VBoxContainer>("LandButtonContainer");
 
         m_commander = new HellenicCommander();
+
+        SetMachineIcon();
     }
     public override void _ExitTree()
     {
-        HermesEventBus.Instance.UIEventBus.MachineCardClicked -= OnMachineCardClicked;
         m_commander.Dispose();
     }
     public void SetMachines(Dictionary<uint, Machine.Machine.Machine> machines)
@@ -49,8 +48,8 @@ public partial class LandControlComponent : HBoxContainer
 
     private void SetMachineIcon()
     {
-        string normalIconPath = "res://Core/UI/Assets/TakeoffIcon2.png";
-        string pressedIconPath = "res://Core/UI/Assets/TakeoffIcon2Pressed.png";
+        string normalIconPath = "res://Core/UI/Assets/LandQuadcopter.png";
+        string pressedIconPath = "res://Core/UI/Assets/LandQuadcopterSelected.png";
 
         Machine.Machine.Machine machine;
         IEnumerable<Machine.Machine.Machine> allMachines = m_machines.Values.Distinct();
@@ -60,14 +59,14 @@ public partial class LandControlComponent : HBoxContainer
             machine = allMachines.First();
             normalIconPath = machine.MachineType switch
             {
-                MachineType.Quadcopter => "res://Core/UI/Assets/TakeoffQuadcopter.png",
-                _ => "res://Core/UI/Assets/TakeoffIcon2.png"
+                MachineType.Quadcopter => "res://Core/UI/Assets/LandQuadcopter.png",
+                _ => normalIconPath
             };
 
             pressedIconPath = machine.MachineType switch
             {
-                MachineType.Quadcopter => "res://Core/UI/Assets/TakeoffQuadcopterSelected.png",
-                _ => "res://Core/UI/Assets/TakeoffIcon2Pressed.png"
+                MachineType.Quadcopter => "res://Core/UI/Assets/LandQuadcopterSelected.png",
+                _ => pressedIconPath
             };
         }
 
@@ -90,25 +89,6 @@ public partial class LandControlComponent : HBoxContainer
 
         m_landButton.SetPressed(false);
         EmitSignal(SignalName.LandControlClicked, m_landButton.ButtonPressed);
-
-    }
-    private void OnMachineCardClicked(Machine.Machine.Machine machine)
-    {
-        if (!GodotUtils.IsValid(machine) || !machine.MachineId.HasValue || m_machines == null)
-        {
-            return;
-        }
-
-        if (m_machines.ContainsKey(machine.MachineId.Value))
-        {
-            m_machines.Remove(machine.MachineId.Value);
-        }
-        else
-        {
-            m_machines.Add(machine.MachineId.Value, machine);
-        }
-
-        SetMachineIcon();
 
     }
 

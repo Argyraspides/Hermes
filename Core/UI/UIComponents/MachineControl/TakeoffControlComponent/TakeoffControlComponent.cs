@@ -37,7 +37,6 @@ public partial class TakeoffControlComponent : HBoxContainer
     public override void _Ready()
     {
 
-        HermesEventBus.Instance.UIEventBus.MachineCardClicked += OnMachineCardClicked;
         HermesEventBus.Instance.UIEventBus.ConfirmationSliderConfirmed += OnConfirmationSliderConfirmed;
 
         TakeoffControlClicked += HermesEventBus.Instance.UIEventBus.OnTakeoffControlClicked;
@@ -59,10 +58,11 @@ public partial class TakeoffControlComponent : HBoxContainer
         m_maxAltitudeLabel.FocusExited += () => { OnMaxAltitudeUpdated(m_maxAltitudeLabel.Text); };
 
         m_commander = new HellenicCommander();
+
+        SetMachineIcon();
     }
     public override void _ExitTree()
     {
-        HermesEventBus.Instance.UIEventBus.MachineCardClicked -= OnMachineCardClicked;
         m_commander.Dispose();
     }
     public void SetMachines(Dictionary<uint, Machine.Machine.Machine> machines)
@@ -112,13 +112,13 @@ public partial class TakeoffControlComponent : HBoxContainer
             normalIconPath = machine.MachineType switch
             {
                 MachineType.Quadcopter => "res://Core/UI/Assets/TakeoffQuadcopter.png",
-                _ => "res://Core/UI/Assets/TakeoffIcon2.png"
+                _ => normalIconPath
             };
 
             pressedIconPath = machine.MachineType switch
             {
                 MachineType.Quadcopter => "res://Core/UI/Assets/TakeoffQuadcopterSelected.png",
-                _ => "res://Core/UI/Assets/TakeoffIcon2Pressed.png"
+                _ => pressedIconPath
             };
         }
 
@@ -126,25 +126,7 @@ public partial class TakeoffControlComponent : HBoxContainer
         m_takeoffButton.TexturePressed = GD.Load<Texture2D>(pressedIconPath);
 
     }
-    private void OnMachineCardClicked(Machine.Machine.Machine machine)
-    {
-        if (!GodotUtils.IsValid(machine) || !machine.MachineId.HasValue || m_machines == null)
-        {
-            return;
-        }
 
-        if (m_machines.ContainsKey(machine.MachineId.Value))
-        {
-            m_machines.Remove(machine.MachineId.Value);
-        }
-        else
-        {
-            m_machines.Add(machine.MachineId.Value, machine);
-        }
-
-        SetMachineIcon();
-
-    }
     private void OnConfirmationSliderConfirmed()
     {
         /* TODO::ARGYRASPIDES() {
